@@ -30,10 +30,6 @@
       <button role="tab" type="button" id="tab_settings" data-tab="settings" aria-label="Settings"><span class="temo" aria-hidden="true">⚙️</span> <span class="tword">Settings</span></button>
       <button role="tab" type="button" id="tab_about" data-tab="about" aria-label="About"><span class="temo" aria-hidden="true">ℹ️</span> <span class="tword">About</span></button>
     </nav>
-    <div id="run_mini" class="runmini" data-state="off">
-      <button id="run_mini_toggle" type="button" disabled title="Pause the CPU (the Machine tab's Pause)">Pause</button>
-      <button id="run_mini_text" type="button" class="mono" title="The VM: running or paused, the speed and the instructions stepped from reset. Click for the Machine tab: the screen and the run controls.">no machine</button>
-    </div>
   </div>
 </header>
 
@@ -307,7 +303,7 @@
   <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Four kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts; <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>; and Debian 6.1 686 (bookworm's linux-image-6.1.0-50-686), once without an initrd (it ends in a root-fs panic) and once with its initramfs (it stops at the BusyBox shell). All four come with their debug info (DWARF): file:line, C source, variables, backtraces, parameters and locals, task names and a coverage tree. Any bzImage can be loaded from disk.</p>
   <h3>Tabs</h3>
   <ul>
-    <li><b>Machine</b>: the VM's screen, Pause, Continue, Step, speed, clock, count, the state line and the counters, then what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. It opens first. Next to the tabs a one-line run status (running or paused, the speed and the instructions stepped) shows on every tab, with Pause or Continue; a click on it opens the Machine tab. The VM keeps running and its screen keeps changing while another tab is shown; keys go to the VM only while the Machine tab is shown.</li>
+    <li><b>Machine</b>: the VM's screen, Pause, Continue, Step, speed, clock, count, the state line and the counters, then what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. It opens first. On every tab the menu toggle at the bottom right shows whether the VM runs and how fast; its menu has Back and Forward, the run state with the instructions stepped (a click opens the Machine tab) and Pause or Continue. The VM keeps running and its screen keeps changing while another tab is shown; keys go to the VM only while the Machine tab is shown.</li>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers; after each instruction its jump paths in and out (static and observed while stepping, with counts), and the jumps inside the page as arcs.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>
@@ -399,6 +395,13 @@
   <h4>Calls tab</h4>
   <p class="note">Symbols are coloured by the top directory of their source file:</p>
   <ul class="legend" id="legend_graph"></ul>
+  <h4>The menu toggle (bottom right, on every tab)</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain rbsamples" inert><span class="rbtog" data-state="run"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">1k/s</span></span><span class="rbtog" data-state="ff"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">JIT</span></span><span class="rbtog" data-state="paused"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">paused</span></span><span class="rbtog" data-state="halted"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">halted</span></span><span class="rbtog" data-state="panic"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">panic</span></span><span class="rbtog" data-state="off"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span><span class="rbspeed">off</span></span></span>
+      <span>Three bars: it opens a menu with Back and Forward through the jump history, the run state in words with the instruction count, and Pause or Continue. The <b>dot</b> and the word under it say what the VM does: <b>green, pulsing</b> while the CPU runs, with the speed (1/s up to full); <b>blue, pulsing</b> while it fast-forwards with the JIT; <b>hollow</b> when paused; a <b>grey square</b> at the end of the run (halted); a <b>red square</b> at a kernel panic; <b>dotted</b> before a kernel boots. With reduced motion the dot does not pulse. Where: bottom right of every tab.</span></li>
+    <li><span class="lgs plain rbsamples" inert><span class="rbtog" data-state="paused"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews"></span></span><span class="rbspeed">paused</span></span></span>
+      <span><b>Pink dot</b> on its corner: a new version of this page is deployed; the menu says which and offers Reload.</span></li>
+  </ul>
   <h4>Warnings and links</h4>
   <ul class="lgnd">
     <li><span class="lgs plain problems" inert><div class="warn">Boot protocol 2.15: newer than v86 knows</div><div class="error">No "HdrS" signature at 0x202: this is not a bzImage.</div></span>
@@ -419,9 +422,24 @@
   <pre id="src_body" class="srcview" tabindex="0"></pre>
 </aside>
 
-<nav id="nav_hist" class="navhist" aria-label="Jump history" hidden>
-  <button id="nav_back" type="button">&lsaquo;<span class="navword"> Back</span></button><button id="nav_fwd" type="button"><span class="navword">Forward </span>&rsaquo;</button>
-</nav>
+<!-- H1: one small fixed toggle; its face shows whether the VM runs and how
+     fast, its menu holds Back and Forward, the run state and Pause/Continue. -->
+<div id="runbadge" class="runbadge" data-state="off">
+  <div id="runbadge_menu" class="rbmenu" hidden>
+    <button id="runbadge_state" type="button" class="rbwords" title="Open the Machine tab: the screen and the run controls">no machine</button>
+    <div class="rbrow">
+      <button id="runbadge_pause" type="button" disabled>Pause</button>
+    </div>
+    <div id="runbadge_pwa" class="rbpwa" hidden></div>
+    <nav id="nav_hist" class="navhist" aria-label="Jump history">
+      <button id="nav_back" type="button">&lsaquo; Back</button><button id="nav_fwd" type="button">Forward &rsaquo;</button>
+    </nav>
+  </div>
+  <button id="runbadge_toggle" class="rbtog" type="button" data-state="off" aria-expanded="false" aria-controls="runbadge_menu" aria-label="Menu: no machine. Back, Forward, Pause" title="Menu: no machine. Back, Forward, Pause">
+    <span class="rbtop" aria-hidden="true"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span>
+    <span id="runbadge_speed" class="rbspeed" aria-hidden="true">off</span>
+  </button>
+</div>
 
 <div id="tip_pop" class="tip-pop" role="tooltip" hidden></div>
 <div id="jump_pop" class="jump-pop" role="dialog" aria-label="Jump paths" hidden></div>

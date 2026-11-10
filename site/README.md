@@ -11,12 +11,10 @@ Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and
 
 ## Layout
 
-The top bar holds only the title, the tab bar and a one-line run status
-(`#run_mini`: running, paused or ended, the speed and the instructions
-stepped from reset, with Pause or Continue; a click on it opens the
-Machine tab), so every tab gets the rest of the height (72 px at 1280,
-103 px at 390, suite tabs). The tabs are each an emoji (aria-hidden) and its
-name, each an emoji (aria-hidden) and its
+The top bar holds only the title and the tab bar, so every tab gets the
+rest of the height (suite tabs). The run state lives in the menu toggle at
+the bottom right of every tab (H1, below). The tabs are each an emoji
+(aria-hidden) and its
 name, kept in the URL hash (`#machine`, `#memory`, `#page/0x100000`,
 `#debugger`, `#calls`, `#source`, `#snapshots`, `#settings`, `#about`; the
 old names `#graph` and `#coverage`, and `?tab=` with any of them when the
@@ -1037,11 +1035,9 @@ file:line from the Source panel. Each entry keeps the view you left: the
 tab, the page, the listing's scroll and marked instruction, the Source
 panel (open or closed, file, picked line, scroll) and the window's
 scroll; it is captured again when you leave it, so Forward returns to it
-as you left it. Fixed Back and Forward buttons (bottom right, left of the
-Source panel; on a phone arrows only, one above the other at the right
-edge, above the panel when it is open, and the listings keep that column
-free so no line is under them) appear after the first
-jump, and their tooltips name the view they go to (`Back to
+as you left it. Back and Forward are in the menu of the toggle at the
+bottom right (H1, below), enabled once there is a view to go to, and
+their tooltips name the view they go to (`Back to
 hello_main+0x1e`). Alt+Left and Alt+Right do the same unless the VM
 screen was clicked last (then the keys are the VM's), and so do the
 mouse's back button and a phone's back gesture: all of them go through
@@ -1056,6 +1052,27 @@ the start with the VM running, and a 390 px phone: after each jump and
 each Back, and with the listing scrolled into the strip above the open
 Source panel, the buttons cover no text of a listing line on screen (light
 and dark). On 7967b0fc8 they covered the right end of the lines there.
+
+**The menu toggle (H1).** One small fixed button at the bottom right of
+every tab (`#runbadge_toggle`; left of the Source panel, on a phone above
+it, and the listings keep its column free) shows at a glance what the VM
+does: three bars (it opens a menu), a dot and a word. The dot is green and
+pulses while the CPU runs, with the speed under it (1/s up to full); blue
+and pulsing while the boot fast-forwards with the JIT (JIT); hollow when
+paused (paused); a grey square when the kernel halted at the end of its run
+(halted); a red square at a kernel panic (panic); dotted before a kernel
+boots (off). Under `prefers-reduced-motion` the dot does not pulse; the
+shape, the colour and the word still tell the states apart. It is drawn
+with the Debugger's redraw (drawDebugUi), so it adds no work per
+instruction. A click or tap opens its menu: the run state in words with the
+instructions stepped from reset (a click opens the Machine tab), Pause or
+Continue, the "new version" notice of the PWA with Reload (the toggle gets
+a pink dot then, so the notice shows on every tab), and Back and Forward.
+The toggle has aria-expanded; Esc closes the menu and gives the focus back
+to the toggle, and so does a press anywhere outside it. It replaces the
+always-visible Back and Forward box (N1) and the one-line run status next
+to the tab bar (U5). The About tab's legend has a sample of each state.
+Suite runbadge checks it.
 
 ## Offline and installing
 
@@ -1531,6 +1548,7 @@ browser-test matrix job named by its suites):
 | U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
 | U4 Settings tab, literal emoji | suite tabs (the nine tabs in order with Settings before About and the emoji 🖥️ 🗺️ 🔢 🐞 📊 📝 💾 ⚙️ ℹ️, each drawn as a colour emoji in two font stacks; #settings and ?tab=settings open Settings; Compact tabs, speed, clock, count, the per-kernel list and Reset are in the Settings tab and the Machine tab has no Settings section or checkbox; with a watch list, a cmdline set by Boot, another bzImage's symbols, an unknown mkb- key and an IndexedDB DWARF entry stored, every mkb- key in localStorage and the IndexedDB entry have a row with an explanation; speed, clock and count set in Settings change the top bar's controls and survive a reload, the top bar's speed shows in Settings; Forget removes each entry with its effect (the watch list empties, the cmdline goes back to the default, the other bzImage's DWARF goes); Reset all settings leaves no mkb- key and no IndexedDB entry and restores compact off, 1k/s, 10/us, count on; the compact bar is one row at 390 px light and dark; no horizontal scroll on Settings). On feddeeea8 it fails: no Settings tab, the old emoji, Compact tabs in the Machine tab | debian,...,legend,tabs |
 | U5 everything above the tabs in Machine | suite tabs (at 1280 and 390 px, light and dark: no element drawn in the header besides the title, the tab bar and the run status, the header at most 140 px; the first load without a hash opens Machine with the screen showing "Hello, World!", #memory still opens Memory; the status line, warnings, screen, overlay, run bar, state line, counters and notes are in the Machine tab; hello at 10/s: on the Page tab the run status counts on and says 10/s like the VM, the screen is hidden but stays in the page and "Hello, World!" reaches it meanwhile, Pause and Continue in the run status pause and resume the VM, a click on it opens Machine with the new text shown; the minified Linux at 1k/s on the Debugger tab counts on, at least 500 in 2 s) and suite initramfs (after the Page tab and back, keys typed on the screen reach the Debian (initramfs) shell). On d78451a41 it fails: the screen and run bar in the header (373 px at 1280, 660 at 390), Memory first, no run status | debian,...,legend,tabs |
+| H1 the menu toggle | suite runbadge (hello at 1280 and 390 px, light and dark: paused, 1/s from the menu's Continue on the Debugger tab with the count rising, paused again from the menu, halted at full speed; the face says paused / 1/s / halted, the dot pulses only while running, its colour differs running and paused, the accessible name says the state; the toggle is fixed in the bottom right corner, 40 to 64 px wide, no horizontal scroll, the header has no run status any more; the menu opens on a click or tap with Back and Forward disabled before any jump (tooltip "no earlier view"), the state in words with the count and Continue or Pause, stays on screen, and closes on Esc (focus back on the toggle) or a tap outside; Enter on the focused toggle opens it; the state in words opens Machine; a new deploy (pwaNewer) puts a mark on the toggle and the notice with Reload in the menu on the About tab; the toggle covers no listing line of the Page tab in light and dark; reduced motion: running at 10/s and paused without animation, still told apart; the minified Linux at 1k/s and then at full speed into its own panic, and Debian at full speed (the JIT) and its panic text, at 1280 light and 390 dark; the About legend has a sample of the six states); suite navhist (Back and Forward through the menu, Alt+Left/Right with the menu closed) and suite tabs (the run status is the toggle). On 941db9ec1 it fails: no menu toggle | speedasm,runbadge; debian,...,navhist,...,tabs |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
 | P2 a real install | `test_pwa_install.py` in the `pwa-install` job (headful Chromium under Xvfb: beforeinstallprompt, no installability errors or manifest warnings, PWA.install, chrome://web-app-internals, PWA.launch standalone, hello boots in the app window; four broken copies (no manifest link, icons 404, no service worker, start_url outside the scope) must each fail for their own reason), then against the live site | pwa-install |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |

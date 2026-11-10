@@ -1304,9 +1304,6 @@ function navOnPop(ev) {
 
 function navRender() {
 	const box = $("nav_hist"), back = $("nav_back"), fwd = $("nav_fwd");
-	const on = navList.length > 1;
-	box.hidden = !on;
-	document.body.classList.toggle("navhist-on", on);
 	box.dataset.count = navList.length;
 	box.dataset.at = navAt;
 	back.disabled = navAt <= 0;
@@ -2786,28 +2783,106 @@ function flushScreen() {
 		sa.update_text();
 }
 
-// The run status next to the tab bar: what the Machine tab's state line and
-// counters say, in one line, on every tab.
-function renderRunMini() {
-	const box = $("run_mini"), state = ffActive ? "ff" : runState;
-	const ended = !!(stepper && stepper.end);
-	const word = !stepper ? "no machine" : ffActive ? "fast-forwarding" : { off: "no machine", jit: "running",
-		stepped: entryPhase ? "stepping to the kernel entry" : "running", paused: ended ? "ended" : "paused" }[runState];
-	const speed = runState === "jit" ? "full (JIT)" : $("dbg_speed").selectedOptions[0].text;
-	const parts = [word];
-	if (stepper && runState !== "off")
-		parts.push(speed, num(stepper.steps) + " instructions");
-	const text = parts.join(" \u00b7 ");
+// H1: the menu toggle (#runbadge, bottom right on every tab). Its face says
+// whether the VM runs and how fast (a pulsing dot and the speed), else
+// paused, halted, panic or off; its menu says the same in words with the
+// instruction count. Drawn with the Debugger (drawDebugUi), so it costs
+// nothing per instruction.
+function runBadgeState() {
+	if (!stepper || runState === "off")
+		return "off";
+	if (ffActive)
+		return "ff";
+	if (runState === "stepped" || runState === "jit")
+		return "run";
+	const e = stepper.end;
+	return !e ? "paused" : e.kind.startsWith("panic") ? "panic" : "halted";
+}
+
+function renderRunBadge() {
+	const box = $("runbadge"), tog = $("runbadge_toggle"), state = runBadgeState();
+	// The speed's short text: "1k/s", "full" (the select's "full (JIT)").
+	const speed = $("dbg_speed").selectedOptions[0].text.replace(/ \(JIT\)$/, "");
+	const face = state === "run" ? speed : state === "ff" ? "JIT" : state;
+	const words = { off: "no machine", ff: "fast-forwarding with the JIT", paused: "paused", halted: "halted (the end of the run)",
+		panic: "kernel panic (the end of the run)",
+		run: (runState === "jit" ? "running at full speed (JIT)" : (entryPhase ? "stepping to the kernel entry, then " + speed : "running at " + speed)) +
+			behindText() }[state];
+	const newer = typeof PWA !== "undefined" && PWA.newer ? PWA.newer : "";
+	const text = words + (stepper && runState !== "off" ? " \u00b7 " + num(stepper.steps) + " instructions" : "");
 	box.dataset.state = state;
+	box.dataset.vm = ffActive ? "ff" : runState;
 	box.dataset.steps = stepper ? stepper.steps : 0;
-	if ($("run_mini_text").textContent !== text)
-		$("run_mini_text").textContent = text;
-	const pause = $("dbg_pause"), cont = $("dbg_continue"), tog = $("run_mini_toggle");
-	const canPause = !pause.disabled;
+	box.dataset.newer = newer;
+	tog.dataset.state = state;
+	if ($("runbadge_speed").textContent !== face)
+		$("runbadge_speed").textContent = face;
+	if ($("runbadge_state").textContent !== text)
+		$("runbadge_state").textContent = text;
+	$("runbadge_toggle").querySelector(".rbnews").hidden = !newer;
+	const label = "Menu: " + words + (newer ? ", a new version is deployed" : "") + ". Back, Forward, Pause";
+	if (tog.title !== label) {
+		tog.title = label;
+		tog.setAttribute("aria-label", label);
+	}
+	const pause = $("dbg_pause"), cont = $("dbg_continue"), b = $("runbadge_pause");
+	const canPause = !pause.disabled, ended = !!(stepper && stepper.end);
 	// At the end of the run there is nothing to continue (the overlay's Continue goes too).
-	tog.disabled = canPause ? false : cont.disabled || ended;
-	tog.textContent = canPause ? "Pause" : "Continue";
-	tog.title = canPause ? "Stop the CPU (the Machine tab's Pause)" : "Run again at the selected speed (the Machine tab's Continue)";
+	b.disabled = canPause ? false : cont.disabled || ended;
+	b.textContent = canPause ? "Pause" : "Continue";
+	b.title = canPause ? "Stop the CPU (the Machine tab's Pause)" : "Run again at the selected speed (the Machine tab's Continue)";
+}
+
+// The "new version" notice (pwa.js) in the menu too: the Machine tab's copy
+// is out of sight on the other tabs.
+function renderRunBadgePwa() {
+	const el = $("runbadge_pwa"), newer = typeof PWA !== "undefined" && PWA.newer;
+	el.hidden = !newer;
+	el.textContent = "";
+	if (newer) {
+		const b = document.createElement("button");
+		b.type = "button";
+		b.textContent = "Reload";
+		b.addEventListener("click", pwaReload);
+		el.append("A new version of this page is deployed (" + newer + "). ", b);
+	}
+	renderRunBadge();
+}
+
+function runBadgeOpen(open, focus = false) {
+	const tog = $("runbadge_toggle");
+	$("runbadge_menu").hidden = !open;
+	tog.setAttribute("aria-expanded", open ? "true" : "false");
+	if (focus)
+		tog.focus();
+}
+
+function initRunBadge() {
+	const tog = $("runbadge_toggle");
+	tog.addEventListener("click", () => runBadgeOpen($("runbadge_menu").hidden));
+	$("runbadge_state").addEventListener("click", () => {
+		runBadgeOpen(false);
+		showTab("machine");
+	});
+	$("runbadge_pause").addEventListener("click", () => {
+		const b = $("dbg_pause").disabled ? $("dbg_continue") : $("dbg_pause");
+		if (!b.disabled)
+			b.click();
+	});
+	// Esc closes the menu (the focus back on the toggle); so does a press
+	// anywhere outside it.
+	document.addEventListener("keydown", (ev) => {
+		if (ev.key === "Escape" && !$("runbadge_menu").hidden && !vmHasKeys) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			runBadgeOpen(false, true);
+		}
+	}, true);
+	document.addEventListener("pointerdown", (ev) => {
+		if (!$("runbadge_menu").hidden && !(ev.target.closest && ev.target.closest("#runbadge")))
+			runBadgeOpen(false);
+	}, true);
+	renderRunBadge();
 }
 
 function drawDebugUi() {
@@ -2865,7 +2940,7 @@ function drawDebugUi() {
 	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
 		$(id).disabled = !can || runState === "off";
-	renderRunMini();
+	renderRunBadge();
 	renderRegs();
 	renderCounters();
 	if (runState !== "stepped")
@@ -3500,12 +3575,7 @@ async function init() {
 	initSettings();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
-	$("run_mini_text").addEventListener("click", () => showTab("machine"));
-	$("run_mini_toggle").addEventListener("click", () => {
-		const b = $("dbg_pause").disabled ? $("dbg_continue") : $("dbg_pause");
-		if (!b.disabled)
-			b.click();
-	});
+	initRunBadge();
 	window.addEventListener("hashchange", readHash);
 	readHash();
 	initNav();

@@ -151,14 +151,9 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 #counters th { font-weight: 600; }
 #count_info { margin: 0.15rem 0 0.3rem; }
 
-/* The header: the title, the tab bar and the VM's run status (#run_mini). */
+/* The header: the title and the tab bar. */
 .tabrow { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: center; margin: 0.3rem 0 0.3rem; }
 .tabbar { display: flex; flex-wrap: wrap; gap: 0.2rem; }
-.runmini { display: flex; gap: 0.3rem; align-items: center; min-width: 0; font-size: 0.75rem; color: var(--muted); }
-.runmini button { padding: 0.1rem 0.4rem; min-height: 28px; font-size: 0.75rem; }
-#run_mini_text { border-color: transparent; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-#run_mini_text:hover { border-color: var(--line); }
-.runmini[data-state="stepped"] #run_mini_text, .runmini[data-state="jit"] #run_mini_text, .runmini[data-state="ff"] #run_mini_text { color: var(--fg); }
 .mstatus { margin: 0.2rem 0; }
 .tabbar button { border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.7rem; min-height: 32px; min-width: 44px; color: var(--muted); }
 .tabbar button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
@@ -170,8 +165,6 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 @media (max-width: 400px) {
   .compact-tabs .tabbar { flex: 1 1 100%; }
   .compact-tabs .tabbar button { flex: 1 1 0; min-width: 30px; padding: 0.25rem 0; }
-  .runmini { flex: 1 1 100%; }
-  #run_mini_text { flex: 1 1 auto; text-align: left; }
 }
 .panel { padding-top: 0.3rem; }
 .panel[hidden] { display: none; }
@@ -414,28 +407,61 @@ button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset:
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
 }
-/* Back and Forward through the jump history: fixed bottom right, where the
-   listings' lines end (their addresses and the symbol index are on the
-   left), left of the Source panel (right half; on a phone the bottom 65vh,
-   so above it). The page gets room below its end so nothing stays under
-   the buttons. On a phone they stand one above the other at the right edge
-   and the listings keep that column free, so the lines a jump lands on are
-   never under them, with the Source panel open or closed. */
-.navhist { position: fixed; z-index: 6; right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom));
-	display: flex; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
-.navhist[hidden] { display: none; }
-.navhist button { min-height: 40px; min-width: 44px; padding: 0 0.8rem; border: none; border-radius: 0; background: none; color: var(--accent); font: inherit; font-weight: 600; }
+/* H1: the menu toggle, fixed bottom right on every tab, where the listings'
+   lines end (their addresses and the symbol index are on the left), left
+   of the Source panel (right half; on a phone the bottom 65vh, so above
+   it). The page gets room below its end so nothing stays under it; on a
+   phone the listings keep its column free, so the lines a jump lands on
+   are never under it, with the Source panel open or closed. Its face: three
+   bars (it opens a menu), a dot for the run state and the speed in a word.
+   The menu above it holds the run state in words, Pause/Continue, the "new
+   version" notice and Back and Forward through the jump history. */
+.runbadge { position: fixed; z-index: 6; right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); }
+.srcpanel:not([hidden]) ~ .runbadge { right: calc(min(46rem, 50vw) + 8px); }
+.rbtog { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 48px; min-height: 44px; padding: 4px 2px;
+	border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
+.rbtog[aria-expanded="true"] { border-color: var(--accent); }
+.rbtog:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rbtop { display: flex; align-items: center; gap: 5px; position: relative; }
+.rbbars { width: 13px; height: 2px; background: currentColor; box-shadow: 0 -4px 0 currentColor, 0 4px 0 currentColor; margin: 4px 0; }
+.rbspeed { font: 600 10px/1 system-ui, sans-serif; white-space: nowrap; color: var(--muted); }
+/* The dot: hollow when paused or off, filled green and pulsing while the
+   CPU runs (the accent colour while fast-forwarding), a square at the end of
+   the run, red at a panic. */
+.rbdot { width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--muted); background: transparent; }
+.rbtog[data-state="run"] .rbdot { border-color: var(--cov-run); background: var(--cov-run); animation: rbpulse 1.2s ease-in-out infinite; }
+.rbtog[data-state="ff"] .rbdot { border-color: var(--accent); background: var(--accent); animation: rbpulse 0.6s ease-in-out infinite; }
+.rbtog[data-state="halted"] .rbdot { border-radius: 1px; background: var(--muted); }
+.rbtog[data-state="panic"] .rbdot { border-radius: 1px; border-color: var(--err-fg); background: var(--err-fg); }
+.rbtog[data-state="off"] .rbdot { border-style: dotted; }
+.rbtog[data-state="run"] .rbspeed, .rbtog[data-state="ff"] .rbspeed { color: var(--fg); }
+.rbtog[data-state="panic"] .rbspeed { color: var(--err-fg); }
+@keyframes rbpulse { 50% { opacity: 0.25; transform: scale(0.7); } }
+@media (prefers-reduced-motion: reduce) {
+	.rbtog .rbdot { animation: none !important; }
+}
+/* A new deploy (pwa.js): a dot on the toggle's corner. */
+.rbnews { position: absolute; top: -6px; right: -8px; width: 7px; height: 7px; border-radius: 50%; background: var(--changed); }
+.rbnews[hidden] { display: none; }
+.rbmenu { position: absolute; right: 0; bottom: calc(100% + 6px); width: max-content; max-width: min(22rem, calc(100vw - 16px)); padding: 0.5rem;
+	display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3); font-size: 0.85rem; }
+.rbmenu[hidden] { display: none; }
+.rbwords { text-align: left; border-color: transparent; color: var(--fg); padding: 0.2rem 0.3rem; min-height: 32px; }
+.rbwords:hover { border-color: var(--line); }
+.rbrow { display: flex; gap: 0.4rem; }
+.rbrow button, .rbpwa button { min-height: 36px; padding: 0 0.8rem; }
+.rbpwa { color: var(--warn-fg); background: var(--warn-bg); border-radius: 4px; padding: 0.3rem 0.4rem; }
+.rbpwa[hidden] { display: none; }
+.navhist { display: flex; border: 1px solid var(--line); border-radius: 6px; }
+.navhist button { flex: 1 1 0; min-height: 40px; min-width: 44px; padding: 0 0.8rem; border: none; border-radius: 0; background: none; color: var(--accent); font: inherit; font-weight: 600; white-space: nowrap; }
 .navhist button + button { border-left: 1px solid var(--line); }
 .navhist button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-.srcpanel:not([hidden]) ~ .navhist { right: calc(min(46rem, 50vw) + 8px); }
-body.navhist-on { padding-bottom: 56px; }
+.navhist button:disabled { color: var(--muted); }
+body { padding-bottom: 60px; }
 @media (max-width: 640px) {
-	.srcpanel:not([hidden]) ~ .navhist { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
-	.navhist { flex-direction: column; }
-	.navhist .navword { display: none; }
-	.navhist button { padding: 0 0.7rem; font-size: 1.1rem; }
-	.navhist button + button { border-left: none; border-top: 1px solid var(--line); }
-	body.navhist-on #listing, body.navhist-on #context { padding-right: 3rem; }
+	.srcpanel:not([hidden]) ~ .runbadge { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
+	#listing, #context { padding-right: 3.4rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }
@@ -506,6 +532,7 @@ body.navhist-on { padding-bottom: 56px; }
 .lgs { font: 11px/1.3 ui-monospace, monospace; background: var(--page-free); border-radius: 3px; padding: 0.15rem 0.35rem; overflow-wrap: anywhere; white-space: pre-wrap; }
 .lgs.plain { background: none; padding: 0; font: inherit; white-space: normal; }
 .lgs svg { display: block; overflow: visible; }
+.rbsamples { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .lgs .regs, .lgs .watches { display: block; margin: 0; }
 .about .legend { margin: 0.2rem 0 0.6rem; }
 .about h4 { font-size: 0.8rem; margin: 0.6rem 0 0.1rem; }

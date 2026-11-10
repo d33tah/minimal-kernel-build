@@ -53,8 +53,11 @@ const ffCounter = (st) => new Uint32Array(st.cpu.wasm_memory.buffer, 664, 1)[0];
 const WASM_TABLE_OFFSET = 1024;
 const JIT = {
 	stopAt: Infinity, // the page-driven loop pauses at the first slice end at or past this count
-	yieldEvery: 8,    // main_loop calls between yields (yielding after each cost WebKit 40%, D1)
-	yieldMs: 16,      // or sooner, after this much real time
+	// Yields to the page: after this much real time, or this many main_loop
+	// calls (yielding after each one cost WebKit 40%, D1; every 8 cost
+	// Chromium on a fast CI runner 8% against v86's own loop).
+	yieldMs: 8,
+	yieldEvery: 64,
 };
 function jitDetInstall(st, em) {
 	const cpu = st.cpu, orig = cpu.codegen_finalize;

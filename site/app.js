@@ -1921,10 +1921,12 @@ async function resume(now = false) {
 // the instruction count (jitChunk) and compiled code going live only between
 // two of them (jitFlush), so a run repeats exactly: same slice ends, same
 // timer interrupts, same state at the same count (D1). It yields to the
-// page every JIT.yieldEvery slices or JIT.yieldMs. A guest that has been
-// idle for a while (halted most of the virtual time) is paced to at most
-// 100 slices a second: the virtual clock would otherwise spin through its
-// timer ticks at full CPU.
+// page after JIT.yieldMs or JIT.yieldEvery slices, and draws the screen and
+// the Debugger meanwhile. A guest that has been idle for a while (halted
+// for three quarters of the virtual time over 64 such groups in a row)
+// gets a 10 ms sleep after each group: the virtual clock would otherwise
+// race through its timer ticks at full CPU (the initramfs shell). Pacing
+// and yields take real time only, never guest time.
 let jitRunId = 0;  // bumped by resume and pause: a running loop stops
 let jitLoopId = 0; // the loop that runs (draws the screen), 0 for none
 async function jitLoop() {
@@ -1939,12 +1941,20 @@ async function jitLoop() {
 	const sa = em.screen_adapter; // v86 draws the screen only while it runs
 	if (sa)
 		sa.continue();
-	let idleGroups = 0, drawn = realNow();
+	let idleGroups = 0, drawn = realNow(), screenAt = drawn;
 	try {
 		while (live()) {
-			if (realNow() - drawn > 500) { // the count, registers, clock while it runs
-				drawn = realNow();
+			const now = realNow();
+			if (now - drawn > 500) { // the count, registers, clock while it runs
+				drawn = now;
 				updateDebugUi();
+			}
+			// v86 draws the screen's changed rows in requestAnimationFrame,
+			// which this loop's back-to-back yields can starve (the shell's
+			// echo stayed off the screen until a pause): draw them here too.
+			if (now - screenAt > 33) {
+				screenAt = now;
+				flushScreen();
 			}
 			const t0 = realNow(), clock0 = CLOCK.now(), idle0 = st.idleMs;
 			for (let n = 0; n < JIT.yieldEvery; n++) {
@@ -1967,7 +1977,7 @@ async function jitLoop() {
 					break;
 			}
 			const span = CLOCK.now() - clock0;
-			idleGroups = span > 0 && st.idleMs - idle0 > 0.9 * span ? idleGroups + 1 : 0;
+			idleGroups = span > 0 && st.idleMs - idle0 > 0.75 * span ? idleGroups + 1 : 0;
 			if (idleGroups > 64)
 				await new Promise((r) => setTimeout(r, 10));
 			else

@@ -415,7 +415,7 @@ jobs:
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
         - runstate
         - speedline
-        - speedasm,runbadge,memeip,graphopen
+        - speedasm,runbadge,memeip,graphopen,srcfiles
         - snapdiff
         - followeip
         - followfuzz

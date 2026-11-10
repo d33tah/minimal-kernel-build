@@ -448,7 +448,12 @@
 </main>
 
 <aside id="src_panel" class="srcpanel" hidden aria-label="Source">
-  <div class="scan"><b id="src_title"></b> <button id="src_close" type="button">Close</button></div>
+  <div class="scan srchead"><b id="src_title"></b> <span class="srcbtns"><button id="src_files" type="button" aria-expanded="false" aria-controls="src_switch" title="Open another file: the call stack's, the recent ones, or any file of the kernel's debug info and source, filtered by name or path (arrows and Enter, Escape closes). A directory of the path in the title lists its files."><span aria-hidden="true">📂</span> Files</button> <button id="src_close" type="button">Close</button></span></div>
+  <div id="src_switch" class="srcswitch" hidden>
+    <input id="src_q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="src_list" aria-label="Filter the source files by name or path" placeholder="file name or path, e.g. printk" autocomplete="off" spellcheck="false">
+    <ul id="src_list" role="listbox" aria-label="Source files"></ul>
+  </div>
+  <div id="src_nav" class="srcnav" hidden><select id="src_outline" aria-label="Go to a function of this file"></select> <select id="src_incl" aria-label="Open a header whose code is inlined into this file"></select></div>
   <p id="src_info" class="note"></p>
   <div id="src_addrs" class="note srcaddrs" hidden></div>
   <pre id="src_body" class="srcview" tabindex="0"></pre>

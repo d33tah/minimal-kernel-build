@@ -1235,8 +1235,17 @@ const TAB_ALIASES = { graph: "calls", coverage: "source" };
 // The Machine tab first: it holds the VM's screen and run controls.
 let tab = "machine";
 
-// Hash: #memory, #page/0x100000, #debugger, ...
-const navHashNow = () => "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "");
+// Hash: #memory, #page/0x100000, #debugger, ...; with the Source panel open
+// its file and line after ~src= (#debugger~src=init/main.c:1000), so a
+// reload opens that file again.
+const navHashNow = () => "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "") + srcHash();
+
+function srcHash() {
+	if (!srcPanel || $("src_panel").hidden)
+		return "";
+	const l = srcPanel.pick || srcPanel.line;
+	return "~src=" + encodeURI(srcPanel.path) + (l ? ":" + l : "");
+}
 
 function writeHash() {
 	const h = navHashNow();
@@ -1317,7 +1326,17 @@ function initCompactTabs() {
 function readHash() {
 	if (navBuilt && location.hash === navHashNow())
 		return;
-	let [name, addr] = location.hash.slice(1).split("/");
+	let h = location.hash.slice(1), src = null;
+	const at = h.indexOf("~src=");
+	if (at >= 0) {
+		try {
+			src = /^(.+?)(?::(\d+))?$/.exec(decodeURI(h.slice(at + 5)));
+		} catch (e) {
+			src = null; // a malformed hash: no file
+		}
+		h = h.slice(0, at);
+	}
+	let [name, addr] = h.split("/");
 	if (!name && !navBuilt)
 		name = new URLSearchParams(location.search).get("tab"); // ?tab=calls when the URL has no hash
 	if (addr) {
@@ -1326,6 +1345,9 @@ function readHash() {
 			selectedPage = Math.floor(a / PAGE);
 	}
 	showTab(name || "machine");
+	// The file of the hash, without a history entry (a reload, a link).
+	if (src && (!srcPanel || $("src_panel").hidden || srcPanel.path !== src[1] || (srcPanel.pick || srcPanel.line || 0) !== Number(src[2] || 0)))
+		srcShowFile(src[1], Number(src[2] || 0));
 }
 
 // ---- jump history ---------------------------------------------------------
@@ -1443,18 +1465,17 @@ function navRestore(v) {
 	showTab(v.tab);
 	if (v.tab === "page")
 		$("listing").scrollTop = v.top;
+	srcSwClose(false);
 	if (v.src) {
-		srcPanel = { ...v.src };
+		// Its scroll once the file is drawn (now, or when the file or DWARF arrives).
+		srcPanel = { ...v.src, scrollPx: v.srcTop };
 		$("src_panel").hidden = false;
 		renderSourcePanel();
-		if ($("src_body").dataset.state === "ok")
-			$("src_body").scrollTop = v.srcTop;
-		else
-			srcPanel.scrollTo = v.src.pick || v.src.line; // drawn again when the file or DWARF arrives
 	} else if (!$("src_panel").hidden) {
 		$("src_panel").hidden = true;
 		srcPanel = null;
 	}
+	writeHash(); // showTab wrote it before the panel was restored
 	window.scrollTo(window.scrollX, v.y);
 }
 

@@ -543,31 +543,36 @@ function openSource(pa, k = 0) {
 		return;
 	navJump(() => {
 		srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line, scrollTo: loc.line };
-		$("src_panel").hidden = false;
-		renderSourcePanel();
+		srcShown();
 	});
+}
+
+// After srcPanel changed: shown, drawn, remembered, in the hash.
+function srcShown() {
+	srcSwClose(false);
+	$("src_panel").hidden = false;
+	renderSourcePanel();
+	srcRemember(srcPanel.path);
+	writeHash();
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
 // it with code, in any function, and which of them have executed.
 function openSourceFile(path) {
-	navJump(() => {
-		srcPanel = { pa: -1, fn: null, path, line: 0, whole: true };
-		renderSourcePanel();
-		$("src_panel").hidden = false;
-		const first = $("src_body").querySelector(".exec") || $("src_body").querySelector(".code");
-		$("src_body").scrollTop = first ? first.offsetTop - $("src_body").clientHeight / 3 : 0;
-	});
+	navJump(() => srcShowFile(path, 0));
+}
+
+// The whole file without a history entry (openSourceFile, openSourceLine,
+// a reload's hash): at line, else at its first line that ran (or has code).
+function srcShowFile(path, line) {
+	srcPanel = { pa: -1, fn: null, path, line, whole: true, pick: line || undefined, scrollTo: line || "first" };
+	srcShown();
 }
 
 // Open the side panel with a whole file at one line, picked (a function's
 // declaration): its addresses are listed as for a tapped line.
 function openSourceLine(path, line) {
-	navJump(() => {
-		srcPanel = { pa: -1, fn: null, path, line, whole: true, pick: line, scrollTo: line };
-		$("src_panel").hidden = false;
-		renderSourcePanel();
-	});
+	navJump(() => srcShowFile(path, line));
 }
 
 // A whole file's lines with code: the line rows of every shard that has
@@ -580,23 +585,34 @@ function fileLines(path) {
 	const F = fl.F, fi = F.fileIx.get(path);
 	// A file without code (data only: "defined at" of a variable) is shown with none marked.
 	if (fi === undefined)
-		return { state: "ok", first: 1, last: Infinity, code: new Map() };
+		return { state: "ok", first: 1, last: Infinity, code: new Map(), fns: new Map(), incl: new Set() };
 	const size = 2 ** F.shardBits;
 	const tables = F.files[fi][2].map((s) => [s, dbgTableAt(s * size)]);
 	const wait = tables.find(([, r]) => r.state !== "ok");
 	if (wait)
 		return wait[1];
 	const code = new Map();
+	const fns = new Map();   // function -> its first line in this file
+	const incl = new Set();  // files of code inlined into this file's lines
 	for (const [s, r] of tables)
 		dwarfEachLine(r.t, s * size, (s + 1) * size, (a, b, frames) => {
-			for (const f of frames)
+			let mine = -1;
+			frames.forEach((f, k) => {
 				if (f.file === path && f.line) {
 					if (!code.has(f.line))
 						code.set(f.line, []);
 					code.get(f.line).push([a, b]);
+					if (mine < 0)
+						mine = k;
+					if (f.func && !(fns.get(f.func) <= f.line))
+						fns.set(f.func, f.line);
 				}
+			});
+			for (let k = 0; k < mine; k++)
+				if (frames[k].file && frames[k].file !== path)
+					incl.add(frames[k].file);
 		});
-	return { state: "ok", first: 1, last: Infinity, code };
+	return { state: "ok", first: 1, last: Infinity, code, fns, incl };
 }
 
 // The panel's lines from the DWARF of the function around srcPanel.pa:
@@ -656,10 +672,15 @@ function renderSourcePanel() {
 		return;
 	const { fn, path, line } = srcPanel;
 	const body = $("src_body");
-	const pl = panelLines();
+	let pl = panelLines();
 	const file = srcFile(path);
+	// A whole file without the file list (an imported vmlinux): its text,
+	// no line marked.
+	if (srcPanel.whole && pl.state === "none" && file.state === "ok")
+		pl = { state: "ok", first: 1, last: Infinity, code: new Map(), why: pl.why };
 	body.dataset.file = path;
-	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + ", " + path + (pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "");
+	srcTitle(pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "");
+	srcOutline();
 	if (pl.state !== "ok" || file.state !== "ok") {
 		$("src_addrs").hidden = true;
 		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
@@ -671,8 +692,7 @@ function renderSourcePanel() {
 	}
 	const { code, run } = lineCoverage(pl);
 	const sv = srcStatementView(file, pl.first, pl.last, code, run);
-	if (!srcPanel.whole)
-		$("src_title").textContent = (fn || "?") + ", " + path + ":" + sv.first + "-" + sv.last;
+	srcTitle(":" + sv.first + "-" + sv.last);
 	const out = [];
 	for (let l = sv.first; l <= sv.last; l++) {
 		const c = sv.cont.get(l);
@@ -690,10 +710,17 @@ function renderSourcePanel() {
 	// Opened at a line: scroll there once the file and the address list
 	// above it are drawn (the list changes the body's height). The row's
 	// offsetParent is the fixed panel, not the body: measure against the body.
-	if (srcPanel.scrollTo) {
-		const row = body.querySelector('[data-line="' + srcPanel.scrollTo + '"]');
+	if (srcPanel.scrollPx !== undefined) {
+		body.scrollTop = srcPanel.scrollPx; // Back to this view: where it was left
+		delete srcPanel.scrollPx;
+		delete srcPanel.scrollTo;
+	} else if (srcPanel.scrollTo) {
+		const row = srcPanel.scrollTo === "first" ? body.querySelector(".exec") || body.querySelector(".code") :
+			body.querySelector('[data-line="' + srcPanel.scrollTo + '"]');
 		if (row)
 			body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - body.clientHeight / 3;
+		else if (srcPanel.scrollTo === "first")
+			body.scrollTop = 0;
 		delete srcPanel.scrollTo;
 	}
 	body.dataset.state = "ok";
@@ -701,9 +728,459 @@ function renderSourcePanel() {
 	body.dataset.executed = run.size;
 	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
 	const cov = stepper ? coverageFor(stepper.kernelLo) : null;
-	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
+	$("src_info").textContent = pl.why ? "No line is marked: " + pl.why + ". Source: " + (SRC.info || SRC.mode) + "." :
+		run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
 		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
 		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + ". Source: " + (SRC.info || SRC.mode) + "." + note;
+}
+
+// ---- another file: breadcrumb, outline, file switcher ------------------------
+
+// The title: "fn, dir/dir/file.c:first-last" or "dir/dir/file.c (whole
+// file)", each directory of the path a button that lists its files in the
+// switcher, the file name one that opens the whole file. Drawn again only
+// when it changes (the panel is drawn every second while stepping, and a
+// focused button would lose the focus).
+function srcTitle(range) {
+	const { fn, path, whole } = srcPanel;
+	const key = [whole, fn, path, range].join("\0");
+	const t = $("src_title");
+	if (t.dataset.key === key)
+		return;
+	t.dataset.key = key;
+	t.textContent = "";
+	if (!whole)
+		t.append((fn || "?") + ", ");
+	const parts = path.split("/");
+	parts.forEach((p, k) => {
+		const b = document.createElement("button");
+		b.type = "button";
+		b.className = "crumb";
+		if (k < parts.length - 1) {
+			const dir = parts.slice(0, k + 1).join("/");
+			b.textContent = p + "/";
+			b.dataset.dir = dir;
+			b.title = "List the files in " + dir + "/";
+			b.addEventListener("click", () => srcSwOpen(dir));
+		} else if (!whole) {
+			b.textContent = p;
+			b.dataset.path = path;
+			b.title = "Open the whole of " + path;
+			b.addEventListener("click", () => openSourceFile(path));
+		} else {
+			t.append(p);
+			return;
+		}
+		t.append(b);
+	});
+	t.append(whole ? " (whole file)" : range);
+}
+
+// The functions of the panel's file (from its line rows, each at its first
+// line in the file, and every function files.json puts in it) and the
+// files of code inlined into its lines (headers), each one pick away.
+function srcFileFacts(path) {
+	const c = srcPanel.facts;
+	if (c && c.path === path && c.ver === DBG.version)
+		return c.r;
+	const r = fileLines(path);
+	if (r.state === "ok")
+		srcPanel.facts = { path, ver: DBG.version, r };
+	return r;
+}
+
+function srcOutline() {
+	const { path } = srcPanel;
+	const fl = dbgFiles(), r = srcFileFacts(path);
+	const key = [path, r.state, fl.state, DBG.version].join("\0");
+	const sel = $("src_outline"), inc = $("src_incl");
+	if (sel.dataset.key === key)
+		return;
+	sel.dataset.key = key;
+	const fns = new Map(r.state === "ok" ? r.fns : []);
+	const los = new Map();
+	if (fl.state === "ok") {
+		const k = fl.F.fileIx.get(path);
+		for (const fn of fl.F.funcs)
+			if (k !== undefined && fn[1] === k && !los.has(fn[0]))
+				los.set(fn[0], fn[4]);
+	}
+	for (const name of los.keys())
+		if (!fns.has(name))
+			fns.set(name, 0);
+	const list = [...fns].sort((x, y) => (x[1] || Infinity) - (y[1] || Infinity) || x[0].localeCompare(y[0]));
+	const incl = r.state === "ok" ? [...r.incl].sort() : [];
+	sel.textContent = inc.textContent = "";
+	sel.append(new Option(list.length ? "ƒ " + list.length + " function" + (list.length === 1 ? "" : "s") + " in this file…" :
+		r.state === "loading" ? "ƒ reading the functions…" : "ƒ no functions", ""));
+	for (const [name, line] of list) {
+		// A function without a line of its own here (only its address):
+		// the Page tab at its code.
+		const o = new Option(name + "()" + (line ? "  line " + line : "  (no line: opens its code)"), line ? String(line) : "@" + los.get(name));
+		o.dataset.fn = name;
+		sel.append(o);
+	}
+	sel.disabled = !list.length;
+	inc.append(new Option(incl.length + " header" + (incl.length === 1 ? "" : "s") + " inlined here…", ""));
+	for (const p of incl)
+		inc.append(new Option(p, p));
+	inc.hidden = !incl.length;
+	$("src_nav").hidden = !list.length && !incl.length;
+}
+
+// Recently opened files, per kernel, newest first (localStorage; without
+// it, until the page is reloaded).
+const SRC_RECENT_KEY = "mkb-src-recent";
+const SRC_RECENT_MAX = 8;
+let srcRecentMem = {};
+
+const srcKernelKey = () => (typeof image !== "undefined" && image ? image.name : "");
+
+function srcRecent() {
+	let all = srcRecentMem;
+	try {
+		all = JSON.parse(localStorage.getItem(SRC_RECENT_KEY) || "{}") || {};
+	} catch (e) {
+		// no storage: this load's list
+	}
+	const l = all[srcKernelKey()];
+	return Array.isArray(l) ? l.filter((p) => typeof p === "string") : [];
+}
+
+function srcRemember(path) {
+	const l = [path, ...srcRecent().filter((p) => p !== path)].slice(0, SRC_RECENT_MAX);
+	srcRecentMem[srcKernelKey()] = l;
+	try {
+		const all = JSON.parse(localStorage.getItem(SRC_RECENT_KEY) || "{}") || {};
+		all[srcKernelKey()] = l;
+		localStorage.setItem(SRC_RECENT_KEY, JSON.stringify(all));
+	} catch (e) {
+		// no storage: srcRecentMem
+	}
+}
+
+// Every source file this kernel's debug info or source knows: path ->
+// { k: files.json index or -1 }. Shipped kernels: the files of the line
+// table (files.json) and the shipped source; an imported vmlinux: the
+// C and assembly files of the picked source folder or .tar.
+function srcKnownFiles() {
+	const fl = dbgFiles();
+	const key = [fl.state, DBG.version, SRC.have ? SRC.have.size : 0, SRC.entries ? SRC.entries.size : 0, SRC.prefix].join("\0");
+	if (srcSw.known && srcSw.knownKey === key)
+		return srcSw.known;
+	const m = new Map();
+	if (fl.state === "ok")
+		fl.F.files.forEach(([p], k) => m.set(p, { k }));
+	if (SRC.have)
+		for (const p of SRC.have)
+			if (!m.has(p))
+				m.set(p, { k: -1 });
+	if (SRC.entries) {
+		const pre = SRC.prefix || "";
+		for (const name of SRC.entries.keys())
+			if (name.startsWith(pre) && /\.(c|h|S|s|lds|inc)$/.test(name) && !m.has(name.slice(pre.length)))
+				m.set(name.slice(pre.length), { k: -1 });
+	}
+	srcSw.known = m;
+	srcSw.knownKey = key;
+	return m;
+}
+
+// Lines that ran and lines with code of a file, as the Source tab counts
+// them (coverage.js covRun): { run: number or null (unknown yet), code }.
+function srcFileCounts(info) {
+	const fl = dbgFiles();
+	if (fl.state !== "ok" || info.k < 0)
+		return { run: null, code: null };
+	const code = fl.F.files[info.k][1];
+	if (typeof covRun !== "function")
+		return { run: null, code };
+	const run = covRun(fl.F);
+	return { run: run.tint && run.linesKnown ? run.fileRun[info.k].size : null, code, why: run.tint ? "" : run.why };
+}
+
+// The files of the call stack at a pause: EIP's inline chain and every
+// unwound frame's (app.js unwindHere), innermost first.
+function srcStackFiles() {
+	const out = [];
+	if (!stepper || (runState !== "paused" && runState !== "stepped"))
+		return out;
+	const pcs = [stepper.nextPhys()];
+	try {
+		for (const f of unwindHere().frames)
+			if (!f.user)
+				pcs.push(insnStart(f.lookup));
+	} catch (e) {
+		// no unwind here: EIP's files only
+	}
+	for (const pc of pcs) {
+		const r = pc >= 0 ? dbgFrames(pc) : { state: "none" };
+		if (r.state === "ok")
+			for (const f of r.frames)
+				if (f.file && f.line && !out.includes(f.file))
+					out.push(f.file);
+	}
+	return out;
+}
+
+// Fuzzy match of the filter q on a path: the score (higher is better) or
+// -1. The basename counts most (exact, prefix, substring), then a substring
+// of the path, then q's characters in order in the path (earlier, closer
+// together and at word starts better).
+function srcFuzzy(q, path) {
+	const p = path.toLowerCase(), base = p.slice(p.lastIndexOf("/") + 1);
+	if (base === q)
+		return 1000;
+	if (base.startsWith(q))
+		return 900 - base.length;
+	let i = base.indexOf(q);
+	if (i >= 0)
+		return 800 - i - base.length / 100;
+	i = p.indexOf(q);
+	if (i >= 0)
+		return 700 - i / 10 - p.length / 100;
+	let at = -1, score = 500;
+	for (const c of q) {
+		const j = p.indexOf(c, at + 1);
+		if (j < 0)
+			return -1;
+		score -= j - at - 1;
+		if (j === 0 || "/._-".includes(p[j - 1]))
+			score += 2;
+		at = j;
+	}
+	return score;
+}
+
+// The switcher (#src_switch under the panel's title): with the filter
+// empty, the call stack's files, the recently opened ones, then every file;
+// with a filter, the best matches; after a breadcrumb, one directory's
+// subdirectories and files. Arrows move the active row, Enter opens it,
+// Escape closes.
+const SRC_SW_MAX = 300;   // rows of matches
+const SRC_SW_ALL = 5000;  // rows of every file (Debian has about 2,600)
+const srcSw = { q: "", dir: null, rows: [], at: 0, known: null, knownKey: "" };
+
+function srcSwOpen(dir = null) {
+	srcSw.dir = dir;
+	srcSw.q = "";
+	srcSw.at = 0;
+	$("src_q").value = "";
+	$("src_switch").hidden = false;
+	$("src_switch").dataset.dir = dir === null ? "" : dir;
+	$("src_files").setAttribute("aria-expanded", "true");
+	$("src_q").setAttribute("aria-expanded", "true");
+	srcSwRender();
+	$("src_q").focus({ preventScroll: true });
+}
+
+function srcSwClose(focus = true) {
+	if ($("src_switch").hidden)
+		return;
+	$("src_switch").hidden = true;
+	$("src_files").setAttribute("aria-expanded", "false");
+	$("src_q").setAttribute("aria-expanded", "false");
+	if (focus)
+		$("src_files").focus({ preventScroll: true });
+}
+
+function srcSwRows() {
+	const known = srcKnownFiles();
+	const rows = [];
+	const file = (path, group) => rows.push({ path, group, info: known.get(path) || { k: -1 } });
+	const q = srcSw.q.toLowerCase();
+	if (q) {
+		const hits = [];
+		for (const p of known.keys()) {
+			const s = srcFuzzy(q, p);
+			if (s >= 0)
+				hits.push([s, p]);
+		}
+		hits.sort((a, b) => b[0] - a[0] || a[1].localeCompare(b[1]));
+		for (const [, p] of hits.slice(0, SRC_SW_MAX))
+			file(p, "match");
+		srcSw.more = Math.max(0, hits.length - SRC_SW_MAX);
+		srcSw.none = !hits.length;
+	} else if (srcSw.dir !== null) {
+		const d = srcSw.dir, pre = d ? d + "/" : "";
+		if (d)
+			rows.push({ dir: d.includes("/") ? d.slice(0, d.lastIndexOf("/")) : "", group: "up" });
+		const dirs = new Set(), files = [];
+		for (const p of known.keys())
+			if (p.startsWith(pre)) {
+				const rest = p.slice(pre.length), k = rest.indexOf("/");
+				if (k >= 0)
+					dirs.add(pre + rest.slice(0, k));
+				else
+					files.push(p);
+			}
+		for (const x of [...dirs].sort())
+			rows.push({ dir: x, group: "dir" });
+		for (const p of files.sort())
+			file(p, "dir");
+		srcSw.more = 0;
+		srcSw.none = false;
+	} else {
+		const recent = srcRecent();
+		for (const p of srcStackFiles())
+			file(p, "stack");
+		for (const p of recent)
+			file(p, "recent");
+		const all = [...known.keys()].sort();
+		for (const p of all.slice(0, SRC_SW_ALL))
+			file(p, "all");
+		srcSw.more = Math.max(0, all.length - SRC_SW_ALL);
+		srcSw.none = !all.length;
+	}
+	return rows;
+}
+
+const SRC_SW_GROUPS = { stack: "Call stack (at EIP first)", recent: "Recently opened", all: "Every file", match: "Matches" };
+
+function srcSwRender() {
+	if ($("src_switch").hidden)
+		return;
+	const rows = srcSwRows();
+	srcSw.rows = rows;
+	srcSw.at = Math.min(srcSw.at, Math.max(0, rows.length - 1));
+	const ul = $("src_list");
+	ul.textContent = "";
+	let group = null;
+	rows.forEach((x, i) => {
+		const head = srcSw.dir !== null ? (i === 0 ? "dir" : null) : x.group;
+		if (head && head !== group) {
+			group = head;
+			const h = document.createElement("li");
+			h.setAttribute("role", "presentation");
+			h.className = "srcswhead";
+			h.textContent = head === "dir" ? (srcSw.dir || "the source tree") + "/" : SRC_SW_GROUPS[head];
+			ul.append(h);
+		}
+		const li = document.createElement("li");
+		li.setAttribute("role", "option");
+		li.id = "src_opt_" + i;
+		li.className = "srcopt" + (i === srcSw.at ? " active" : "") + (x.path && srcPanel && x.path === srcPanel.path ? " current" : "");
+		li.setAttribute("aria-selected", i === srcSw.at);
+		li.dataset.i = i;
+		li.dataset.group = x.group;
+		if (x.path) {
+			li.dataset.path = x.path;
+			const c = srcFileCounts(x.info);
+			li.dataset.code = c.code === null ? "" : c.code;
+			li.dataset.executed = c.run === null ? "" : c.run;
+			const k = x.path.lastIndexOf("/");
+			const b = document.createElement("b");
+			b.textContent = x.path.slice(k + 1);
+			const dir = document.createElement("span");
+			dir.className = "dim";
+			dir.textContent = k >= 0 ? " " + x.path.slice(0, k + 1) : "";
+			const n = document.createElement("span");
+			n.className = "srcswn";
+			const text = SRC.mode === "shipped" && SRC.have && !SRC.have.has(x.path) ? "; no text: " + (SRC.missing[x.path] || "not shipped") : "";
+			n.textContent = c.code === null ? (x.info.k < 0 && dbgFiles().state === "ok" ? "no code" : "") + text :
+				(c.run === null ? "" : c.run + " of ") + c.code + " line" + (c.code === 1 ? "" : "s") + (c.run === null ? " with code" : " ran") + text;
+			li.title = x.path + (c.code === null ? "" : ": " + c.code + " lines with code" + (c.run === null ? (c.why ? "; " + c.why : "") : ", " + c.run + " of them have executed")) +
+				(text ? text.replace(/^;/, ".") : "");
+			li.append(b, dir, " ", n);
+		} else {
+			li.dataset.dir = x.dir;
+			li.textContent = x.group === "up" ? "↑ " + (x.dir || "the source tree") + "/" : x.dir.slice(x.dir.lastIndexOf("/") + 1) + "/";
+			li.title = "List the files in " + (x.dir || "the source tree") + "/";
+		}
+		ul.append(li);
+	});
+	if (srcSw.more || srcSw.none) {
+		const m = document.createElement("li");
+		m.setAttribute("role", "presentation");
+		m.className = "note";
+		m.textContent = srcSw.none ? (srcSw.q ? "No file matches." : "No file list: " + (dbgFiles().why || SRC.why || "no debug info")) :
+			"… and " + srcSw.more.toLocaleString("en") + " more: type to narrow.";
+		ul.append(m);
+	}
+	$("src_q").setAttribute("aria-activedescendant", rows.length ? "src_opt_" + srcSw.at : "");
+	if (!rows.length)
+		$("src_q").removeAttribute("aria-activedescendant");
+}
+
+function srcSwMove(to) {
+	if (!srcSw.rows.length)
+		return;
+	srcSw.at = Math.min(Math.max(to, 0), srcSw.rows.length - 1);
+	for (const li of $("src_list").querySelectorAll(".srcopt")) {
+		const on = Number(li.dataset.i) === srcSw.at;
+		li.classList.toggle("active", on);
+		li.setAttribute("aria-selected", on);
+		if (on)
+			li.scrollIntoView({ block: "nearest" });
+	}
+	$("src_q").setAttribute("aria-activedescendant", "src_opt_" + srcSw.at);
+}
+
+function srcSwPick(i) {
+	const x = srcSw.rows[i];
+	if (!x)
+		return;
+	if (x.path) {
+		srcSwClose(false);
+		openSourceFile(x.path);
+		$("src_body").focus({ preventScroll: true });
+		return;
+	}
+	srcSwOpen(x.dir);
+}
+
+function initSourceFiles() {
+	$("src_files").addEventListener("click", () => $("src_switch").hidden ? srcSwOpen() : srcSwClose());
+	$("src_q").addEventListener("input", () => {
+		srcSw.q = $("src_q").value.trim();
+		srcSw.at = 0;
+		srcSwRender();
+	});
+	$("src_q").addEventListener("keydown", (ev) => {
+		const page = Math.max(1, Math.floor($("src_list").clientHeight / 24));
+		const to = { ArrowDown: srcSw.at + 1, ArrowUp: srcSw.at - 1, PageDown: srcSw.at + page, PageUp: srcSw.at - page }[ev.key];
+		if (to !== undefined)
+			srcSwMove(to);
+		else if (ev.key === "Enter")
+			srcSwPick(srcSw.at);
+		else if (ev.key === "Escape")
+			srcSwClose();
+		else
+			return;
+		ev.preventDefault();
+		ev.stopPropagation();
+	});
+	$("src_list").addEventListener("click", (ev) => {
+		const li = ev.target.closest(".srcopt");
+		if (li)
+			srcSwPick(Number(li.dataset.i));
+	});
+	$("src_outline").addEventListener("change", () => {
+		const v = $("src_outline").value;
+		$("src_outline").value = "";
+		if (!srcPanel || !v)
+			return;
+		if (v[0] === "@")
+			jumpTo(Number(v.slice(1)));
+		else
+			openSourceLine(srcPanel.path, Number(v));
+	});
+	$("src_incl").addEventListener("change", () => {
+		const v = $("src_incl").value;
+		$("src_incl").value = "";
+		if (v)
+			openSourceFile(v);
+	});
+	// v86 takes every key on the window for the VM while the Machine tab
+	// shows its screen (preventDefault): the panel's buttons get Enter and
+	// Space here, before it.
+	$("src_panel").addEventListener("keydown", (ev) => {
+		if ((ev.key === "Enter" || ev.key === " ") && ev.target.tagName === "BUTTON") {
+			ev.preventDefault();
+			ev.stopPropagation();
+			ev.target.click();
+		}
+	});
 }
 
 // The panel's picked line (a click on a line, or the line a listing's C
@@ -836,8 +1313,10 @@ function renderSourceRows(box, phys, sym) {
 let srcOpener = null;
 
 function closeSource() {
+	srcSwClose(false);
 	$("src_panel").hidden = true;
 	srcPanel = null;
+	writeHash();
 	const a = srcLinkAgain(srcOpener);
 	if (a)
 		a.focus();
@@ -875,6 +1354,7 @@ function initSource() {
 		if (ev.key === "Escape")
 			closeSource();
 	});
+	initSourceFiles();
 	$("src_close").addEventListener("click", closeSource);
 	$("src_body").addEventListener("click", (ev) => {
 		const row = ev.target.closest("[data-line]");
@@ -885,6 +1365,7 @@ function initSource() {
 			x.classList.remove("pick");
 		row.classList.add("pick");
 		renderLineAddrs();
+		writeHash();
 		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
 	});
 	for (const id of ["listing", "context"])
@@ -911,8 +1392,10 @@ function initSource() {
 	});
 	dbgOnChange(() => {
 		srcStatus();
-		if (srcPanel && !$("src_panel").hidden)
+		if (srcPanel && !$("src_panel").hidden) {
 			renderSourcePanel();
+			srcSwRender();
+		}
 	});
 	setInterval(() => {
 		if (srcPanel && !$("src_panel").hidden && (runState === "stepped"))

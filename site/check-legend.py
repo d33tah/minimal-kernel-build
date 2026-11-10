@@ -31,6 +31,7 @@ CHROME = {
     "syminfo": "the Debugger's symbol rows (muted labels, readable disabled buttons)",
     "top": "the sticky header's background",
     "tabbar": "tab buttons",
+    "runmini": "the run status next to the tabs (muted when paused, the text colour while running)",
     "tip": "the ? buttons",
     "tip-pop": "the popover",
     "jump-pop": "the jump paths popover",

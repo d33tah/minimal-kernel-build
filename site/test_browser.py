@@ -148,6 +148,22 @@ def show_tab(page, name):
         page.click(f"#tab_{name}")
 
 
+def shown_tab(page):
+    return page.get_attribute(".tabbar [role=tab][aria-selected=true]", "data-tab")
+
+
+def machine_do(page, method, sel, *args, **kw):
+    """Use a run control (U5: in the Machine tab) from any tab as a user
+    would: open the Machine tab, use it, go back to the tab shown before."""
+    back = shown_tab(page)
+    show_tab(page, "machine")
+    try:
+        return getattr(page, method)(sel, *args, **kw)
+    finally:
+        if back and back != "machine":
+            show_tab(page, back)
+
+
 def open_page(page, p):
     """Click page p in the grid; the Page tab must open with its listing."""
     x, y = page_center(page, p)
@@ -379,9 +395,9 @@ def debugger_case(browser, base, name, mem, shots):
 
     # hello is done 159 instructions after the entry: watch it at 10/s.
     rate, least = ("10", 10) if name == "hello" else ("1000", 200)
-    page.select_option("#dbg_speed", rate)
+    machine_do(page, "select_option", "#dbg_speed", rate)
     show_tab(page, "memory")
-    page.click("#dbg_continue")
+    machine_do(page, "click", "#dbg_continue")
     start = counters(page).get("now", {}).get("steps") or 0
     time.sleep(2.0)
     end = counters(page).get("now", {}).get("steps") or 0
@@ -399,7 +415,7 @@ def debugger_case(browser, base, name, mem, shots):
     if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
         problems.append("debugger tab scrolls horizontally at 390 px")
     if page.is_enabled("#dbg_pause"):
-        page.click("#dbg_pause")
+        machine_do(page, "click", "#dbg_pause")
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -492,7 +508,7 @@ def linux_slow_case(browser, base, shots):
         problems.append("no ETA: " + page.inner_text("#count_text"))
     page.screenshot(path=str(shots / "linux-slow-1100.png"))
     # The choice is remembered: pick full speed, reload, it stays full.
-    page.select_option("#dbg_speed", "full")
+    machine_do(page, "select_option", "#dbg_speed", "full")
     page.reload()
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") in ("stepped", "jit"), 30)
     if page.eval_on_selector("#dbg_speed", "e => e.value") != "full":
@@ -849,7 +865,7 @@ def initrd_case(browser, base, shots):
     page.set_input_files("#initrd_file", str(cpio))
     # boot() resumes at the default speed; wait for the new machine.
     wait_for(lambda: page.evaluate("!!stepper && stepper !== window.oldStepper"), 60)
-    page.click("#dbg_pause") if page.is_enabled("#dbg_pause") else None
+    machine_do(page, "click", "#dbg_pause") if page.is_enabled("#dbg_pause") else None
     r["ram"] = int(page.eval_on_selector("#memory", "e => e.value"))
     if r["ram"] <= 64 << 20:
         problems.append(f"RAM not raised for the initrd: {r['ram']}")
@@ -1257,7 +1273,7 @@ def initramfs_case(browser, base, shots, name):
         time.sleep(0.5)
         page.screenshot(path=str(shots / f"initramfs-paused-{name}-390.png"))
         page.set_viewport_size({"width": 1100, "height": 1000})
-        page.click("#vm_continue")
+        machine_do(page, "click", "#vm_continue")
         if not wait_for(lambda: not page.is_visible("#vm_overlay"), 10):
             problems.append("the overlay stays after Continue")
         page.click("#screen_container")
@@ -1269,6 +1285,18 @@ def initramfs_case(browser, base, shots, name):
         if not wait_for(lambda: "hi" in lines(), 60):
             problems.append("the shell did not run a typed command")
         r["uname"] = [l for l in lines() if l in ("i686", "i586", "i386")]
+        # U5: the screen lives in the Machine tab; after another tab and back
+        # the keys typed on the screen still go to the VM.
+        show_tab(page, "page")
+        time.sleep(0.5)
+        show_tab(page, "machine")
+        page.click("#screen_container")
+        time.sleep(0.5)
+        page.keyboard.type("echo u5back")
+        page.keyboard.press("Enter")
+        if not wait_for(lambda: "u5back" in lines(), 60):
+            problems.append("after the Page tab and back to Machine the shell did not run a typed command")
+        r["keys_after_tabs"] = "u5back" in lines()
     page.screenshot(path=str(shots / f"initramfs-{name}.png"))
     # An initrd for another kernel: gzip'd newc cpio with lib/modules of
     # 6.12 amd64 and a 64-bit ELF /bin/busybox, named like Debian's.
@@ -1402,7 +1430,7 @@ def phone_flow(browser, base, target, speed="1", phone=True, query="", before=No
     act = page.tap if phone else page.click
     page.goto(f"{base}/index.html?kernel=hello{query}")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") not in (None, "", "off"), 60)
-    page.select_option("#dbg_speed", speed)
+    machine_do(page, "select_option", "#dbg_speed", speed)
     act("#tab_machine")
     act("#boot")
     wait_for(lambda: page.is_enabled("#dbg_pause"), 60)
@@ -1443,7 +1471,8 @@ def runto_phone_case(browser, base, shots):
         return {"state": page.get_attribute("#dbg_state", "data-state"),
                 "phys": int(page.get_attribute("#regs", "data-phys") or -1),
                 "status": page.inner_text("#dbg_status"),
-                "overlay": page.inner_text("#vm_overlay") if page.is_visible("#vm_overlay") else "",
+                # Set even while another tab hides the Machine tab's screen (U5).
+                "overlay": page.inner_text("#vm_overlay") if not page.evaluate("document.getElementById('vm_overlay').hidden") else "",
                 "alive": ALIVE in page.inner_text("#screen_container")}
 
     def stopped_at(tag, page, pa):
@@ -2542,7 +2571,7 @@ def debian_case(browser, base, shots, name):
     page.goto(f"{base}/index.html?kernel={name}&speed=1#debugger")
     ok = wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5)
     r["ff_seconds"] = round(time.monotonic() - t0, 1)
-    page.click("#dbg_pause")
+    machine_do(page, "click", "#dbg_pause")
     info = page.evaluate("ffInfo && { stop: ffInfo.stopPhys, steps: ffInfo.steps, ms: Math.round(ffInfo.ms) }")
     r["ff"] = info
     if not ok or not info or info["stop"] != st32["paddr"] or r["ff_seconds"] > 120:
@@ -4986,6 +5015,22 @@ SRCLINK_POINT = ("minified-linux", "start_kernel")
 
 
 def srclink_opens(page, sel, how="click"):
+    """srclink_open_here in the tab that holds sel (U5: the state line and
+    the "VM paused" overlay are in the Machine tab), then back to the tab
+    shown before."""
+    tab = page.evaluate("""(s) => { const e = document.querySelector(s.split(' >> ')[0]);
+        const p = e && e.closest('[role=tabpanel]'); return p && p.hidden ? p.id.slice(6) : null; }""", sel)
+    if not tab:
+        return srclink_open_here(page, sel, how)
+    back = shown_tab(page)
+    show_tab(page, tab)
+    try:
+        return srclink_open_here(page, sel, how)
+    finally:
+        show_tab(page, back)
+
+
+def srclink_open_here(page, sel, how="click"):
     """Activate the first visible .srclink under sel (click, Enter or tap)
     with the Source panel closed; the panel must show the link's file with
     its line picked (.pick) inside the visible part of #src_body. Returns
@@ -5298,6 +5343,8 @@ def srclinks_case(browser, base, shots):
     for k in range(40):
         if ph.is_visible("#src_panel"):
             ph.click("#src_close")
+        # The state line is in the Machine tab (U5), Step N in the Debugger tab.
+        show_tab(ph, "machine")
         ph.locator("#dbg_state").scroll_into_view_if_needed()
         fname = ph.evaluate("stepper.curSym >= 0 ? stepper.symName[stepper.curSym] : ''")
         p = state_link_shown(ph)
@@ -5313,6 +5360,7 @@ def srclinks_case(browser, base, shots):
                 problems.append(f"{name} phone state line in {fname}: {p}")
             break
         before = ph.evaluate("stepper.steps")
+        show_tab(ph, "debugger")
         ph.fill("#dbg_n", "5")
         ph.tap("#dbg_stepn")
         wait_for(lambda: ph.evaluate("stepper.steps") > before and ph.get_attribute("#dbg_state", "data-state") == "paused", 30)
@@ -5321,6 +5369,7 @@ def srclinks_case(browser, base, shots):
         problems.append(f"{name} phone: no stop in a function with a name of 20 or more characters (longest {longest!r})")
     if ph.is_visible("#src_panel"):
         ph.click("#src_close")
+    show_tab(ph, "debugger")
     for scheme in ("light", "dark"):
         ph.emulate_media(color_scheme=scheme)
         if ph.is_visible("#src_panel"):
@@ -5364,7 +5413,8 @@ def touch_case(browser, base, shots):
         return [parseFloat(s.width), parseFloat(s.height)]; }""")
     if min(size) < 32:
         problems.append(f"? tap target is {size} px")
-    for sel in ("#panel_memory .tip", "#count_info .tip"):
+    for t, sel in (("memory", "#panel_memory .tip"), ("machine", "#count_info .tip")):
+        show_tab(page, t)
         tip = page.locator(sel).first
         tip.scroll_into_view_if_needed()
         tip.tap()
@@ -5400,9 +5450,13 @@ def touch_case(browser, base, shots):
     page.locator(".tabbar button").last.tap()
     if not page.is_visible("#panel_about"):
         problems.append("tapping the last tab did not show its panel")
-    # A touch swipe outside the graph scrolls the page.
-    show_tab(page, "memory")
+    # A touch swipe outside the graph scrolls the page. Since U5 the Memory
+    # tab of a 2 MB machine fits a 390x844 screen: swipe on the Machine tab,
+    # taller than the screen (screen, counters, boot controls).
+    show_tab(page, "machine")
     page.evaluate("window.scrollTo(0, 0)")
+    if page.evaluate("document.documentElement.scrollHeight") < 844 + 150:
+        problems.append(f"the Machine tab is {page.evaluate('document.documentElement.scrollHeight')} px: nothing to swipe")
     cdp = ctx.new_cdp_session(page)
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": 200, "y": 700}]})
     for i in range(1, 13):
@@ -5537,6 +5591,7 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
         total = int(page.get_attribute("#footprint", "data-total"))
         if ok:
             lab = memory_lab(page, name, has_symbols, lab_problems, shots, tag)
+    show_tab(page, "machine")
     page.locator("#screen_container").screenshot(path=str(shots / f"screen-{tag}.png"))
     page.screenshot(path=str(shots / f"page-{tag}.png"), full_page=True)
     page.close()
@@ -7486,8 +7541,8 @@ def yellow_case(browser, base, shots, name):
     # the listing of 0x100000 then shows lines that are the build's again
     # with the bytes moved since the last scan marked, and they say so.
     show_tab(page, "page")
-    page.select_option("#dbg_speed", "1000")
-    page.click("#dbg_continue")
+    machine_do(page, "select_option", "#dbg_speed", "1000")
+    machine_do(page, "click", "#dbg_continue")
     got = None
     end = time.monotonic() + 30
     while got is None and time.monotonic() < end:
@@ -7495,7 +7550,7 @@ def yellow_case(browser, base, shots, name):
           return e ? { tip: e.dataset.tip || '', line: e.closest('[data-addr]').className, marks: e.querySelectorAll('mark').length } : null; }""")
         time.sleep(0.05)
     if page.is_enabled("#dbg_pause"):
-        page.click("#dbg_pause")
+        machine_do(page, "click", "#dbg_pause")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
     r["bytes changed since the scan"] = got
     if not got:
@@ -7978,7 +8033,7 @@ def navhist_case(browser, base, shots, name="hello"):
     before, hl = nav_at(page), page.evaluate("history.length")
     p0 = page.get_attribute("#listing", "data-page")
     for _ in range(12):
-        page.click("#dbg_step")
+        machine_do(page, "click", "#dbg_step")
         time.sleep(0.2)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
     time.sleep(0.5)
@@ -7986,7 +8041,8 @@ def navhist_case(browser, base, shots, name="hello"):
     if nav_at(page) != before or page.evaluate("history.length") != hl:
         problems.append(f"{name}: stepping added history entries: {before} -> {nav_at(page)}, history.length {hl} -> {page.evaluate('history.length')}")
 
-    # Alt+Left after a click on the VM screen is the VM's key.
+    # Alt+Left after a click on the VM screen (in the Machine tab) is the VM's key.
+    show_tab(page, "machine")
     page.click("#screen_container")
     page.keyboard.press("Alt+ArrowLeft")
     time.sleep(0.5)
@@ -7996,8 +8052,8 @@ def navhist_case(browser, base, shots, name="hello"):
     # The VM runs on through the browser's back and forward, and back past
     # the first view stays on the page.
     page.evaluate("window.mkbEmu = emulator")
-    page.select_option("#dbg_speed", "10")  # hello_main ends in a few hundred instructions
-    page.click("#dbg_continue")
+    machine_do(page, "select_option", "#dbg_speed", "10")  # hello_main ends in a few hundred instructions
+    machine_do(page, "click", "#dbg_continue")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped", 10)
     r["running"] = page.evaluate("({ state: runState, steps: stepper.steps })")
     url = page.url.split("#")[0]
@@ -8016,7 +8072,7 @@ def navhist_case(browser, base, shots, name="hello"):
     if not page.evaluate("window.mkbEmu === emulator && runState === 'stepped'") or nav_at(page)[0] != 1:
         problems.append(f"{name}: browser forward: at {nav_at(page)}, VM {page.evaluate('runState')}")
     if page.is_enabled("#dbg_pause"):
-        page.click("#dbg_pause")
+        machine_do(page, "click", "#dbg_pause")
     if errors:
         problems.append(f"{name}: page errors: {errors[:3]}")
     page.close()
@@ -8104,6 +8160,12 @@ def suite_navhist(ctx):
 # change or forget it, and "Reset all settings"; the Machine tab keeps
 # only machine controls. The emoji show what each tab holds (TABS_EMOJI)
 # and render as colour emoji, not as text glyphs, in two font stacks.
+# U5 (operator: "a i wszystko nad tabami niech będzie w pierwszym tabie"):
+# above the tabs only the title, the tab bar and a one-line run status
+# (#run_mini: state, speed, instruction count, Pause/Continue) remain; the
+# screen, the run bar, the counters and the notes are in the Machine tab,
+# which opens on the first load. The VM keeps running and its screen keeps
+# changing while another tab is shown (tabs_u5).
 
 # In the order of the tab bar.
 TABS_WORDS = {"machine": "Machine", "memory": "Memory", "page": "Page", "debugger": "Debugger",
@@ -8122,8 +8184,18 @@ TABS_SETTINGS_IDS = ["compact_tabs", "set_speed", "set_mips", "set_count", "sett
 # The preferences with a control of their own in the Settings tab: key, control, default at 1280 px.
 TABS_PREFS = [("mkb-compact-tabs", "compact_tabs", False), ("mkb-speed", "set_speed", "1000"),
               ("mkb-mips", "set_mips", "10"), ("mkb-count", "set_count", True)]
-TABS_HEADER_IDS = ["screen_container", "dbg_pause", "dbg_continue", "dbg_step", "dbg_speed", "clock_mips",
-                   "count", "counters", "status", "dbg_state"]
+# What was above the tab bar before U5: now in the Machine tab.
+TABS_RUN_IDS = ["status", "problems", "pwa_notes", "screen_container", "screen_text", "screen_canvas", "vm_overlay",
+                "dbg_pause", "dbg_continue", "dbg_step", "dbg_speed", "clock_mips", "count", "dbg_state", "counters",
+                "vclock", "entry_info", "end_banner", "count_info"]
+# Leaf elements drawn in the header outside the title, the tab bar and the run status.
+TABS_HEADER_EXTRA_JS = """() => [...document.querySelectorAll('header.top *')].filter((e) => e.getClientRects().length
+  && !e.children.length && !e.closest('h1, .tabbar, #run_mini')).map((e) => e.id || e.className || e.tagName)"""
+TABS_MINI_JS = """() => { const m = document.getElementById('run_mini'), st = document.getElementById('dbg_state');
+  if (!m) return null; const r = m.getBoundingClientRect();
+  return { text: m.textContent.trim(), state: m.dataset.state || '', steps: Number(m.dataset.steps || -1),
+    vmState: st ? st.dataset.state || '' : '', shown: r.width > 0 && r.height > 0, top: Math.round(r.top),
+    bottom: Math.round(r.bottom), right: Math.round(r.right) }; }"""
 
 # Per tab button: its id, accessible-name inputs, the emoji and the word as drawn.
 TABS_LOOK_JS = """() => [...document.querySelectorAll('.tabbar [role=tab]')].map((b) => {
@@ -8226,21 +8298,21 @@ def tabs_settings(page, problems, r, shots):
     if page.locator("#set_speed").count():
         page.select_option("#set_speed", "100")
         if page.input_value("#dbg_speed") != "100" or page.evaluate("localStorage.getItem('mkb-speed')") != "100":
-            problems.append(f"Settings speed 100/s: header {page.input_value('#dbg_speed')}, "
+            problems.append(f"Settings speed 100/s: Machine tab {page.input_value('#dbg_speed')}, "
                             f"stored {page.evaluate('localStorage.getItem(\'mkb-speed\')')}")
-        page.select_option("#dbg_speed", "10")
-        show_tab(page, "memory")
+        show_tab(page, "machine")
+        machine_do(page, "select_option", "#dbg_speed", "10")
         show_tab(page, "settings")
         if page.input_value("#set_speed") != "10":
-            problems.append(f"after the header's speed 10/s Settings shows {page.input_value('#set_speed')}")
+            problems.append(f"after the Machine tab's speed 10/s Settings shows {page.input_value('#set_speed')}")
     if page.locator("#set_mips").count():
         page.select_option("#set_mips", "100")
         if page.input_value("#clock_mips") != "100" or page.evaluate("localStorage.getItem('mkb-mips')") != "100":
-            problems.append(f"Settings clock 100/us: header {page.input_value('#clock_mips')}")
+            problems.append(f"Settings clock 100/us: Machine tab {page.input_value('#clock_mips')}")
     if page.locator("#set_count").count():
         page.uncheck("#set_count")
         if page.is_checked("#count") or page.evaluate("localStorage.getItem('mkb-count')") != "0":
-            problems.append("Settings count off: the header's count stays on or is not remembered")
+            problems.append("Settings count off: the Machine tab's count stays on or is not remembered")
     page.reload()
     wait_for(lambda: page.locator("#tab_settings").count() and "Running hello " in (page.text_content("#status") or ""), 60)
     after = {"speed": page.evaluate("prefSpeed"), "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count")}
@@ -8305,7 +8377,126 @@ def tabs_settings(page, problems, r, shots):
         problems.append("after Reset all settings Settings still lists remembered entries")
 
 
-def tabs_case(browser, base, shots):
+def tabs_mini(page):
+    return page.evaluate(TABS_MINI_JS)
+
+
+def tabs_u5(browser, base, shots, problems, r, fresh, linux):
+    """U5: only the title, the tab bar and the run status above the tabs;
+    the Machine tab opens first and holds the screen; the VM runs on and
+    its screen changes while another tab is shown."""
+    def selected(pg):
+        return [t for t in TABS_WORDS if pg.locator(f"#tab_{t}").count()
+                and pg.get_attribute(f"#tab_{t}", "aria-selected") == "true"]
+
+    def header_check(pg, tag):
+        extra = pg.evaluate(TABS_HEADER_EXTRA_JS)
+        if extra:
+            problems.append(f"{tag}: above the tabs besides the title, the tab bar and the run status: {extra[:8]}")
+        mini = tabs_mini(pg)
+        if not mini or not mini["shown"]:
+            problems.append(f"{tag}: no run status (#run_mini) next to the tab bar")
+        h = round(pg.evaluate("document.querySelector('header.top').getBoundingClientRect().height"))
+        r[f"u5_header_{tag}"] = h
+        if h > 140:
+            problems.append(f"{tag}: header {h} px high (want the title, the tab bar and one status line)")
+        return mini
+
+    for scheme in ("light", "dark"):
+        for phone in (False, True):
+            tag = f"{390 if phone else 1280}-{scheme}"
+            c, page = fresh(scheme, phone)
+            page.goto(f"{base}/index.html?kernel=hello")
+            ok = wait_for(lambda: ALIVE in (page.text_content("#screen_text") or ""), 60)
+            if not ok:
+                problems.append(f"{tag}: hello did not reach {ALIVE!r} on the first load")
+            if selected(page) != ["machine"] or page.evaluate("location.hash") != "#machine":
+                problems.append(f"{tag}: first load shows {selected(page)} ({page.evaluate('location.hash')!r}), want Machine")
+            if not page.is_visible("#screen_container") or HELLO not in page.inner_text("#screen_container"):
+                problems.append(f"{tag}: the Machine tab does not show the screen with {HELLO!r}")
+            time.sleep(0.5)
+            mini = header_check(page, tag)
+            if mini and (mini["state"] != mini["vmState"] or "paused" not in mini["text"] and "ended" not in mini["text"]
+                         and "halt" not in mini["text"]):
+                problems.append(f"{tag}: run status {mini} does not match the VM ({mini and mini['vmState']})")
+            if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                problems.append(f"{tag}: horizontal scroll")
+            page.screenshot(path=str(shots / f"tabs-u5-{tag}.png"))
+            show_tab(page, "debugger")
+            time.sleep(0.3)
+            page.screenshot(path=str(shots / f"tabs-u5-{tag}-debugger.png"))
+            c.close()
+
+    # The hash still selects a tab.
+    c, page = fresh()
+    page.goto(f"{base}/index.html?kernel=hello#memory")
+    if not wait_for(lambda: selected(page) == ["memory"], 10):
+        problems.append(f"#memory on the first load shows {selected(page)}")
+    c.close()
+
+    # hello at 10/s: leave Machine after the kernel entry, before "Hello, World!".
+    c, page = fresh()
+    page.goto(f"{base}/index.html?kernel=hello&speed=10")
+    wait_for(lambda: page.text_content("#entry_info"), 60)
+    left_early = HELLO not in (page.text_content("#screen_text") or "")
+    r["u5_left_before_hello"] = left_early
+    show_tab(page, "page")
+    m1 = tabs_mini(page)
+    time.sleep(2)
+    m2 = tabs_mini(page)
+    r["u5_page_10"] = [m1, m2]
+    if not m1 or not m2 or m2["steps"] <= m1["steps"] or m2["state"] != "stepped":
+        problems.append(f"hello at 10/s on the Page tab: the run status does not count on: {m1} -> {m2}")
+    elif m2["state"] != m2["vmState"] or "10/s" not in m2["text"]:
+        problems.append(f"hello at 10/s: the run status {m2} does not match the VM")
+    if page.is_visible("#screen_container"):
+        problems.append("the screen is shown on the Page tab")
+    if not page.evaluate("document.getElementById('screen_container').isConnected"):
+        problems.append("the screen was taken out of the page")
+    # The screen element is hidden, not stopped: the text arrives meanwhile.
+    if not wait_for(lambda: HELLO in (page.text_content("#screen_text") or ""), 60):
+        problems.append(f"{HELLO!r} did not reach the hidden screen while the Page tab was shown")
+    show_tab(page, "debugger")
+    a = tabs_mini(page)
+    if a:
+        page.click("#run_mini_toggle")
+        if not wait_for(lambda: (tabs_mini(page) or {}).get("state") == "paused", 10):
+            problems.append(f"Pause in the run status did not pause: {tabs_mini(page)}")
+        p1 = tabs_mini(page)
+        time.sleep(1)
+        p2 = tabs_mini(page)
+        if p1["steps"] != p2["steps"] or "paused" not in p2["text"]:
+            problems.append(f"paused from the run status, it still counts: {p1} -> {p2}")
+        page.click("#run_mini_toggle")
+        if not wait_for(lambda: (tabs_mini(page) or {}).get("state") == "stepped", 10):
+            problems.append(f"Continue in the run status did not run on: {tabs_mini(page)}")
+        r["u5_pause_continue"] = [p1, p2, tabs_mini(page)]
+    if page.locator("#run_mini_text").count():
+        page.click("#run_mini_text")
+    if selected(page) != ["machine"]:
+        problems.append(f"a click on the run status shows {selected(page)}, want Machine")
+    if not page.is_visible("#screen_container") or HELLO not in page.inner_text("#screen_container"):
+        problems.append(f"back on Machine the screen does not show {HELLO!r}")
+    page.screenshot(path=str(shots / "tabs-u5-back-on-machine.png"))
+    c.close()
+
+    # The minified Linux at 1k/s on the Debugger tab: the count rises with the VM's.
+    if linux:
+        c, page = fresh()
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=1000")
+        wait_for(lambda: page.text_content("#entry_info"), 60)
+        show_tab(page, "debugger")
+        time.sleep(0.5)
+        m1 = tabs_mini(page)
+        time.sleep(2)
+        m2 = tabs_mini(page)
+        r["u5_linux_1k"] = [m1, m2]
+        if not m1 or not m2 or m2["steps"] - m1["steps"] < 500 or m2["state"] != "stepped" or "1k/s" not in m2["text"]:
+            problems.append(f"minified Linux at 1k/s on the Debugger tab: run status {m1} -> {m2}")
+        c.close()
+
+
+def tabs_case(browser, base, shots, linux=False):
     problems, r = [], {}
     errors = []
 
@@ -8361,21 +8552,21 @@ def tabs_case(browser, base, shots):
             problems.append(f"the About text still says {old!r}")
 
     # Where the controls are.
-    where = tabs_where(page, TABS_MACHINE_IDS + TABS_HEADER_IDS)
+    where = tabs_where(page, TABS_MACHINE_IDS + TABS_RUN_IDS)
     r["where"] = where
     for i in TABS_MACHINE_IDS:
         if where.get(i) != "panel_machine":
             problems.append(f"#{i} is in {where.get(i)}, want the Machine tab")
-    for i in TABS_HEADER_IDS:
-        if where.get(i) != "header":
-            problems.append(f"#{i} is in {where.get(i)}, want the header")
+    for i in TABS_RUN_IDS:
+        if where.get(i) != "panel_machine":
+            problems.append(f"#{i} is in {where.get(i)}, want the Machine tab")
     for i in TABS_SETTINGS_IDS:
         w = tabs_where(page, [i])[i]
         if w != "panel_settings":
             problems.append(f"#{i} is in {w}, want the Settings tab")
     heads = page.evaluate("[...document.querySelectorAll('#panel_machine h2, #panel_machine h3, #panel_machine legend')]"
                           ".map((e) => e.textContent.trim())")
-    if any("Settings" in h for h in heads) or page.locator("#panel_machine input[type=checkbox]").count():
+    if any("Settings" in h for h in heads) or page.locator("#panel_machine input[type=checkbox]:not(#count)").count():
         problems.append(f"the Machine tab still has a Settings section: {heads}")
     r["header_1280"] = round(page.evaluate("document.querySelector('header.top').getBoundingClientRect().height"))
 
@@ -8466,6 +8657,8 @@ def tabs_case(browser, base, shots):
         tabs_settings(page, problems, r, shots)
     c.close()
 
+    tabs_u5(browser, base, shots, problems, r, fresh, linux)
+
     # 390 px, light and dark: shorter header, no sideways scroll, compact by default.
     for scheme in ("light", "dark"):
         c, page = fresh(scheme, phone=True)
@@ -8516,7 +8709,7 @@ def tabs_case(browser, base, shots):
 
 
 def suite_tabs(ctx):
-    return report("tabs", *tabs_case(ctx.browser, ctx.base, ctx.shots))
+    return report("tabs", *tabs_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries))
 
 
 # ---- PWA: manifest, service worker, offline, update notice ----------------
@@ -8959,12 +9152,12 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
         phases.append([label, page.evaluate("stepper.steps"), page.evaluate("mkbFollow.draws." + ("context" if tab == "debugger" else "listing"))])
 
     phase("1/s", 6)
-    page.select_option("#dbg_speed", "10")
+    machine_do(page, "select_option", "#dbg_speed", "10")
     phase("10/s", 4)
     # 1k/s for 4 s or a few instructions: hello's run ends about 450 after
     # its entry (and a click takes a while at 4x).
     s0 = page.evaluate("stepper.steps")
-    page.select_option("#dbg_speed", "1000")
+    machine_do(page, "select_option", "#dbg_speed", "1000")
     wait_for(lambda: page.evaluate("stepper.steps") - s0 > (20 if kernel.startswith("hello") else 100), 4, 0.02)
     phase("1000/s", 0)
 
@@ -8975,7 +9168,7 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
 
     act("#dbg_pause")
     phase("Pause", 2)
-    page.select_option("#dbg_speed", "1")
+    machine_do(page, "select_option", "#dbg_speed", "1")
     act("#dbg_step")
     phase("Step", 1.5)
     act("#dbg_stepn")
@@ -8989,7 +9182,7 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
     phase("Run to 0x1000 (stepped to the end)", 2)
     # Boot at full speed: the boot is stepped and counted from the reset
     # vector to the gate lines, then the JIT runs it to its end.
-    page.select_option("#dbg_speed", "full")
+    machine_do(page, "select_option", "#dbg_speed", "full")
     show_tab(page, "machine")
     page.click("#boot")
     wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper && !!stepper.end"), 300)
@@ -9036,10 +9229,10 @@ def follow_fuzz_action(page, cdp, rng):
         return click(rng.choice(["#tab_debugger", "#tab_debugger", "#tab_page", "#tab_page", "#tab_memory", "#tab_calls", "#tab_source"]))
     if r < 0.32:
         v = rng.choice(["1", "10", "10", "1000", "100000", "1000000", "full"])
-        page.select_option("#dbg_speed", v)
+        machine_do(page, "select_option", "#dbg_speed", v)
         return "speed " + v
     if r < 0.45:
-        return click(rng.choice(["#dbg_pause", "#dbg_continue", "#dbg_step", "#dbg_stepn", "#vm_continue"]))
+        return click(rng.choice(["#dbg_pause", "#dbg_continue", "#dbg_step", "#dbg_stepn", "#vm_continue", "#run_mini_toggle"]))
     if r < 0.50:
         v = rng.choice(FOLLOW_FUZZ_TARGETS)
         page.evaluate("v => { document.getElementById('dbg_addr').value = v; }", v)
@@ -9225,7 +9418,7 @@ RUN_FUZZ_PICK = """([sel, r]) => {
 # to other pages.
 RUN_FUZZ_ANY = ("button:not(#graph_json):not(#graph_dot):not(#cov_export):not(#src_dir_btn), a[href^='#'], [role=button], "
                 "#listing [data-addr], #context [data-addr], .jc, #pages, #screen_container, input[type=checkbox]")
-RUN_FUZZ_CONTROLS = ["#dbg_pause", "#dbg_continue", "#vm_continue", "#dbg_step", "#dbg_stepn", "#dbg_runto", "#boot",
+RUN_FUZZ_CONTROLS = ["#dbg_pause", "#dbg_continue", "#vm_continue", "#run_mini_toggle", "#dbg_step", "#dbg_stepn", "#dbg_runto", "#boot",
                      "#tab_machine", "#tab_memory", "#tab_page", "#tab_debugger", "#tab_snapshots", "#tab_calls", "#src_close",
                      "#snap_save", "#snapshots .restore", "#count"]
 RUN_FUZZ_TARGETS = ["0x100000", "start_kernel", "hello_main", "rest_init", "printk", "kernel_init", "do_exit",
@@ -9255,11 +9448,11 @@ def run_fuzz_action(page, rng, touch):
         return "key " + k
     if r < 0.22:
         v = rng.choice(["1", "1", "1", "10", "10", "100", "1000", "full"])
-        page.select_option("#dbg_speed", v)
+        machine_do(page, "select_option", "#dbg_speed", v)
         return "speed " + v
     if r < 0.25:
         v = rng.choice(["10", "100", "1000", "real"])
-        page.select_option("#clock_mips", v)
+        machine_do(page, "select_option", "#clock_mips", v)
         return "clock " + v
     if r < 0.28:
         v = rng.choice(RUN_FUZZ_KERNELS)
@@ -9451,9 +9644,9 @@ def speed_line_case(browser, base, shots, touch, rate):
     time.sleep(2)
     act("#dbg_continue")
     sample(12, "Pause, Continue")
-    page.select_option("#dbg_speed", other)
+    machine_do(page, "select_option", "#dbg_speed", other)
     time.sleep(3)
-    page.select_option("#dbg_speed", rate)
+    machine_do(page, "select_option", "#dbg_speed", rate)
     sample(12, f"speed {other} then {rate}")
     hide(6, 8)
     sample(15, "hidden 6 s, frozen 8 s, shown again")

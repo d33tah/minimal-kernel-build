@@ -1073,7 +1073,8 @@ function setLive() {
 const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
-let tab = "memory";
+// The Machine tab first: it holds the VM's screen and run controls.
+let tab = "machine";
 
 // Hash: #memory, #page/0x100000, #debugger, ...
 const navHashNow = () => "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "");
@@ -1086,11 +1087,12 @@ function writeHash() {
 
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
-	tab = TABS.includes(name) ? name : "memory";
+	tab = TABS.includes(name) ? name : "machine";
 	for (const t of TABS) {
 		$("panel_" + t).hidden = t !== tab;
 		$("tab_" + t).setAttribute("aria-selected", t === tab);
 	}
+	vmKeys();
 	writeHash();
 	if (tab === "page")
 		inspect();
@@ -1102,6 +1104,16 @@ function showTab(name) {
 		renderSettings();
 	graphShow(tab === "calls");
 	covShow(tab === "source");
+}
+
+// The VM's screen is in the Machine tab and is hidden (it keeps changing)
+// on the others: keys go to the VM only while it is shown, and Alt+Left/Right
+// go to the jump history until the screen is clicked again.
+function vmKeys() {
+	if (tab !== "machine")
+		vmHasKeys = false;
+	if (emulator)
+		emulator.keyboard_set_status(tab === "machine");
 }
 
 // Compact tabs (Settings tab): the tab buttons show only their emoji, the
@@ -1154,7 +1166,7 @@ function readHash() {
 		if (Number.isFinite(a))
 			selectedPage = Math.floor(a / PAGE);
 	}
-	showTab(name || "memory");
+	showTab(name || "machine");
 }
 
 // ---- jump history ---------------------------------------------------------
@@ -1602,6 +1614,7 @@ async function boot() {
 		if (em !== emulator)
 			return;
 		emuReady = true;
+		vmKeys();
 		setStatus("Running " + image.name + " with " + kib(ram()) +
 			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
@@ -2773,6 +2786,30 @@ function flushScreen() {
 		sa.update_text();
 }
 
+// The run status next to the tab bar: what the Machine tab's state line and
+// counters say, in one line, on every tab.
+function renderRunMini() {
+	const box = $("run_mini"), state = ffActive ? "ff" : runState;
+	const ended = !!(stepper && stepper.end);
+	const word = !stepper ? "no machine" : ffActive ? "fast-forwarding" : { off: "no machine", jit: "running",
+		stepped: entryPhase ? "stepping to the kernel entry" : "running", paused: ended ? "ended" : "paused" }[runState];
+	const speed = runState === "jit" ? "full (JIT)" : $("dbg_speed").selectedOptions[0].text;
+	const parts = [word];
+	if (stepper && runState !== "off")
+		parts.push(speed, num(stepper.steps) + " instructions");
+	const text = parts.join(" \u00b7 ");
+	box.dataset.state = state;
+	box.dataset.steps = stepper ? stepper.steps : 0;
+	if ($("run_mini_text").textContent !== text)
+		$("run_mini_text").textContent = text;
+	const pause = $("dbg_pause"), cont = $("dbg_continue"), tog = $("run_mini_toggle");
+	const canPause = !pause.disabled;
+	// At the end of the run there is nothing to continue (the overlay's Continue goes too).
+	tog.disabled = canPause ? false : cont.disabled || ended;
+	tog.textContent = canPause ? "Pause" : "Continue";
+	tog.title = canPause ? "Stop the CPU (the Machine tab's Pause)" : "Run again at the selected speed (the Machine tab's Continue)";
+}
+
 function drawDebugUi() {
 	if (runState !== "jit")
 		flushScreen();
@@ -2828,6 +2865,7 @@ function drawDebugUi() {
 	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
 		$(id).disabled = !can || runState === "off";
+	renderRunMini();
 	renderRegs();
 	renderCounters();
 	if (runState !== "stepped")
@@ -3462,6 +3500,12 @@ async function init() {
 	initSettings();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
+	$("run_mini_text").addEventListener("click", () => showTab("machine"));
+	$("run_mini_toggle").addEventListener("click", () => {
+		const b = $("dbg_pause").disabled ? $("dbg_continue") : $("dbg_pause");
+		if (!b.disabled)
+			b.click();
+	});
 	window.addEventListener("hashchange", readHash);
 	readHash();
 	initNav();

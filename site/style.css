@@ -151,7 +151,15 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 #counters th { font-weight: 600; }
 #count_info { margin: 0.15rem 0 0.3rem; }
 
-.tabbar { display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 0.3rem; }
+/* The header: the title, the tab bar and the VM's run status (#run_mini). */
+.tabrow { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: center; margin: 0.3rem 0 0.3rem; }
+.tabbar { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+.runmini { display: flex; gap: 0.3rem; align-items: center; min-width: 0; font-size: 0.75rem; color: var(--muted); }
+.runmini button { padding: 0.1rem 0.4rem; min-height: 28px; font-size: 0.75rem; }
+#run_mini_text { border-color: transparent; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+#run_mini_text:hover { border-color: var(--line); }
+.runmini[data-state="stepped"] #run_mini_text, .runmini[data-state="jit"] #run_mini_text, .runmini[data-state="ff"] #run_mini_text { color: var(--fg); }
+.mstatus { margin: 0.2rem 0; }
 .tabbar button { border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.7rem; min-height: 32px; min-width: 44px; color: var(--muted); }
 .tabbar button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .tabbar .temo { font-weight: 400; }
@@ -160,7 +168,10 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 .compact-tabs .tabbar button { padding: 0.25rem 0.3rem; min-width: 40px; }
 /* On a phone the nine emoji share one row (38 px each at 390, 30 at 320). */
 @media (max-width: 400px) {
+  .compact-tabs .tabbar { flex: 1 1 100%; }
   .compact-tabs .tabbar button { flex: 1 1 0; min-width: 30px; padding: 0.25rem 0; }
+  .runmini { flex: 1 1 100%; }
+  #run_mini_text { flex: 1 1 auto; text-align: left; }
 }
 .panel { padding-top: 0.3rem; }
 .panel[hidden] { display: none; }

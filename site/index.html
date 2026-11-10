@@ -16,6 +16,30 @@
 <header class="top">
   <div class="headline">
     <h1>Kernel in the browser<span class="tip" tabindex="0" role="button" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). The kernel, RAM, files to load and Boot are in the Machine tab; see the About tab.">?</span></h1>
+  </div>
+
+  <div class="tabrow">
+    <nav class="tabbar" role="tablist" aria-label="Views">
+      <button role="tab" type="button" id="tab_machine" data-tab="machine" aria-label="Machine"><span class="temo" aria-hidden="true">🖥️</span> <span class="tword">Machine</span></button>
+      <button role="tab" type="button" id="tab_memory" data-tab="memory" aria-label="Memory"><span class="temo" aria-hidden="true">🗺️</span> <span class="tword">Memory</span></button>
+      <button role="tab" type="button" id="tab_page" data-tab="page" aria-label="Page"><span class="temo" aria-hidden="true">🔢</span> <span class="tword">Page</span></button>
+      <button role="tab" type="button" id="tab_debugger" data-tab="debugger" aria-label="Debugger"><span class="temo" aria-hidden="true">🐞</span> <span class="tword">Debugger</span></button>
+      <button role="tab" type="button" id="tab_calls" data-tab="calls" aria-label="Calls"><span class="temo" aria-hidden="true">📊</span> <span class="tword">Calls</span></button>
+      <button role="tab" type="button" id="tab_source" data-tab="source" aria-label="Source"><span class="temo" aria-hidden="true">📝</span> <span class="tword">Source</span></button>
+      <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots" aria-label="Snapshots"><span class="temo" aria-hidden="true">💾</span> <span class="tword">Snapshots</span></button>
+      <button role="tab" type="button" id="tab_settings" data-tab="settings" aria-label="Settings"><span class="temo" aria-hidden="true">⚙️</span> <span class="tword">Settings</span></button>
+      <button role="tab" type="button" id="tab_about" data-tab="about" aria-label="About"><span class="temo" aria-hidden="true">ℹ️</span> <span class="tword">About</span></button>
+    </nav>
+    <div id="run_mini" class="runmini" data-state="off">
+      <button id="run_mini_toggle" type="button" disabled title="Pause the CPU (the Machine tab's Pause)">Pause</button>
+      <button id="run_mini_text" type="button" class="mono" title="The VM: running or paused, the speed and the instructions stepped from reset. Click for the Machine tab: the screen and the run controls.">no machine</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="panel" id="panel_machine" role="tabpanel" aria-labelledby="tab_machine">
+  <div class="mstatus">
     <span id="status" role="status">Loading kernel list...</span>
   </div>
   <div id="problems" class="problems"></div>
@@ -75,22 +99,6 @@
       <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
     </div>
   </div>
-
-  <nav class="tabbar" role="tablist" aria-label="Views">
-    <button role="tab" type="button" id="tab_machine" data-tab="machine" aria-label="Machine"><span class="temo" aria-hidden="true">🖥️</span> <span class="tword">Machine</span></button>
-    <button role="tab" type="button" id="tab_memory" data-tab="memory" aria-label="Memory"><span class="temo" aria-hidden="true">🗺️</span> <span class="tword">Memory</span></button>
-    <button role="tab" type="button" id="tab_page" data-tab="page" aria-label="Page"><span class="temo" aria-hidden="true">🔢</span> <span class="tword">Page</span></button>
-    <button role="tab" type="button" id="tab_debugger" data-tab="debugger" aria-label="Debugger"><span class="temo" aria-hidden="true">🐞</span> <span class="tword">Debugger</span></button>
-    <button role="tab" type="button" id="tab_calls" data-tab="calls" aria-label="Calls"><span class="temo" aria-hidden="true">📊</span> <span class="tword">Calls</span></button>
-    <button role="tab" type="button" id="tab_source" data-tab="source" aria-label="Source"><span class="temo" aria-hidden="true">📝</span> <span class="tword">Source</span></button>
-    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots" aria-label="Snapshots"><span class="temo" aria-hidden="true">💾</span> <span class="tword">Snapshots</span></button>
-    <button role="tab" type="button" id="tab_settings" data-tab="settings" aria-label="Settings"><span class="temo" aria-hidden="true">⚙️</span> <span class="tword">Settings</span></button>
-    <button role="tab" type="button" id="tab_about" data-tab="about" aria-label="About"><span class="temo" aria-hidden="true">ℹ️</span> <span class="tword">About</span></button>
-  </nav>
-</header>
-
-<main>
-<section class="panel" id="panel_machine" role="tabpanel" aria-labelledby="tab_machine" hidden>
   <section class="controls" aria-label="Kernel and boot">
     <label>Kernel
       <select id="kernel"></select>
@@ -139,7 +147,7 @@
   </section>
 </section>
 
-<section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory">
+<section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory" hidden>
   <h3>First MiB <span class="tip" tabindex="0" role="button" title="Regions follow from the boot header and from where v86 puts things: real-mode setup at 0x80000, command line at 0x8e000, the 32-bit part always at 1 MiB. SeaBIOS builds the e820 map from the RAM size: usable RAM with the 0x9fc00-0x100000 hole reserved.">?</span></h3>
   <div class="bar" id="map_low"></div>
   <h3>All RAM (<span id="ram_label"></span>)</h3>
@@ -275,15 +283,15 @@
   <h3>Running</h3>
   <div class="setrow">
     <label>Speed after the kernel entry <select id="set_speed" data-key="mkb-speed"></select></label>
-    <span class="note">The speed above the tabs: BIOS and setup are stepped as fast as possible, then the kernel runs at this speed. Changing it there changes it here. ?speed= in the URL overrides it for one visit.</span>
+    <span class="note">The speed in the Machine tab: BIOS and setup are stepped as fast as possible, then the kernel runs at this speed. Changing it there changes it here. ?speed= in the URL overrides it for one visit.</span>
   </div>
   <div class="setrow">
     <label>Clock <select id="set_mips" data-key="mkb-mips"></select></label>
-    <span class="note">Guest time while the page steps the CPU: a virtual clock of this many instructions per microsecond, or real time (the clock above the tabs). ?mips= in the URL overrides it.</span>
+    <span class="note">Guest time while the page steps the CPU: a virtual clock of this many instructions per microsecond, or real time (the clock in the Machine tab). ?mips= in the URL overrides it.</span>
   </div>
   <div class="setrow">
     <label><input type="checkbox" id="set_count" data-key="mkb-count"> Count the boot at full speed</label>
-    <span class="note">The count box above the tabs: at full speed, first step the whole boot in the background, counting, then run the JIT. ?count=0 in the URL turns it off for one visit.</span>
+    <span class="note">The count box in the Machine tab: at full speed, first step the whole boot in the background, counting, then run the JIT. ?count=0 in the URL turns it off for one visit.</span>
   </div>
   <h3>Remembered for each kernel</h3>
   <div id="settings_stored"></div>
@@ -299,7 +307,7 @@
   <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Four kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts; <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>; and Debian 6.1 686 (bookworm's linux-image-6.1.0-50-686), once without an initrd (it ends in a root-fs panic) and once with its initramfs (it stops at the BusyBox shell). All four come with their debug info (DWARF): file:line, C source, variables, backtraces, parameters and locals, task names and a coverage tree. Any bzImage can be loaded from disk.</p>
   <h3>Tabs</h3>
   <ul>
-    <li><b>Machine</b>: what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. The screen, Pause, Continue, Step, speed and the counters stay above the tabs.</li>
+    <li><b>Machine</b>: the VM's screen, Pause, Continue, Step, speed, clock, count, the state line and the counters, then what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. It opens first. Next to the tabs a one-line run status (running or paused, the speed and the instructions stepped) shows on every tab, with Pause or Continue; a click on it opens the Machine tab. The VM keeps running and its screen keeps changing while another tab is shown; keys go to the VM only while the Machine tab is shown.</li>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers; after each instruction its jump paths in and out (static and observed while stepping, with counts), and the jumps inside the page as arcs.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>

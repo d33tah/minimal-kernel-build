@@ -3,7 +3,7 @@
 // The Settings tab: everything the page remembers in this browser, each
 // with what it does, a way to change or forget it, and "Reset all
 // settings". Preferences (compact tabs, speed, clock, count) have their own
-// controls, mirrored from the run bar above the tabs; what is remembered
+// controls, mirrored from the run bar in the Machine tab; what is remembered
 // for one kernel (imported symbols, command line, watch expressions, the
 // measured boot length) is listed from localStorage, so a key a later
 // version adds is shown too (as "kept by this page"). Imported DWARF lives
@@ -172,7 +172,7 @@ function setRow(k, text) {
 	return row;
 }
 
-// A change here is the same as a change above the tabs: that control's own
+// A change here is the same as a change in the Machine tab: that control's own
 // handler applies and remembers it.
 function setMirror(from, to, prop) {
 	$(from).addEventListener("change", () => {

@@ -11,10 +11,12 @@ Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and
 
 ## Layout
 
-A top bar always shows the title, the status line (which kernel runs
-with how much RAM), warnings about the bzImage, the VGA screen, the run
-controls (Pause, Continue, Step, speed, clock, count, the state line) and
-the boot counters. Below it are tabs, each an emoji (aria-hidden) and its
+The top bar holds only the title, the tab bar and a one-line run status
+(`#run_mini`: running, paused or ended, the speed and the instructions
+stepped from reset, with Pause or Continue; a click on it opens the
+Machine tab), so every tab gets the rest of the height (72 px at 1280,
+103 px at 390, suite tabs). The tabs are each an emoji (aria-hidden) and its
+name, each an emoji (aria-hidden) and its
 name, kept in the URL hash (`#machine`, `#memory`, `#page/0x100000`,
 `#debugger`, `#calls`, `#source`, `#snapshots`, `#settings`, `#about`; the
 old names `#graph` and `#coverage`, and `?tab=` with any of them when the
@@ -26,11 +28,17 @@ U+FE0F so they never fall back to a text glyph; suite tabs draws each one
 on a canvas in the tab's font and in a serif stack and checks it comes out
 as a colour emoji (also checked once in Firefox and WebKit):
 
-- **Machine.** What runs and how it boots: the kernel and RAM menus, a
+- **Machine.** Opens first. The status line (which kernel runs with how
+  much RAM), warnings about the bzImage, the VGA screen, the run controls
+  (Pause, Continue, Step, speed, clock, count, the state line) and the boot
+  counters; then what runs and how it boots: the kernel and RAM menus, a
   bzImage from disk, Symbols, C source (for an imported vmlinux), initrd,
   cmdline, offset, Boot, the loaded bzImage's header line, the deployed
-  build. These were in the top bar; they are set once per kernel, and at
-  390 px they made the top bar 1,003 px tall (now 660 px, suite tabs).
+  build. All of it was in the top bar once (1,003 px tall at 390 px). The
+  VM keeps running while another tab is shown: its screen is hidden, not
+  taken out of the page, so v86 keeps drawing into it; keys go to the VM
+  only while the Machine tab is shown (Alt+Left/Right go to the jump
+  history until the screen is clicked again).
   `?kernel=`, `?mem=`, `?speed=`, `?cmdline=` work as before, and a
   bzImage or symbol file dropped on the page loads from any tab.
 
@@ -968,7 +976,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
     less, where the names take three rows; there the nine emoji share one
     row (38 px each at 390 px, 30 px at 320 px). Off on wider screens.
   - Speed after the kernel entry (`mkb-speed`), clock (`mkb-mips`) and
-    count (`mkb-count`): the same controls as in the top bar, which
+    count (`mkb-count`): the same controls as in the Machine tab, which
     remembers a change made there too; `?speed=`, `?mips=` and `?count=0`
     override them for one visit.
   - Remembered for each kernel, listed from localStorage with a Forget
@@ -1179,7 +1187,7 @@ JavaScript drives the CPU:
   instructions (154 for the -Os hello-os; it prints below the BIOS text instead of clearing the
   screen, see hello/README.md), a fraction of a second; the minified Linux needs about 723,000
   at -O0 (about 12 minutes; the -Os minified-linux-os about 132,000, 2 minutes 12 s),
-  so the top bar shows an ETA (from the count this
+  so the Machine tab shows an ETA (from the count this
   browser last measured, else a built-in estimate) and the symbol the CPU
   is in.
 - **Full speed.** `?speed=full`, or picking "full (JIT)" (the choice is
@@ -1190,7 +1198,7 @@ JavaScript drives the CPU:
   a copy of the text page), at about 4-7 million instructions per second
   in headless Chromium, then v86's JIT runs.
 - **speed**: full (v86's JIT, not counted) or 10M, 1M, 100k, 10k, 1k,
-  100, 10 or 1 instructions per second. The top bar shows the speed
+  100, 10 or 1 instructions per second. The Machine tab shows the speed
   actually reached, from v86's instruction counter (JIT and stepping
   alike) sampled 4 times a second, over a window (4 s in slow motion,
   where one drawing of a new page's listing can hold a phone's main
@@ -1310,7 +1318,7 @@ interrupts on, the stepper moves the clock to the next timer event. A new
 machine starts at virtual time 0, so device setup sees the same
 timestamps every run. At full JIT speed the clock follows real time,
 continuing from the virtual time. "real time" in the menu restores v86's
-wall clock while stepping. The top bar shows the time and how many times
+wall clock while stepping. The Machine tab shows the time and how many times
 the PIT raised IRQ0.
 
 Before (real time): the minified Linux unmasks only IRQ0 (PIT, HZ=250),
@@ -1522,6 +1530,7 @@ browser-test matrix job named by its suites):
 | R1 the asm views follow EIP | suites followeip and followfuzz. FOLLOW_EIP_JS watches the page: every drawing of Code at EIP and of the Page listing must box the line holding EIP, and once an instruction has executed the view on screen must show the new EIP within max(1 s, twice its last drawing plus 400 ms), while stepping at any speed and paused (not under the JIT or in a hidden tab). Fixed sequences on the minified Linux (-O0 and -Os) and hello, Debugger and Page tabs, CPU 1x and 4x: 1/s from the entry, 10/s, 1k/s, Pause, Step, Step 100, Continue, a Run to that steps to the end of the run, then Boot at full speed (counted, then the JIT) to the end. Then a seeded fuzzer of tab switches, speeds, Pause, Step, Run to, the Source panel, Back and Forward, links, kernel switch, Boot during the fast-forward, a hidden tab and CPU throttling. On d3a2553f0 5 of the 12 sequences fail: Code at EIP kept the box where a stepped Run to or the counted boot had started (0x100000) for over a second while the count went on (minified Linux, CPU 4x), and the Page listing marked nothing while the relocation stub ran inside startup_32's instructions (both minified builds, 1x and 4x) | followeip, followfuzz |
 | U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
 | U4 Settings tab, literal emoji | suite tabs (the nine tabs in order with Settings before About and the emoji 🖥️ 🗺️ 🔢 🐞 📊 📝 💾 ⚙️ ℹ️, each drawn as a colour emoji in two font stacks; #settings and ?tab=settings open Settings; Compact tabs, speed, clock, count, the per-kernel list and Reset are in the Settings tab and the Machine tab has no Settings section or checkbox; with a watch list, a cmdline set by Boot, another bzImage's symbols, an unknown mkb- key and an IndexedDB DWARF entry stored, every mkb- key in localStorage and the IndexedDB entry have a row with an explanation; speed, clock and count set in Settings change the top bar's controls and survive a reload, the top bar's speed shows in Settings; Forget removes each entry with its effect (the watch list empties, the cmdline goes back to the default, the other bzImage's DWARF goes); Reset all settings leaves no mkb- key and no IndexedDB entry and restores compact off, 1k/s, 10/us, count on; the compact bar is one row at 390 px light and dark; no horizontal scroll on Settings). On feddeeea8 it fails: no Settings tab, the old emoji, Compact tabs in the Machine tab | debian,...,legend,tabs |
+| U5 everything above the tabs in Machine | suite tabs (at 1280 and 390 px, light and dark: no element drawn in the header besides the title, the tab bar and the run status, the header at most 140 px; the first load without a hash opens Machine with the screen showing "Hello, World!", #memory still opens Memory; the status line, warnings, screen, overlay, run bar, state line, counters and notes are in the Machine tab; hello at 10/s: on the Page tab the run status counts on and says 10/s like the VM, the screen is hidden but stays in the page and "Hello, World!" reaches it meanwhile, Pause and Continue in the run status pause and resume the VM, a click on it opens Machine with the new text shown; the minified Linux at 1k/s on the Debugger tab counts on, at least 500 in 2 s) and suite initramfs (after the Page tab and back, keys typed on the screen reach the Debian (initramfs) shell). On d78451a41 it fails: the screen and run bar in the header (373 px at 1280, 660 at 390), Memory first, no run status | debian,...,legend,tabs |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
 | P2 a real install | `test_pwa_install.py` in the `pwa-install` job (headful Chromium under Xvfb: beforeinstallprompt, no installability errors or manifest warnings, PWA.install, chrome://web-app-internals, PWA.launch standalone, hello boots in the app window; four broken copies (no manifest link, icons 404, no service worker, start_url outside the scope) must each fail for their own reason), then against the live site | pwa-install |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
@@ -1573,7 +1582,7 @@ the switch to 1k/s, 234 (-O0) and 86 (-Os) instructions from the entry to
 "Hello, World!", the "Halted" banner), Linux at 2 MB, 18 MB and 2180 KiB with `?speed=full`
 (the panic banner with "init exited with code 0"), and Linux with the default
 boot for a few seconds (entry marker, 1k/s, the counter grows by about
-3,000 in 3 s, ETA and current symbol in the top bar, the speed choice
+3,000 in 3 s, ETA and current symbol in the Machine tab, the speed choice
 remembered across a reload). For every kernel case it checks the gate lines on the screen, the boot counters (both lines
 counted, Linux from 1 MiB larger than hello), the page scan, the Page tab
 (opened from the grid, in the URL hash, kept on reload; instruction lines

@@ -9092,6 +9092,537 @@ def suite_graphopen(ctx):
     return graphopen_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
 
 
+# ---- snapdiff: named snapshots, kept across a reload, and their diff (S1) --
+# The operator: "dodaj diffowanie snapshotów, ich nazywanie i przechowywanie
+# między refresh". Snapshots get a default name the user can rename, are
+# stored in IndexedDB per kernel identity (bzImage SHA-256) and survive a
+# reload; a diff of two snapshots (or one and now) lists the registers, the
+# instruction count, the VGA lines and the 4 KiB pages that changed, with a
+# side-by-side hexdump of a page and a link into the Page tab at the
+# snapshot's contents. Without storage the page keeps them in memory and
+# says so; a full quota is reported and the in-memory copy kept.
+SNAPDIFF_STEPS = {"hello": 60, "minified-linux": 3000}
+
+SNAP_JS = """() => { if (window.mkbSnap) return; window.mkbSnap = {
+  cpu() { const c = emulator.v86.cpu, r = c.reg32, s = c.sreg;
+    return { eip: (c.instruction_pointer[0] - c.segment_offsets[1]) >>> 0, icount: c.instruction_counter[0] >>> 0,
+      regs: { EAX: r[0] >>> 0, ECX: r[1] >>> 0, EDX: r[2] >>> 0, EBX: r[3] >>> 0, ESP: r[4] >>> 0, EBP: r[5] >>> 0,
+        ESI: r[6] >>> 0, EDI: r[7] >>> 0, EIP: (c.instruction_pointer[0] - c.segment_offsets[1]) >>> 0,
+        EFLAGS: c.get_eflags() >>> 0, ES: s[0], CS: s[1], SS: s[2], DS: s[3], FS: s[4], GS: s[5],
+        CR0: c.cr[0] >>> 0, CR2: c.cr[2] >>> 0, CR3: c.cr[3] >>> 0, CR4: c.cr[4] >>> 0 },
+      screen: [...document.getElementById('screen_text').children].map((e) => e.textContent.replace(/\\s+$/, '')) }; },
+  keep(k) { this[k] = emulator.read_memory(0, emuRam).slice(); },
+  pages(a, b) { const A = this[a], B = this[b], out = [];
+    for (let p = 0; p < A.length / 4096; p++) { let n = 0;
+      for (let i = p * 4096; i < p * 4096 + 4096; i++) if (A[i] !== B[i]) n++;
+      if (n) out.push([p, n]); }
+    return out; },
+  hex(k, p) { return Array.from(this[k].subarray(p * 4096, p * 4096 + 4096), (b) => b.toString(16).padStart(2, '0')).join(''); },
+  b64(k) { let s = ''; const a = this[k]; for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); } }; }"""
+
+SNAP_STATE_JS = """() => { const rows = [...document.querySelectorAll('#snapshots tbody tr[data-id]')];
+  const shown = (e) => !!e && !e.hidden && e.getClientRects().length > 0;
+  return { rows: rows.map((tr) => ({ id: tr.dataset.id, name: (tr.querySelector('.snapname') || {}).textContent || '',
+      kernel: tr.dataset.kernel || '', where: tr.dataset.where || '', stored: Number(tr.dataset.stored || 0),
+      raw: Number(tr.dataset.raw || 0), restore: !!tr.querySelector('button.restore'), sw: !!tr.querySelector('button.snapswitch'),
+      text: tr.innerText.replace(/\\s+/g, ' ') })),
+    store: (document.getElementById('snap_store') || {}).textContent || '', status: document.getElementById('snap_status').textContent,
+    hscroll: document.documentElement.scrollWidth > innerWidth + 1, storeShown: shown(document.getElementById('snap_store')) }; }"""
+
+SNAP_DIFF_JS = """() => { const o = document.getElementById('snap_diff_out');
+  if (!o) return null;
+  return { state: o.dataset.state || '', pages: [...o.querySelectorAll('#snap_pages [data-page]')].map((e) => [Number(e.dataset.page), Number(e.dataset.bytes)]),
+    regs: [...o.querySelectorAll('#snap_regs [data-reg]')].map((e) => [e.dataset.reg, e.dataset.old, e.dataset.new]),
+    screen: [...o.querySelectorAll('#snap_screen [data-line]')].map((e) => Number(e.dataset.line)),
+    summary: (document.getElementById('snap_diff_sum') || {}).textContent || '',
+    icount: [o.dataset.icountA, o.dataset.icountB], text: o.innerText.slice(0, 4000) }; }"""
+
+
+def snap_rows(page):
+    return page.evaluate(SNAP_STATE_JS)
+
+
+def snap_wait_rows(page, n, timeout=30):
+    wait_for(lambda: len(snap_rows(page)["rows"]) == n, timeout)
+    return snap_rows(page)
+
+
+def snap_click(page, sel, phone):
+    # The table is drawn again when the kernel's hash or the storage
+    # estimate arrives: a button can be replaced between finding and tapping.
+    for i in range(3):
+        try:
+            loc = page.locator(sel).first
+            loc.scroll_into_view_if_needed(timeout=10000)
+            loc.tap(timeout=10000) if phone else loc.click(timeout=10000)
+            return
+        except PlaywrightError:
+            if i == 2:
+                raise
+            time.sleep(0.5)
+
+
+def snap_save(page, n, phone):
+    show_tab(page, "snapshots")
+    snap_click(page, "#snap_save", phone)
+    st = snap_wait_rows(page, n)
+    wait_for(lambda: all(r["kernel"] for r in snap_rows(page)["rows"]), 15)
+    return st
+
+
+def snap_parse_state(raw):
+    """v86 0.5.471 save_state() (src/state.js): 16-byte header (magic
+    0x86768676, version 6, total length, info length), the JSON info block
+    {buffer_infos, state} padded to 4, then the buffers, each aligned to 4.
+    The CPU's state[77] is the non-zero pages packed, state[78] the bitmap
+    (bit p of byte p >> 3) of which pages they are, state[0] the RAM size."""
+    import struct
+    magic, version, total, info_len = struct.unpack_from("<iiii", raw, 0)
+    if magic & 0xffffffff != 0x86768676 or version != 6 or total != len(raw):
+        raise ValueError(f"not a v86 state: {magic & 0xffffffff:#x} v{version} {total}/{len(raw)}")
+    info = json.loads(raw[16:16 + info_len])
+    start = (16 + info_len + 3) & ~3
+    def buf(o):
+        bi = info["buffer_infos"][o["buffer_id"]]
+        return raw[start + bi["offset"]:start + bi["offset"] + bi["length"]]
+
+    st = info["state"]
+    size, packed, bitmap = st[0], buf(st[77]), buf(st[78])
+    ram = bytearray(size)
+    k = 0
+    for p in range(size // 4096):
+        if bitmap[p >> 3] >> (p & 7) & 1:
+            ram[p * 4096:p * 4096 + 4096] = packed[k * 4096:k * 4096 + 4096]
+            k += 1
+    return ram, st
+
+
+def snapdiff_run(browser, base, shots, name, scheme, phone):
+    problems, r, errors = [], {}, []
+    w = 390 if phone else 1280
+    tag = f"{name} {w} {scheme}"
+    ctx = browser.new_context(color_scheme=scheme, accept_downloads=True,
+                              **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    def shot(s):
+        page.screenshot(path=str(shots / f"snapdiff-{name}-{w}-{scheme}-{s}.png"), full_page=True)
+
+    url = f"{base}/index.html?kernel={name}&paused=1#debugger"
+
+    def start():
+        page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        page.evaluate(SNAP_JS)
+        return ok
+
+    if not start():
+        ctx.close()
+        return [f"{tag}: did not start paused"], r
+    show_tab(page, "debugger")
+    page.fill("#dbg_addr", "0x100000")
+    page.click("#dbg_runto")
+    ok, at, status = run_to_wait(page, {0x100000}, 300)
+    if not ok:
+        problems.append(f"{tag}: Run to the kernel entry stopped at {at:#x}: {status}")
+    page.evaluate("mkbSnap.keep('A')")
+    cpu_a = page.evaluate("mkbSnap.cpu()")
+    st = snap_save(page, 1, phone)
+    if len(st["rows"]) != 1:
+        problems.append(f"{tag}: Save snapshot gave {len(st['rows'])} rows: {st['status']}")
+        ctx.close()
+        return problems, r
+    a = st["rows"][0]
+    r["A"] = a["name"]
+    # The default name: kernel, instruction count, symbol at EIP, time.
+    if name not in a["name"] or not re.search(r"\d", a["name"]):
+        problems.append(f"{tag}: default name {a['name']!r} lacks the kernel or the instruction count")
+    # Step N.
+    show_tab(page, "debugger")
+    page.fill("#dbg_n", str(SNAPDIFF_STEPS[name]))
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.evaluate("mkbSnap.cpu().icount") != cpu_a["icount"] and
+             page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    time.sleep(1)
+    page.evaluate("mkbSnap.keep('B')")
+    cpu_b = page.evaluate("mkbSnap.cpu()")
+    want_pages = page.evaluate("mkbSnap.pages('A', 'B')")
+    want_regs = sorted(k for k in cpu_a["regs"] if cpu_a["regs"][k] != cpu_b["regs"][k])
+    want_screen = [i for i in range(max(len(cpu_a["screen"]), len(cpu_b["screen"])))
+                   if (cpu_a["screen"] + [""] * 99)[i] != (cpu_b["screen"] + [""] * 99)[i]]
+    b_hex = {p: page.evaluate(f"mkbSnap.hex('B', {p})") for p, _ in want_pages[:6]}
+    r["want"] = {"pages": len(want_pages), "regs": want_regs, "screen": want_screen,
+                 "icount": [cpu_a["icount"], cpu_b["icount"]]}
+    if not want_pages or not want_regs:
+        problems.append(f"{tag}: stepping {SNAPDIFF_STEPS[name]} changed no page or register (test setup)")
+    st = snap_save(page, 2, phone)
+    if len(st["rows"]) != 2:
+        problems.append(f"{tag}: the second save gave {len(st['rows'])} rows")
+        ctx.close()
+        return problems, r
+    a_id, b_id = st["rows"][0]["id"], st["rows"][1]["id"]
+    if st["rows"][0]["name"] == st["rows"][1]["name"]:
+        problems.append(f"{tag}: two snapshots got the same default name {st['rows'][0]['name']!r}")
+
+    # Rename B (Enter saves), start renaming A and press Esc (cancels).
+    new_name = f"after {SNAPDIFF_STEPS[name]} steps ({scheme})"
+    snap_click(page, f"#snapshots tr[data-id='{b_id}'] .snapname", phone)
+    inp = page.locator(f"#snapshots tr[data-id='{b_id}'] input.snapedit")
+    if not inp.count():
+        problems.append(f"{tag}: tapping the name gives no text field to rename it")
+    else:
+        inp.fill(new_name)
+        inp.press("Enter")
+    snap_click(page, f"#snapshots tr[data-id='{a_id}'] .snapname", phone)
+    inp = page.locator(f"#snapshots tr[data-id='{a_id}'] input.snapedit")
+    if inp.count():
+        inp.fill("not this")
+        inp.press("Escape")
+    time.sleep(0.5)
+    st = snap_rows(page)
+    names = {x["id"]: x["name"] for x in st["rows"]}
+    if names.get(b_id) != new_name or names.get(a_id) != r["A"]:
+        problems.append(f"{tag}: after renaming B and cancelling A the names are {names}")
+    if f"{name}" not in st["store"] or "stored" not in st["store"].lower():
+        problems.append(f"{tag}: the storage line {st['store']!r} does not say what is stored")
+    shot("saved")
+
+    # The download is a gzip of v86's state: parsed here independently, its
+    # RAM is what v86 had and its CPU fields are B's.
+    if name == "hello" and not phone:
+        with page.expect_download() as dl:
+            page.locator(f"#snapshots tr[data-id='{b_id}'] button.snapdl").click()
+        raw = gzip.decompress(pathlib.Path(dl.value.path()).read_bytes())
+        ram, sts = snap_parse_state(raw)
+        mem = base64.b64decode(page.evaluate("mkbSnap.b64('B')"))
+        r["download"] = [len(raw), len(ram)]
+        if bytes(ram) != mem:
+            problems.append(f"{tag}: the downloaded state's RAM differs from v86's RAM at B")
+
+    # Reload: both are listed with names, sizes and a matching kernel.
+    if not start():
+        problems.append(f"{tag}: the reload did not start paused")
+    show_tab(page, "snapshots")
+    st = snap_wait_rows(page, 2)
+    wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+    st = snap_rows(page)
+    r["after reload"] = [(x["name"], x["kernel"], x["where"], x["stored"]) for x in st["rows"]]
+    names = {x["id"]: x["name"] for x in st["rows"]}
+    if names.get(a_id) != r["A"] or names.get(b_id) != new_name:
+        problems.append(f"{tag}: after the reload the snapshots are {names} (want {a_id}: {r['A']!r}, {b_id}: {new_name!r})")
+    for x in st["rows"]:
+        if x["kernel"] != "match" or x["where"] != "stored" or not x["stored"] or not x["restore"]:
+            problems.append(f"{tag}: after the reload row {x['id']} says kernel {x['kernel']!r}, kept {x['where']!r}, "
+                            f"{x['stored']} bytes, Restore {x['restore']}")
+        if not re.search(r"\d[\d,.]* ?(KiB|MiB|bytes)", x["text"]):
+            problems.append(f"{tag}: row {x['id']} shows no size: {x['text'][:120]}")
+    if not re.search(r"\d+ snapshots?", st["store"]) or not re.search(r"(KiB|MiB|bytes)", st["store"]):
+        problems.append(f"{tag}: the storage line {st['store']!r} lacks the count or the total size")
+    if st["hscroll"]:
+        problems.append(f"{tag}: horizontal scroll on the Snapshots tab")
+
+    # Diff A -> B.
+    page.select_option("#snap_a", a_id)
+    page.select_option("#snap_b", b_id)
+    snap_click(page, "#snap_diff", phone)
+    if not wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 60):
+        problems.append(f"{tag}: the diff did not finish: {page.evaluate(SNAP_DIFF_JS)}")
+        ctx.close()
+        return problems, r
+    d = page.evaluate(SNAP_DIFF_JS)
+    r["diff"] = {"pages": len(d["pages"]), "regs": [x[0] for x in d["regs"]], "screen": d["screen"], "summary": d["summary"][:200]}
+    if sorted(map(tuple, d["pages"])) != sorted(map(tuple, want_pages)):
+        miss = sorted(set(map(tuple, want_pages)) - set(map(tuple, d["pages"])))
+        extra = sorted(set(map(tuple, d["pages"])) - set(map(tuple, want_pages)))
+        problems.append(f"{tag}: the diff's pages differ from v86's RAM: missing {miss[:6]}, extra {extra[:6]}")
+    got_regs = sorted(x[0] for x in d["regs"])
+    if got_regs != want_regs:
+        problems.append(f"{tag}: the diff lists registers {got_regs}, these changed: {want_regs}")
+    for reg, old, new in d["regs"]:
+        if reg in cpu_a["regs"] and (int(old, 16) != cpu_a["regs"][reg] or int(new, 16) != cpu_b["regs"][reg]):
+            problems.append(f"{tag}: {reg} {old} -> {new}, v86 had {cpu_a['regs'][reg]:#x} -> {cpu_b['regs'][reg]:#x}")
+    if d["screen"] != want_screen:
+        problems.append(f"{tag}: the diff lists screen lines {d['screen']}, these changed: {want_screen}")
+    if d["icount"] != [str(cpu_a["icount"]), str(cpu_b["icount"])]:
+        problems.append(f"{tag}: instruction counts {d['icount']}, v86 counted {cpu_a['icount']} and {cpu_b['icount']}")
+    for n in (r["A"], new_name):
+        if n not in d["text"]:
+            problems.append(f"{tag}: the diff does not name {n!r}")
+    if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+        problems.append(f"{tag}: horizontal scroll with the diff shown")
+    shot("diff")
+
+    # The side-by-side hexdump of one page: one mark per changed byte in B's column.
+    p0, n0 = want_pages[0]
+    snap_click(page, f"#snap_pages [data-page='{p0}'] button.snaphex", phone)
+    wait_for(lambda: page.get_attribute("#snap_hex", "data-page") == str(p0), 20)
+    marks = page.evaluate("[...document.querySelectorAll('#snap_hex .snapcol-b mark')].reduce((n, m) => n + m.textContent.trim().split(/\\s+/).length, 0)")
+    r["hexdump"] = [p0, n0, marks]
+    if marks != n0:
+        problems.append(f"{tag}: the hexdump of page {p0:#x} marks {marks} bytes, {n0} changed")
+    shot("hex")
+
+    # Open B's page in the Page tab: its bytes as B had them; Back returns.
+    p1 = next((p for p, _ in want_pages if p in b_hex), p0)
+    snap_click(page, f"#snap_pages [data-page='{p1}'] button.snapopen", phone)
+    ok = wait_for(lambda: shown_tab(page) == "page" and page.get_attribute("#listing", "data-page") == str(p1), 15)
+    got = page.evaluate("(() => { const d = document.getElementById('listing')._drawn; return d ? Array.from(d.bytes, (b) => b.toString(16).padStart(2, '0')).join('') : ''; })()")
+    banner = page.evaluate("(() => { const e = document.getElementById('page_snap'); return e && !e.hidden ? e.textContent : ''; })()")
+    r["open"] = [p1, ok, banner[:100]]
+    if not ok or got != b_hex.get(p1, got):
+        problems.append(f"{tag}: opening page {p1:#x} of B: tab {shown_tab(page)}, listing {page.get_attribute('#listing', 'data-page')}, "
+                        f"bytes are B's: {got == b_hex.get(p1)}")
+    if new_name not in banner:
+        problems.append(f"{tag}: the Page tab does not say it shows {new_name!r}: {banner!r}")
+    shot("page")
+    nav_press(page, "#nav_back", "tap" if phone else "click")
+    if not wait_for(lambda: shown_tab(page) == "snapshots", 5):
+        problems.append(f"{tag}: Back from the snapshot's page goes to {shown_tab(page)}")
+
+    # Restore B after the reload: same EIP, registers, instruction count, screen.
+    snap_click(page, f"#snapshots tr[data-id='{b_id}'] button.restore", phone)
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == b_id, 30)
+    wait_for(lambda: page.evaluate("mkbSnap.cpu()")["screen"] == cpu_b["screen"], 10)
+    now = page.evaluate("mkbSnap.cpu()")
+    r["restored"] = [hex(now["eip"]), now["icount"]]
+    if now["eip"] != cpu_b["eip"] or now["icount"] != cpu_b["icount"] or now["regs"] != cpu_b["regs"]:
+        problems.append(f"{tag}: restoring B after the reload: EIP {now['eip']:#x} (want {cpu_b['eip']:#x}), "
+                        f"instructions {now['icount']} (want {cpu_b['icount']}), regs equal {now['regs'] == cpu_b['regs']}")
+    if now["screen"] != cpu_b["screen"]:
+        problems.append(f"{tag}: the screen after restoring B differs from B's")
+    # v86's set_state leaves last_result (the lazy flags' input), the FPU
+    # status word and MXCSR outside wasm memory: the page puts them back.
+    views = page.evaluate("(() => { const c = emulator.v86.cpu; return ['last_result', 'fpu_status_word', 'mxcsr']"
+                          ".filter((k) => c[k].buffer !== c.wasm_memory.buffer); })()")
+    if views:
+        problems.append(f"{tag}: after the restore {views} are not in v86's wasm memory")
+
+    # Diff B -> now is empty right after the restore (RAM and registers).
+    page.select_option("#snap_a", b_id)
+    page.select_option("#snap_b", "now")
+    snap_click(page, "#snap_diff", phone)
+    wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 60)
+    d = page.evaluate(SNAP_DIFF_JS)
+    r["B -> now"] = [len(d["pages"]), [x[0] for x in d["regs"]]]
+    if d["pages"] or d["regs"]:
+        problems.append(f"{tag}: right after restoring B, B -> now lists pages {d['pages'][:5]} and registers {d['regs'][:5]}")
+
+    # Delete A: gone, also after a reload.
+    snap_click(page, f"#snapshots tr[data-id='{a_id}'] button.snapdel", phone)
+    st = snap_wait_rows(page, 1)
+    if [x["id"] for x in st["rows"]] != [b_id]:
+        problems.append(f"{tag}: after deleting A: {[x['id'] for x in st['rows']]}")
+    start()
+    show_tab(page, "snapshots")
+    time.sleep(1)
+    st = snap_wait_rows(page, 1)
+    if [(x["id"], x["name"]) for x in st["rows"]] != [(b_id, new_name)]:
+        problems.append(f"{tag}: after deleting A and a reload: {[(x['id'], x['name']) for x in st['rows']]}")
+    shot("deleted")
+    if errors:
+        problems.append(f"{tag}: page errors: {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def snapdiff_storage(browser, base, shots):
+    """No storage (a private window, blocked site data): snapshots stay in
+    memory with a note. A full quota: the save says so and keeps the copy
+    in memory. Delete all empties the store."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    ctx.add_init_script("Object.defineProperty(window, 'indexedDB', { get() { throw new DOMException('blocked by the test', 'SecurityError'); } });")
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    st = snap_save(page, 1, False)
+    r["blocked"] = [(x["where"], x["kernel"]) for x in st["rows"]] + [st["store"][:160]]
+    if len(st["rows"]) != 1 or st["rows"][0]["where"] != "memory" or not st["rows"][0]["restore"]:
+        problems.append(f"blocked storage: the snapshot is not kept in memory with a Restore: {st['rows']}")
+    if "memory" not in st["store"] or "not" not in st["store"]:
+        problems.append(f"blocked storage: the note {st['store']!r} does not say the snapshots are only in memory")
+    page.screenshot(path=str(shots / "snapdiff-blocked.png"), full_page=True)
+    if errors:
+        problems.append(f"blocked storage: page errors {errors[:3]}")
+    ctx.close()
+
+    # A quota below what the site uses (the service worker's cache alone is
+    # megabytes), set before the page opens its database (Chrome checks the
+    # quota when the database is opened): the save fails with
+    # QuotaExceededError and the snapshot stays in memory.
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    cdp = ctx.new_cdp_session(page)
+    cdp.send("Storage.overrideQuotaForOrigin", {"origin": base, "quotaSize": 20000})
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    st = snap_save(page, 1, False)
+    wait_for(lambda: "quota" in snap_rows(page)["status"].lower(), 15)
+    st = snap_rows(page)
+    r["quota"] = [[x["where"] for x in st["rows"]], st["status"][:200], st["store"][:200]]
+    if [x["where"] for x in st["rows"]] != ["memory"] or "quota" not in st["status"].lower():
+        problems.append(f"full quota: rows kept {[x['where'] for x in st['rows']]}, status {st['status']!r}")
+    if "memory only" not in st["store"]:
+        problems.append(f"full quota: the storage line {st['store']!r} does not count the snapshot as in memory only")
+    page.screenshot(path=str(shots / "snapdiff-quota.png"), full_page=True)
+    cdp.send("Storage.overrideQuotaForOrigin", {"origin": base})
+    page.reload()
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    show_tab(page, "snapshots")
+    time.sleep(2)
+    if snap_rows(page)["rows"]:
+        problems.append("full quota: the snapshot that was not stored is listed after a reload")
+    snap_save(page, 1, False)
+    snap_save(page, 2, False)
+    st = snap_rows(page)
+    if [x["where"] for x in st["rows"]] != ["stored", "stored"]:
+        problems.append(f"with the quota back: rows kept {[x['where'] for x in st['rows']]}")
+    # Delete all asks again, then empties the store.
+    page.click("#snap_delall")
+    if len(snap_rows(page)["rows"]) != 2:
+        problems.append("Delete all deleted without asking again")
+    page.click("#snap_delall")
+    st = snap_wait_rows(page, 0)
+    page.reload()
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    show_tab(page, "snapshots")
+    time.sleep(2)
+    st = snap_rows(page)
+    if st["rows"]:
+        problems.append(f"Delete all: {len(st['rows'])} snapshots listed after a reload")
+    if errors:
+        problems.append(f"quota: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def snapdiff_kernels(browser, base, shots, phone):
+    """A snapshot of another kernel is listed as such, without Restore, with
+    a switch to its kernel; after the switch it restores."""
+    problems, r = [], {}
+    ctx = browser.new_context(color_scheme="dark", **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    snap_save(page, 1, phone)
+    machine_do(page, "select_option", "#kernel", "hello-os")
+    wait_for(lambda: page.evaluate("image && image.name === 'hello-os' && emuReady"), 120)
+    show_tab(page, "snapshots")
+    wait_for(lambda: (snap_rows(page)["rows"] or [{}])[0].get("kernel") == "other", 20)
+    st = snap_rows(page)
+    x = st["rows"][0]
+    r["other"] = [x["kernel"], x["restore"], x["sw"], x["text"][:120]]
+    if x["kernel"] != "other" or x["restore"] or not x["sw"] or "another kernel" not in x["text"]:
+        problems.append(f"another kernel: the hello snapshot under hello-os shows {r['other']}")
+    if st["hscroll"]:
+        problems.append("another kernel: horizontal scroll")
+    page.screenshot(path=str(shots / f"snapdiff-other-{390 if phone else 1280}.png"), full_page=True)
+    snap_click(page, "#snapshots button.snapswitch", phone)
+    wait_for(lambda: page.evaluate("image && image.name === 'hello' && emuReady"), 120)
+    wait_for(lambda: (snap_rows(page)["rows"] or [{}])[0].get("kernel") == "match", 20)
+    x = snap_rows(page)["rows"][0]
+    if x["kernel"] != "match" or not x["restore"]:
+        problems.append(f"another kernel: after the switch the row shows kernel {x['kernel']!r}, Restore {x['restore']}")
+    if errors:
+        problems.append(f"another kernel: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+SNAP_LONG_JS = """() => { window.mkbLong = []; new PerformanceObserver((l) => {
+    for (const e of l.getEntries()) window.mkbLong.push(Math.round(e.duration)); }).observe({ type: 'longtask' }); }"""
+
+
+def snapdiff_perf(browser, base, shots, mem):
+    """A diff of two snapshots of mem bytes of RAM, and of one and now, at
+    4x CPU throttle: no task on the page's main thread over 200 ms."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&mem={mem}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    page.fill("#dbg_addr", "0x100000")
+    page.click("#dbg_runto")
+    run_to_wait(page, {0x100000}, 300)
+    snap_save(page, 1, False)
+    show_tab(page, "debugger")
+    page.fill("#dbg_n", "60")
+    page.click("#dbg_stepn")
+    time.sleep(2)
+    st = snap_save(page, 2, False)
+    ids = [x["id"] for x in st["rows"]]
+    cdp = ctx.new_cdp_session(page)
+    cdp.send("Emulation.setCPUThrottlingRate", {"rate": 4})
+    page.evaluate(SNAP_LONG_JS)
+    for a, b in ((ids[0], ids[1]), (ids[1], "now")):
+        page.select_option("#snap_a", a)
+        page.select_option("#snap_b", b)
+        t0 = time.monotonic()
+        page.click("#snap_diff")
+        done = wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 180)
+        r[f"{a}->{b} seconds"] = round(time.monotonic() - t0, 1)
+        if not done:
+            problems.append(f"{mem >> 20} MiB: the diff {a} -> {b} did not finish at 4x throttle")
+    # the hexdump and the Page tab of a changed page
+    d = page.evaluate(SNAP_DIFF_JS)
+    if d and d["pages"]:
+        page.click(f"#snap_pages [data-page='{d['pages'][0][0]}'] button.snaphex")
+        wait_for(lambda: page.get_attribute("#snap_hex", "data-page") == str(d["pages"][0][0]), 30)
+    time.sleep(1)
+    long = page.evaluate("window.mkbLong")
+    r["long tasks ms"] = sorted(long)[-5:]
+    if long and max(long) > 200:
+        problems.append(f"{mem >> 20} MiB at 4x throttle: a {max(long)} ms task on the main thread (want <= 200)")
+    cdp.send("Emulation.setCPUThrottlingRate", {"rate": 1})
+    if errors:
+        problems.append(f"{mem >> 20} MiB: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def snapdiff_guard(fn, *args):
+    """A step that times out (or finds nothing to look at) is a failure of
+    that case, not of the suite."""
+    try:
+        return fn(*args)
+    except (PlaywrightError, IndexError, KeyError, TypeError) as e:
+        return [f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}"], {}
+
+
+def snapdiff_case(browser, base, shots, linux):
+    out = []
+    runs = [("hello", "light", False), ("hello", "dark", True)]
+    if linux:
+        runs += [("minified-linux", "dark", False), ("minified-linux", "light", True)]
+    for name, scheme, phone in runs:
+        t0 = time.monotonic()
+        problems, r = snapdiff_guard(snapdiff_run, browser, base, shots, name, scheme, phone)
+        out.append(report("snapdiff", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
+                          seconds=round(time.monotonic() - t0)))
+    problems, r = snapdiff_guard(snapdiff_storage, browser, base, shots)
+    out.append(report("snapdiff storage", problems, r))
+    for phone in (False, True):
+        problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
+        out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))
+    for mem in (2 << 20, 64 << 20):
+        problems, r = snapdiff_guard(snapdiff_perf, browser, base, shots, mem)
+        out.append(report("snapdiff perf", problems, r, mem=mem))
+    return any(out)
+
+
+def suite_snapdiff(ctx):
+    return snapdiff_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
+
+
 # ---- tabs: names, emoji, compact mode, the Machine tab (U3) ---------------
 # The operator: "coverage zamień na Source, Graph na Calls. emoji przed
 # etykietami. w ustawieniach możliwość zwinięcia do samego emoji.
@@ -10805,6 +11336,7 @@ SUITES = {
     "runbadge": (suite_runbadge, False),
     "memeip": (suite_memeip, False),
     "graphopen": (suite_graphopen, False),
+    "snapdiff": (suite_snapdiff, False),
     "tabs": (suite_tabs, False),
     "pwa": (suite_pwa, False),
     "followeip": (suite_followeip, False),

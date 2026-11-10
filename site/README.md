@@ -975,9 +975,52 @@ as a colour emoji (also checked once in Firefox and WebKit):
   symbols, 665 transitions.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
-  page says so, when the browser lacks it) and keeps the last 8 in memory.
-  Each row shows raw and compressed size and the ratio, and has "Restore"
-  (`DecompressionStream`, then `emulator.restore_state()`) and "Download".
+  page says so, when the browser lacks it) and stores it in IndexedDB
+  (`mkb-snapshots`, one record per snapshot with the gzip as a Blob), so
+  snapshots survive a reload (snapshots.js). Each gets a default name
+  (kernel, v86's instruction count, the symbol at EIP, the time); tapping
+  the name renames it (Enter or leaving the field saves, Esc cancels).
+  Each is tied to the kernel it was taken with: the SHA-256 of the bzImage
+  (and of the initrd, if any). Snapshots of another kernel are listed with
+  "Switch to NAME" instead of Restore. Each row shows size, raw size and
+  ratio, and has Restore (`DecompressionStream`, `emulator.restore_state()`,
+  then v86's instruction counter set back to the snapshot's: v86 does not
+  keep it in the state), Download and Delete; "Delete all" asks twice. The
+  line under Save shows how many are stored, their total, the count for
+  this kernel and `navigator.storage.estimate()`; the first store calls
+  `navigator.storage.persist()`. A write that fails (QuotaExceededError, or
+  no IndexedDB at all: a private window, blocked site data) keeps the
+  snapshot in memory (the last 8) and says so.
+  Restoring found a v86 0.5.471 bug: `CPU.set_state` assigns
+  `last_result`, `fpu_status_word` and `mxcsr` to plain arrays instead of
+  writing them into wasm memory, so the lazily computed flags (ZF, SF, PF)
+  of a restored CPU came from the result before the restore (EFLAGS 0x2
+  instead of 0x57 in the test). `v86RestoreFix` (cpustate.js) copies them
+  into wasm memory after every `restore_state()`, also the fast-forward's.
+  Diff: pick two snapshots of this kernel, or one and "now" (a
+  `save_state()` taken for the diff). snapworker.js decompresses and
+  compares them in a Worker (the page's main thread only does what Save
+  does). It reads v86's state layout (src/state.js of v86 0.5.471): a
+  16-byte header of four int32 (magic 0x86768676, version 6, total length,
+  JSON length), the JSON `{ buffer_infos: [{ offset, length }], state }`,
+  then the buffers from the next 4-byte boundary at their offsets; a typed
+  array in `state` is `{ __state_type__, buffer_id }`. The CPU's array
+  (src/cpu.js `get_state`): [0] RAM size, [2] segment bases, [10] CR0-7,
+  [26]/[27] flags and the pending-flags mask, [37] the linear EIP, [39] the
+  eight general registers, [40] the selectors, [77] the non-zero pages
+  packed in order, [78] their bitmap (bit p & 7 of byte p >> 3). RAM and
+  the registers come from the state; EFLAGS from `get_eflags()` at save
+  time when flags are pending; the instruction count, EIP's symbol and the
+  VGA text lines from what the page read at save time. The diff shows the
+  instruction counts and EIP symbols, the registers that changed (old and
+  new), the screen lines that changed, and the changed 4 KiB pages grouped
+  by memory-map region or ELF section with their symbols and the bytes
+  changed per page. "hexdump" shows the page's two sides next to each other
+  (rows without a change left out; yellow bytes differ); "Page tab" opens
+  the page with that side's bytes (the boxed line is that side's EIP, yellow
+  bytes differ from the other side) and a note with "Show live memory";
+  Back returns to the diff. With 64 MiB of RAM at a 4x CPU throttle the
+  longest main-thread task of a diff was 51 ms (suite snapdiff).
 - **Settings.** Everything the page remembers in this browser, each with
   an explanation:
   - "Compact tabs: emoji only" (`mkb-compact-tabs`): the tab buttons show
@@ -1581,6 +1624,7 @@ browser-test matrix job named by its suites):
 | H1 the menu toggle | suite runbadge (hello at 1280 and 390 px, light and dark: paused, 1/s from the menu's Continue on the Debugger tab with the count rising, paused again from the menu, halted at full speed; the face says paused / 1/s / halted, the dot pulses only while running, its colour differs running and paused, the accessible name says the state; the toggle is fixed in the bottom right corner, 40 to 64 px wide, no horizontal scroll, the header has no run status any more; the menu opens on a click or tap with Back and Forward disabled before any jump (tooltip "no earlier view"), the state in words with the count and Continue or Pause, stays on screen, and closes on Esc (focus back on the toggle) or a tap outside; Enter on the focused toggle opens it; the state in words opens Machine; a new deploy (pwaNewer) puts a mark on the toggle and the notice with Reload in the menu on the About tab; the toggle covers no listing line of the Page tab in light and dark; reduced motion: running at 10/s and paused without animation, still told apart; the minified Linux at 1k/s and then at full speed into its own panic, and Debian at full speed (the JIT) and its panic text, at 1280 light and 390 dark; the About legend has a sample of the six states); suite navhist (Back and Forward through the menu, Alt+Left/Right with the menu closed) and suite tabs (the run status is the toggle). On 941db9ec1 it fails: no menu toggle | speedasm,runbadge; debian,...,navhist,...,tabs |
 | M1 EIP in the Memory tab | suite memeip (hello at 1280 and 390 px, light and dark; the minified Linux -O0 at 1280 light and 390 dark, -Os at 1280 dark and 390 light: at the reset vector, the kernel entry (Run to 0x100000), stepping at 1/s and 1k/s on the Memory tab with every drawing of the mark checked in the same task against the CPU, after Pause and Step, after Run to start_kernel, after the end at full speed (the minified Linux's panic, hello's halt): exactly one square has the EIP mark and it is the page of the CPU's EIP read independently (CS base + EIP, then the page tables from guest RAM, PSE and PAE), the ESP mark on the stack's page, the line names EIP, phys, the symbol (or the relocation stub) and the page, one All RAM segment framed with a tick, the First MiB bar marked when EIP is below 1 MiB, the mark's colour is no region or section colour, no horizontal scroll; the EIP label's popover on hover and tap; the line opens the Page tab with EIP boxed and Back returns; the menu toggle covers neither the mark nor its label; a kernel switch and Boot: the mark follows the new machine; the About legend has the samples); suite legend (the samples look like the drawn marks, light and dark); suite speedasm (the Memory tab at 10/s, 6x CPU throttling, 390 px: no stall, the mark follows). On 309a260ef it fails: no square has the EIP mark | speedasm,runbadge,memeip; debian,...,legend,... |
 | G1 double click opens a function | suite graphopen (hello at 1280 light and 390 dark, the minified Linux at 1280 dark and 390 light: Run to hello_main / start_kernel and 40 / 3,000 steps, then in the Calls tab a single click or tap on the function's box selects it and stays there, its hover text and info mention the double click; a double click (icicle and Flame), a double tap at 390 px, Enter on the chart and a double click in Top 30 open the Page tab at the function's first instruction with its header line in view and the Source panel at it in its file (boot/hello.c, init/main.c), one history entry; Back (the menu's button, Alt+Left, the browser's back) returns to the Calls tab with the same window, scroll, selection, focus and orientation and the panel closed; ArrowDown and ArrowUp move to a callee and back; a double click or tap on the empty area opens nothing; no horizontal scroll). On b6e78dd9a it fails: the double click re-roots the chart and the Page tab does not open | speedasm,runbadge,memeip,graphopen |
+| S1 named snapshots, kept across reloads, diff | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark and 390 light: Run to the kernel entry, save A, step 60 / 3,000, save B, guest RAM and registers read from v86 at both points; default names name the kernel and the count; rename B with Enter, a rename of A cancelled with Esc; hello: the downloaded gzip parsed in Python (v86 state layout) holds v86's RAM at B; reload: both listed with names, sizes, "stored" and the matching kernel; diff A to B lists exactly the changed pages and bytes per page, the changed registers with v86's values, the changed screen lines and both instruction counts; the hexdump marks exactly the changed bytes; "Page tab" shows B's bytes with a note, Back returns; Restore B after the reload gives B's EIP, registers, instruction count and screen, with last_result, the FPU status word and MXCSR back in wasm memory; B to now is empty right after it; Delete survives a reload; no horizontal scroll. Without IndexedDB the snapshot stays in memory with a note; with a quota below the site's usage the save says QuotaExceededError and keeps it in memory, not listed after a reload; Delete all asks twice and empties the store. A hello snapshot under hello-os says "for another kernel" with no Restore and a switch that brings Restore back, at 1280 and 390 px. 2 and 64 MiB of RAM at a 4x CPU throttle: no main-thread task over 200 ms while diffing two snapshots and one and now. FAILS on 7c1a58dbd) | snapdiff |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
 | P2 a real install | `test_pwa_install.py` in the `pwa-install` job (headful Chromium under Xvfb: beforeinstallprompt, no installability errors or manifest warnings, PWA.install, chrome://web-app-internals, PWA.launch standalone, hello boots in the app window; four broken copies (no manifest link, icons 404, no service worker, start_url outside the scope) must each fail for their own reason), then against the live site | pwa-install |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |

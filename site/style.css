@@ -180,8 +180,41 @@ table { border-collapse: collapse; font-size: 0.85rem; }
 td { padding: 0.15rem 0.8rem 0.15rem 0; border-bottom: 1px solid var(--line); }
 th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0.8rem 0.15rem 0; border-bottom: 1px solid var(--line); }
 .table-wrap { max-width: 100%; overflow-x: auto; }
-#snapshots td:nth-child(4), #snapshots td:nth-child(5), #snapshots td.ratio { font-family: ui-monospace, monospace; }
+#snapshots td:nth-child(6), #snapshots td.ratio { font-family: ui-monospace, monospace; }
 #snapshots button { padding: 0.1rem 0.45rem; }
+/* S1: named, stored snapshots and their diff. */
+#snapshots .snapname { padding: 0.1rem 0.3rem; font: inherit; font-weight: 600; text-align: left; overflow-wrap: anywhere; cursor: text; }
+#snapshots .snapedit { font: inherit; width: 100%; min-width: 12rem; box-sizing: border-box; }
+#snapshots .snapother td { color: var(--muted); }
+#snapshots .snapacts { white-space: nowrap; }
+#snap_delall { margin: 0.4rem 0; }
+#snap_diffbox h3 { margin: 1rem 0 0.2rem; }
+#snap_diff_out h4 { margin: 0.6rem 0 0.2rem; font-size: 0.85rem; }
+#snap_diff_out select, #snap_diffbox select { max-width: 100%; }
+#snap_diffbox label { min-width: 0; max-width: 100%; }
+#snap_regs td { font-family: ui-monospace, monospace; }
+.snapnew { font-weight: 600; }
+.snapscr { margin: 0.2rem 0; }
+.snapscr pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; }
+.snapln { font-size: 0.75rem; }
+.snappg { font-size: 0.85rem; margin: 0.15rem 0 0.15rem 1rem; overflow-wrap: anywhere; }
+.snappg button { padding: 0.05rem 0.4rem; }
+#snap_pages summary { cursor: pointer; font-weight: 600; font-size: 0.85rem; overflow-wrap: anywhere; }
+.snaphexgrid { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; }
+.snapcol { min-width: 0; max-width: 100%; }
+.snapcol b { display: block; font-size: 0.8rem; overflow-wrap: anywhere; }
+.snapcol pre { margin: 0.2rem 0; font-size: 0.75rem; overflow-x: auto; max-width: 100%; }
+.snapcol mark { background: var(--mark-bg); color: var(--mark-fg); }
+.snapview { border-left: 3px solid var(--mark-bg); padding-left: 0.5rem; }
+.snapview button { margin-left: 0.3rem; }
+@media (max-width: 640px) {
+	#snapshots thead { display: none; }
+	#snapshots, #snapshots tbody, #snapshots tr { display: block; }
+	#snapshots tr { padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
+	#snapshots td { display: block; border: 0; padding: 0.05rem 0; }
+	#snapshots td:nth-child(6), #snapshots td.ratio { display: none; }
+	#snapshots td.snapacts { margin-top: 0.2rem; white-space: normal; }
+}
 
 .bar {
 	display: flex;

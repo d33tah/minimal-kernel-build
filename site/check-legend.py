@@ -64,6 +64,8 @@ CHROME = {
     "fnframe": "a function's frame facts (muted)",
     "inl": "rows of inlined functions in the Debugger (muted)",
     "legendlink": "the Legend links themselves",
+    "snapother": "rows of snapshots for another kernel (muted text, the row also says so)",
+    "snapcol": "the hexdump columns of a snapshot diff (their yellow is <mark>, in the legend)",
 }
 
 

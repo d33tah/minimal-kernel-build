@@ -479,3 +479,37 @@ function renderCpuState() {
 		}
 	}
 }
+
+// v86 0.5.471's CPU.set_state (src/cpu.js) assigns state[86..88] to
+// this.last_result, this.fpu_status_word and this.mxcsr instead of writing
+// them into wasm memory: after restore_state() those fields are plain
+// arrays and wasm keeps the values from before the restore. last_result
+// feeds the lazy arithmetic flags, so the restored CPU computed ZF, SF and
+// PF from the wrong result (found by S1: EFLAGS 0x2 instead of 0x57 right
+// after restoring a snapshot). Called after every restore_state(): copy the
+// restored values into wasm memory and put views like v86's back.
+const V86_STATE_VIEWS = [["last_result", Int32Array, 112], ["fpu_status_word", Uint16Array, 1040], ["mxcsr", Int32Array, 824]];
+
+function v86View(T, memory, offset) {
+	return new Proxy({}, {
+		get(target, prop) {
+			const b = new T(memory.buffer, offset, 1);
+			const x = b[prop];
+			return typeof x === "function" ? x.bind(b) : x;
+		},
+		set(target, prop, value) {
+			new T(memory.buffer, offset, 1)[prop] = value;
+			return true;
+		},
+	});
+}
+
+function v86RestoreFix(cpu) {
+	for (const [name, T, offset] of V86_STATE_VIEWS) {
+		const v = cpu[name];
+		if (!(v instanceof T))
+			continue; // still v86's view (the state had no such field)
+		new T(cpu.wasm_memory.buffer, offset, 1)[0] = v[0];
+		cpu[name] = v86View(T, cpu.wasm_memory, offset);
+	}
+}

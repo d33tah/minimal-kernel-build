@@ -164,6 +164,7 @@
 
 <section class="panel" id="panel_page" role="tabpanel" aria-labelledby="tab_page" hidden>
   <h2 id="page_title">No page selected</h2>
+  <p id="page_snap" class="note snapview" hidden><span id="page_snap_text"></span><button id="page_snap_live" type="button">Show live memory</button></p>
   <div class="scan">
     <button id="page_prev" type="button" title="Previous page">&lsaquo;</button>
     <button id="page_next" type="button" title="Next page">&rsaquo;</button>
@@ -257,16 +258,38 @@
 </section>
 
 <section class="panel" id="panel_snapshots" role="tabpanel" aria-labelledby="tab_snapshots" hidden>
-  <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser. The last 8 are kept in memory. <span id="snap_note"></span></p>
+  <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser. Snapshots are stored in this browser (IndexedDB) and kept across reloads, each for the kernel it was taken with (the bzImage's SHA-256); tap a name to rename it. <span id="snap_note"></span></p>
   <div class="scan">
     <button id="snap_save" type="button" disabled>Save snapshot</button>
     <span id="snap_status" role="status"></span>
   </div>
+  <p id="snap_store" class="note"></p>
   <div class="table-wrap">
     <table id="snapshots" hidden>
-      <thead><tr><th>#</th><th>taken</th><th>kernel, RAM</th><th>raw bytes</th><th>gzip bytes</th><th>ratio</th><th></th></tr></thead>
+      <thead><tr><th>name</th><th>taken</th><th>at</th><th>kernel, RAM</th><th>size</th><th>raw bytes</th><th>ratio</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
+  </div>
+  <button id="snap_delall" type="button" hidden>Delete all</button>
+  <div id="snap_diffbox" hidden>
+    <h3>Diff <span class="tip" tabindex="0" role="button" title="Compares two snapshots of this kernel, or one and the running machine (now): the registers, the instruction count (v86's counter), EIP's symbol, the VGA text lines and guest RAM page by page. The snapshots are decompressed and compared in a Worker, so the page stays responsive. Yellow bytes in the hexdump differ between the two sides; the Page tab button opens the page with the snapshot's bytes, Back returns here.">?</span></h3>
+    <div class="scan">
+      <label>From <select id="snap_a"></select></label>
+      <label>to <select id="snap_b"></select></label>
+      <button id="snap_diff" type="button" disabled>Diff</button>
+      <span id="snap_diff_status" role="status"></span>
+    </div>
+    <div id="snap_diff_out" hidden>
+      <p id="snap_diff_sum"></p>
+      <h4>Registers</h4>
+      <div class="table-wrap"><table id="snap_regs" class="mono"><tbody></tbody></table></div>
+      <p id="snap_regs_same" class="note"></p>
+      <h4>Screen</h4>
+      <div id="snap_screen"></div>
+      <h4>Memory</h4>
+      <div id="snap_pages"></div>
+      <div id="snap_hex" hidden></div>
+    </div>
   </div>
 </section>
 
@@ -313,7 +336,7 @@
     <li><b>initrd, cmdline</b> (Machine tab): pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
     <li><b>Calls</b>: the symbols the CPU went through while stepping and the transitions between them, live, with task switches named by task.</li>
     <li><b>Source</b>: all the kernel's code as a tree of directories, files and functions with the lines and instructions that ran while stepping (coverage); a file opens in the Source panel with its executed lines, lcov export.</li>
-    <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
+    <li><b>Snapshots</b>: save, name, restore, download and diff the whole machine state; kept in this browser across reloads.</li>
     <li><b>Settings</b>: what the page remembers in this browser (compact tabs, speed, clock, count, and per kernel imported symbols, command lines, watch expressions and measured boot lengths), each with an explanation and Forget, and Reset all settings.</li>
   </ul>
   <h3>Counting and stepping</h3>
@@ -327,7 +350,7 @@
     <li><span class="lgs asm" inert><span class="ins bad">00100000 <span class="difb tipmark">8d 4d 03</span>     lea 0x3(%ebp),%ecx</span></span>
       <span><b>Yellow line</b>: guest memory holds other bytes than the build's disassembly at this instruction. Its bytes say why (hover, tap or focus them): vmlinux is not in place yet (the minified Linux's bzImage loads it 121 bytes higher, behind a relocation stub at 0x100000 that moves it down right after the kernel entry), Run to has put HLT breakpoint bytes there while the JIT runs to it, the memory is zero, or the code changed at run time. Where: Code at EIP, Page listing.</span></li>
     <li><span class="lgs asm" inert><span class="hex">00121ec0 00 00 <mark>3c</mark> 12 10 00 <mark>01</mark> 00 |..&lt;.....|</span></span>
-      <span><b>Yellow bytes</b> in a hex row or an instruction: changed since the last memory scan (the page scans at every stop, every few frames while the CPU runs and on Scan), or between the last two scans right after a Scan. Where: Page listing.</span></li>
+      <span><b>Yellow bytes</b> in a hex row or an instruction: changed since the last memory scan (the page scans at every stop, every few frames while the CPU runs and on Scan), or between the last two scans right after a Scan. In a snapshot diff: the byte differs between the two sides (the hexdump, and the Page tab opened from the diff). Where: Page listing, Snapshots diff.</span></li>
     <li><span class="lgs asm" inert><span class="ins nx">001001a8 89 c3     mov %eax,%ebx</span>
 <span class="ins">001001aa 85 db     test %ebx,%ebx</span>  <span class="nxkey tipmark">tinted</span></span>
       <span><b>Tinted line</b>: the instruction has not executed in this boot; untinted lines have. Recorded while stepping; code v86's JIT ran (fast-forward, full speed) is not recorded, and the key above the listing says when the tint may be incomplete. Where: Page listing.</span></li>
@@ -471,6 +494,7 @@
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
 <script src="settings.js"></script>
+<script src="snapshots.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>
 </body>

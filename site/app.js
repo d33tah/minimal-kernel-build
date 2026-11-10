@@ -10,7 +10,6 @@ const V86_KERNEL_ADDR = 0x100000;
 const PAGE = 4096;
 const DEFAULT_RAM = 2 * 1024 * 1024;
 const LIVE_MS = 500;
-const MAX_SNAPSHOTS = 8;
 // v86 0.5.471 src/kernel.js load_kernel: "Put the initrd at the 64 MB
 // boundary" (INITRD_ADDRESS = 64 << 20), whatever the RAM size, and sets
 // ramdisk_image/ramdisk_size in the header to it.
@@ -51,8 +50,6 @@ let pageSections = [];   // per page: section classes it overlaps, or null
 let grid = { cols: 32, cell: 14, pages: 0 };
 let selectedPage = -1;
 let liveTimer = null;
-let snapshots = [];
-let snapCounter = 0;
 
 function setStatus(text) {
 	$("status").textContent = text;
@@ -980,10 +977,10 @@ function renderJumpInfo(r, dropped) {
 }
 
 // Draw the selected page; base: bytes of the last scan (changes are marked).
-function renderPage(p, bytes, base, how) {
+function renderPage(p, bytes, base, how, curAt) {
 	const t0 = realNow();
 	const box = $("listing");
-	const cur = currentPhys();
+	const cur = curAt === undefined ? currentPhys() : curAt;
 	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box), how);
 	box.innerHTML = r.html;
 	box.dataset.jlocal = r.source === "live" ? "page's live decode" : "";
@@ -1194,6 +1191,12 @@ function inspect() {
 		$("symbol_index").dataset.page = p;
 		$("symbol_index").dataset.kernel = image && image.name;
 	}
+	const snap = pageSnapView && pageSnapView.page === p ? pageSnapView : null;
+	pageSnapBanner(!!snap);
+	if (snap) {
+		renderPage(p, snap.bytes, snap.base, "against " + snap.against, snap.cur);
+		return;
+	}
 	if (!emulator || !emuReady) {
 		$("listing").textContent = emulator ? "Booting..." : "Boot a kernel to read this page.";
 		return;
@@ -1368,6 +1371,8 @@ function navLabel(v) {
 		const name = at >= 0 && symbols ? asmTargetName(at, kernelSymLookup()) : "";
 		where = name || (at >= 0 ? hex(at) : v.page >= 0 ? "page " + hex(v.page * PAGE) : where);
 	}
+	if (v.snap)
+		where += ", snapshot " + v.snap.name;
 	if (v.tab === "calls" && v.graph && graphSelName(v.graph))
 		where += ", " + graphSelName(v.graph);
 	if (v.src)
@@ -1379,14 +1384,15 @@ function navCapture() {
 	const open = !!srcPanel && !$("src_panel").hidden;
 	const v = { tab, page: selectedPage, top: $("listing").scrollTop, hit: jumpHit, y: window.scrollY,
 		src: open ? { pa: srcPanel.pa, fn: srcPanel.fn, path: srcPanel.path, line: srcPanel.line, pick: srcPanel.pick, whole: srcPanel.whole } : null,
-		srcTop: open ? $("src_body").scrollTop : 0, graph: tab === "calls" ? graphCapture() : null };
+		srcTop: open ? $("src_body").scrollTop : 0, graph: tab === "calls" ? graphCapture() : null,
+		snap: tab === "page" && pageSnapView && pageSnapView.page === selectedPage ? pageSnapView : null };
 	v.label = navLabel(v);
 	return v;
 }
 
 function navSame(a, b) {
 	const src = (s) => (s ? [s.path, s.line, s.pick, s.whole, s.pa].join("\0") : "");
-	return a.tab === b.tab && a.page === b.page && a.hit === b.hit && src(a.src) === src(b.src) &&
+	return a.tab === b.tab && a.page === b.page && a.hit === b.hit && src(a.src) === src(b.src) && a.snap === b.snap &&
 		Math.abs(a.top - b.top) < 2 && Math.abs(a.srcTop - b.srcTop) < 2;
 }
 
@@ -1422,6 +1428,7 @@ function navJump(jump) {
 
 function navRestore(v) {
 	jumpPopClose(false);
+	pageSnapView = v.snap || null;
 	jumpHit = v.hit;
 	jumpHitScroll = false;
 	if (v.page !== selectedPage) {
@@ -1589,102 +1596,7 @@ async function pipe(buffer, stream) {
 	return new Response(new Blob([buffer]).stream().pipeThrough(stream)).arrayBuffer();
 }
 
-async function saveSnapshot() {
-	if (!emulator || !emuReady)
-		return;
-	const em = emulator;
-	$("snap_save").disabled = true;
-	$("snap_status").textContent = "Saving...";
-	try {
-		const t0 = realNow();
-		const raw = await em.save_state();
-		const t1 = realNow();
-		const data = HAVE_GZIP ? await pipe(raw, new CompressionStream("gzip")) : raw;
-		const t2 = realNow();
-		snapshots.push({
-			id: ++snapCounter, time: new Date(), kernel: image.name, ram: emuRam,
-			raw: raw.byteLength, data, gzip: HAVE_GZIP,
-			saveMs: Math.round(t1 - t0), gzipMs: Math.round(t2 - t1),
-		});
-		while (snapshots.length > MAX_SNAPSHOTS)
-			snapshots.shift();
-		$("snap_status").textContent = "Saved #" + snapCounter + " in " + Math.round(t1 - t0) + " ms" +
-			(HAVE_GZIP ? ", gzip took " + Math.round(t2 - t1) + " ms." : ".");
-	} catch (e) {
-		$("snap_status").textContent = "save_state failed: " + e;
-	}
-	$("snap_save").disabled = !emulator;
-	renderSnapshots();
-}
-
-async function restoreSnapshot(s) {
-	if (!emulator || emuRam !== s.ram) {
-		$("snap_status").textContent = "Snapshot #" + s.id + " was taken with " + kib(s.ram) +
-			" of RAM; boot with that size to restore it.";
-		return;
-	}
-	$("snap_status").textContent = "Restoring #" + s.id + "...";
-	try {
-		const raw = s.gzip ? await pipe(s.data, new DecompressionStream("gzip")) : s.data;
-		await emulator.restore_state(raw);
-		if (stepper)
-			stepper.jumpForget();
-		if (counting || (stepper && stepper.steps)) {
-			counting = false;
-			countNote = "A snapshot was restored: the counters stopped there.";
-		}
-		if (runState === "paused" || runState === "stepped")
-			afterStop();
-		$("snap_status").textContent = "Restored #" + s.id + " (" + s.kernel + ").";
-		$("snap_status").dataset.restored = s.id;
-		if (selectedPage >= 0)
-			inspect();
-	} catch (e) {
-		$("snap_status").textContent = "restore_state failed: " + e;
-	}
-}
-
-function downloadSnapshot(s) {
-	const a = document.createElement("a");
-	a.href = URL.createObjectURL(new Blob([s.data], { type: "application/octet-stream" }));
-	a.download = s.kernel + "-" + s.ram / 1024 + "k-" + s.id + ".v86state" + (s.gzip ? ".gz" : "");
-	a.click();
-	setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-}
-
-function renderSnapshots() {
-	const tbody = $("snapshots").tBodies[0];
-	tbody.textContent = "";
-	for (const s of snapshots) {
-		const tr = tbody.insertRow();
-		tr.dataset.raw = s.raw;
-		tr.dataset.stored = s.data.byteLength;
-		const ratio = s.raw / s.data.byteLength;
-		const cells = [
-			"#" + s.id,
-			s.time.toLocaleTimeString("en-GB"),
-			s.kernel + ", " + kib(s.ram),
-			s.raw.toLocaleString("en"),
-			s.gzip ? s.data.byteLength.toLocaleString("en") : "not compressed",
-			s.gzip ? ratio.toFixed(1) + " : 1 (" + (100 * s.data.byteLength / s.raw).toFixed(2) + "%)" : "-",
-		];
-		for (const v of cells)
-			tr.insertCell().textContent = v;
-		tr.cells[5].className = "ratio";
-		const td = tr.insertCell();
-		const restore = document.createElement("button");
-		restore.type = "button";
-		restore.textContent = "Restore";
-		restore.className = "restore";
-		restore.addEventListener("click", () => restoreSnapshot(s));
-		const dl = document.createElement("button");
-		dl.type = "button";
-		dl.textContent = "Download";
-		dl.addEventListener("click", () => downloadSnapshot(s));
-		td.append(restore, " ", dl);
-	}
-	$("snapshots").hidden = snapshots.length === 0;
-}
+// saveSnapshot, restoreSnapshot and the rest: snapshots.js.
 
 // ---- boot -----------------------------------------------------------------
 
@@ -1734,6 +1646,10 @@ async function boot() {
 	$("snap_save").disabled = true;
 	$("footprint").textContent = "";
 	scanNow = scanPrev = usedPages = changedPages = null;
+	// A snapshot's page or diff belongs to the machine it was read from.
+	pageSnapView = null;
+	snapDiff = null;
+	renderSnapDiff();
 	emuRam = ram();
 	$("screen_text").textContent = "";
 	resetCounters();
@@ -1777,6 +1693,7 @@ async function boot() {
 			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
 		$("snap_save").disabled = false;
+		renderSnapshots();
 		try {
 			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
@@ -3454,6 +3371,7 @@ function useImage(name, buffer, memFromUrl, syms) {
 	initrdNote();
 	showHeader();
 	drawMaps();
+	renderSnapshots(); // which snapshots are for this kernel
 }
 
 // symbols.json is optional: without it the grid shows regions only.
@@ -3840,12 +3758,7 @@ async function init() {
 			requestAnimationFrame(inspect);
 		}
 	}).observe($("listing"));
-	$("snap_save").addEventListener("click", saveSnapshot);
-	$("snap_save").title = HAVE_GZIP ?
-		"Compressed in the browser with CompressionStream(\"gzip\")." :
-		"This browser has no CompressionStream: snapshots are kept uncompressed.";
-	if (!HAVE_GZIP)
-		$("snap_note").textContent = "no gzip in this browser: snapshots uncompressed";
+	initSnapshots();
 	const canvas = $("pages");
 	canvas.addEventListener("click", (ev) => {
 		const p = pageAt(ev);

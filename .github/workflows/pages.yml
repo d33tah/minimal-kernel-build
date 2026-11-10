@@ -413,7 +413,7 @@ jobs:
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
         - runstate
         - speedline
-        - speedasm,runbadge,memeip
+        - speedasm,runbadge,memeip,graphopen
         - followeip
         - followfuzz
     name: browser-test (${{ matrix.suites }})

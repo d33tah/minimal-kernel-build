@@ -709,6 +709,106 @@ function focusFrame(k) {
 	graphTick();
 }
 
+// Open a box's function in the code browser (G1): the Page tab at its
+// first instruction and the Source panel at its line (app.js openFunction,
+// one history entry: Back returns here as it was). Boxes with no symbol
+// (BIOS, setup, kernel code without a symbol) do nothing: false.
+function graphOpen(node) {
+	const st = G.stepper;
+	if (!st || node < 0 || node >= st.symName.length || realNow() - (G.openedAt || 0) < 600)
+		return false;
+	G.openedAt = realNow();
+	// The press that opened is followed by its click (and dblclick) events,
+	// which would land on whatever the Page tab shows under the pointer.
+	const swallow = (ev) => {
+		if (realNow() - G.openedAt < 500) {
+			ev.stopPropagation();
+			ev.preventDefault();
+		}
+	};
+	for (const t of ["click", "dblclick"])
+		document.addEventListener(t, swallow, true);
+	setTimeout(() => {
+		for (const t of ["click", "dblclick"])
+			document.removeEventListener(t, swallow, true);
+	}, 500);
+	openFunction(st.symStart[node], st.symName[node]);
+	return true;
+}
+
+// The function node of the selected box (timeline frame or Top 30 node).
+const selectedNode = () => (G.selected < 0 || !G.stepper ? -1 : G.view === "timeline" ? G.stepper.fNode[G.selected] : G.view === "top" ? G.selected : -1);
+
+// Arrow keys on the timeline: Up the caller, Down the widest drawn callee,
+// Left and Right the next drawn box in the same row.
+function timelineArrow(key) {
+	const st = G.stepper, L = G.layout;
+	if (!st || !L || !G.rects.length)
+		return false;
+	const drawn = new Map(G.rects.map((r) => [r[0], r]));
+	let k = G.selected, next = -1;
+	if (k < 0 || !drawn.has(k)) {
+		// Nothing selected yet: the widest box of the top row.
+		let best = null;
+		for (const r of G.rects)
+			if (!best || L.row[r[0]] < L.row[best[0]] || (L.row[r[0]] === L.row[best[0]] && r[3] > best[3]))
+				best = r;
+		next = best[0];
+	} else if (key === "ArrowUp") {
+		for (let p = st.fParent[k]; p >= 0 && next < 0; p = st.fParent[p])
+			if (drawn.has(p))
+				next = p;
+	} else if (key === "ArrowDown") {
+		let best = null;
+		for (const r of G.rects)
+			if (r[0] !== k && isUnder(st, r[0], k) && (!best || L.row[r[0]] < L.row[best[0]] || (L.row[r[0]] === L.row[best[0]] && r[3] > best[3])))
+				best = r;
+		next = best ? best[0] : -1;
+	} else {
+		const [, x] = drawn.get(k), dir = key === "ArrowRight" ? 1 : -1;
+		let best = null;
+		for (const r of G.rects)
+			if (L.row[r[0]] === L.row[k] && (r[1] - x) * dir > 0 && (!best || Math.abs(r[1] - x) < Math.abs(best[1] - x)))
+				best = r;
+		next = best ? best[0] : -1;
+	}
+	if (next < 0)
+		return true;
+	G.selected = next;
+	G.selSwitch = -1;
+	G.dirty = true;
+	renderGraphInfo();
+	graphTick();
+	return true;
+}
+
+// The view as Back must restore it (app.js navCapture/navRestore).
+function graphCapture() {
+	return { st: G.stepper, view: G.view, x0: G.x0, x1: G.x1, yOff: G.yOff, xOff: G.xOff, userMoved: G.userMoved,
+		follow: G.follow, selected: G.selected, selSwitch: G.selSwitch, focus: G.focus, flame: G.flame, transpose: G.transpose };
+}
+
+function graphRestore(v) {
+	if (!v || v.st !== G.stepper)
+		return;
+	for (const k of ["view", "x0", "x1", "yOff", "xOff", "userMoved", "follow", "selected", "selSwitch", "focus", "flame", "transpose"])
+		G[k] = v[k];
+	$("graph_follow").checked = G.follow;
+	$("graph_flame").setAttribute("aria-pressed", G.flame);
+	$("graph_transpose").setAttribute("aria-pressed", G.transpose);
+	G.dirty = true;
+	renderGraphInfo();
+	graphTick();
+}
+
+// "start_kernel" for the history's labels: the selected box's function.
+function graphSelName(v) {
+	const st = v && v.st;
+	if (!st || v.selected < 0)
+		return "";
+	return st.nodeName(v.view === "timeline" ? st.fNode[v.selected] ?? -1 : v.selected);
+}
+
 function timelineFrameAt(px, py) {
 	for (let i = G.rects.length - 1; i >= 0; i--) {
 		const [k, x, y, w, h] = G.rects[i];
@@ -1123,7 +1223,12 @@ function renderGraphInfo() {
 		open.type = "button";
 		open.textContent = "Page tab";
 		open.addEventListener("click", () => jumpTo(st.symStart[node]));
-		head.append(open);
+		head.append(open, " ");
+		const how = document.createElement("span");
+		how.className = "note";
+		how.id = "graph_open_how";
+		how.textContent = "Double-click the box (double tap, or Enter) to open " + st.nodeName(node) + " in the Page tab and the Source panel.";
+		head.append(how);
 	}
 	el.append(head);
 	el.dataset.node = st.nodeName(node);
@@ -1319,6 +1424,16 @@ function initGraph() {
 			}
 			G.dirty = true;
 			renderGraphInfo();
+			// A second press on the same box soon after: a double click or a
+			// double tap (touch has no dblclick event everywhere). It opens
+			// after this press's own events are dispatched to the canvas.
+			const node = G.selSwitch < 0 ? selectedNode() : -1, t = realNow();
+			const last = G.lastPress;
+			if (node >= 0 && last && last.node === node && last.view === G.view && t - last.t < 500 && Math.hypot(x - last.x, y - last.y) < 24) {
+				G.lastPress = null;
+				setTimeout(() => graphOpen(node), 0);
+			} else
+				G.lastPress = { node, view: G.view, t, x, y };
 		}
 		G.pointers.delete(ev.pointerId);
 		G.press = null;
@@ -1334,7 +1449,7 @@ function initGraph() {
 		const f = sw || m ? -1 : timelineFrameAt(x, y);
 		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] + "\n" + taskInfo(st)[st.swTask[sw[0]]].how :
 			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
-			f >= 0 ? frameTitle(st, f) : "";
+			f >= 0 ? frameTitle(st, f) + (st.fNode[f] < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." : "") : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {
@@ -1352,12 +1467,29 @@ function initGraph() {
 			graphTick();
 		});
 	$("graph_fit").addEventListener("click", () => { G.userMoved = false; G.yOff = 0; G.xOff = 0; G.dirty = true; graphTick(); });
+	// Double click: open the box's function (G1); "Focus" re-roots.
 	c.addEventListener("dblclick", (ev) => {
-		if (G.view !== "timeline")
+		const [x, y] = local(ev);
+		if (G.view === "timeline") {
+			const k = timelineFrameAt(x, y);
+			if (k >= 0)
+				graphOpen(G.stepper.fNode[k]);
+		} else if (G.view === "top") {
+			const hit = G.boxes.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
+			if (hit)
+				graphOpen(hit[0]);
+		}
+	});
+	c.addEventListener("keydown", (ev) => {
+		if (ev.altKey || ev.ctrlKey || ev.metaKey)
 			return;
-		const k = timelineFrameAt(...local(ev));
-		if (k >= 0)
-			focusFrame(k);
+		if (ev.key === "Enter") {
+			if (graphOpen(selectedNode()))
+				ev.preventDefault();
+		} else if (G.view === "timeline" && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(ev.key)) {
+			if (timelineArrow(ev.key))
+				ev.preventDefault();
+		}
 	});
 	const toggle = (id, key) => $(id).addEventListener("click", () => {
 		G[key] = !G[key];

@@ -433,6 +433,9 @@ button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset:
 .srcaddrs[hidden] { display: none; }
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
+	/* The sheet covers the lower 65vh: the page scrolls that much further,
+	   so its end (the listing's last lines) can come up above the sheet. */
+	body:has(> .srcpanel:not([hidden])) { padding-bottom: 65vh; }
 }
 /* H1: the menu toggle, fixed bottom right on every tab, where the listings'
    lines end (their addresses and the symbol index are on the left), left

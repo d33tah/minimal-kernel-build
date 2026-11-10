@@ -931,8 +931,25 @@ function scrollListingTo(line) {
 	if (prev && prev.matches(".jsrc"))
 		line = prev;
 	// Measured, not offsetTop: the listing is the lines' offsetParent (it
-	// holds the jump arcs, position: relative).
-	box.scrollTop += line.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientHeight / 3;
+	// holds the jump arcs, position: relative). A third of the way down
+	// the listing, or of the part of it on screen above the Source panel
+	// where the panel is a sheet over the screen (a phone).
+	const b = box.getBoundingClientRect(), band = sheetBand(b);
+	const top = band ? band[0] : b.top, h = band ? band[1] - band[0] : box.clientHeight;
+	box.scrollTop += line.getBoundingClientRect().top - top - h / 3;
+}
+
+// [top, bottom] of rect r on screen between the sticky top bar and the
+// Source panel when the panel is open as a sheet (narrow screens), else null.
+function sheetBand(r) {
+	const sp = $("src_panel");
+	if (sp.hidden)
+		return null;
+	const pr = sp.getBoundingClientRect();
+	if (pr.left > 0 || pr.top <= 0)
+		return null;
+	const top = Math.max(r.top, document.querySelector(".top").getBoundingClientRect().bottom), bottom = Math.min(r.bottom, pr.top);
+	return bottom - top > 40 ? [top, bottom] : null;
 }
 
 // The Page tab's line on the jump paths of the listing.
@@ -976,7 +993,10 @@ function renderPage(p, bytes, base, how) {
 		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1, draws: Number(box.dataset.draws || 0) + 1 });
 	const hit = jumpHitScroll ? box.querySelector(".jhit") : null;
 	const back = navScrollWant && navScrollWant.page === p && realNow() < navScrollWant.until ? navScrollWant : null;
-	if (back)
+	const backLine = back && back.addr !== undefined ? listingLineAt(back.addr) : null;
+	if (backLine)
+		scrollListingTo(backLine);
+	else if (back && back.addr === undefined)
 		box.scrollTop = back.top;
 	else if (hit) {
 		jumpHitScroll = false;
@@ -1324,7 +1344,7 @@ let navList = [];
 let navAt = 0;
 let navDepth = 0;          // inside navJump: nested jumps (jumpGo -> jumpTo) are one entry
 let navBuilt = false;
-let navScrollWant = null;  // { page, top, until }: the listing's scroll for renderPage after Back
+let navScrollWant = null;  // { page, top or addr, until }: the listing's scroll for renderPage after Back or jumpTo
 let vmHasKeys = true;      // the VM screen was clicked last: Alt+Left/Right are its keys
 
 // The instruction near the top third of the Page listing (where a jump
@@ -1348,6 +1368,8 @@ function navLabel(v) {
 		const name = at >= 0 && symbols ? asmTargetName(at, kernelSymLookup()) : "";
 		where = name || (at >= 0 ? hex(at) : v.page >= 0 ? "page " + hex(v.page * PAGE) : where);
 	}
+	if (v.tab === "calls" && v.graph && graphSelName(v.graph))
+		where += ", " + graphSelName(v.graph);
 	if (v.src)
 		where += ", " + v.src.path.replace(/^.*\//, "") + (v.src.pick || v.src.line ? ":" + (v.src.pick || v.src.line) : "");
 	return where;
@@ -1357,7 +1379,7 @@ function navCapture() {
 	const open = !!srcPanel && !$("src_panel").hidden;
 	const v = { tab, page: selectedPage, top: $("listing").scrollTop, hit: jumpHit, y: window.scrollY,
 		src: open ? { pa: srcPanel.pa, fn: srcPanel.fn, path: srcPanel.path, line: srcPanel.line, pick: srcPanel.pick, whole: srcPanel.whole } : null,
-		srcTop: open ? $("src_body").scrollTop : 0 };
+		srcTop: open ? $("src_body").scrollTop : 0, graph: tab === "calls" ? graphCapture() : null };
 	v.label = navLabel(v);
 	return v;
 }
@@ -1408,6 +1430,9 @@ function navRestore(v) {
 		setLive();
 	}
 	navScrollWant = v.tab === "page" ? { page: v.page, top: v.top, until: realNow() + NAV_SCROLL_MS } : null;
+	openFnWant = null;
+	if (v.graph)
+		graphRestore(v.graph);
 	showTab(v.tab);
 	if (v.tab === "page")
 		$("listing").scrollTop = v.top;
@@ -2169,15 +2194,97 @@ function jumpTo(a) {
 		selectedPage = Math.floor(a / PAGE);
 		drawGrid();
 		showTab("page");
-		const box = $("listing");
-		let best = null;
-		for (const line of box.querySelectorAll("[data-addr]"))
-			if (Number(line.dataset.addr) <= a)
-				best = line;
+		// The listing may be drawn again soon (the Source panel opening
+		// narrows it): it keeps this line in view, not EIP's.
+		navScrollWant = { page: selectedPage, addr: a, until: realNow() + NAV_SCROLL_MS };
+		const best = listingLineAt(a);
 		if (best)
 			scrollListingTo(best);
 	});
 }
+
+// The listing's last line at or before address a.
+function listingLineAt(a) {
+	let best = null;
+	for (const line of $("listing").querySelectorAll("[data-addr]"))
+		if (Number(line.dataset.addr) <= a)
+			best = line;
+	return best;
+}
+
+// Open a function in the code browser (the Calls tab's double click, G1):
+// the Page tab at its first instruction (the symbol's header line is just
+// above it) and the Source panel at the function's line, the frame of its
+// inline chain that is the function itself (else the outermost). One
+// history entry. While its DWARF shard loads, the panel opens when it
+// arrives, if the user is still on that view.
+let openFnWant = null;
+
+function openFnSource(pa, name) {
+	const r = dbgFrames(pa);
+	if (r.state !== "ok")
+		return r.state;
+	let k = r.frames.findIndex((f) => f.func === name && f.file && f.line);
+	if (k < 0)
+		k = r.frames.length - 1;
+	openSource(pa, k);
+	return "ok";
+}
+
+// On a phone the Source panel is a sheet over the lower part of the
+// screen: scroll the window so the function's header line and first
+// instruction sit in the strip between the top bar and the sheet.
+function fnHeaderInView(pa) {
+	const sp = $("src_panel");
+	if (sp.hidden || tab !== "page")
+		return;
+	const pr = sp.getBoundingClientRect();
+	if (pr.left > 0 || pr.top <= 0)
+		return;
+	// The listing's top under the top bar (as far as the page scrolls),
+	// then the line a third of the way down the strip.
+	const top = document.querySelector(".top").getBoundingClientRect().bottom;
+	window.scrollBy(0, $("listing").getBoundingClientRect().top - top - 4);
+	const line = listingLineAt(pa);
+	if (line)
+		scrollListingTo(line);
+	// The symbol's header line (two rows when it wraps) stays in view too.
+	const hdr = $("listing").querySelector('.lbl[data-addr="' + pa + '"]'), band = sheetBand($("listing").getBoundingClientRect());
+	if (hdr && band && hdr.getBoundingClientRect().top < band[0])
+		$("listing").scrollTop -= band[0] - hdr.getBoundingClientRect().top + 4;
+}
+
+function openFunction(pa, name) {
+	openFnWant = null;
+	navJump(() => {
+		jumpTo(pa);
+		if (openFnSource(pa, name) === "loading")
+			openFnWant = { pa, name, page: selectedPage, until: realNow() + 30000 };
+		fnHeaderInView(pa);
+	});
+	if (openFnWant)
+		openFnWant.at = navAt;
+}
+
+dbgOnChange(() => {
+	const w = openFnWant;
+	if (!w)
+		return;
+	if (tab !== "page" || selectedPage !== w.page || navAt !== w.at || realNow() > w.until) {
+		openFnWant = null;
+		return;
+	}
+	// Part of the jump that asked for it: no entry of its own.
+	navDepth++;
+	try {
+		if (openFnSource(w.pa, w.name) !== "loading") {
+			openFnWant = null;
+			fnHeaderInView(w.pa);
+		}
+	} finally {
+		navDepth--;
+	}
+});
 
 const symDesc = (st, i, a) => {
 	if (i < 0)

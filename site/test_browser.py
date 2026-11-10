@@ -8810,6 +8810,288 @@ def suite_memeip(ctx):
     return memeip_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
 
 
+# ---- graphopen: a double click in the Calls chart opens the function (G1) --
+# The operator: "dwuklik na flame chart niech otwiera daną funkcję w
+# przeglądarce kodu". In the Calls tab's timeline (icicle, and with Flame)
+# and in Top 30, a double click on a function's box, a double tap, or Enter
+# on the canvas with a box selected, opens that function: the Page tab at its
+# first instruction with its symbol header in view, and the Source panel at
+# its file:line (DWARF). One history entry: Back returns to the Calls tab
+# with the same window, scroll, selection, focus and orientation. A single
+# click still selects; boxes with no symbol and the empty area do nothing.
+GRAPHOPEN_POINTS = {"hello": ("hello_main", 40, "boot/hello.c"),
+                    "minified-linux": ("start_kernel", 3000, "init/main.c")}
+
+GRAPH_STATE_JS = """() => ({ tab, view: G.view, x0: G.x0, x1: G.x1, yOff: G.yOff, xOff: G.xOff, selected: G.selected,
+    focus: G.focus, flame: G.flame, transpose: G.transpose, node: document.getElementById('graph_info').dataset.node || '' })"""
+
+
+def graph_box_xy(page, fn, view="timeline"):
+    """Viewport point inside the widest drawn box of function fn (timeline
+    frame or Top 30 node), the canvas scrolled below the sticky top bar."""
+    js = """([fn, view]) => { const st = G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
+        let best = null;
+        if (view === 'timeline') {
+            for (const [k, x, y, w, h] of G.rects)
+                if (st.nodeName(st.fNode[k]) === fn && (!best || w > best[3])) best = [k, x, y, w, h];
+        } else
+            for (const [n, x, y, w, h] of G.boxes) if (st.nodeName(n) === fn) best = [n, x, y, w, h];
+        if (!best) return null;
+        const [k, x, y, w, h] = best;
+        const cx = Math.max(x, 0) + Math.min(w, c.width - Math.max(x, 0)) / 2;
+        return { k, x: c.left + cx, y: c.top + y + h / 2, top: document.querySelector('.top').getBoundingClientRect().bottom, vh: innerHeight }; }"""
+    for _ in range(3):
+        b = page.evaluate(js, [fn, view])
+        if not b:
+            return None
+        if b["top"] + 8 < b["y"] < b["vh"] - 60:
+            return b
+        page.evaluate(f"window.scrollBy(0, {b['y'] - b['top'] - 120})")
+        time.sleep(0.3)
+    return b
+
+
+def graph_empty_xy(page):
+    """A point in the timeline's drawing area that no box, merged column or
+    task switch mark covers (below the deepest row)."""
+    return page.evaluate("""() => { const c = document.getElementById('graph_canvas').getBoundingClientRect();
+        let low = G.areaTop || 40; for (const r of G.rects) low = Math.max(low, r[2] + r[4]);
+        const y = Math.min(c.height - 30, low + 40);
+        return { x: c.left + c.width * 0.5, y: c.top + y }; }""")
+
+
+def graph_double(page, xy, touch):
+    if touch:
+        page.touchscreen.tap(xy["x"], xy["y"])
+        time.sleep(0.08)
+        page.touchscreen.tap(xy["x"], xy["y"])
+    else:
+        page.mouse.dblclick(xy["x"], xy["y"])
+
+
+def graphopen_opened(page, name, fn, paddr, src_file, how, problems, r, entries0):
+    """After a double click / tap / Enter: the Page tab at fn, Source panel
+    at its line, one more history entry."""
+    tag = f"{name} {fn} ({how})"
+    if not wait_for(lambda: shown_tab(page) == "page", 8):
+        problems.append(f"{tag}: the Page tab did not open (tab {shown_tab(page)!r})")
+        return False
+    nav_settle(page)
+    got = page.evaluate("""([pa, fn]) => { const box = document.getElementById('listing').getBoundingClientRect();
+        // On screen: inside the listing's box, below the sticky top bar and
+        // above the Source panel where it is a sheet over the screen (phone).
+        const sp0 = document.getElementById('src_panel'), pr = sp0.hidden ? null : sp0.getBoundingClientRect();
+        const lowest = pr && pr.left <= 0 && pr.top > 0 ? pr.top : innerHeight;
+        const topBar = document.querySelector('.top').getBoundingClientRect().bottom;
+        const vis = (e) => { if (!e) return false; const b = e.getBoundingClientRect();
+            return b.height > 0 && b.top >= box.top - 1 && b.bottom <= box.bottom + 1 && b.top >= topBar - 1 && b.bottom <= lowest + 1 && b.left >= 0 && b.left < innerWidth; };
+        const ins = [...document.querySelectorAll('#listing .ins[data-addr="' + pa + '"]')];
+        const hdr = document.querySelector('#listing .lbl[data-sym="' + fn + '"][data-addr="' + pa + '"]');
+        const sp = document.getElementById('src_panel'), sb = document.getElementById('src_body');
+        const here = sb.querySelector('.here');
+        const hv = here && (() => { const a = here.getBoundingClientRect(), b = sb.getBoundingClientRect(); return a.top >= b.top - 1 && a.bottom <= b.bottom + 1; })();
+        return { page: selectedPage, ins: ins.length, insVisible: ins.some(vis), hdr: !!hdr, hdrVisible: vis(hdr),
+                 panel: !sp.hidden, file: sb.dataset.file || '', state: sb.dataset.state || '', title: document.getElementById('src_title').textContent,
+                 hereVisible: !!hv, hereLine: here ? Number(here.dataset.line) : 0,
+                 hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }""", [paddr, fn])
+    if got["state"] != "ok":
+        wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
+        time.sleep(0.5)
+        got.update(page.evaluate("""() => { const sb = document.getElementById('src_body'), here = sb.querySelector('.here');
+            const a = here && here.getBoundingClientRect(), b = sb.getBoundingClientRect();
+            return { file: sb.dataset.file || '', state: sb.dataset.state || '', title: document.getElementById('src_title').textContent,
+                     hereVisible: !!here && a.top >= b.top - 1 && a.bottom <= b.bottom + 1, hereLine: here ? Number(here.dataset.line) : 0 }; }"""))
+    r[tag] = got
+    if got["page"] != paddr // 4096 or not got["ins"]:
+        problems.append(f"{tag}: the listing is not at {fn}'s first instruction {paddr:#x}: {got}")
+    elif not got["insVisible"] or not got["hdr"] or not got["hdrVisible"]:
+        problems.append(f"{tag}: {fn}'s header and first instruction are not both in view: {got}")
+    if not got["panel"] or got["file"] != src_file or got["state"] != "ok" or not got["title"].startswith(fn + ",") or not got["hereVisible"]:
+        problems.append(f"{tag}: the Source panel is not at {fn} in {src_file}: {got}")
+    if got.get("hscroll"):
+        problems.append(f"{tag}: horizontal scroll")
+    at = nav_at(page)
+    if at[0] != entries0[0] + 1 or at[1] != entries0[0] + 2:
+        problems.append(f"{tag}: one history entry expected: before {entries0}, after {at}")
+    return True
+
+
+def graphopen_back(page, name, fn, before, how, touch, problems):
+    """Back (the menu's button or Alt+Left): the Calls tab exactly as left."""
+    tag = f"{name} {fn}: Back ({how})"
+    if touch:
+        nav_press(page, "#nav_back", "tap")
+    elif how == "alt":
+        page.focus("#runbadge_toggle")
+        page.keyboard.press("Alt+ArrowLeft")
+    else:
+        page.go_back()
+    if not wait_for(lambda: shown_tab(page) == "calls", 8):
+        problems.append(f"{tag}: did not return to the Calls tab ({shown_tab(page)!r})")
+        return
+    time.sleep(0.6)
+    if page.evaluate("!document.getElementById('src_panel').hidden"):
+        problems.append(f"{tag}: the Source panel stays open")
+    now = page.evaluate(GRAPH_STATE_JS)
+    diff = {k: (before[k], now[k]) for k in before
+            if (abs(before[k] - now[k]) > max(1e-6 * abs(before[k]), 0.5) if isinstance(before[k], float) else before[k] != now[k])}
+    if diff:
+        problems.append(f"{tag}: the Calls tab is not as it was: {diff}")
+
+
+def graphopen_run(browser, base, shots, name, scheme, phone):
+    fn, steps, src_file = GRAPHOPEN_POINTS[name]
+    syms = {s["name"]: s for s in json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]}
+    sym = syms[fn]
+    problems, r = [], {}
+    errors = []
+    width = 390 if phone else 1280
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True) if phone else \
+        browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.emulate_media(color_scheme=scheme)
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sym["vaddr"]))
+    page.click("#dbg_runto")
+    ok, at, status = run_to_wait(page, {sym["paddr"]}, 240)
+    if not ok:
+        ctx.close()
+        return [f"{name}: Run to {fn} did not stop there: {status}"], r
+    page.fill("#dbg_n", str(steps))
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    time.sleep(1)
+    show_tab(page, "calls")
+    if not wait_for(lambda: page.evaluate("G.rects.length > 0"), 20):
+        ctx.close()
+        return [f"{name}: the Calls timeline drew no box"], r
+    tagw = f"{name} {width} {scheme}"
+
+    def select(xy):
+        page.touchscreen.tap(xy["x"], xy["y"]) if phone else page.mouse.click(xy["x"], xy["y"])
+
+    orientations = [False] if phone else [False, True]
+    for flame in orientations:
+        if page.evaluate("G.flame") != flame:
+            page.click("#graph_flame")
+            time.sleep(0.5)
+        how = ("double tap" if phone else "double click") + (" flame" if flame else "")
+        xy = graph_box_xy(page, fn)
+        if not xy:
+            problems.append(f"{tagw}: no {fn} box drawn ({how})")
+            continue
+        # A single click (tap) selects and stays in the Calls tab, as before.
+        focus0 = page.evaluate("G.focus")
+        select(xy)
+        if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == fn, 3):
+            problems.append(f"{tagw}: a single {'tap' if phone else 'click'} did not select {fn}: {page.get_attribute('#graph_info', 'data-node')}")
+        time.sleep(0.7)  # longer than a double click: the next press starts afresh
+        if shown_tab(page) != "calls" or page.evaluate("G.focus") != focus0:
+            problems.append(f"{tagw}: a single {'tap' if phone else 'click'} left the Calls tab or re-rooted it ({shown_tab(page)})")
+        if not phone:
+            page.mouse.move(xy["x"], xy["y"] + 1)
+            time.sleep(0.2)
+            title = page.get_attribute("#graph_canvas", "title") or ""
+            r[f"title {tagw}"] = title[-90:]
+            if "double-click" not in title.lower():
+                problems.append(f"{tagw}: the box's hover text does not mention the double click: {title[-120:]!r}")
+        info = page.inner_text("#graph_info")
+        if "double" not in info.lower():
+            problems.append(f"{tagw}: the selected box's info does not mention the double click/tap: {info[:160]!r}")
+        before = page.evaluate(GRAPH_STATE_JS)
+        entries0 = nav_at(page)
+        graph_double(page, xy, phone)
+        if graphopen_opened(page, name, fn, sym["paddr"], src_file, how, problems, r, entries0):
+            if not flame:
+                for s in ("light", "dark"):
+                    page.emulate_media(color_scheme=s)
+                    time.sleep(0.3)
+                    page.screenshot(path=str(shots / f"graphopen-{name}-{width}-{s}-page.png"))
+                page.emulate_media(color_scheme=scheme)
+            graphopen_back(page, name, fn, before, "button" if phone else ("alt" if flame else "browser"), phone, problems)
+            if not flame:
+                for s in ("light", "dark"):
+                    page.emulate_media(color_scheme=s)
+                    time.sleep(0.3)
+                    page.screenshot(path=str(shots / f"graphopen-{name}-{width}-{s}-back.png"))
+                page.emulate_media(color_scheme=scheme)
+    if page.evaluate("G.flame"):
+        page.click("#graph_flame")
+        time.sleep(0.4)
+
+    # Enter on the canvas opens the selected box; the arrows move the selection.
+    xy = graph_box_xy(page, fn)
+    if xy and not phone:
+        select(xy)
+        wait_for(lambda: page.get_attribute("#graph_info", "data-node") == fn, 3)
+        time.sleep(0.7)
+        before = page.evaluate(GRAPH_STATE_JS)
+        entries0 = nav_at(page)
+        page.focus("#graph_canvas")
+        page.keyboard.press("Enter")
+        if graphopen_opened(page, name, fn, sym["paddr"], src_file, "Enter", problems, r, entries0):
+            graphopen_back(page, name, fn, before, "browser", False, problems)
+        # Arrows: Down to a callee, Up back to fn.
+        page.focus("#graph_canvas")
+        page.keyboard.press("ArrowDown")
+        time.sleep(0.3)
+        down = page.evaluate("[G.selected >= 0 ? G.stepper.fParent[G.selected] : -2, G.selected]")
+        page.keyboard.press("ArrowUp")
+        time.sleep(0.3)
+        up = page.evaluate("G.selected")
+        r[f"arrows {tagw}"] = [before["selected"], down, up]
+        if down[0] != before["selected"] or up != before["selected"]:
+            problems.append(f"{tagw}: ArrowDown/ArrowUp on the canvas do not move to a callee and back: {r[f'arrows {tagw}']}")
+
+    # The empty area: nothing opens, no history entry.
+    e = graph_empty_xy(page)
+    entries0 = nav_at(page)
+    graph_double(page, e, phone)
+    time.sleep(1)
+    if shown_tab(page) != "calls" or nav_at(page) != entries0:
+        problems.append(f"{tagw}: a double {'tap' if phone else 'click'} on the empty area opened {shown_tab(page)!r} / {nav_at(page)} vs {entries0}")
+
+    # Top 30: a node's box opens its function too.
+    if not phone and name != "hello":
+        page.click("#gview_top")
+        time.sleep(0.6)
+        xy = graph_box_xy(page, fn, "top")
+        if not xy:
+            problems.append(f"{tagw}: Top 30 has no {fn} box")
+        else:
+            select(xy)
+            time.sleep(0.7)
+            before = page.evaluate(GRAPH_STATE_JS)
+            entries0 = nav_at(page)
+            graph_double(page, xy, False)
+            if graphopen_opened(page, name, fn, sym["paddr"], src_file, "Top 30", problems, r, entries0):
+                graphopen_back(page, name, fn, before, "alt", False, problems)
+        page.click("#gview_timeline")
+    if errors:
+        problems.append(f"{tagw}: page errors {errors}")
+    ctx.close()
+    return problems, r
+
+
+def graphopen_case(browser, base, shots, linux):
+    out = []
+    runs = [("hello", "light", False), ("hello", "dark", True)]
+    if linux:
+        runs += [("minified-linux", "dark", False), ("minified-linux", "light", True)]
+    for name, scheme, phone in runs:
+        t0 = time.monotonic()
+        problems, r = graphopen_run(browser, base, shots, name, scheme, phone)
+        out.append(report("graphopen", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
+                          seconds=round(time.monotonic() - t0)))
+    return any(out)
+
+
+def suite_graphopen(ctx):
+    return graphopen_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
+
+
 # ---- tabs: names, emoji, compact mode, the Machine tab (U3) ---------------
 # The operator: "coverage zamień na Source, Graph na Calls. emoji przed
 # etykietami. w ustawieniach możliwość zwinięcia do samego emoji.
@@ -10522,6 +10804,7 @@ SUITES = {
     "navhist": (suite_navhist, False),
     "runbadge": (suite_runbadge, False),
     "memeip": (suite_memeip, False),
+    "graphopen": (suite_graphopen, False),
     "tabs": (suite_tabs, False),
     "pwa": (suite_pwa, False),
     "followeip": (suite_followeip, False),

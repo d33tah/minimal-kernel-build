@@ -1744,8 +1744,10 @@ async function boot() {
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
 		}
 		graphReset(stepper);
-		if (stepper)
+		if (stepper) {
 			CLOCK.set(!!clockMips(), stepper);
+			jitDetInstall(stepper, em);
+		}
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
 		// "full", count the whole boot in the background, then run the JIT.
@@ -1871,6 +1873,7 @@ function stopDriver() {
 async function resume(now = false) {
 	if (!emulator || !emuReady)
 		return;
+	jitRunId++; // a running jitLoop stops at its next check
 	stopDriver();
 	if (wantStepped()) {
 		if (emulator.is_running())
@@ -1885,12 +1888,99 @@ async function resume(now = false) {
 			stepper.markGap();
 		if (stepper)
 			stepper.noteJit(false);
-		CLOCK.set(false); // the JIT runs on real time
-		runState = "jit";
-		emulator.run();
+		if (stepper && clockMips()) {
+			// The virtual clock: the page runs the JIT (jitLoop), the same
+			// run every time.
+			const em = emulator;
+			if (em.is_running())
+				await em.stop();
+			if (em !== emulator)
+				return;
+			CLOCK.set(true);
+			CLOCK.mips = clockMips(); // from here on (the menu changed while the JIT ran on real time)
+			runState = "jit";
+			jitLoop();
+		} else {
+			// Real time: v86's own loop, with v86's own compiling.
+			const em = emulator;
+			if (stepper && jitPending(stepper))
+				await jitFlush(stepper);
+			if (em !== emulator)
+				return;
+			CLOCK.set(false);
+			runState = "jit";
+			emulator.run();
+		}
 	}
 	speedReset();
 	updateDebugUi();
+}
+
+// Full speed on the virtual clock (J1): v86's JIT driven from the page, one
+// main_loop() (about 100,000 instructions) at a time, with the clock from
+// the instruction count (jitChunk) and compiled code going live only between
+// two of them (jitFlush), so a run repeats exactly: same slice ends, same
+// timer interrupts, same state at the same count (D1). It yields to the
+// page every JIT.yieldEvery slices or JIT.yieldMs. A guest that has been
+// idle for a while (halted most of the virtual time) is paced to at most
+// 100 slices a second: the virtual clock would otherwise spin through its
+// timer ticks at full CPU.
+let jitRunId = 0;  // bumped by resume and pause: a running loop stops
+let jitLoopId = 0; // the loop that runs (draws the screen), 0 for none
+async function jitLoop() {
+	const st = stepper, em = emulator, id = ++jitRunId;
+	jitLoopId = id;
+	const live = () => st === stepper && em === emulator && runState === "jit" && id === jitRunId;
+	const ch = new MessageChannel();
+	const yieldNow = () => new Promise((r) => {
+		ch.port1.onmessage = () => r();
+		ch.port2.postMessage(0);
+	});
+	const sa = em.screen_adapter; // v86 draws the screen only while it runs
+	if (sa)
+		sa.continue();
+	let idleGroups = 0, drawn = realNow();
+	try {
+		while (live()) {
+			if (realNow() - drawn > 500) { // the count, registers, clock while it runs
+				drawn = realNow();
+				updateDebugUi();
+			}
+			const t0 = realNow(), clock0 = CLOCK.now(), idle0 = st.idleMs;
+			for (let n = 0; n < JIT.yieldEvery; n++) {
+				if (jitPending(st)) {
+					await jitFlush(st);
+					if (!live())
+						return;
+				}
+				jitChunk(st);
+				if (st.dead()) {
+					watchJitEnd();
+					return;
+				}
+				if (st.steps >= JIT.stopAt) {
+					JIT.stopAt = Infinity;
+					pause("Stopped at " + num(st.steps) + " instructions.");
+					return;
+				}
+				if (realNow() - t0 > JIT.yieldMs)
+					break;
+			}
+			const span = CLOCK.now() - clock0;
+			idleGroups = span > 0 && st.idleMs - idle0 > 0.9 * span ? idleGroups + 1 : 0;
+			if (idleGroups > 64)
+				await new Promise((r) => setTimeout(r, 10));
+			else
+				await yieldNow();
+		}
+	} finally {
+		ch.port1.onmessage = null;
+		if (jitLoopId === id) {
+			jitLoopId = 0;
+			if (sa && !em.is_running())
+				sa.pause();
+		}
+	}
 }
 
 async function pause(note) {
@@ -1898,6 +1988,7 @@ async function pause(note) {
 		return;
 	if (ffActive)
 		ffAbort = true;
+	jitRunId++;
 	stopDriver();
 	if (emulator.is_running())
 		await emulator.stop();
@@ -2722,10 +2813,11 @@ function renderCounters() {
 		return;
 	}
 	info.textContent = (counting ? (runState === "paused" ? "Counting (paused): " : "Counting: ") : stepper.steps ? "Counted " : "") +
-		(stepper.steps ? num(stepper.steps) + " instructions stepped" +
+		(stepper.steps ? num(stepper.steps) + (stepper.jitBeforeEntry || stepper.jitAfterEntry ? " instructions (stepped and run by the JIT)" : " instructions stepped") +
 			(countMs ? ", " + (countMs / 1000).toFixed(2) + " s of JavaScript stepping time (" + rate.toFixed(1) + " M/s)" : "") + ". " : "") +
 		(!$("count").checked && !stepper.steps ? "Counting is off: the boot ran at full speed. " : "") +
-		(runState === "jit" && !countDone() && stepper.steps ? "Running at full speed now: not counting. " : "") +
+		(runState === "jit" && !countDone() && stepper.steps ? (CLOCK.virtual ? "Running at full speed on the virtual clock: counted, the same run every time. " :
+			"Running at full speed on real time now: not counting. ") : "") +
 		countNote;
 }
 
@@ -3352,7 +3444,9 @@ function initDebugger() {
 		} catch (e) {
 			// no storage: until reload
 		}
-		if (runState !== "jit") {
+		if (runState === "jit") {
+			resume(true); // the JIT from the page (virtual) or v86's own loop (real)
+		} else {
 			CLOCK.set(!!clockMips());
 			if (clockMips())
 				CLOCK.mips = clockMips();

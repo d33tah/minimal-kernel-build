@@ -12857,6 +12857,161 @@ def suite_bookmarks(ctx):
     return bookmarks_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
 
 
+# ---- jitdet: deterministic full JIT speed on the virtual clock (J1) --------
+# D1 (2026-11-10): with the clock taken from v86's instruction counter, the
+# only remaining JIT nondeterminism is when compiled code goes live (v86
+# instantiates each block asynchronously, so on wall time), which moves the
+# ends of main_loop's slices and so where timer interrupts land. With the
+# virtual clock, full speed runs v86's JIT from the page, one main_loop at a
+# time, and compiled code goes live only between two of them. The test:
+# Debian from the reset vector to v86's count JITDET_CAP twice (2.5e9: the
+# kernel entry is at about 2.33e9 and the page stops at the root-fs panic's
+# text at about 2.6e9, found by polling the screen, so not exactly: J3; Date and
+# getRandomValues fixed: J2 puts those behind the clock) ends with the same
+# count, EIP, chunk-chain hash and RAM; hello and the minified Linux at full
+# speed (fast-forward to the entry, then the JIT) end in the same state twice;
+# the speed is at least JITDET_MIN_RATIO of v86's own loop on real time
+# (clock "real", kept as the non-deterministic option).
+JITDET_CAP = 2_500_000_000
+JITDET_MIN_RATIO = 0.9
+FIXRAND_JS = """(() => { let x = 0x12345678; const next = () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return x >>> 0; };
+  crypto.getRandomValues = function (a) { const b = new Uint8Array(a.buffer, a.byteOffset, a.byteLength); for (let i = 0; i < b.length; i++) b[i] = next() & 255; return a; };
+  Math.random = () => next() / 4294967296; })();"""
+FIXDATE_JS = """(() => { const T = Date.UTC(2026, 0, 1, 12, 0, 0); const D = Date;
+  class FD extends D { constructor(...a) { if (a.length) super(...a); else super(T); } static now() { return T; } }
+  window.Date = FD; })();"""
+# Stop at v86's count cap: the page's own stop (JIT.stopAt) where it has one,
+# else Pause once the count is past it (or the run stopped by itself: on real
+# time Debian reaches its panic before the cap); the same 10 ms watcher times
+# both, from Continue.
+JITDET_WATCH_JS = """(cap) => { const st = stepper, w = window.__jd = { t0: realNow(), c0: ffCounter(st), cap, at: null, c: null };
+  if (typeof JIT === 'object') JIT.stopAt = cap;
+  const iv = setInterval(() => { if (stepper !== st) { clearInterval(iv); return; }
+    const c = ffCounter(st);
+    if (!w.ran && runState === 'jit') Object.assign(w, { ran: true, t0: realNow(), c0: c });
+    if (w.ran && (c >= cap || runState === 'paused' || runState === 'off')) { w.at = realNow(); w.c = c; clearInterval(iv); if (runState === 'jit') pause(); } }, 10); }"""
+JITDET_STATE_JS = """async () => { const st = stepper, w = window.__jd || {}, m = st.cpu.mem8;
+  const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const c = ffCounter(st);
+  return { steps: st.steps, counter: c, eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
+    chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, end: st.end ? st.end.kind : null,
+    mips: w.at ? +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1) : null }; }"""
+JITDET_RUNNING_JS = """() => ({ clock: document.getElementById('vclock').textContent, virtual: document.getElementById('vclock').dataset.virtual,
+  badge: document.getElementById('runbadge').dataset.state, face: document.getElementById('runbadge_speed').textContent,
+  status: document.getElementById('dbg_status').textContent, runState })"""
+
+
+def jitdet_context(browser, scheme, phone):
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 900}}))
+    ctx.add_init_script(FIXDATE_JS)
+    ctx.add_init_script(FIXRAND_JS)
+    return ctx
+
+
+def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, problems):
+    """From the reset vector (paused) at full speed to v86's count JITDET_CAP."""
+    ctx = jitdet_context(browser, scheme, phone)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips={mips}", timeout=120000)
+        if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+            problems.append(f"{tag}: not paused at the reset vector")
+            return None
+        page.evaluate(JITDET_WATCH_JS, JITDET_CAP)
+        machine_do(page, "click", "#dbg_continue")
+        time.sleep(4)
+        running = page.evaluate(JITDET_RUNNING_JS)
+        page.screenshot(path=str(shots / f"jitdet-{tag}-running.png"))
+        if not wait_for(lambda: page.evaluate("!!window.__jd.at && runState === 'paused'"), 400, 0.5):
+            problems.append(f"{tag}: did not stop at count {JITDET_CAP:,} (counter {page.evaluate('ffCounter(stepper)'):,})")
+            return None
+        out = page.evaluate(JITDET_STATE_JS)
+        out["running"] = running
+        page.screenshot(path=str(shots / f"jitdet-{tag}-stopped.png"))
+        want_virtual = "false" if mips == "real" else "true"
+        if running["virtual"] != want_virtual or ("virtual time" if want_virtual == "true" else "real time") not in running["clock"]:
+            problems.append(f"{tag}: while running at full speed the clock line says {running['clock']!r} (virtual={running['virtual']})")
+        if running["runState"] != "jit" or running["face"] != "full":
+            problems.append(f"{tag}: while running: runState {running['runState']}, run badge face {running['face']!r}")
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:2]}")
+        return out
+    finally:
+        ctx.close()
+
+
+def jitdet_end_run(browser, base, shots, name, scheme, phone, tag, problems):
+    """The default load at full speed, count off: fast-forward to the
+    entry, then the JIT to the kernel's end."""
+    ctx = jitdet_context(browser, scheme, phone)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 240, 0.5):
+            problems.append(f"{tag}: no end in 240 s")
+            return None
+        time.sleep(0.5)
+        out = page.evaluate(JITDET_STATE_JS)
+        out["virtual"] = page.get_attribute("#vclock", "data-virtual")
+        page.screenshot(path=str(shots / f"jitdet-{tag}-end.png"))
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:2]}")
+        return out
+    finally:
+        ctx.close()
+
+
+def jitdet_case(browser, base, shots, entries, debian):
+    problems, r = [], {}
+    keys = ("counter", "steps", "eip", "chain", "ram")
+    # hello and the minified Linux: two full-speed boots end in the same state.
+    for name, scheme, phone in (("hello", "light", False), ("minified-linux", "dark", True)):
+        if name not in entries:
+            continue
+        runs = [jitdet_end_run(browser, base, shots, name, scheme, phone, f"{name}-{i}", problems) for i in range(2)]
+        r[name] = runs
+        if None in runs:
+            continue
+        a, b = runs
+        for k in keys + ("irq0", "end"):
+            if a[k] != b[k]:
+                problems.append(f"{name}: end state differs in {k}: {a[k]} vs {b[k]}")
+        if a["chain"] is None:
+            problems.append(f"{name}: no chunk-chain hash (the JIT did not run from the page)")
+    if not debian:
+        return problems, r
+    # Debian to count JITDET_CAP: twice on the virtual clock, once on real time.
+    name = debian[0]
+    det = [jitdet_count_run(browser, base, shots, name, "10", scheme, phone, f"debian-det{i}-{scheme}-{390 if phone else 1280}", problems)
+           for i, (scheme, phone) in enumerate((("light", False), ("dark", True)))]
+    rt = jitdet_count_run(browser, base, shots, name, "real", "light", False, "debian-realtime", problems)
+    r["debian"] = det
+    r["debian_realtime"] = rt
+    if None not in det:
+        a, b = det
+        for k in keys:
+            if a[k] != b[k]:
+                problems.append(f"debian to {JITDET_CAP:,}: {k} differs: {a[k]} vs {b[k]}")
+        if a["chain"] is None:
+            problems.append("debian: no chunk-chain hash (the JIT did not run from the page)")
+        if not (JITDET_CAP <= a["counter"] < JITDET_CAP + 300_000):
+            problems.append(f"debian: stopped at count {a['counter']:,}, not at the first slice end past {JITDET_CAP:,}")
+        if rt and rt.get("mips") and a.get("mips"):
+            best = max(x["mips"] for x in det)
+            r["speed_ratio"] = round(best / rt["mips"], 3)
+            if best < JITDET_MIN_RATIO * rt["mips"]:
+                problems.append(f"debian: {best} MIPS on the virtual clock, below {JITDET_MIN_RATIO} x {rt['mips']} MIPS of v86's own loop")
+    return problems, r
+
+
+def suite_jitdet(ctx):
+    return report("jitdet", *jitdet_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx)))
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -12901,6 +13056,7 @@ SUITES = {
     "nopath": (suite_nopath, False),
     "tipmarks": (suite_tipmarks, False),
     "legend": (suite_legend, True),
+    "jitdet": (suite_jitdet, False),
 }
 
 

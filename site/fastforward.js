@@ -42,10 +42,63 @@ function codeRange(phys) {
 
 const ffCounter = (st) => new Uint32Array(st.cpu.wasm_memory.buffer, 664, 1)[0];
 
+// Compiled code goes live between two main_loop() calls only (J1). v86
+// compiles one block at a time to wasm and instantiates it asynchronously:
+// as shipped the block goes live whenever that promise resolves, a moment of
+// wall time, which changes where main_loop's slices end and so where timer
+// interrupts land (D1). While the page drives the JIT, the instantiation is
+// queued here and the page waits for it before the next main_loop (jitFlush);
+// v86's own loop (real-time clock) keeps v86's way. v86's synchronous path
+// panics in its release build (re-entrant JIT state).
+const WASM_TABLE_OFFSET = 1024;
+const JIT = {
+	stopAt: Infinity, // the page-driven loop pauses at the first slice end at or past this count
+	yieldEvery: 8,    // main_loop calls between yields (yielding after each cost WebKit 40%, D1)
+	yieldMs: 16,      // or sooner, after this much real time
+};
+function jitDetInstall(st, em) {
+	const cpu = st.cpu, orig = cpu.codegen_finalize;
+	st.jitQueue = [];
+	st.jitChain = 0x811c9dc5;
+	st.jitCompiles = 0;
+	st.jitWaits = 0;
+	cpu.codegen_finalize = function (idx, start, flags, ptr, len) {
+		if (em.is_running())
+			return orig.call(this, idx, start, flags, ptr, len);
+		const code = new Uint8Array(this.wasm_memory.buffer, ptr >>> 0, len >>> 0).slice();
+		const it = { idx, start, flags, inst: null, err: null };
+		it.p = WebAssembly.instantiate(code, { e: this.jit_imports }).then((r) => { it.inst = r.instance; }, (e) => { it.err = e; });
+		st.jitQueue.push(it);
+		st.jitCompiles++;
+	};
+}
+const jitPending = (st) => !!(st.jitQueue && st.jitQueue.length);
+// Put the queued blocks live, waiting for unfinished ones.
+async function jitFlush(st) {
+	const q = st.jitQueue;
+	while (q && q.length) {
+		const it = q[0];
+		if (!it.inst && !it.err) {
+			st.jitWaits++;
+			await it.p;
+		}
+		if (q[0] !== it)
+			continue; // flushed meanwhile by another caller
+		q.shift();
+		if (it.err) {
+			console.warn("JIT compile failed:", it.err); // v86 then leaves the block uncompiled too
+			continue;
+		}
+		st.cpu.wm.wasm_table.set(it.idx + WASM_TABLE_OFFSET, it.inst.exports.f);
+		st.cpu.codegen_finalize_finished(it.idx, it.start, it.flags);
+	}
+}
+
 // Run one v86 main_loop() (JIT, ~100,000 instructions or until hlt) and
 // add what it ran to the stepper's count. Returns the instructions run.
 // beforeEntry: the fast-forward to the kernel entry (for the coverage note).
-// st: the stepper of the machine the loop started on.
+// st: the stepper of the machine the loop started on. With blocks queued
+// (jitPending), await jitFlush(st) first, or they stay out of this slice.
 function jitChunk(st, beforeEntry = false) {
 	const cpu = st.cpu;
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
@@ -66,7 +119,21 @@ function jitChunk(st, beforeEntry = false) {
 	}
 	// The CLOCK keeps its value: steps take over from extraSteps.
 	st.steps += ran;
+	// Where each slice ended (count, EIP): equal chains, equal timelines.
+	if (st.jitChain !== undefined) {
+		let h = st.jitChain;
+		h = Math.imul(h ^ (st.steps >>> 0), 0x01000193);
+		h = Math.imul(h ^ Math.floor(st.steps / 4294967296), 0x01000193);
+		st.jitChain = Math.imul(h ^ cpu.instruction_pointer[0], 0x01000193) >>> 0;
+	}
 	return ran;
+}
+
+// jitChunk with the queued blocks live first.
+async function jitStep(st, beforeEntry = false) {
+	if (jitPending(st))
+		await jitFlush(st);
+	return jitChunk(st, beforeEntry);
 }
 
 const ffYield = () => new Promise((r) => setTimeout(r, 0));
@@ -110,7 +177,7 @@ async function fastForward(target, name) {
 				try {
 					snap = await em.save_state();
 				} catch (e) {
-					jitChunk(st, true);
+					await jitStep(st, true);
 				}
 				if (gone())
 					break;
@@ -121,6 +188,11 @@ async function fastForward(target, name) {
 			ffInfo.slices++;
 			let ran = 0;
 			while (ran < FF_SLICE && !ffAbort && !st.dead()) {
+				if (jitPending(st)) {
+					await jitFlush(st);
+					if (ffAbort || gone())
+						break;
+				}
 				ran += jitChunk(st, true);
 				if (inside()) {
 					reached = true;
@@ -268,6 +340,11 @@ async function fastRunTo(targets, label) {
 		arm();
 		let n = 0;
 		while (!ffAbort && !gone() && !st.dead()) {
+			if (jitPending(st)) {
+				await jitFlush(st);
+				if (ffAbort || gone())
+					break;
+			}
 			jitChunk(st);
 			const at = st.nextPhys() - 1;
 			if (cpu.in_hlt[0] && bp.has(at) && em.read_memory(at, 1)[0] === 0xf4) {

@@ -1396,7 +1396,7 @@ JavaScript drives the CPU:
   (the page wraps v86's MMIO write handlers for 0xa0000-0xbffff and keeps
   a copy of the text page), at about 4-7 million instructions per second
   in headless Chromium, then v86's JIT runs.
-- **speed**: full (v86's JIT, not counted) or 10M, 1M, 100k, 10k, 1k,
+- **speed**: full (v86's JIT; counted on the virtual clock) or 10M, 1M, 100k, 10k, 1k,
   100, 10 or 1 instructions per second. The Machine tab shows the speed
   actually reached, from v86's instruction counter (JIT and stepping
   alike) sampled 4 times a second, over a window (4 s in slow motion,
@@ -1515,9 +1515,16 @@ rate set by the **clock** menu (10, 100 or 1000 instructions per
 microsecond, default 10; `?mips=`; remembered). When the CPU halts with
 interrupts on, the stepper moves the clock to the next timer event. A new
 machine starts at virtual time 0, so device setup sees the same
-timestamps every run. At full JIT speed the clock follows real time,
-continuing from the virtual time. "real time" in the menu restores v86's
-wall clock while stepping. The Machine tab shows the time and how many times
+timestamps every run. At full JIT speed on the virtual clock the page runs
+v86's `main_loop()` itself, one slice (about 100,000 instructions) at a
+time, the clock follows v86's instruction counter, and compiled code goes
+live only between two slices (v86 instantiates its wasm asynchronously, so
+as shipped a block goes live at a moment of wall time, which moves where
+slices end and so where timer interrupts land): a full-speed run from the
+same start repeats exactly, at the same speed as v86's own loop or faster
+(Debian to 2.5e9 instructions in Chromium: 270-284 vs 239 MIPS; test suite
+`jitdet`). "real time" in the menu restores v86's wall clock while stepping
+and v86's own loop at full speed. The Machine tab shows the time and how many times
 the PIT raised IRQ0.
 
 Before (real time): the minified Linux unmasks only IRQ0 (PIT, HZ=250),

@@ -2576,6 +2576,16 @@ def debian_case(browser, base, shots, name):
     r["ff"] = info
     if not ok or not info or info["stop"] != st32["paddr"] or r["ff_seconds"] > 120:
         problems.append(f"fast-forward to startup_32 {st32['paddr']:#x}: {info}, {r['ff_seconds']} s")
+    # D1: the guest's TSC runs with the virtual clock (v86: TSC = clock x
+    # 10^6 per ms - offset, offset 0 from power-on). The fast-forward ends by
+    # restoring the slice's snapshot; restore_state sets the offset from the
+    # clock it reads, and the clock used to be put back only afterwards, so
+    # the TSC lagged by however far the JIT ran past the slice start (in
+    # Firefox and WebKit by a varying number of chunks, D0).
+    r["tsc_minus_clock"] = page.evaluate("""() => { const c = emulator.v86.cpu; c.store_current_tsc();
+      return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(CLOCK.now() * 1e6); }""")
+    if abs(r["tsc_minus_clock"]) > 1_000_000:
+        problems.append(f"after the fast-forward the TSC is off the virtual clock by {r['tsc_minus_clock']} ticks (1 ms = 10^6)")
     s0 = page.evaluate("stepper.steps")
     page.fill("#dbg_addr", hex(sk["vaddr"]))
     page.click("#dbg_runto")
@@ -10375,6 +10385,84 @@ def snapdiff_poweron(browser, base, shots, name, scheme, phone):
     return problems, r
 
 
+# D1: a snapshot is a point on the virtual-clock timeline. Restoring it
+# and stepping on must give the same machine as stepping on from it the
+# first time: v86's devices keep absolute timestamps (the PIT's counter
+# start, the RTC's last update) and restore_state sets the TSC offset from
+# the clock it reads at that moment, so the page puts its virtual clock and
+# the stepper's count back to the snapshot's before restore_state. Before
+# that, the clock ran on from where the machine was when Restore was
+# pressed, so the timer interrupts and every TSC/PIT read after a restore
+# were shifted by the time stepped in between.
+SNAP_REPLAY = {"hello": (600_000, 600_000), "minified-linux": (1_500_000, 500_000)}
+SNAP_REPLAY_STATE_JS = """async () => { const c = emulator.v86.cpu, m = emulator.read_memory(0, emuRam);
+  const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  return { steps: stepper.steps, eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0), eflags: c.get_eflags() >>> 0,
+    clock: CLOCK.now(), irq0: stepper.irq0, ram: sha }; }"""
+
+
+def snap_step_to(page, target):
+    """Step (in slices, as the Step button does) until stepper.steps == target."""
+    for _ in range(200):
+        left = target - page.evaluate("stepper.steps")
+        if left <= 0:
+            break
+        page.evaluate(f"doStep({min(left, 400000)})")
+    return page.evaluate("stepper.steps")
+
+
+def snapdiff_replay(browser, base, shots, name, scheme, phone):
+    """Save at S on the virtual clock, step N, note the machine; Restore,
+    step N again: the same EIP, registers, RAM, IRQ0 count (from S) and clock."""
+    problems, r, errors = [], {}, []
+    w = 390 if phone else 1280
+    tag = f"replay {name} {w} {scheme}"
+    at, n = SNAP_REPLAY[name]
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10#debugger")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+        ctx.close()
+        return [f"{tag}: did not start paused"], r
+    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    if snap_step_to(page, at) != at:
+        problems.append(f"{tag}: could not step to {at} (test setup): {page.inner_text('#dbg_status')[:160]}")
+    st = snap_save(page, 1, phone)
+    row = st["rows"][0]["id"]
+    s0 = page.evaluate(SNAP_REPLAY_STATE_JS)
+    snap_step_to(page, at + n)
+    first = page.evaluate(SNAP_REPLAY_STATE_JS)
+    # Some more time passes before the Restore (as when someone reads the screen).
+    snap_step_to(page, at + n + 777)
+    show_tab(page, "snapshots")
+    snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", phone)
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or
+             "failed" in page.inner_text("#snap_status"), 60)
+    if page.get_attribute("#snap_status", "data-restored") != row:
+        problems.append(f"{tag}: Restore: {page.inner_text('#snap_status')[:200]}")
+    s1 = page.evaluate(SNAP_REPLAY_STATE_JS)
+    for k in ("steps", "clock"):
+        if s1[k] != s0[k]:
+            problems.append(f"{tag}: right after Restore {k} is {s1[k]}, at the save it was {s0[k]}")
+    snap_step_to(page, s1["steps"] + n)
+    again = page.evaluate(SNAP_REPLAY_STATE_JS)
+    r["first"] = {k: first[k] for k in ("steps", "eip", "irq0", "clock")} | {"ram": first["ram"][:16]}
+    r["again"] = {k: again[k] for k in ("steps", "eip", "irq0", "clock")} | {"ram": again["ram"][:16]}
+    first["irq0"] -= s0["irq0"]  # the page's IRQ0 count is not part of the state
+    again["irq0"] -= s1["irq0"]
+    for k in ("eip", "regs", "eflags", "irq0", "clock", "ram"):
+        if first[k] != again[k]:
+            problems.append(f"{tag}: {k} after Restore + {n} steps differs from the first time: {str(again[k])[:80]} vs {str(first[k])[:80]}")
+    page.screenshot(path=str(shots / f"snapdiff-replay-{name}-{w}-{scheme}.png"), full_page=True)
+    if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+        problems.append(f"{tag}: horizontal scroll")
+    if errors:
+        problems.append(f"{tag}: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
 def snapdiff_guard(fn, *args):
     """A step that times out (or finds nothing to look at) is a failure of
     that case, not of the suite."""
@@ -10405,6 +10493,10 @@ def snapdiff_case(browser, base, shots, linux):
     for name, scheme, phone in pw:
         problems, r = snapdiff_guard(snapdiff_poweron, browser, base, shots, name, scheme, phone)
         out.append(report("snapdiff power-on", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
+    rp = [("hello", "dark", True)] + ([("minified-linux", "light", False)] if linux else [])
+    for name, scheme, phone in rp:
+        problems, r = snapdiff_guard(snapdiff_replay, browser, base, shots, name, scheme, phone)
+        out.append(report("snapdiff replay", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
         out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))

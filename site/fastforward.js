@@ -128,17 +128,24 @@ async function fastForward(target, name) {
 				}
 			}
 			if (reached) {
-				// Back to the slice start and step exactly to the target.
+				// Back to the slice start and step exactly to the target. The
+				// count and the clock first: restore_state sets the TSC offset
+				// from the clock it reads, which had run on through the slice
+				// (by a JIT-dependent number of chunks: Firefox and WebKit then
+				// reached the entry with another TSC, D0/D1).
+				const ranTo = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps };
+				st.steps = at.steps;
+				CLOCK.base = at.base;
+				CLOCK.baseSteps = at.baseSteps;
 				try {
 					await v86Restore(em, snap);
 				} catch (e) {
+					Object.assign(CLOCK, { base: ranTo.base, baseSteps: ranTo.baseSteps });
+					st.steps = ranTo.steps;
 					ffInfo.error = "restore_state failed (" + e + "): stopped past the target";
 					break;
 				}
-				st.steps = at.steps;
 				st.jumpForget();
-				CLOCK.base = at.base;
-				CLOCK.baseSteps = at.baseSteps;
 				ffInfo.restores++;
 				ffInfo.jitSteps = st.steps - ffInfo.start;
 				let r = "count";

@@ -212,7 +212,7 @@ function snapMeta(em) {
 		if (i >= 0)
 			sym = stepper.symName[i] + (phys > stepper.symStart[i] ? "+" + hex(phys - stepper.symStart[i]) : "");
 	}
-	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, eip: regs.EIP, phys, sym, regs,
+	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(), eip: regs.EIP, phys, sym, regs,
 		screen: snapScreen() };
 }
 
@@ -288,6 +288,17 @@ async function restoreSnapshot(s) {
 	delete $("snap_status").dataset.restored;
 	try {
 		const raw = await snapUnpack(s);
+		// The stepper's count and the clock go back to the snapshot's before
+		// restore_state, which sets the TSC offset from the clock it reads;
+		// the PIT and RTC keep absolute times. Otherwise everything after a
+		// restore ran shifted by the time between save and Restore (timer
+		// interrupts at other instructions). Snapshots from before D1 have
+		// no clock.
+		if (s.meta && typeof s.meta.clock === "number") {
+			if (stepper && typeof s.meta.steps === "number")
+				stepper.steps = s.meta.steps;
+			CLOCK.setTime(s.meta.clock);
+		}
 		await v86Restore(emulator, raw);
 		// v86 does not keep its instruction counter in the state: put back the
 		// snapshot's, so the count goes on from where it was.

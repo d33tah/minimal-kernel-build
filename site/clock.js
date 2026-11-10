@@ -40,6 +40,13 @@ const CLOCK = {
 		this.baseSteps = stepper ? stepper.steps : 0;
 		this.off = t - realNow();
 	},
+	// Put the clock at t ms, counting from the stepper's current count (a
+	// restored snapshot: its time and count).
+	setTime(t) {
+		this.base = t;
+		this.baseSteps = this.stepper ? this.stepper.steps : 0;
+		this.off = t - realNow();
+	},
 	// The CPU is halted: let time pass without instructions.
 	advance(ms) {
 		if (this.virtual)

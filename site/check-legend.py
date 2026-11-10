@@ -71,6 +71,15 @@ CHROME = {
     "inl": "rows of inlined functions in the Debugger (muted)",
     "legendlink": "the Legend links themselves",
     "snapother": "rows of snapshots for another kernel (muted text, the row also says so)",
+    "bmacts": "the actions of a bookmark in the menu's list (link, rename, delete)",
+    "bmadd": "the ☆ buttons that add a bookmark (muted where they sit in a row)",
+    "cframe": "a call stack frame (its ☆ button is muted)",
+    "covbm": "the Source tab's bookmark column (its ☆ button is muted)",
+    "bmdlg": "the add-a-bookmark dialog's frame",
+    "bmempty": "the empty bookmarks list's note (muted)",
+    "bmghead": "the group headings of the bookmarks list (muted)",
+    "bmgo": "a bookmark's name in the list (link colour; its ★ is the legend's gold star)",
+    "bmwhat": "what a bookmark points at, under its name (muted)",
     "snapcol": "the hexdump columns of a snapshot diff (their yellow is <mark>, in the legend)",
 }
 

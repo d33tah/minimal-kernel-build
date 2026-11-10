@@ -33,6 +33,7 @@
 	--op-name: #00695c;
 	--src-text: #5e3a92;
 	--cov-run: #2e7d32;
+	--bm: #a87400;
 	--jarc: #77756e;
 }
 @media (prefers-color-scheme: dark) {
@@ -56,6 +57,7 @@
 		--op-name: #6fd3c4;
 		--src-text: #c4a8f0;
 		--cov-run: #66bb6a;
+		--bm: #ffc93d;
 		--jarc: #8f8d86;
 	}
 }
@@ -79,6 +81,7 @@
 	--op-name: #6fd3c4;
 	--src-text: #c4a8f0;
 	--cov-run: #66bb6a;
+	--bm: #ffc93d;
 	--jarc: #8f8d86;
 }
 
@@ -559,7 +562,7 @@ body { padding-bottom: 60px; }
 #graph_search { width: 9rem; }
 #graph_search[hidden] { display: none; }
 .covtree { max-height: 75vh; }
-.covrow { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) 11rem 11rem; align-items: center; gap: 0.5rem; }
+.covrow { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) 11rem 11rem 3rem; align-items: center; gap: 0.5rem; }
 .covname { border: none; background: none; padding: 0.15rem 0; text-align: left; color: inherit; font: inherit; min-height: 24px; }
 .covrow[data-kind="func"] .covname { color: var(--accent); }
 .covrow[data-kind="root"] .covname { font-weight: 600; }
@@ -568,7 +571,7 @@ body { padding-bottom: 60px; }
 .covbar span { display: block; height: 100%; background: var(--cov-run); }
 #cov_filter { width: 11rem; }
 @media (max-width: 640px) {
-	.covrow { grid-template-columns: 1.6rem minmax(0, 1fr) 5.6rem 5.6rem; gap: 0.3rem; }
+	.covrow { grid-template-columns: 1.6rem minmax(0, 1fr) 5.6rem 5.6rem 2.6rem; gap: 0.3rem; }
 	.covcell { font-size: 0.66rem; }
 }
 .trow.thead { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
@@ -628,3 +631,41 @@ button.legendlink { font: inherit; font-size: 0.75rem; font-weight: 400; border:
 @media (max-width: 640px) {
 	.lgnd li { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* K1: bookmarks. ★ marks a bookmarked line, page, box, frame or file (a
+   popover names it); ☆ buttons add one; the list is in the menu toggle's
+   menu; the add dialog sits over the page near the top. */
+.bmstar { color: var(--bm); font-weight: 700; font-size: 1.15em; line-height: 1; cursor: pointer; border-radius: 2px; }
+.bmstar:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.bmpage { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 11px; line-height: 1;
+	text-shadow: 0 0 2px var(--bg), 0 0 2px var(--bg); }
+button.bmadd { font: inherit; white-space: nowrap; }
+.cframe button.bmadd, .covbm button.bmadd { border: none; background: none; padding: 0 0.2rem; min-height: 24px; color: var(--muted); }
+.covbm { display: flex; align-items: center; gap: 0.1rem; justify-content: flex-end; }
+#panel_debugger h3 button.bmadd { font-size: 0.85rem; padding: 0 0.4rem; }
+.rbmenu { overflow-y: auto; overscroll-behavior: contain; }
+.bmopen { text-align: left; min-height: 36px; }
+.bmbox { display: flex; flex-direction: column; gap: 0.35rem; width: min(21rem, calc(100vw - 34px)); }
+.bmbox[hidden] { display: none; }
+.bmtools { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.bmtools button { min-height: 36px; padding: 0 0.7rem; }
+#bm_filter { flex: 1 1 7rem; min-width: 0; min-height: 32px; }
+.bmlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.bmlist [hidden] { display: none; }
+.bmghead { color: var(--muted); font-size: 0.75rem; font-weight: 600; margin-top: 0.2rem; }
+.bmempty { color: var(--muted); }
+.bmrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 0.3rem; align-items: center; border-top: 1px solid var(--line); padding-top: 0.2rem; }
+.bmgo { text-align: left; border: none; background: none; padding: 0.2rem 0; min-height: 32px; color: var(--accent); font: inherit; font-weight: 600; overflow-wrap: anywhere; }
+.bmgo::before { content: "\2605  "; color: var(--bm); }
+.bmwhat { grid-column: 1 / -1; color: var(--muted); font-size: 0.75rem; overflow-wrap: anywhere; }
+.bmacts { grid-column: 2; grid-row: 1; display: flex; gap: 0.15rem; align-items: center; }
+.bmacts button, .bmacts a { min-width: 32px; min-height: 32px; padding: 0 0.3rem; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.bmacts .bmswitch, .bmacts .bmrestore { font-size: 0.75rem; }
+.bmedit { font: inherit; min-height: 30px; min-width: 0; width: 100%; box-sizing: border-box; }
+.bmdlg { position: fixed; z-index: 8; left: 50%; top: max(12vh, 64px); transform: translateX(-50%); width: min(26rem, calc(100vw - 24px)); box-sizing: border-box;
+	display: flex; flex-direction: column; gap: 0.45rem; padding: 0.8rem; border: 1px solid var(--accent); border-radius: 8px; background: var(--bg); color: var(--fg);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35); }
+.bmdlg[hidden] { display: none; }
+.bmdlg .note { margin: 0; overflow-wrap: anywhere; }
+.bmname { display: flex; gap: 0.4rem; align-items: center; }
+#bm_name { flex: 1 1 auto; min-width: 0; min-height: 36px; font: inherit; }

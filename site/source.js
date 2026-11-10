@@ -702,7 +702,7 @@ function renderSourcePanel() {
 		const title = c ? ' title="' + escHtml("Line " + l + " is part of the statement at lines " + c.start + "–" + c.end + ", which " +
 			(c.ran ? "ran" : "has not run") + ". Not counted: only lines with code of their own in the line table are counted, here, in the Coverage tab and in the lcov export.") + '"' : "";
 		out.push('<span class="' + cls + (l === line ? " here" : "") + (l === srcPanel.pick ? " pick" : "") + '" data-line="' + l + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
-			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span></span>");
+			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span>" + bmLineStar(path, l) + "</span>");
 	}
 	body.innerHTML = out.join("\n");
 	srcPanel.cont = sv.cont;

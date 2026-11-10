@@ -210,10 +210,11 @@ function covRender() {
 	box.textContent = "";
 	const head = document.createElement("div");
 	head.className = "trow thead covrow";
-	head.innerHTML = '<span class="ttog"></span><span class="tname">file or function</span><span class="covcell">lines run</span><span class="covcell">instructions run</span>';
+	head.innerHTML = '<span class="ttog"></span><span class="tname">file or function</span><span class="covcell">lines run</span><span class="covcell">instructions run</span><span class="covbm"></span>';
 	box.append(head);
 	let rows = 0, more = 0;
-	const row = (kind, path, depth, label, s, open, kids, onName, title) => {
+	const marks = BM.list.length ? bmMarks() : null;
+	const row = (kind, path, depth, label, s, open, kids, onName, title, bm) => {
 		if (rows >= COV_MAX_ROWS) {
 			more++;
 			return;
@@ -242,6 +243,17 @@ function covRender() {
 		name.title = title;
 		name.addEventListener("click", onName || toggle);
 		r.append(tog, name, covCell(s.linesRun, s.lines, "lines with code"), covCell(s.insRun, s.ins, "instructions"));
+		// A file or function: ★ once bookmarked, and its ☆ (K1).
+		const bmc = document.createElement("span");
+		bmc.className = "covbm";
+		if (bm) {
+			Object.assign(r.dataset, bm.kind === "fn" ? { pa: bm.t.pa, fn: bm.t.name } : {});
+			const names = marks && (bm.kind === "fn" ? marks.fn.get(bm.t.pa) : marks.file.get(bm.t.path));
+			if (names)
+				bmc.append(bmStarEl(names));
+			bmc.append(bmAddButton(() => bm, "Bookmark " + (bm.kind === "fn" ? bm.t.name + "()" : bm.t.path)));
+		}
+		r.append(bmc);
 		box.append(r);
 	};
 	const fnRows = (k, depth) => {
@@ -253,7 +265,8 @@ function covRender() {
 			const open = COV.open.has(path);
 			row("func", path, depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), open, true,
 				() => jumpTo(fn[4]), fn[0] + " at " + hex(fn[4]) + " (" + (fn.length - 4) / 2 + (fn.length > 6 ? " parts" : " part") +
-				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab; the arrow shows its prototype, declaration, linkage, inlined copies and frame.");
+				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab; the arrow shows its prototype, declaration, linkage, inlined copies and frame.",
+				bmDraftFn(fn[4], fn[0]));
 			// Its facts from DW_TAG_subprogram under the row.
 			if (open && rows <= COV_MAX_ROWS) {
 				const d = fnDetailEl(fn[0], fn[4], "cov");
@@ -282,7 +295,7 @@ function covRender() {
 			const open = (q && T.fileFns[x.k].some(fnMatch)) || COV.open.has(p);
 			row("file", p, depth, p.replace(/^.*\//, ""), sum(x), open, fns > 0, () => openSourceFile(p),
 				p + ": " + fns + " functions" + (fns ? "" : " (its code is inlined into functions of other files, or assembly)") +
-				". Tap to open the whole file with its executed lines.");
+				". Tap to open the whole file with its executed lines.", bmDraftLine(p, 0));
 			if (open)
 				fnRows(x.k, depth + 1);
 		}

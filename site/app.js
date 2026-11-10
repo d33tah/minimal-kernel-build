@@ -428,6 +428,7 @@ function drawGrid() {
 	}
 	drawGridLegend();
 	renderMemEip();
+	bmRenderPages();
 }
 
 // ---- EIP in the Memory tab (M1) --------------------------------------------
@@ -783,7 +784,7 @@ function listPage(p, bytes, base, cur, chars, how) {
 				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '"' + (ty ? ' data-type="' + escHtml(ty) + '"' : "") +
 					(fl ? ' data-proto="' + escHtml(fl.proto) + '" title="' + escHtml(fl.title) + '"' : "") + ">" +
 					escHtml(s.name) + ":" + (s.size || ty ? ' <span class="dim">' + (ty ? escHtml(ty) + (s.size ? ", " : "") : "") +
-						(s.size ? s.size + " bytes, " + s.section : "") + "</span>" : "") + (fl ? ' <span class="srctext">' + escHtml(fl.proto) + "</span>" : "") + "</span>");
+						(s.size ? s.size + " bytes, " + s.section : "") + "</span>" : "") + (fl ? ' <span class="srctext">' + escHtml(fl.proto) + "</span>" : "") + bmFnStar(s.paddr) + "</span>");
 			}
 			prevRow = null;
 		}
@@ -838,7 +839,7 @@ function listPage(p, bytes, base, cur, chars, how) {
 				(inside || tip ? ' data-tip="' + escHtml((tip ? tip + (inside ? "\n\n" : "") : "") + (inside ? midTitle(cur) : "")) + '"' : "") +
 				jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
-				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + J.dst + jumpBadgesHtml(P, pa));
+				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + bmCodeStar(pa) + "</span>" + J.dst + jumpBadgesHtml(P, pa));
 			nIns++;
 			if (!ok)
 				nBad++;
@@ -885,7 +886,7 @@ function listPage(p, bytes, base, cur, chars, how) {
 		out.push('<span class="' + cls + '" data-addr="' + a + '" data-row="' + (a - pad) + '" data-per="' + per + '" data-end="' + end + '"' +
 			(dirty ? ' data-tip="' + escHtml(scanTip) + '"' : "") + ">" +
 			(a - pad).toString(16).padStart(8, "0") +
-			" " + hx + " |" + asc + "|</span>");
+			" " + hx + " |" + asc + "|" + bmCodeStar(a) + "</span>");
 		nRows++;
 		a = end;
 	}
@@ -1324,6 +1325,7 @@ function initCompactTabs() {
 // through the jump history changes the hash too: navRestore has drawn that
 // view already, with its scroll positions, and the hash says what is shown.
 function readHash() {
+	bmFromHash(); // a link's #bm=: the bookmark is opened when its kernel runs
 	if (navBuilt && location.hash === navHashNow())
 		return;
 	let h = location.hash.slice(1), src = null;
@@ -2186,9 +2188,14 @@ function fnHeaderInView(pa) {
 		$("listing").scrollTop -= band[0] - hdr.getBoundingClientRect().top + 4;
 }
 
-function openFunction(pa, name) {
+// outline: the first instruction gets the jump outline (a bookmark, K1).
+function openFunction(pa, name, outline = false) {
 	openFnWant = null;
 	navJump(() => {
+		if (outline) {
+			jumpHit = pa;
+			jumpHitScroll = true;
+		}
 		jumpTo(pa);
 		if (openFnSource(pa, name) === "loading")
 			openFnWant = { pa, name, page: selectedPage, until: realNow() + 30000 };
@@ -2443,6 +2450,16 @@ function renderCallStack(box, phys) {
 		const item = document.createElement("span");
 		item.className = "cframe";
 		item.append(btn);
+		// A function bookmark of the frame's function (K1): its ☆, and ★ once bookmarked.
+		const fnOf = !label && node >= 0 && node < st.symName.length ? { pa: st.symStart[node], name: st.symName[node] } : null;
+		if (fnOf) {
+			item.dataset.fnpa = fnOf.pa;
+			item.dataset.fn = fnOf.name;
+			const names = bmFnNames(fnOf.pa);
+			if (names)
+				item.append(bmStarEl(names));
+			item.append(bmAddButton(() => bmDraftFn(fnOf.pa, fnOf.name), "Bookmark " + fnOf.name + " (a function bookmark)"));
+		}
 		if (f0)
 			item.append(" ", srcLinkEl(f0.file, f0.line, "", pc));
 		list.push(item);
@@ -2584,7 +2601,7 @@ function drawContext() {
 					jumpStubAttrs(J) + ">" + (pa === phys ? EIP_MARK : " ") +
 					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
-					"</span>" + J.dst + jumpBadgesHtml(P, pa));
+					bmCodeStar(pa) + "</span>" + J.dst + jumpBadgesHtml(P, pa));
 			}
 		}
 	}
@@ -3028,6 +3045,7 @@ function runBadgeOpen(open, focus = false) {
 	const tog = $("runbadge_toggle");
 	$("runbadge_menu").hidden = !open;
 	tog.setAttribute("aria-expanded", open ? "true" : "false");
+	bmMenuFit();
 	if (focus)
 		tog.focus();
 }
@@ -3752,6 +3770,7 @@ async function init() {
 	initSettings();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
+	initBookmarks(); // before the menu: its keys in the dialog first
 	initRunBadge();
 	window.addEventListener("hashchange", readHash);
 	readHash();

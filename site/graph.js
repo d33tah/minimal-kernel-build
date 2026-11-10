@@ -414,7 +414,7 @@ function drawTimeline() {
 		}
 		G.followRow = r;
 	}
-	let drawn = 0, labelled = 0, matches = 0;
+	let drawn = 0, labelled = 0, matches = 0, bmarked = 0;
 	const labels = [], more = [];
 	// Per visible row: pixel columns (along the time axis) covered by calls.
 	// Calls narrower than a pixel are merged per column: the column is drawn
@@ -469,7 +469,11 @@ function drawTimeline() {
 			for (let col = Math.floor(p0); col < Math.min(AL, Math.ceil(p1)); col++)
 				o.full[col] = 1;
 		}
-		const label = frameLabel(st, L, k);
+		// A bookmarked function (K1): ★ before its name.
+		const bm = st.fNode[k] < st.symName.length && bmFnNames(st.symStart[st.fNode[k]]);
+		if (bm)
+			bmarked++;
+		const label = (bm ? "\u2605 " : "") + frameLabel(st, L, k);
 		const hit = q && label.toLowerCase().includes(q);
 		if (hit)
 			matches++;
@@ -655,6 +659,7 @@ function drawTimeline() {
 		" instructions from the entry" + (G.transpose ? " (top to bottom)" : ""), 4, h - 8);
 	c.dataset.drawn = drawn;
 	c.dataset.labels = labelled;
+	c.dataset.bmarks = bmarked;
 	c.dataset.matches = matches;
 	// For tests: is the running frame's row inside the drawing area?
 	if (st.stack.length) {
@@ -807,6 +812,21 @@ function graphSelName(v) {
 	if (!st || v.selected < 0)
 		return "";
 	return st.nodeName(v.view === "timeline" ? st.fNode[v.selected] ?? -1 : v.selected);
+}
+
+// The function node of the box at client point (x, y), or -1 (a bookmark's target, K1).
+function graphNodeAt(x, y) {
+	const st = G.stepper, r = $("graph_canvas").getBoundingClientRect();
+	const px = x - r.left, py = y - r.top;
+	let node = -1;
+	if (st && G.view === "timeline") {
+		const k = timelineFrameAt(px, py);
+		node = k >= 0 ? st.fNode[k] : -1;
+	} else if (st && G.view === "top") {
+		const hit = G.boxes.find(([, bx, by, bw, bh]) => px >= bx && px <= bx + bw && py >= by && py <= by + bh);
+		node = hit ? hit[0] : -1;
+	}
+	return node >= 0 && node < st.symName.length ? node : -1;
 }
 
 function timelineFrameAt(px, py) {
@@ -1048,7 +1068,11 @@ function drawTop() {
 	ctx.globalAlpha = 1;
 	ctx.setLineDash([]);
 	G.boxes = [];
+	let bmarked = 0;
 	for (const [id, p] of pos) {
+		const bm = id < st.symName.length && bmFnNames(st.symStart[id]);
+		if (bm)
+			bmarked++;
 		ctx.fillStyle = PALETTE[subsystem(st, id)];
 		ctx.fillRect(p.x, p.y, p.w, 22);
 		if (id === G.selected) {
@@ -1057,10 +1081,11 @@ function drawTop() {
 			ctx.strokeRect(p.x - 1, p.y - 1, p.w + 2, 24);
 		}
 		ctx.fillStyle = "#fff";
-		ctx.fillText(fitLabel(ctx, p.label, p.w - 10), p.x + 6, p.y + 11);
+		ctx.fillText(fitLabel(ctx, (bm ? "\u2605 " : "") + p.label, p.w - 10), p.x + 6, p.y + 11);
 		G.boxes.push([id, p.x, p.y, p.w, 22]);
 	}
 	c.dataset.nodes = pos.size;
+	c.dataset.bmarks = bmarked;
 	c.dataset.edges = edges.size;
 }
 
@@ -1449,7 +1474,8 @@ function initGraph() {
 		const f = sw || m ? -1 : timelineFrameAt(x, y);
 		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] + "\n" + taskInfo(st)[st.swTask[sw[0]]].how :
 			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
-			f >= 0 ? frameTitle(st, f) + (st.fNode[f] < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." : "") : "";
+			f >= 0 ? frameTitle(st, f) + (st.fNode[f] < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." +
+				(bmFnNames(st.symStart[st.fNode[f]]) ? "\n\u2605 " + bmTip(bmFnNames(st.symStart[st.fNode[f]])) : "") : "") : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {

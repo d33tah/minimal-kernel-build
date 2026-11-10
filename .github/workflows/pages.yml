@@ -416,7 +416,7 @@ jobs:
         - runstate
         - speedline
         - speedasm,runbadge,memeip,graphopen,srcfiles
-        - snapdiff
+        - snapdiff,bookmarks
         - followeip
         - followfuzz
     name: browser-test (${{ matrix.suites }})

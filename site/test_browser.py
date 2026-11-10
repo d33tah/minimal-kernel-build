@@ -12876,6 +12876,7 @@ def suite_bookmarks(ctx):
 # (clock "real", kept as the non-deterministic option).
 JITDET_CAP = 2_500_000_000
 JITDET_MIN_RATIO = 0.9
+JITDET_RUNNING_AT = 1_500_000_000  # count at which the running page is checked
 # Stop at v86's count cap: the page's own stop (JIT.stopAt) where it has one,
 # else Pause once the count is past it (or the run stopped by itself: on real
 # time Debian reaches its panic before the cap); the same 10 ms watcher times
@@ -12914,7 +12915,9 @@ def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, probl
             return None
         page.evaluate(JITDET_WATCH_JS, JITDET_CAP)
         machine_do(page, "click", "#dbg_continue")
-        time.sleep(4)
+        # Look at the running page well before the cap: a fast runner (CI,
+        # 650 MIPS) reaches it about 4 s after Continue.
+        wait_for(lambda: page.evaluate(f"ffCounter(stepper) >= {JITDET_RUNNING_AT} || !!window.__jd.at"), 120, 0.05)
         running = page.evaluate(JITDET_RUNNING_JS)
         page.screenshot(path=str(shots / f"jitdet-{tag}-running.png"))
         if not wait_for(lambda: page.evaluate("!!window.__jd.at && runState === 'paused'"), 400, 0.5):

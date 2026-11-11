@@ -52,7 +52,6 @@ const ffCounter = (st) => new Uint32Array(st.cpu.wasm_memory.buffer, 664, 1)[0];
 // panics in its release build (re-entrant JIT state).
 const WASM_TABLE_OFFSET = 1024;
 const JIT = {
-	stopAt: Infinity, // the page-driven loop pauses at the first slice end at or past this count
 	// Yields to the page: after this much real time, or this many main_loop
 	// calls (yielding after each one cost WebKit 40%, D1; every 8 cost
 	// Chromium on a fast CI runner 8% against v86's own loop).
@@ -122,6 +121,12 @@ function jitChunk(st, beforeEntry = false) {
 	}
 	// The CLOCK keeps its value: steps take over from extraSteps.
 	st.steps += ran;
+	// The panic's last line was written inside this slice: the page can
+	// only stop at the slice's end (jitLoop steps exactly from the slice in
+	// which "Kernel panic - not syncing" appears, so this is the case only
+	// when both lines come in one slice).
+	if ((st.textSeen & TEXT_END) && !st.end)
+		st.end = { kind: "panic-text", message: st.panicText(), exact: false, ...st.snapshot() };
 	// Where each slice ended (count, EIP): equal chains, equal timelines.
 	if (st.jitChain !== undefined) {
 		let h = st.jitChain;

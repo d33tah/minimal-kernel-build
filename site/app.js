@@ -1761,6 +1761,7 @@ async function boot() {
 		delete $("entry_info").dataset.steps;
 		countStart = realNow();
 		countMs = 0;
+		countSteps = 0;
 		setAutoscan();
 		setLive();
 		computePageClasses();
@@ -1807,6 +1808,7 @@ let runState = "off";    // "off", "jit" (v86's own loop), "stepped" (our loop),
 let counting = false;    // stepping from reset until every milestone is on screen
 let countStart = 0;      // realNow() when the count began
 let countMs = 0;         // stepping time spent counting
+let countSteps = 0;      // instructions stepped in that time
 let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
 let runTo = null;        // Set of physical addresses "Run to" stops at, or null
@@ -1841,6 +1843,7 @@ const fastStepping = () => speed() === "full" || runTo !== null || entryPhase;
 function resetCounters() {
 	counting = false;
 	countMs = 0;
+	countSteps = 0;
 	countNote = "";
 	runTo = null;
 	prevRegs = null;
@@ -1944,6 +1947,7 @@ async function jitLoop() {
 	if (sa)
 		sa.continue();
 	let idleGroups = 0, drawn = realNow(), screenAt = drawn;
+	const end0 = st.end;
 	try {
 		while (live()) {
 			const now = realNow();
@@ -1970,9 +1974,13 @@ async function jitLoop() {
 					watchJitEnd();
 					return;
 				}
-				if (st.steps >= JIT.stopAt) {
-					JIT.stopAt = Infinity;
-					pause("Stopped at " + num(st.steps) + " instructions.");
+				const stop = await jitExactStop(st, live, end0);
+				if (stop === "gone")
+					return;
+				if (stop) {
+					counting = false;
+					flushScreen(); // v86 draws the screen only while it runs
+					pause(stop === "prompt" ? "at the (initramfs) prompt" : endText());
 					return;
 				}
 				if (realNow() - t0 > JIT.yieldMs)
@@ -1991,6 +1999,54 @@ async function jitLoop() {
 			jitLoopId = 0;
 			if (sa && !em.is_running())
 				sa.pause();
+		}
+	}
+}
+
+// Debian's stops under the JIT (J3), exactly as stepping finds them: the
+// panic's last line is written about 250,000 instructions or more after
+// "Kernel panic - not syncing" (D0), so from the slice in which that
+// appears the stepper runs to the very write (Stepper.run "end"); the
+// initramfs prompt stops at the first halt after it, which is a slice's end
+// when the slice ended halted, else the stepper runs to the next hlt.
+// Returns null (go on), "end", "prompt", or "gone" (paused or replaced).
+// end0: the end the loop started with (Continue after it runs on).
+async function jitExactStop(st, live, end0) {
+	if (st.end)
+		return st.end !== end0 ? "end" : null;
+	const prompt = (st.textSeen & TEXT_PROMPT) && !st.prompt;
+	if (!prompt && !(st.textSeen & TEXT_PANIC))
+		return null;
+	if (prompt && st.halted()) {
+		st.prompt = { exact: true, ...st.snapshot(st.nextPhys() - 1) }; // the hlt
+		return "prompt";
+	}
+	// The stepper takes over until one of them. A panic without its last
+	// line (another kernel's) ends after panicBudget instructions.
+	if (st.panicTextFrom === undefined)
+		st.panicTextFrom = st.steps;
+	// panic() was entered under the JIT: the stepper would take its first
+	// return into panic() for the entry.
+	if (!prompt && !st.panicEntered)
+		st.panicEntered = { jit: true };
+	let n = 0;
+	for (;;) {
+		const r = st.run(1e6, -1, 20);
+		if (r === "end" || r === "prompt")
+			return r;
+		if (r === "hlt" && st.dead()) {
+			st.markHalt();
+			return "end";
+		}
+		if (!prompt && st.steps - st.panicTextFrom >= st.panicBudget) {
+			st.end = { kind: "panic-budget", ...st.snapshot() };
+			return "end";
+		}
+		if (++n % 4 === 0) {
+			flushScreen();
+			await new Promise((r) => setTimeout(r, 0));
+			if (!live())
+				return "gone";
 		}
 	}
 }
@@ -2055,7 +2111,7 @@ function driverTick() {
 		return;
 	const now = realNow();
 	let reason;
-	const t0 = now;
+	const t0 = now, s0 = stepper.steps;
 	if (entryPhase && runTo === null) {
 		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === V86_KERNEL_ADDR;
 		reason = at ? "addr" : stepper.run(Infinity, V86_KERNEL_ADDR, SLICE_MS);
@@ -2086,10 +2142,18 @@ function driverTick() {
 		reason = n ? stepper.run(n, -1, SLICE_MS) : "count";
 	}
 	prevTick = now;
-	if (counting)
+	if (counting) {
 		countMs += realNow() - t0;
+		countSteps += stepper.steps - s0;
+	}
 	if (reason === "addr") {
 		pause(runToStopped(runToLabel, runTo.size, "stepped"));
+		return;
+	}
+	if (reason === "prompt") {
+		counting = false;
+		flushScreen(); // v86 draws the screen only while it runs
+		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the prompt. " : "") + "at the (initramfs) prompt");
 		return;
 	}
 	if (reason === "hlt" && stepper.dead())
@@ -2794,11 +2858,12 @@ function renderCounters() {
 	for (const [label, c, key] of rows) {
 		const tr = tbody.insertRow();
 		tr.dataset.milestone = key;
-		const cells = c ? [label, num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
+		const cells = c && c.jit ? [label, "run by the JIT", "", ""] :
+			c ? [label, num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
 			[label, counting ? "counting..." : "not reached", "", ""];
 		for (const v of cells)
 			tr.insertCell().textContent = v;
-		if (c) {
+		if (c && !c.jit) {
 			tr.dataset.steps = c.steps;
 			tr.dataset.entry = c.sinceEntry === null ? "" : c.sinceEntry;
 			tr.dataset.unique = c.unique;
@@ -2816,7 +2881,10 @@ function renderCounters() {
 		} catch (e) {
 			// no storage: the built-in estimate stays
 		}
-	const rate = countMs > 0 ? stepper.steps / countMs / 1000 : 0;
+	// What the stepping did in its time: not the instructions the JIT ran
+	// (the fast-forward to the entry: 2.3e9 for Debian, J2 saw "3918091.6
+	// M/s") nor the BIOS that the fast-forward steps.
+	const rate = countMs > 0 ? countSteps / countMs / 1000 : 0;
 	const info = $("count_text");
 	$("count_info").dataset.ms = Math.round(countMs);
 	if (runState === "stepped" && !fastStepping() && !countDone()) {
@@ -2976,7 +3044,7 @@ function endText() {
 	if (e.kind === "panic-budget")
 		return "panic() entered, no end-of-panic text after " + num(stepper.panicBudget) + " instructions" + after + ". Stopped.";
 	if (e.kind === "panic-text")
-		return "Kernel panic: " + e.message + " (stopped by the page)" + after + ".";
+		return "Kernel panic: " + e.message + (e.exact ? " (stopped where its last line was written)" : " (stopped by the page)") + after + ".";
 	if (e.kind === "panic")
 		return "Kernel panic" + (stepper.exit ? " (init exited with code " + stepper.exit.code + ")" : "") + after +
 			". Machine stopped here.";
@@ -3013,32 +3081,29 @@ async function loadVersion() {
 }
 
 // Distro kernels end with "---[ end Kernel panic - not syncing: ... ]---"
-// and then spin; check the VGA text window 4 times a second (at any speed)
-// and stop the machine there. Debian's initramfs shell prompt pauses it.
-let panicVersion = -1;
+// and then spin; Debian's initramfs shell prompt pauses the machine once.
+// The stepper's VGA hook sees them written (Stepper.textSeen), and the
+// page's own loops stop exactly there (Stepper.run, jitExactStop, J3).
+// v86's own loop (the "real time" clock at full speed) cannot be stopped
+// inside: check 4 times a second and stop there, where it has got to.
 function watchPanicText() {
-	if (!stepper || stepper.end || runState === "off" || runState === "paused")
+	if (!stepper || stepper.end || runState !== "jit" || jitLoopId || ffActive)
 		return;
-	if (stepper.textVersion === panicVersion)
-		return;
-	panicVersion = stepper.textVersion;
-	// The (initramfs) prompt: pause there once (Continue goes on).
-	if (!stepper.prompt && stepper.promptText()) {
-		stepper.prompt = stepper.snapshot();
+	const st = stepper;
+	if ((st.textSeen & TEXT_PROMPT) && !st.prompt) {
+		st.prompt = { exact: false, ...st.snapshot() };
 		counting = false;
 		// v86 redraws the screen only while the VM runs: let it show the
 		// prompt before pausing.
-		const st = stepper;
 		setTimeout(() => {
-			if (stepper === st && (runState === "jit" || runState === "stepped"))
+			if (stepper === st && runState === "jit")
 				pause("at the (initramfs) prompt");
 		}, 300);
 		return;
 	}
-	const msg = stepper.panicText();
-	if (msg === null)
+	if (!(st.textSeen & TEXT_END))
 		return;
-	stepper.end = { kind: "panic-text", message: msg, ...stepper.snapshot() };
+	st.end = { kind: "panic-text", message: st.panicText(), exact: false, ...st.snapshot() };
 	counting = false;
 	pause(endText());
 }
@@ -3285,7 +3350,7 @@ async function doStep(n) {
 	const reason = stepper.run(n, -1, 5000);
 	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
 		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
-			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "time" ? " (5 s limit)" : "") + ".";
+			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "prompt" ? " (at the (initramfs) prompt)" : reason === "time" ? " (5 s limit)" : "") + ".";
 	scan(false);
 	afterStop();
 }

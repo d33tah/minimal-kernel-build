@@ -1480,11 +1480,30 @@ with neither ("panic() entered, no end-of-panic text ...";
 Distro kernels end with `---[ end Kernel panic - not syncing: ... ]---`
 and then spin. The stepper's copy of VGA text memory covers the whole
 32 KiB window at 0xb8000 (vgacon scrolls by moving the display start),
-and the page looks for that line 4 times a second at any speed, also
-under the JIT; when it appears it pauses the machine, stops counting and
-shows "Kernel panic: <message> (stopped by the page)". Debian's
-5.10.0-30-686 without an initrd stops this way about 25 s after it is
-loaded ("VFS: Unable to mount root fs on unknown-block(0,0)").
+and its write hook checks each character as it is written: the "-" that
+completes the line, the ":" after "Kernel panic - not syncing" and the
+space after "(initramfs)" at the start of a row (Debian's initramfs
+shell). Stepping stops at the instruction that writes the panic line's
+last character, pauses, stops counting and shows "Kernel panic:
+<message> (stopped where its last line was written)". The prompt pauses
+the machine once, at the first halt after it (the shell waits for input),
+with an "(initramfs) prompt" row in the counters. At full JIT speed on the
+virtual clock the page runs the stepper from the slice (about 100,000
+instructions) in which "Kernel panic - not syncing" appears, so the stop
+is the same instruction; the prompt stops at the end of the first slice
+that ends halted after it, or the stepper runs on to the next halt. So
+the counts at these stops are the same in every run (test suite
+`exactstop`); until J3 the page polled the screen 4 times a second and
+the stop varied by up to ~1 M instructions (D0). With the "real time"
+clock at full speed (v86's own loop) the page still checks 4 times a
+second and stops where the run has got to ("(stopped by the page)").
+Debian's 6.1 686 without an initrd ("VFS: Unable to mount root fs on
+unknown-block(0,0)") stops 264,979,927 instructions after its entry when
+stepped and 261,561,134 at full JIT speed (the JIT delivers timer
+interrupts at its slice ends, so it is another timeline); with its
+initramfs the prompt stops at 1,116,037,045 and 1,002,205,228. Under the
+JIT the "panic() entered" row says "run by the JIT": the stepper takes over
+inside panic().
 
 The Machine tab shows which build is deployed: the workflow writes
 `version.json` (commit SHA, commit date, subject, run id and number),
@@ -1523,7 +1542,7 @@ as shipped a block goes live at a moment of wall time, which moves where
 slices end and so where timer interrupts land): a full-speed run from the
 same start repeats exactly, at the same speed as v86's own loop or faster
 (Debian to 2.5e9 instructions in Chromium: 270-284 vs 239 MIPS; test suite
-`jitdet`). "real time" in the menu restores v86's wall clock while stepping
+`jitdet`, which runs Debian on to its exact end-of-panic stop). "real time" in the menu restores v86's wall clock while stepping
 and v86's own loop at full speed. The Machine tab shows the time and how many times
 the PIT raised IRQ0.
 
@@ -1760,6 +1779,7 @@ browser-test matrix job named by its suites):
 | S1 named snapshots, kept across reloads, diff | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark and 390 light: Run to the kernel entry, save A, step 60 / 3,000, save B, guest RAM and registers read from v86 at both points; default names name the kernel and the count; rename B with Enter, a rename of A cancelled with Esc; hello: the download (gzip until C1, an LZ4 frame since) parsed in Python (v86 state layout) holds v86's RAM at B; reload: both listed with names, sizes, "stored" and the matching kernel; diff A to B lists exactly the changed pages and bytes per page, the changed registers with v86's values, the changed screen lines and both instruction counts; the hexdump marks exactly the changed bytes; "Page tab" shows B's bytes with a note, Back returns; Restore B after the reload gives B's EIP, registers, instruction count and screen, with last_result, the FPU status word and MXCSR back in wasm memory; B to now is empty right after it; Delete survives a reload; no horizontal scroll. Without IndexedDB the snapshot stays in memory with a note; with a quota below the site's usage the save says QuotaExceededError and keeps it in memory, not listed after a reload; Delete all asks twice and empties the store. A hello snapshot under hello-os says "for another kernel" with no Restore and a switch that brings Restore back, at 1280 and 390 px. 2 and 64 MiB of RAM at a 4x CPU throttle: no main-thread task over 200 ms while diffing two snapshots and one and now. FAILS on 7c1a58dbd) | snapdiff |
 | D1 a restored snapshot replays | suite snapdiff, case replay (hello at 390 dark from 600,000 instructions, the minified Linux at 1280 light from 1,500,000, virtual clock 10/us: save, step 600,000 / 500,000, note EIP, registers, EFLAGS, the SHA-256 of RAM, the clock and the IRQ0 count; step 777 more, Restore: the count and the clock are the snapshot's; step as many again: all equal the first time). FAILS on e1730dcaa: count and clock run on from the Restore, the IRQ0 count after it differs (hello 3 vs 1, minified 2 vs 1). Suite debian: after the fast-forward to startup_32 the guest TSC equals the virtual clock (1 ms = 10^6 ticks; was 1,420,143,700 behind on e1730dcaa) | snapdiff,bookmarks; debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs,pwa |
 | J2 the guest's date and random numbers on the virtual clock | suite guestin, no init script freezing Date or crypto (hello twice, 1280 light and 390 dark: the same RAM, the BIOS tick count at 0x46C that of 2026-01-01 00:00:00; `?rtc=2031-02-03T04:05:06Z&seed=7`: tick count 267,744 + a few, the Machine tab shows both; real time: the RTC reads the browser's date; a snapshot saved with `?rtc=`/`?seed=5` and restored after a reload with others puts back the start date, seed and generator state; Debian stepped 30,000,000 instructions after its entry twice: the same EIP, clock and RAM; Debian with its initramfs at full speed: `hwclock -u` and `date -u` at the prompt print the start date plus the virtual time, and two hwclock readings move with the virtual clock). FAILS on 01b4e4d15 (tick counts and RAM differ, Debian RAM differs, the shell prints the browser's date); suite jitdet now runs without its init scripts and FAILS on 01b4e4d15 (minified and Debian RAM differ) | jitdet,guestin |
+| J3 exact end stops | suite exactstop (Debian and Debian with its initramfs, each 3 times at 1280 light, 390 dark and 1280 dark, counted stepping `speed=full&count=1` and J1's full JIT speed `count=0`, virtual clock 10/us: the stop is the panic text (marked exact) or the prompt with the CPU halted, and v86's count, steps, EIP, RAM SHA-256, IRQ0, virtual time, the end or prompt row and under the JIT the slice-chain hash are the same in all 3; the count line's rate after the fast-forward, hello 1280 light and Debian 390 dark, is at most 100 M/s); suite jitdet runs Debian on to its exact panic-text stop. FAILS on df0fc50ed (stepped and JIT: the counts, EIP and RAM at both stops differ in every run, the prompt stop is not at a halt; the count line says 251.1 M/s for hello and 239263.1 M/s for Debian) | exactstop |
 | B1 a power-on snapshot restores | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark, started paused at the reset vector F000:FFF0: the IDE controller's BAR0 and BAR1 have no BAR and the I/O bit set; Save snapshot there, Run to hello_main / start_kernel, Restore: no error, the registers, the instruction count and every RAM page are the snapshot's and the machine is paused; then Run to the same target stops there and hello prints Still alive; no page error, no horizontal scroll; screenshots after Restore and after the boot). FAILS on eb8579e5c: "restore_state failed: TypeError: Cannot read properties of undefined (reading 'original_bar')", the count and 22 pages wrong, a wasm "unreachable" page error | snapdiff |
 | B2 one double tap is one open | suite graphopen (each of its four runs, after the double click or tap above: the same double click (1280 px) or double tap (390 px) on the function's box twice more, once with the open itself taking 900 ms longer (a wrapper around openFunction busy-waits after it) and once with the CPU 10x slower through CDP; each opens the function exactly once and adds one history entry, and Back returns to the Calls tab as it was). FAILS on 250ee59e1: with the 900 ms open every run opens twice, at 390 px that is two history entries (before (0, 2), after (2, 3)); the canvas's dblclick opened it, then the timer of the pointerup double-press detection opened it again because the 600 ms guard counted from the start of the open | speedasm,runbadge,memeip,graphopen,srcfiles |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |

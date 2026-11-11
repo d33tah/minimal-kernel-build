@@ -418,6 +418,7 @@ jobs:
         - speedasm,runbadge,memeip,graphopen,srcfiles
         - snapdiff,bookmarks
         - jitdet,guestin
+        - exactstop
         - followeip
         - followfuzz
     name: browser-test (${{ matrix.suites }})

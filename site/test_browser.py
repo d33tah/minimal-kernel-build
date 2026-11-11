@@ -12865,33 +12865,34 @@ def suite_bookmarks(ctx):
 # ends of main_loop's slices and so where timer interrupts land. With the
 # virtual clock, full speed runs v86's JIT from the page, one main_loop at a
 # time, and compiled code goes live only between two of them. The test:
-# Debian from the reset vector to v86's count JITDET_CAP twice (2.5e9: the
-# kernel entry is at about 2.33e9 and the page stops at the root-fs panic's
-# text at about 2.6e9, found by polling the screen, so not exactly: J3; no
-# init script fixes Date or crypto: the page's RTC and RDRAND follow the
-# virtual clock and a seed, J2) ends with the same
+# Debian from the reset vector to its end twice (the root-fs panic's last
+# line at about 2.6e9, where the page stops exactly since J3; until J3 the
+# screen was polled, so the test stopped at a cap of 2.5e9; no init script
+# fixes Date or crypto: the page's RTC and RDRAND follow the virtual clock
+# and a seed, J2) ends with the same
 # count, EIP, chunk-chain hash and RAM; hello and the minified Linux at full
 # speed (fast-forward to the entry, then the JIT) end in the same state twice;
-# the speed is at least JITDET_MIN_RATIO of v86's own loop on real time
-# (clock "real", kept as the non-deterministic option).
+# the speed up to v86's count JITDET_CAP is at least JITDET_MIN_RATIO of v86's
+# own loop on real time (clock "real", kept as the non-deterministic option).
 JITDET_CAP = 2_500_000_000
 JITDET_MIN_RATIO = 0.9
 JITDET_RUNNING_AT = 1_500_000_000  # count at which the running page is checked
-# Stop at v86's count cap: the page's own stop (JIT.stopAt) where it has one,
-# else Pause once the count is past it (or the run stopped by itself: on real
-# time Debian reaches its panic before the cap); the same 10 ms watcher times
-# both, from Continue.
-JITDET_WATCH_JS = """(cap) => { const st = stepper, w = window.__jd = { t0: realNow(), c0: ffCounter(st), cap, at: null, c: null };
-  if (typeof JIT === 'object') JIT.stopAt = cap;
+# The speed: a 10 ms watcher times the run from Continue to v86's count cap
+# (or to an earlier stop: on real time Debian can reach its panic before the
+# cap). stop: also stop there (on real time: Pause), else the virtual-clock
+# run goes on to the page's own stop at the panic's last line.
+JITDET_WATCH_JS = """([cap, stop]) => { const st = stepper, w = window.__jd = { t0: realNow(), c0: ffCounter(st), cap, at: null, c: null, done: false };
   const iv = setInterval(() => { if (stepper !== st) { clearInterval(iv); return; }
-    const c = ffCounter(st);
+    const c = ffCounter(st), stopped = runState === 'paused' || runState === 'off';
     if (!w.ran && runState === 'jit') Object.assign(w, { ran: true, t0: realNow(), c0: c });
-    if (w.ran && (c >= cap || runState === 'paused' || runState === 'off')) { w.at = realNow(); w.c = c; clearInterval(iv); if (runState === 'jit') pause(); } }, 10); }"""
+    if (w.ran && !w.at && (c >= cap || stopped)) { w.at = realNow(); w.c = c; if (stop && runState === 'jit') pause(); }
+    if (w.at && (stop || stopped)) { w.done = true; clearInterval(iv); } }, 10); }"""
 JITDET_STATE_JS = """async () => { const st = stepper, w = window.__jd || {}, m = st.cpu.mem8;
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
   const c = ffCounter(st);
   return { steps: st.steps, counter: c, eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
     chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, end: st.end ? st.end.kind : null,
+    exact: st.end ? st.end.exact === true : null,
     mips: w.at ? +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1) : null }; }"""
 JITDET_RUNNING_JS = """() => ({ clock: document.getElementById('vclock').textContent, virtual: document.getElementById('vclock').dataset.virtual,
   badge: document.getElementById('runbadge').dataset.state, face: document.getElementById('runbadge_speed').textContent,
@@ -12903,7 +12904,8 @@ def jitdet_context(browser, scheme, phone):
 
 
 def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, problems):
-    """From the reset vector (paused) at full speed to v86's count JITDET_CAP."""
+    """From the reset vector (paused) at full speed: on the virtual clock to
+    the page's stop at the end, on real time to v86's count JITDET_CAP."""
     ctx = jitdet_context(browser, scheme, phone)
     page = ctx.new_page()
     errs = []
@@ -12913,15 +12915,15 @@ def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, probl
         if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
             problems.append(f"{tag}: not paused at the reset vector")
             return None
-        page.evaluate(JITDET_WATCH_JS, JITDET_CAP)
+        page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, mips == "real"])
         machine_do(page, "click", "#dbg_continue")
         # Look at the running page well before the cap: a fast runner (CI,
         # 650 MIPS) reaches it about 4 s after Continue.
         wait_for(lambda: page.evaluate(f"ffCounter(stepper) >= {JITDET_RUNNING_AT} || !!window.__jd.at"), 120, 0.05)
         running = page.evaluate(JITDET_RUNNING_JS)
         page.screenshot(path=str(shots / f"jitdet-{tag}-running.png"))
-        if not wait_for(lambda: page.evaluate("!!window.__jd.at && runState === 'paused'"), 400, 0.5):
-            problems.append(f"{tag}: did not stop at count {JITDET_CAP:,} (counter {page.evaluate('ffCounter(stepper)'):,})")
+        if not wait_for(lambda: page.evaluate("window.__jd.done && runState === 'paused'"), 400, 0.5):
+            problems.append(f"{tag}: did not stop (counter {page.evaluate('ffCounter(stepper)'):,})")
             return None
         out = page.evaluate(JITDET_STATE_JS)
         out["running"] = running
@@ -12980,7 +12982,7 @@ def jitdet_case(browser, base, shots, entries, debian):
             problems.append(f"{name}: no chunk-chain hash (the JIT did not run from the page)")
     if not debian:
         return problems, r
-    # Debian to count JITDET_CAP: twice on the virtual clock, once on real time.
+    # Debian to its end twice on the virtual clock, to count JITDET_CAP once on real time.
     name = debian[0]
     det = [jitdet_count_run(browser, base, shots, name, "10", scheme, phone, f"debian-det{i}-{scheme}-{390 if phone else 1280}", problems)
            for i, (scheme, phone) in enumerate((("light", False), ("dark", True)))]
@@ -12989,13 +12991,15 @@ def jitdet_case(browser, base, shots, entries, debian):
     r["debian_realtime"] = rt
     if None not in det:
         a, b = det
-        for k in keys:
+        for k in keys + ("irq0", "end"):
             if a[k] != b[k]:
-                problems.append(f"debian to {JITDET_CAP:,}: {k} differs: {a[k]} vs {b[k]}")
+                problems.append(f"debian to its end: {k} differs: {a[k]} vs {b[k]}")
         if a["chain"] is None:
             problems.append("debian: no chunk-chain hash (the JIT did not run from the page)")
-        if not (JITDET_CAP <= a["counter"] < JITDET_CAP + 300_000):
-            problems.append(f"debian: stopped at count {a['counter']:,}, not at the first slice end past {JITDET_CAP:,}")
+        for x in det:
+            if x["end"] != "panic-text" or not x["exact"]:
+                problems.append(f"debian: stopped at count {x['counter']:,} with end {x['end']} (exact {x['exact']}), "
+                                "not at the instruction that wrote the panic's last line")
         if rt and rt.get("mips") and a.get("mips"):
             best = max(x["mips"] for x in det)
             r["speed_ratio"] = round(best / rt["mips"], 3)
@@ -13274,6 +13278,141 @@ def suite_guestin(ctx):
     return report("guestin", *guestin_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx), initrd))
 
 
+# ---- exactstop: Debian's end stops at an exact instruction (J3) ------------
+# D0 (2026-11-10): the virtual-clock machine is deterministic, yet Debian's
+# "---[ end Kernel panic - not syncing: ... ]---" stop and the initramfs
+# shell's "(initramfs) " prompt were found by polling the screen every
+# 250 ms, so the count at the stop and the RAM there varied by up to ~1 M
+# instructions. Now the stepper's VGA hook sees the line complete: stepping
+# stops at the instruction that writes the panic line's last character, and
+# at the prompt where the CPU first halts after it (the shell waits for
+# input). Under J1's JIT the page steps exactly from the slice in which
+# "Kernel panic - not syncing" appears, and stops at the prompt at the
+# first slice that ends halted after it. Each kernel and mode three times
+# (1280 light, 390 dark, 1280 dark): the same counts, EIP and RAM.
+EXACTSTOP_RUNS = (("light", False), ("dark", True), ("dark", False))
+EXACTSTOP_STATE_JS = """async () => { const st = stepper, m = st.cpu.mem8;
+  const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const pick = (s) => s && { steps: s.steps, sinceEntry: s.sinceEntry, unique: s.unique, phys: s.phys, kind: s.kind || null, exact: s.exact === undefined ? null : s.exact };
+  return { steps: st.steps, counter: ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
+    chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, clock: CLOCK.now(),
+    end: pick(st.end), prompt: pick(st.prompt), runState, hlt: st.halted(),
+    banner: document.getElementById('end_banner').textContent, status: document.getElementById('dbg_status').textContent }; }"""
+
+
+def exactstop_run(browser, base, shots, name, mode, scheme, phone, tag, problems, prompt):
+    """One boot of name in mode ("stepped": counted at full stepping speed;
+    "jit": J1's full speed) to its stop; the state there."""
+    q = "speed=full&count=1&mips=10" if mode == "stepped" else "speed=full&count=0&mips=10"
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 900}}))
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        t0 = time.monotonic()
+        page.goto(f"{base}/index.html?kernel={name}&{q}", timeout=120000)
+        want = "!!stepper && !!stepper.prompt" if prompt else "!!stepper && !!stepper.end"
+        if not wait_for(lambda: page.evaluate(f"{want} && runState === 'paused'"), 900, 1):
+            problems.append(f"{tag}: no {'prompt' if prompt else 'end'} pause in 900 s "
+                            f"({page.evaluate('stepper ? stepper.steps : null')} steps, {page.evaluate('runState')})")
+            page.screenshot(path=str(shots / f"exactstop-{tag}-timeout.png"))
+            return None
+        time.sleep(0.5)
+        out = page.evaluate(EXACTSTOP_STATE_JS)
+        out["seconds"] = round(time.monotonic() - t0)
+        show_tab(page, "machine")
+        page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"exactstop-{tag}.png"))
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:2]}")
+        return out
+    finally:
+        ctx.close()
+
+
+def exactstop_kernel(browser, base, shots, name, mode, prompt, problems, r):
+    runs = []
+    for scheme, phone in EXACTSTOP_RUNS:
+        tag = f"{name}-{mode}-{scheme}-{390 if phone else 1280}"
+        runs.append(exactstop_run(browser, base, shots, name, mode, scheme, phone, tag, problems, prompt))
+    key = "prompt" if prompt else "end"
+    r[f"{name}-{mode}"] = [x and {k: x[k] for k in ("seconds", "counter", "eip", "ram", "irq0", key)} for x in runs]
+    got = [x for x in runs if x]
+    if len(got) < len(runs):
+        return
+    for x in got:
+        if prompt and x["prompt"] is None:
+            problems.append(f"{name} {mode}: paused without a prompt row")
+        if not prompt and (x["end"] is None or x["end"]["kind"] != "panic-text"):
+            problems.append(f"{name} {mode}: the end is {x['end']}, not the panic text")
+        if not prompt and x["end"] and x["end"]["exact"] is False:
+            problems.append(f"{name} {mode}: the panic text was found only at the end of a JIT slice")
+        if prompt and not x["hlt"]:
+            problems.append(f"{name} {mode}: stopped at the prompt with the CPU not halted (EIP {x['eip']})")
+    fields = ("counter", "steps", "eip", "ram", "irq0", "clock", key) + (("chain",) if mode == "jit" else ())
+    for k in fields:
+        vals = [x[k] for x in got]
+        if any(v != vals[0] for v in vals[1:]):
+            problems.append(f"{name} {mode}: {k} at the stop differs over {len(got)} runs: {vals}")
+
+
+# J2 residual: the count line's rate divided every instruction since reset
+# (the fast-forward's JIT part too) by the stepping time only: right after
+# the fast-forward to the entry it read "0.00 s of JavaScript stepping time
+# (3918091.6 M/s)". The rate is the stepped instructions over that time.
+COUNTRATE_RE = re.compile(r"([\d.]+) s of JavaScript stepping time \(([\d.]+) M/s\)")
+
+
+def countrate_case(browser, base, shots, name, scheme, phone, problems, r):
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 900}}))
+    page = ctx.new_page()
+    tag = f"{name}-{scheme}-{390 if phone else 1280}"
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&speed=1000&mips=10", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5):
+            problems.append(f"countrate {tag}: no kernel entry")
+            return
+        time.sleep(1.5)
+        if page.is_enabled("#dbg_pause"):  # hello has ended by now
+            machine_do(page, "click", "#dbg_pause")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
+        time.sleep(0.5)
+        text = page.inner_text("#count_text")
+        st = page.evaluate("({ steps: stepper.steps, ms: countMs, jit: stepper.jitBeforeEntry })")
+        r[f"countrate-{tag}"] = {"text": text, **st}
+        page.eval_on_selector("#count_info", "e => e.scrollIntoView()")
+        page.screenshot(path=str(shots / f"countrate-{tag}.png"))
+        m = COUNTRATE_RE.search(text)
+        if not m:
+            problems.append(f"countrate {tag}: no stepping time and rate in the count line: {text!r}")
+            return
+        # JavaScript steps a few million instructions a second at most.
+        if float(m.group(2)) > 100:
+            problems.append(f"countrate {tag}: {m.group(2)} M/s for {m.group(1)} s of stepping: {text!r}")
+    finally:
+        ctx.close()
+
+
+def exactstop_case(browser, base, shots, entries, debian, initrd, modes):
+    problems, r = [], {}
+    countrate_case(browser, base, shots, "hello", "light", False, problems, r)
+    if debian:
+        countrate_case(browser, base, shots, debian[0], "dark", True, problems, r)
+    for mode in modes:
+        if debian:
+            exactstop_kernel(browser, base, shots, debian[0], mode, False, problems, r)
+        if initrd:
+            exactstop_kernel(browser, base, shots, initrd[0], mode, True, problems, r)
+    return problems, r
+
+
+def suite_exactstop(ctx):
+    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n]]
+    modes = [m for m in os.environ.get("MKB_EXACTSTOP_MODES", "jit,stepped").split(",") if m]
+    return report("exactstop", *exactstop_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx), initrd, modes))
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -13320,6 +13459,7 @@ SUITES = {
     "legend": (suite_legend, True),
     "jitdet": (suite_jitdet, False),
     "guestin": (suite_guestin, False),
+    "exactstop": (suite_exactstop, False),
 }
 
 

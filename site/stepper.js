@@ -100,6 +100,11 @@ const VGA_TEXT_BYTES = 80 * 25 * 2;
 // display start, so its text lands anywhere in 0xb8000-0xbffff.
 const VGA_WINDOW_BYTES = 0x8000;
 const MMAP_BLOCK_BITS = 17; // v86 src/const.js
+// Lines the VGA hook watches for as they are written (Stepper.textSeen, J3):
+// "Kernel panic - not syncing:" (panic() has begun printing), the panic's
+// last line "---[ end Kernel panic - not syncing: ... ]---" complete, and
+// Debian's initramfs shell prompt "(initramfs) " at the start of a row.
+const TEXT_PANIC = 1, TEXT_END = 2, TEXT_PROMPT = 4;
 // Byte offsets of CPU globals in wasm memory (v86 src/cpu.js), as indices.
 const IP = 556 >> 2, PREV_IP = 560 >> 2, EIP_PHYS = 624 >> 2, COUNTER = 664 >> 2;
 const IN_HLT = 616, IS_32 = 804;
@@ -166,7 +171,7 @@ class Stepper {
 		this.jitBeforeEntry = false;
 		this.jitAfterEntry = false;
 		this.text = new Uint8Array(VGA_WINDOW_BYTES);
-		this.textVersion = 0;    // bumped on every write into the window
+		this.textSeen = 0;       // TEXT_* lines written so far
 		this.vgaDirty = false;
 		this.milestones = [];    // { text, found: null | {...} }
 		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
@@ -693,15 +698,47 @@ class Stepper {
 		const text = this.text;
 		cpu.memory_map_write8[blk] = (a, v) => {
 			const o = a - VGA_TEXT;
-			if (o >= 0 && o < VGA_WINDOW_BYTES) { text[o] = v; this.vgaDirty = true; this.textVersion++; }
+			if (o >= 0 && o < VGA_WINDOW_BYTES) {
+				text[o] = v;
+				this.vgaDirty = true;
+				if (!(o & 1))
+					this.textCheck(o);
+			}
 			w8(a, v);
 		};
 		cpu.memory_map_write32[blk] = (a, v) => {
 			const o = a - VGA_TEXT;
 			for (let i = 0; i < 4; i++)
-				if (o + i >= 0 && o + i < VGA_WINDOW_BYTES) { text[o + i] = v >>> (8 * i) & 0xff; this.vgaDirty = true; this.textVersion++; }
+				if (o + i >= 0 && o + i < VGA_WINDOW_BYTES) { text[o + i] = v >>> (8 * i) & 0xff; this.vgaDirty = true; }
+			for (let i = 0; i < 4; i += 2)
+				if (o + i >= 0 && o + i < VGA_WINDOW_BYTES && !((o + i) & 1))
+					this.textCheck(o + i);
 			w32(a, v);
 		};
+	}
+
+	// A character was written at window offset o: whether it completes one
+	// of the TEXT_* lines. Cheap for every other character: the stop is
+	// found at the very write (J3), where polling the screen found it up to
+	// ~1 M instructions later (D0).
+	textCheck(o) {
+		const t = this.text, c = t[o];
+		const before = (s) => {
+			for (let k = 0, p = o - 2 * s.length; k < s.length; k++, p += 2)
+				if (p < 0 || t[p] !== s.charCodeAt(k))
+					return false;
+			return true;
+		};
+		if (c === 0x2d) { // "-" of "]---"
+			if (!(this.textSeen & TEXT_END) && before("]--") && this.panicText() !== null)
+				this.textSeen |= TEXT_END;
+		} else if (c === 0x3a) { // ":"
+			if (!(this.textSeen & TEXT_PANIC) && before("Kernel panic - not syncing"))
+				this.textSeen |= TEXT_PANIC;
+		} else if (c === 0x20 && o % 160 === 22) { // the space after "(initramfs)" at a row's start
+			if (!(this.textSeen & TEXT_PROMPT) && before("(initramfs)"))
+				this.textSeen |= TEXT_PROMPT;
+		}
 	}
 
 	// Characters of the first screen (bytes = VGA_TEXT_BYTES) or of the
@@ -720,16 +757,6 @@ class Stepper {
 		return m ? m[1].replace(/ {2,}/g, " ").trim() : null;
 	}
 
-	// Debian's initramfs shell prompt, "(initramfs) " at the start of a
-	// row of the text window.
-	promptText() {
-		const t = this.screenText(VGA_WINDOW_BYTES);
-		for (let o = 0; o < t.length; o += 80)
-			if (t.startsWith("(initramfs) ", o))
-				return true;
-		return false;
-	}
-
 	timers() {
 		const cpu = this.cpu;
 		const t = cpu.run_hardware_timers(cpu.acpi_enabled[0], performance.now());
@@ -745,8 +772,10 @@ class Stepper {
 	// Set of them (before executing the instruction there, unless it is
 	// the first one: with leave given, only unless it is the first one
 	// and at leave, -1 for none), when the CPU halts, when a milestone is
-	// reached, or after budgetMs. Returns a reason: "count", "addr",
-	// "hlt", "milestone", "time".
+	// reached, at the end (the panic's last line written, or panicBudget),
+	// at the initramfs prompt (the first halt after it), or after
+	// budgetMs. Returns a reason: "count", "addr", "hlt", "milestone",
+	// "end", "prompt", "time".
 	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
 		// v86's cpu.reg32 etc. are Proxies that build a typed array on
 		// every access; the loop reads wasm memory directly instead (byte
@@ -764,6 +793,12 @@ class Stepper {
 				u8 = new Uint8Array(mem.buffer);
 			}
 			if (u8[IN_HLT]) {
+				// The initramfs shell's prompt is on the screen and the CPU
+				// halts for the first time since: the shell waits for input.
+				if ((this.textSeen & TEXT_PROMPT) && !this.prompt) {
+					this.prompt = { exact: true, ...this.snapshot() };
+					return "prompt";
+				}
 				const ip0 = i32[IP];
 				let t = this.timers();
 				// Virtual time: a halted CPU waits for the next timer event,
@@ -878,6 +913,11 @@ class Stepper {
 			}
 			if (this.vgaDirty) {
 				this.vgaDirty = false;
+				// The instruction that wrote the panic's last line's last character.
+				if ((this.textSeen & TEXT_END) && !this.end) {
+					this.end = { kind: "panic-text", message: this.panicText(), exact: true, ...this.snapshot(phys) };
+					return "end";
+				}
 				if (this.checkMilestones(phys))
 					return "milestone";
 			}

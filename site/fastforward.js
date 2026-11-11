@@ -6,11 +6,11 @@
 // exactly there and continue as before.
 //
 // The JIT runs in slices of FF_SLICE instructions, measured with v86's
-// instruction counter (wasm memory, offset 664; JIT code adds each block's
-// instruction count when the block is left, the interpreter counts each
-// instruction). Each slice starts with save_state(). After every
-// main_loop() call (about 100,000 instructions) the page checks whether EIP
-// is inside the target's code section; once it is, the slice's snapshot is
+// instruction counter (wasm memory, offset 664; compiled code adds what it
+// ran when it returns, the interpreter when it stops interpreting). Each
+// slice starts with save_state(). After every main_loop() call (about
+// 100,000 instructions) the page checks whether EIP is inside the target's
+// code section; once it is, the slice's snapshot is
 // restored and the stepper steps from there to the target exactly.
 // Run to in the Debugger (fastRunTo) uses a software breakpoint instead
 // (a HLT byte at the target, put back when hit), once the kernel's code is
@@ -99,24 +99,43 @@ async function jitFlush(st) {
 // Run one v86 main_loop() (JIT, ~100,000 instructions or until hlt) and
 // add what it ran to the stepper's count. Returns the instructions run.
 // beforeEntry: the fast-forward to the kernel entry (for the coverage note).
+// until: stop at this count exactly, inside the slice (R5: v86-det.patch's
+// instruction budget; no timers then, as the JIT runs none inside a slice).
 // st: the stepper of the machine the loop started on. With blocks queued
 // (jitPending), await jitFlush(st) first, or they stay out of this slice.
-function jitChunk(st, beforeEntry = false) {
+function jitChunk(st, beforeEntry = false, until = Infinity) {
 	const cpu = st.cpu;
-	revJit(st); // stepping back does not cross what the JIT runs (R2)
+	revJit(st); // the reverse history goes on with the JIT, or starts anew (R5)
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
-		st.run(1, -1, 50);
+		REV.inJit++;
+		try {
+			st.run(1, -1, 50);
+		} finally {
+			REV.inJit--;
+		}
 		return 0;
 	}
-	const c0 = ffCounter(st);
+	if (until <= st.steps)
+		return 0;
+	const c0 = ffCounter(st), ex = cpu.wm.exports, cut = until < Infinity;
 	CLOCK.extraSteps = () => (ffCounter(st) - c0) >>> 0;
+	const calls0 = ex.jit_stats(1);
+	if (cut)
+		ex.jit_set_budget(true, (c0 + (until - st.steps)) >>> 0);
 	try {
 		cpu.main_loop();
 	} finally {
 		CLOCK.extraSteps = null;
+		if (cut)
+			ex.jit_set_budget(false, 0);
 	}
 	const ran = (ffCounter(st) - c0) >>> 0;
-	if (ran) {
+	// The JIT checkpoints' spacing (reverse.js), run again too: from a
+	// checkpoint it adds up as it did the first time.
+	REV.jitMs += ran * REV_JIT_MS_PER_INSN + (ex.jit_stats(1) - calls0) * REV_JIT_MS_PER_CALL;
+	if (ran && REV.rerun) {
+		st.jumpForget(); // run again (reverse.js): noted the first time
+	} else if (ran) {
 		st.noteJit(beforeEntry);
 		st.markGap(); // the symbol history and the recorded call stack have a gap here
 	}

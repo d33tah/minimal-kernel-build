@@ -1171,10 +1171,10 @@ as a colour emoji (also checked once in Firefox and WebKit):
   Typing, the JIT or a clock change after stepping back go another way from
   there: the checkpoints, calls and task switches recorded ahead are
   dropped and the open calls closed there (a gap, as for a stretch the JIT
-  runs). The history starts anew after the JIT ran (full speed, a Run to
-  with breakpoints, the fast-forward), a snapshot restored, a clock change,
-  a new machine; real time keeps none. Not kept for the count at full speed
-  (the JIT takes over from it). v86 0.5.471's `set_tsc` sets a restored
+  runs). The history starts anew after a Run to with breakpoints or the
+  fast-forward ran the JIT, a replay ran it, a snapshot restored, a clock
+  change, a new machine; real time keeps none. Stepped checkpoints are not
+  kept for the count at full speed (the JIT takes over from it). v86 0.5.471's `set_tsc` sets a restored
   TSC off by the offset in effect before the restore: after stepping back,
   SeaBIOS's TSC calibration came out one different and a byte of its data
   differed further on. And as shipped a restored machine does not run on
@@ -1195,6 +1195,39 @@ as a colour emoji (also checked once in Firefox and WebKit):
   2.5e9 to 3.3e9, restored in the same page, a reloaded one or a fresh page
   that booted to the point itself (test suite `jitsnap`). A JIT run after
   stepping back or after a Restore no longer taints the run's replay.
+- Reverse execution at JIT speed (R5). While the JIT runs on the virtual
+  clock (jitLoop) the page keeps checkpoints too: one where a stretch the
+  JIT runs starts after stepping, then one about every 1.5 s of JIT running
+  (`?revjitk=N`: every N instructions), each a `save_state()` followed by
+  `jit_reset_hidden()`, logged with the run (J4) as a snapshot's reset is.
+  The 1.5 s is an estimate from what the JIT did (4 ms per million
+  instructions, 1.2 ms per thousand calls of compiled code, from
+  `v86-det.patch`'s `jit_stats()`): with measured time the resets, and with
+  them the JIT's slice ends, came at other counts every run.
+  The page also notes which stretches of the run the JIT ran and which
+  were stepped (`REV.segs`). Step back restores the last checkpoint at or
+  before the target and runs each stretch again the way it ran: the JIT
+  stopped at the very instruction by the patch's instruction budget
+  (`jit_set_budget`: compiled code does not enter a basic block that would
+  cross the target, cycle_internal interprets the rest with v86's counter
+  left where compiled code reads the clock from, and main_loop runs no
+  timers there unless the slice ends there anyway), or stepping. Step and
+  Continue while stepped back where the JIT ran ahead go forward on the
+  recorded run the same way (the stepper would run another timeline); Run
+  to and typing go another way from there. Back to looks for its addresses
+  in the stretches that were stepped only and says how many instructions
+  the JIT ran unwatched. Measured (gate, d-claude, Chromium): from a
+  checkpoint at 2.0e9 on Debian and at 3.0e9 on Debian+initrd (initramfs
+  user mode, where R3's stepper reproduced 0 of 150 JIT slices) to 9
+  targets each (the slice end minus 1 and minus 1,000, and 7 inside the
+  window), the state reached by restore plus budget equals a second such
+  run, a page that ran straight there without a restore, and a run with the
+  budget at the start of the stop's compiled call followed by v86's
+  interpreter in JS (registers, EFLAGS, segment registers, CR0-4, RAM,
+  clock, and the whole `save_state()`); the budget at a slice end gives the
+  live run's state there. The budget costs the JIT about 8% (Debian reset to
+  2.5e9: 366 and 367 MIPS without, 340 and 338 with), the slice ends and
+  RAM unchanged.
   Diff: pick two snapshots of this kernel, or one and "now" (a
   `save_state()` taken for the diff). snapworker.js decompresses and
   compares them in a Worker (the page's main thread only does what Save
@@ -1899,6 +1932,7 @@ browser-test matrix job named by its suites):
 | R2 reverse execution | suite reverse. hello (390 dark, 1280 light) and the minified Linux (1280 light, 390 dark) stepped from the reset vector with a checkpoint every 20,000 instructions, Debian stepped from `startup_32` (JIT before it) with the page's own interval: forward to E, noting the machine at E-deep, E-1000, E-1 and E and every call in the last 20,000 instructions; Step back 1 (run bar), Step back 999 and Step back to E-deep (Debugger) each give the count, EIP, registers, segment registers, EFLAGS, CR0-CR4, v86's counter, clock, IRQ0 count, halt state, RAM SHA-256 and VGA text of the forward run there, 1 and 1,000 within 1 s; the recordings (coverage, paths, symbols, calls, task switches, milestones) unchanged; forward to E again: the same machine and recordings; Back to the function called most, twice: its last two calls with their registers; no jump history entries; a key typed after stepping back drops what was ahead; the JIT drops the history (Step back disabled, the line says why). Debian with its initramfs at the prompt: "echo r2" typed and stepped until r2 is on the screen, Step back to before the keys (the keys waiting, r2 not on the screen), forward again: the same machine and input log. FAILS on 677f8a0fc (no Step back); after stepping back and forward again on hello the RAM differed by one SeaBIOS byte until the TSC fix | reverse |
 | R3 every restore has the TSC as saved; a replay keeps the prompt stop | suite snapdiff, case replay tsc (hello at 1280 light saved at 1,300,000, 100,000 steps across SeaBIOS's TSC calibration, Restore, the same steps: the same RAM SHA-256; FAILS on bcb03313f: RAM differs, v86's set_tsc left the TSC off by the offset before the Restore). Suite replay, case prompt edge (hello paused: the step count of its first hlt; reloaded, stepped to 1 and 2 before it, the prompt text marked seen: run(1) / run(2) end on the hlt with "prompt" there; FAILS on bcb03313f: "count", the stop a replay lost when a recorded key was due at the prompt's hlt) and the Debian+initrd JIT replay with the exact fast-forward restore (the prompt then comes from stepping) | snapdiff,bookmarks,deltasnap; jitdet,guestin,replay |
 | R4 the patched v86, a snapshot repeats the JIT run | suite jitsnap. The page's `v86.wasm` has the SHA-256 of the `gen-v86.sh` build and exports `jit_reset_hidden`, and stepper.js adds its step exports to it. Debian (1.0e9 to 2.55e9) and Debian+initrd (2.5e9 to 3.3e9) at 1280 light, on J1's det JIT from a pause: the page's Save at A, the run on to B (X1); Restore in the same page (X2), in a reloaded page from IndexedDB (X3), and a fresh page that boots to A, saves and restores (X4), each run to B: every slice end (count, EIP, registers and EFLAGS, IRQ0 count) and the end's RAM, registers and clock equal to X1's, and the guest's TSC on the virtual clock (within 1 ms, read twice at the same count) right after each restore and at the ends (it once came out nearly doubled after a reset: suite debian, CI run 43013630565). Debian+initrd at 390 dark: Pause past 2.5e9, Save (the log gets the reset), Continue to the (initramfs) prompt, Restore, Continue to the prompt again: the same count, EIP, RAM, registers and clock, no taint, Replay from boot matches. On 2f26f8c5d (npm's v86.wasm) it FAILS (see PROGRESS R4) | jitsnap |
+| R5 reverse execution at JIT speed | suite jitrev. Debian at full speed paused past 2.5e9 (1280 light, `?revjitk=40000000`), Debian+initrd paused past 3.2e9 in the initramfs scripts (390 dark) and at its (initramfs) prompt (1280 light, the last stretch stepped by the exact stop): Step back is enabled with JIT checkpoints in the history; Step back 1 (run bar) and Step back 999 (Debugger) land at N-1 and N-1,000 within 10 s; Step 999 and Step 1 forward again give the registers, segment registers, EFLAGS, CR0-CR4, v86's counter, clock, IRQ0 count, halt state, RAM SHA-256 and VGA text stepped back to at N-1 and the live run's at the pause N; Back to over the JIT's stretches says it did not look there; forward from the history's start to N-1 again the same; Replay from boot (the Snapshots tab's button) of the run ending at N-1, and of the one ending at N-1,000, matches (EIP, RAM, screen, clock, counter) with the same registers. FAILS on 0eb730a31 (Step back disabled after the JIT ran) | jitrev |
 | B1 a power-on snapshot restores | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark, started paused at the reset vector F000:FFF0: the IDE controller's BAR0 and BAR1 have no BAR and the I/O bit set; Save snapshot there, Run to hello_main / start_kernel, Restore: no error, the registers, the instruction count and every RAM page are the snapshot's and the machine is paused; then Run to the same target stops there and hello prints Still alive; no page error, no horizontal scroll; screenshots after Restore and after the boot). FAILS on eb8579e5c: "restore_state failed: TypeError: Cannot read properties of undefined (reading 'original_bar')", the count and 22 pages wrong, a wasm "unreachable" page error | snapdiff |
 | B2 one double tap is one open | suite graphopen (each of its four runs, after the double click or tap above: the same double click (1280 px) or double tap (390 px) on the function's box twice more, once with the open itself taking 900 ms longer (a wrapper around openFunction busy-waits after it) and once with the CPU 10x slower through CDP; each opens the function exactly once and adds one history entry, and Back returns to the Calls tab as it was). FAILS on 250ee59e1: with the 900 ms open every run opens twice, at 390 px that is two history entries (before (0, 2), after (2, 3)); the canvas's dblclick opened it, then the timer of the pointerup double-press detection opened it again because the 600 ms guard counted from the start of the open | speedasm,runbadge,memeip,graphopen,srcfiles |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |

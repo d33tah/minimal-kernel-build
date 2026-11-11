@@ -1885,6 +1885,14 @@ function stopDriver() {
 async function resume(now = false) {
 	if (!emulator || !emuReady || REV.busy)
 		return;
+	// Stepped back where the JIT ran ahead (R5): forward to where the run
+	// had got to first (exactly, from a checkpoint), as stepping would run
+	// another timeline. A Run to goes on from here instead (another way).
+	if (stepper && runTo === null && revNeedsJit(stepper, Infinity)) {
+		await revStepTo(stepper.ahead, "Continue");
+		if (!stepper || REV.busy || stepper.behind())
+			return;
+	}
 	jitRunId++; // a running jitLoop stops at its next check
 	stopDriver();
 	// Keys typed while paused go in here; a replay's inputs (and its mode)
@@ -1907,8 +1915,6 @@ async function resume(now = false) {
 			stepper.markGap();
 		if (stepper)
 			stepper.noteJit(false);
-		if (stepper)
-			revJit(stepper); // no stepping back across what the JIT runs (R2)
 		if (stepper && clockMips()) {
 			// The virtual clock: the page runs the JIT (jitLoop), the same
 			// run every time.
@@ -1998,7 +2004,11 @@ async function jitLoop() {
 					resume(true);
 					return;
 				}
-				jitChunk(st);
+				// A checkpoint for stepping back (R5); a replayed input due
+				// inside the next slice stops the JIT at its very count.
+				revJitTick(st);
+				const room = inputRoom(st);
+				jitChunk(st, false, room === Infinity ? Infinity : st.steps + room);
 				if (st.dead()) {
 					watchJitEnd();
 					return;
@@ -2161,7 +2171,7 @@ function driverTick() {
 	const keep = !(speed() === "full" && runTo === null);
 	if (keep)
 		revTick(stepper);
-	const room = Math.min(inputRoom(stepper), keep ? revRoom(stepper) : Infinity);
+	const room = Math.min(inputRoom(stepper), keep ? revRoom(stepper) : Infinity, revStepRoom(stepper));
 	const now = realNow();
 	let reason;
 	const t0 = now, s0 = stepper.steps;
@@ -3411,6 +3421,12 @@ async function doStep(n) {
 	if (replayActive())
 		replayStop("stopped by Step");
 	inputFlush(stepper);
+	// Stepped back where the JIT ran (R5): forward on the recorded run from
+	// a checkpoint, the JIT stopping at the very instruction.
+	if (revNeedsJit(stepper, stepper.steps + n)) {
+		await revStepTo(stepper.steps + n, "Step");
+		return;
+	}
 	inputMark(stepper, "stepped");
 	const before = stepper.steps;
 	// In pieces: a checkpoint for stepping back every so many instructions

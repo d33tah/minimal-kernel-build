@@ -907,6 +907,8 @@ class Stepper {
 	// budgetMs. Returns a reason: "count", "addr", "hlt", "milestone",
 	// "end", "prompt", "time".
 	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
+		if (typeof revMark === "function")
+			revMark(this, "step"); // R5: the run goes on stepped from here
 		let i0 = 0;
 		if (this.steps < this.ahead) {
 			const r = this.rerun(n, stopPhys, budgetMs, leave);

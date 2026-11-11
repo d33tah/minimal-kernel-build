@@ -567,6 +567,9 @@ function v86ResetHidden(em, where) {
 	if (typeof f !== "function")
 		throw new Error("this v86.wasm has no jit_reset_hidden (not the gen-v86.sh build)");
 	f(where === "restore" ? 1 : 0);
+	// R5: the JIT checkpoints' spacing counts from the last reset.
+	if (typeof REV === "object")
+		REV.jitMs = 0;
 }
 
 // emulator.restore_state() with the v86 0.5.471 restore bugs worked

@@ -45,7 +45,7 @@ index 782a6a1..cc671e4 100644
                  .splice(source..i, iter::once(replacement))
                  .collect();
 diff --git a/src/rust/cpu/cpu.rs b/src/rust/cpu/cpu.rs
-index 7b03975..a712903 100644
+index 7b03975..b3ae3e5 100644
 --- a/src/rust/cpu/cpu.rs
 +++ b/src/rust/cpu/cpu.rs
 @@ -23,7 +23,7 @@ use crate::profiler::stat;
@@ -57,7 +57,189 @@ index 7b03975..a712903 100644
  use std::ptr;
  
  mod wasm {
-@@ -4355,9 +4355,24 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
+@@ -299,6 +299,87 @@ pub static mut cpuid_level: u32 = 0x16;
+ 
+ pub static mut jit_block_boundary: bool = false;
+ 
++// mkb R5: an instruction budget. With budget_on the CPU stops when
++// instruction_counter reaches budget_target: compiled code does not enter a
++// block that would cross it (budget_room, budget_exit), the interpreter
++// stops there, do_many_cycles_native and main_loop return without running
++// the timers. The instructions between the block's start and the target are
++// interpreted with instruction_counter left at the value it had when the
++// compiled call began, as the compiled code would have read it (the page's
++// clock is derived from it): the machine at the target is the one a run
++// without the budget passed through.
++pub static mut budget_on: bool = false;
++pub static mut budget_target: u32 = 0;
++pub static mut budget_room: u32 = u32::MAX;
++pub static mut budget_exit: i32 = 0;
++// the counter the last stop's call began with, and how many instructions
++// were interpreted after compiled code stopped (jit_budget_info)
++pub static mut budget_entry: u32 = 0;
++pub static mut budget_tail: u32 = 0;
++// the stop cut a compiled call or an interpreted run short
++pub static mut budget_cut: bool = false;
++
++// mkb R5: what the JIT did, for the page's checkpoint spacing (a cost that
++// is the same every run, unlike time): instructions interpreted, calls of
++// compiled code, interpreted runs
++pub static mut jit_stat: [f64; 3] = [0.0; 3];
++
++#[no_mangle]
++pub unsafe fn jit_stats(which: u32) -> f64 { jit_stat[(which as usize).min(2)] }
++
++pub unsafe fn budget_reached() -> bool {
++    budget_on && (budget_target.wrapping_sub(*instruction_counter) as i32) <= 0
++}
++
++#[no_mangle]
++pub unsafe fn jit_set_budget(on: bool, target: u32) {
++    budget_on = on;
++    budget_target = target;
++    budget_room = u32::MAX;
++    budget_exit = 0;
++    budget_entry = target;
++    budget_tail = 0;
++}
++
++#[no_mangle]
++pub unsafe fn jit_budget_info(which: u32) -> u32 {
++    match which {
++        0 => budget_entry,
++        1 => budget_tail,
++        _ => budget_on as u32,
++    }
++}
++
++// Compiled code stopped before a block that would cross the target, at
++// instruction_counter: interpret up to the target with the counter at entry.
++unsafe fn budget_finish(entry: u32) {
++    let at = *instruction_counter;
++    *instruction_counter = entry;
++    budget_entry = entry;
++    let mut i: u32 = 0;
++    loop {
++        let done = at
++            .wrapping_add(i)
++            .wrapping_add((*instruction_counter).wrapping_sub(entry));
++        if (budget_target.wrapping_sub(done) as i32) <= 0 || *in_hlt {
++            break;
++        }
++        let phys_addr = match get_phys_eip() {
++            Ok(p) => p,
++            Err(()) => break,
++        };
++        i += 1;
++        *previous_ip = *instruction_pointer;
++        let opcode = *memory::mem8.offset(phys_addr as isize) as i32;
++        *instruction_pointer += 1;
++        run_instruction(opcode | (*is_32 as i32) << 8);
++    }
++    let extra = (*instruction_counter).wrapping_sub(entry);
++    *instruction_counter = at.wrapping_add(i).wrapping_add(extra);
++    budget_tail = i.wrapping_add(extra);
++    budget_cut = true;
++}
++
+ const TSC_ENABLE_IMPRECISE_BROWSER_WORKAROUND: bool = true;
+ 
+ #[cfg(debug_assertions)]
+@@ -3188,7 +3269,15 @@ pub unsafe fn cycle_internal() {
+             }
+         }
+         profiler::stat_increment(stat::RUN_FROM_CACHE);
++        jit_stat[1] += 1.0;
+         let initial_instruction_counter = *instruction_counter;
++        budget_room = if budget_on {
++            budget_target.wrapping_sub(initial_instruction_counter)
++        }
++        else {
++            u32::MAX
++        };
++        budget_exit = 0;
+         #[cfg(debug_assertions)]
+         {
+             in_jit = true;
+@@ -3201,6 +3290,11 @@ pub unsafe fn cycle_internal() {
+         {
+             in_jit = false;
+         }
++        budget_room = u32::MAX;
++        if budget_exit != 0 {
++            budget_exit = 0;
++            budget_finish(initial_instruction_counter);
++        }
+         profiler::stat_increment_by(
+             stat::RUN_FROM_CACHE_STEPS,
+             (*instruction_counter - initial_instruction_counter) as u64,
+@@ -3313,6 +3407,15 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
+             }
+         }
+ 
++        // mkb R5: stop at the budget's target
++        if budget_on
++            && (budget_target.wrapping_sub((*instruction_counter).wrapping_add(i)) as i32) <= 0
++        {
++            budget_entry = *instruction_counter;
++            budget_tail = 0;
++            budget_cut = i > 0;
++            break;
++        }
+         i += 1;
+         let start_eip = *instruction_pointer;
+         let opcode = *memory::mem8.offset(phys_addr as isize) as i32;
+@@ -3339,6 +3442,8 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
+         debug_last_jump = LastJump::Interpreted { phys_addr };
+     }
+ 
++    jit_stat[0] += i as f64;
++    jit_stat[2] += 1.0;
+     *instruction_counter += i;
+ }
+ 
+@@ -3378,6 +3483,10 @@ pub unsafe fn segment_prefix_op(seg: i32) {
+ pub unsafe fn main_loop() -> f64 {
+     profiler::stat_increment(stat::MAIN_LOOP);
+ 
++    if budget_reached() {
++        return 0.0;
++    }
++
+     let start = js::microtick();
+ 
+     if *in_hlt {
+@@ -3396,8 +3505,21 @@ pub unsafe fn main_loop() -> f64 {
+     }
+ 
+     loop {
++        let initial_instruction_counter = *instruction_counter;
++        budget_cut = false;
+         do_many_cycles_native();
+ 
++        // mkb R5: stopped at the budget's target inside the slice: no timers
++        // (where the slice ends there anyway they run, as without the budget)
++        if budget_reached()
++            && (budget_cut
++                || (!*in_hlt
++                    && (*instruction_counter).wrapping_sub(initial_instruction_counter)
++                        < LOOP_COUNTER as u32))
++        {
++            return 0.0;
++        }
++
+         let now = js::microtick();
+         let t = js::run_hardware_timers(*acpi_enabled, now);
+         handle_irqs();
+@@ -3418,6 +3540,7 @@ pub unsafe fn do_many_cycles_native() {
+     let initial_instruction_counter = *instruction_counter;
+     while (*instruction_counter).wrapping_sub(initial_instruction_counter) < LOOP_COUNTER as u32
+         && !*in_hlt
++        && !budget_reached()
+     {
+         cycle_internal();
+     }
+@@ -4355,9 +4478,24 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
  
  #[no_mangle]
  pub unsafe fn set_tsc(low: u32, high: u32) {
@@ -99,7 +281,7 @@ index 0000000..1b1494b
 +pub type HashMap<K, V> = std::collections::HashMap<K, V, BuildHasherDefault<DefaultHasher>>;
 +pub type HashSet<K> = std::collections::HashSet<K, BuildHasherDefault<DefaultHasher>>;
 diff --git a/src/rust/jit.rs b/src/rust/jit.rs
-index 574a78a..b58a75f 100644
+index 574a78a..ebeb6d5 100644
 --- a/src/rust/jit.rs
 +++ b/src/rust/jit.rs
 @@ -1,4 +1,5 @@
@@ -136,7 +318,15 @@ index 574a78a..b58a75f 100644
          }
      }
  }
-@@ -467,7 +468,7 @@ fn jit_find_basic_blocks(
+@@ -346,6 +347,7 @@ pub struct JitContext<'a> {
+     pub current_instruction: Instruction,
+     pub previous_instruction: Instruction,
+     pub instruction_counter: WasmLocal,
++    pub budget_room: WasmLocal,
+     pub wasm_table_index: WasmTableIndex,
+ }
+ impl<'a> JitContext<'a> {
+@@ -467,7 +469,7 @@ fn jit_find_basic_blocks(
                      Some(PageInfo { entry_points, .. }) => {
                          HashSet::from_iter(entry_points.iter().map(|x| x.0))
                      },
@@ -145,7 +335,7 @@ index 574a78a..b58a75f 100644
                  };
  
                  if entry_points
-@@ -508,10 +509,10 @@ fn jit_find_basic_blocks(
+@@ -508,10 +510,10 @@ fn jit_find_basic_blocks(
      }
  
      let mut to_visit_stack: Vec<i32> = Vec::new();
@@ -159,7 +349,7 @@ index 574a78a..b58a75f 100644
  
      // 16-bit doesn't work correctly, most likely due to instruction pointer wrap-around
      let max_pages = if cpu.state_flags.is_32() { unsafe { MAX_PAGES } } else { 1 };
-@@ -855,7 +856,7 @@ fn jit_analyze_and_generate(
+@@ -855,7 +857,7 @@ fn jit_analyze_and_generate(
  
      let existing_entry_points = match ctx.pages.get(&page) {
          Some(PageInfo { entry_points, .. }) => HashSet::from_iter(entry_points.iter().map(|x| x.0)),
@@ -168,7 +358,7 @@ index 574a78a..b58a75f 100644
      };
  
      if entry_points
-@@ -896,7 +897,7 @@ fn jit_analyze_and_generate(
+@@ -896,7 +898,7 @@ fn jit_analyze_and_generate(
          .collect();
      let basic_blocks = jit_find_basic_blocks(ctx, entry_points, cpu.clone());
  
@@ -177,7 +367,7 @@ index 574a78a..b58a75f 100644
  
      for b in basic_blocks.iter() {
          // Remove this assertion once page-crossing jit is enabled
-@@ -1025,7 +1026,7 @@ fn jit_analyze_and_generate(
+@@ -1025,7 +1027,7 @@ fn jit_analyze_and_generate(
      );
      dbg_assert!(!entries.is_empty());
  
@@ -186,7 +376,7 @@ index 574a78a..b58a75f 100644
      for &p in &pages {
          page_info.entry(p).or_insert_with(|| PageInfo {
              wasm_table_index,
-@@ -1035,7 +1036,7 @@ fn jit_analyze_and_generate(
+@@ -1035,7 +1037,7 @@ fn jit_analyze_and_generate(
          });
          ctx.entry_points
              .entry(p)
@@ -195,7 +385,7 @@ index 574a78a..b58a75f 100644
      }
      for &(addr, state) in &entries {
          let code = page_info.get_mut(&Page::page_of(addr)).unwrap();
-@@ -1113,7 +1114,7 @@ pub fn codegen_finalize_finished(
+@@ -1113,7 +1115,7 @@ pub fn codegen_finalize_finished(
              .insert(wasm_table_index, pages.keys().copied().collect());
      }
  
@@ -204,7 +394,26 @@ index 574a78a..b58a75f 100644
  
      for (page, mut info) in pages {
          dbg_assert!(info.state_flags == state_flags);
-@@ -1286,7 +1287,7 @@ fn jit_generate_module(
+@@ -1225,6 +1227,10 @@ fn jit_generate_module(
+ 
+     builder.const_i32(0);
+     let instruction_counter = builder.set_new_local();
++    // mkb R5: the instructions this call may run before the budget's target
++    // (cpu::budget_room, set by cycle_internal; u32::MAX without a budget)
++    builder.load_fixed_i32(&raw const cpu::budget_room as u32);
++    let budget_room = builder.set_new_local();
+ 
+     let exit_label = builder.block_void();
+     let exit_with_fault_label = builder.block_void();
+@@ -1255,6 +1261,7 @@ fn jit_generate_module(
+         current_instruction: Instruction::Other,
+         previous_instruction: Instruction::Other,
+         instruction_counter,
++        budget_room,
+         wasm_table_index,
+     };
+ 
+@@ -1286,7 +1293,7 @@ fn jit_generate_module(
          result
      };
  
@@ -213,7 +422,7 @@ index 574a78a..b58a75f 100644
      for (i, &addr) in entry_blocks.iter().enumerate() {
          dbg_assert!(i < 0x10000);
          index_for_addr.insert(addr, i as u16);
-@@ -1299,7 +1300,7 @@ fn jit_generate_module(
+@@ -1299,7 +1306,7 @@ fn jit_generate_module(
          }
      }
  
@@ -222,7 +431,7 @@ index 574a78a..b58a75f 100644
  
      enum Work {
          WasmStructure(WasmStructure),
-@@ -1876,7 +1877,7 @@ fn jit_generate_module(
+@@ -1876,7 +1883,7 @@ fn jit_generate_module(
                      codegen::gen_profiler_stat_increment(ctx.builder, stat::DISPATCHER_SMALL);
                      let nexts: HashSet<u32> = next_addr
                          .as_ref()
@@ -231,7 +440,7 @@ index 574a78a..b58a75f 100644
                      for &addr in &entries {
                          if nexts.contains(&addr) {
                              continue;
-@@ -1918,7 +1919,7 @@ fn jit_generate_module(
+@@ -1918,7 +1925,7 @@ fn jit_generate_module(
                      }
                  }
  
@@ -240,7 +449,7 @@ index 574a78a..b58a75f 100644
                  for &target in entries.iter() {
                      let index = if entries.len() == 1 {
                          None
-@@ -1962,7 +1963,7 @@ fn jit_generate_module(
+@@ -1962,7 +1969,7 @@ fn jit_generate_module(
  
                  let targets = next_addr.clone().unwrap();
                  let label = ctx.builder.block_void();
@@ -249,7 +458,45 @@ index 574a78a..b58a75f 100644
                  for &target in targets.iter() {
                      let index = if targets.len() == 1 {
                          None
-@@ -2167,7 +2168,7 @@ pub fn jit_increase_hotness_and_maybe_compile(
+@@ -2033,6 +2040,7 @@ fn jit_generate_module(
+     }
+     ctx.builder
+         .free_local(ctx.instruction_counter.unsafe_clone());
++    ctx.builder.free_local(ctx.budget_room.unsafe_clone());
+ 
+     ctx.builder.finish();
+ 
+@@ -2078,10 +2086,28 @@ fn jit_generate_basic_block(ctx: &mut JitContext, block: &BasicBlock) {
+         ctx.builder.call_fn1("enter_basic_block");
+     }
+ 
++    // mkb R5: a block that would run past the budget's target is not
++    // entered: leave with EIP at its start (cycle_internal interprets the
++    // rest up to the target)
+     ctx.builder.get_local(&ctx.instruction_counter);
+     ctx.builder.const_i32(block.number_of_instructions as i32);
+     ctx.builder.add_i32();
+-    ctx.builder.set_local(&ctx.instruction_counter);
++    ctx.builder.tee_local(&ctx.instruction_counter);
++    ctx.builder.get_local(&ctx.budget_room);
++    ctx.builder.gtu_i32();
++    ctx.builder.if_void();
++    {
++        ctx.builder.get_local(&ctx.instruction_counter);
++        ctx.builder.const_i32(block.number_of_instructions as i32);
++        ctx.builder.sub_i32();
++        ctx.builder.set_local(&ctx.instruction_counter);
++        codegen::gen_set_eip_low_bits(ctx.builder, start_addr as i32 & 0xFFF);
++        ctx.builder.const_i32(&raw mut cpu::budget_exit as i32);
++        ctx.builder.const_i32(1);
++        ctx.builder.store_aligned_i32(0);
++        ctx.builder.br(ctx.exit_label);
++    }
++    ctx.builder.block_end();
+ 
+     ctx.cpu.eip = start_addr;
+     ctx.current_instruction = Instruction::Other;
+@@ -2167,7 +2193,7 @@ pub fn jit_increase_hotness_and_maybe_compile(
      let (hotness, entry_points) = ctx.entry_points.entry(page).or_insert_with(|| {
          cpu::tlb_set_has_code(page, true);
          profiler::stat_increment(stat::RUN_INTERPRETED_NEW_PAGE);
@@ -258,7 +505,7 @@ index 574a78a..b58a75f 100644
      });
  
      if !is_near_end_of_page(phys_address) {
-@@ -2379,8 +2380,30 @@ pub fn jit_dirty_cache_small(start_addr: u32, end_addr: u32) {
+@@ -2379,8 +2405,30 @@ pub fn jit_dirty_cache_small(start_addr: u32, end_addr: u32) {
  #[no_mangle]
  pub fn jit_clear_cache_js() { jit_clear_cache(&mut get_jit_state()) }
  

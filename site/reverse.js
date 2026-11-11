@@ -1,5 +1,5 @@
 "use strict";
-// Reverse execution in stepped mode (R2). Uses app.js's globals (emulator,
+// Reverse execution, stepped (R2) and at JIT speed (R5). Uses app.js's globals (emulator,
 // stepper, runState, pauseAll, afterStop, ...), snapshots.js's Worker
 // (snapWorker: R1's page hashes, deltas and LZ4) and replay.js's input log.
 //
@@ -25,17 +25,43 @@
 // (25b6c3a04, J2), so the machine is then as it was at that count before:
 // the same registers, RAM and screen.
 //
-// The history starts anew (checkpoints dropped) where stepping cannot
-// repeat the run: the JIT ran (the JIT and stepping are two timelines, D1;
-// reverse execution at JIT speed is R5), a snapshot was restored, the clock
-// changed or runs on real time, a new machine. Going on another way after stepping back (keys
-// typed, the JIT) drops what was ahead (Stepper.branch).
+// R5: while the JIT runs (jitLoop) the page keeps checkpoints too: at the
+// start of each stretch the JIT runs and then every REV_JIT_MS of JIT
+// running (?revjitk= sets a fixed count instead), each a save_state() and
+// the reset of v86's hidden state (v86ResetHidden), logged with the run as
+// a snapshot's is (R4): from a checkpoint the JIT then runs again as it ran
+// the first time. Which stretches of the run the JIT ran and which were
+// stepped is kept too (REV.segs), so that a re-run runs each the way it ran.
+// Inside a stretch the JIT ran, the re-run stops at the very instruction:
+// v86-det.patch's budget (jitChunk's until) keeps compiled code from
+// entering a basic block that would cross it and interprets the rest with
+// v86's counter as compiled code reads the clock from it. Back to looks
+// for its addresses only in the stretches that were stepped: the JIT runs
+// compiled code that cannot be watched instruction by instruction.
+//
+// The history starts anew (checkpoints dropped) where the run cannot be
+// repeated: a snapshot was restored, the clock changed or runs on real time,
+// a fast-forward or a Run to with breakpoints ran the JIT (they restore
+// states of their own and write HLTs into memory), a replay ran the JIT, a
+// new machine. Going on another way after stepping back (keys typed,
+// Continue at JIT speed from inside a stretch, a Run to) drops what was
+// ahead (Stepper.branch).
 
 const REV_MAX = 32;        // checkpoints kept
 const REV_GROUP = 8;       // a full one, then deltas; the oldest group goes first
 const REV_TARGET_MS = 500; // stepping between two checkpoints
 const REV_BYTES = 256 << 20; // packed checkpoints in memory at most (the oldest group goes)
 const REV_K_MIN = 50000, REV_K_MAX = 20e6;
+// Between two JIT checkpoints: about REV_JIT_MS of JIT running, estimated
+// from what the JIT did (instructions, calls of compiled code: v86-det.patch's
+// jit_stats), so that a run puts its checkpoints, and the resets that come
+// with them, at the same counts every time (measured time would not). Measured on
+// Debian (Chromium): about 4 ms per million instructions of kernel code,
+// and 1.2 ms per thousand calls of compiled code where processes start and
+// exit (the initramfs: 12 instead of 350 MIPS).
+const REV_JIT_MS = 1500;
+const REV_JIT_MS_PER_INSN = 4e-6, REV_JIT_MS_PER_CALL = 1.2e-3;
+const REV_JIT_KMAX = 500e6;  // and at most this many instructions
 
 const REV = {
 	st: null,       // the stepper the checkpoints are of
@@ -48,19 +74,40 @@ const REV = {
 	why: "",        // why the history starts where it does
 	last: null,     // the last reverse operation: { what, ms, ... }
 	cache: null,    // { key, raw }: the full state of the checkpoint restored last (Step back again is quicker)
+	segs: [],       // R5: { at, kind: "jit" | "step" }: how the run went on from count at
+	jitMs: 0,       // JIT running since the last checkpoint (estimated, REV_JIT_MS)
+	kJit: 0,        // ?revjitk=: a JIT checkpoint every this many instructions instead
+	rerun: false,   // a reverse operation runs the JIT or the stepper again
+	inJit: 0,       // jitChunk's own stepping of a halted CPU (part of the JIT's stretch)
 };
 
 {
 	const k = Number(new URLSearchParams(location.search).get("revk"));
 	if (k >= 1)
 		REV.kFixed = Math.floor(k);
+	const kj = Number(new URLSearchParams(location.search).get("revjitk"));
+	if (kj >= 1)
+		REV.kJit = Math.floor(kj);
 }
 
 const revKText = () => (REV.kFixed ? REV.kFixed : REV.k).toLocaleString("en");
 
+// " every k stepped, n at JIT speed (every ...)" for the history line.
+function revEveryText() {
+	const jit = REV.cps.filter((c) => c.jit).length, stepped = REV.cps.length - jit;
+	const parts = [];
+	if (stepped || !jit)
+		parts.push((jit ? stepped + " stepped, " : "") + "every " + revKText() + " stepped instructions");
+	if (jit)
+		parts.push(jit + " at JIT speed, " + (REV.kJit ? "every " + num(REV.kJit) + " instructions" : "about every " + (REV_JIT_MS / 1000).toLocaleString("en") + " s of JIT"));
+	return " (" + parts.join("; ") + ")";
+}
+
 // A new machine, a snapshot restored, the clock changed: no history.
 function revReset(why) {
 	REV.cps = [];
+	REV.segs = [];
+	REV.jitMs = 0;
 	REV.cache = null;
 	REV.why = why || "";
 	REV.st = stepper;
@@ -105,14 +152,21 @@ function revRoom(st) {
 	return Math.max(1, (REV.kFixed || REV.k) - (st.steps - last.steps));
 }
 
-function revCapture(st) {
+// jit: a JIT checkpoint (R5): v86's hidden state is reset after the save,
+// as a restore of it resets it, and the reset is logged with the run.
+function revCapture(st, jit = false) {
 	const t0 = realNow();
 	let raw;
 	try {
 		raw = emulator.v86.save_state(); // synchronous in v86 0.5.471 (the emulator's is an async wrapper)
 	} catch (e) {
 		REV.why = "save_state failed: " + ((e && e.message) || e);
-		return;
+		return false;
+	}
+	if (jit) {
+		v86ResetHidden(emulator, "save");
+		inputReset(st, "a reverse checkpoint was taken");
+		REV.jitMs = 0;
 	}
 	const prev = REV.cps[REV.cps.length - 1];
 	const sinceFull = prev ? REV.cps.length - 1 - REV.cps.map((c) => c.full).lastIndexOf(true) : -1;
@@ -121,7 +175,7 @@ function revCapture(st) {
 		key: "rev" + (++REV.seq), steps: st.steps, full,
 		clock: { base: CLOCK.base, baseSteps: CLOCK.baseSteps, mips: CLOCK.mips },
 		guest: GUEST.state(), icount: st.cpu.instruction_counter[0] >>> 0, text: st.text.slice(), textSeen: st.textSeen,
-		idleMs: st.idleMs, irq0: st.irq0, logLen: INPUT.log.length, saveMs: realNow() - t0,
+		idleMs: st.idleMs, irq0: st.irq0, logLen: INPUT.log.length, saveMs: realNow() - t0, jit,
 		base: null, data: null, size: 0, stored: 0, pages: -1, hashes: null,
 	};
 	cp.ready = (async () => {
@@ -154,6 +208,107 @@ function revCapture(st) {
 	REV.cps.push(cp);
 	revTrim();
 	revRender();
+	return true;
+}
+
+// ---- R5: the JIT's stretches -------------------------------------------------
+
+// The run goes on from st's count by the JIT ("jit") or stepping ("step"):
+// noted where that changes. Not while a reverse operation runs it again,
+// nor while stepped back (what is ahead is the recorded run).
+function revMark(st, kind) {
+	if (REV.rerun || REV.inJit || st !== REV.st || st !== stepper)
+		return;
+	if (st.behind()) {
+		// Stepping from inside a stretch the JIT ran: stepping is another
+		// timeline (D1), so the run goes another way from here.
+		if (kind === "step" && revSegAt(st.steps).kind === "jit")
+			revBranch(st, "stepped at instruction " + num(st.steps) + " inside a stretch the JIT ran");
+		else
+			return;
+	}
+	const segs = REV.segs, last = segs[segs.length - 1];
+	if (last && last.kind === kind)
+		return;
+	if (last && last.at === st.steps) {
+		segs.pop();
+		const prev = segs[segs.length - 1];
+		if (!prev || prev.kind !== kind)
+			segs.push({ at: st.steps, kind });
+		return;
+	}
+	segs.push({ at: st.steps, kind });
+}
+
+// The stretch count at is in: { kind, at, end } (end: where the next one
+// starts, Infinity for the last). Before the first: stepped.
+function revSegAt(at) {
+	const segs = REV.segs;
+	let i = segs.length - 1;
+	while (i >= 0 && segs[i].at > at)
+		i--;
+	return { kind: i >= 0 ? segs[i].kind : "step", at: i >= 0 ? segs[i].at : -Infinity, end: i + 1 < segs.length ? segs[i + 1].at : Infinity };
+}
+
+// Whether the JIT ran any of [from, to).
+function revJitIn(from, to) {
+	for (let s = revSegAt(from); s.at < to; s = revSegAt(s.end)) {
+		if (s.kind === "jit")
+			return true;
+		if (s.end === Infinity)
+			break;
+	}
+	return false;
+}
+
+// Instructions the stepper may run while stepped back before the next
+// stretch the JIT ran (Infinity when none is ahead).
+function revStepRoom(st) {
+	if (!st.behind() || REV.st !== st)
+		return Infinity;
+	for (let s = revSegAt(st.steps); s.end < st.ahead; s = revSegAt(s.end))
+		if (revSegAt(s.end).kind === "jit")
+			return Math.max(1, s.end - st.steps);
+	return Infinity;
+}
+
+// Before a JIT slice of jitLoop: a checkpoint at the start of each stretch
+// the JIT runs (the hidden state reset there, so that a re-run from an
+// earlier checkpoint finds the JIT as it was) and every REV_JIT_MS of
+// JIT running. Not during a replay (its log has no resets here) nor a
+// fast-forward.
+function revJitTick(st) {
+	if (REV.st !== st)
+		revReset("");
+	if (!revCan(st) || ffActive || replayActive() || jitPending(st))
+		return;
+	// The JIT after stepping back: another way from here (as revJit says),
+	// with a checkpoint where it starts.
+	if (st.behind() || INPUT.redo.length)
+		revBranch(st, "the JIT ran at instruction " + num(st.steps) + " after stepping back");
+	const last = REV.cps[REV.cps.length - 1], seg = REV.segs[REV.segs.length - 1];
+	const due = !last || !seg || seg.kind !== "jit" || last.steps < seg.at ||
+		(REV.kJit ? st.steps - last.steps >= REV.kJit : REV.jitMs >= REV_JIT_MS || st.steps - last.steps >= REV_JIT_KMAX);
+	if (due && !(last && last.steps === st.steps && last.jit))
+		revCapture(st, true);
+}
+
+// The JIT is about to run a slice (jitChunk): the history goes on with it,
+// or starts anew where the JIT does what cannot be repeated.
+function revJit(st) {
+	if (REV.rerun)
+		return;
+	if (REV.st !== st)
+		revReset("");
+	if (ffActive || replayActive() || !CLOCK.virtual) {
+		if (REV.cps.length)
+			revReset((ffActive ? "a fast-forward or Run to with breakpoints" : replayActive() ? "a replay" : "the real-time clock") +
+				" ran the JIT at instruction " + num(st.steps));
+		return;
+	}
+	if (st.behind() || INPUT.redo.length)
+		revBranch(st, "the JIT ran at instruction " + num(st.steps) + " after stepping back");
+	revMark(st, "jit");
 }
 
 // The oldest group goes when there are more than REV_MAX checkpoints or
@@ -220,6 +375,10 @@ async function revRestore(st, cp, from) {
 	st.idleMs = cp.idleMs;
 	st.irq0 = cp.irq0;
 	st.vgaDirty = false;
+	// A checkpoint ahead of the machine (R5: forward on the recorded run):
+	// the log's entries before it come back from INPUT.redo first.
+	if (INPUT.log.length < cp.logLen)
+		INPUT.log.push(...INPUT.redo.splice(0, cp.logLen - INPUT.log.length));
 	inputRewind(cp.logLen);
 	// v86Restore reset v86's hidden state (its JIT, the TSC's
 	// extrapolation): logged at the checkpoint's count, so a replay resets
@@ -227,51 +386,73 @@ async function revRestore(st, cp, from) {
 	// earlier step back to this checkpoint is not ahead of it.
 	while (INPUT.redo.length && INPUT.redo[0].reset && INPUT.redo[0].at === cp.steps)
 		INPUT.redo.shift();
-	if (CLOCK.virtual)
+	const last = INPUT.log[INPUT.log.length - 1];
+	if (CLOCK.virtual && !(last && last.reset && last.at === cp.steps))
 		INPUT.log.push({ at: cp.steps, t: CLOCK.now(), reset: true });
 	st.rewind(cp.steps, from);
 }
 
-// Step forward to count target (re-running), the logged keys going in at
-// their counts. Yields to the page now and then.
-async function revForward(st, target) {
-	let t = realNow();
-	while (st.steps < target) {
-		inputRedo(st);
-		const r = st.run(Math.min(target - st.steps, inputRoom(st)), -1, 50);
-		if (r === "hlt" && st.dead())
-			break;
-		if (realNow() - t > 200) {
-			revStatus("Stepping back... at " + num(st.steps) + " of " + num(target), "busy");
-			await new Promise((res) => setTimeout(res, 0));
-			if (st !== stepper)
-				throw new Error("the machine was replaced");
-			t = realNow();
-		}
+// One slice of the JIT again, to until at most (R5), the logged inputs
+// due going in first. Returns the instructions it ran.
+async function revJitSlice(st, until) {
+	inputRedo(st);
+	if (jitPending(st))
+		await jitFlush(st);
+	const next = INPUT.redo.length ? INPUT.redo[0].at : Infinity;
+	const s0 = st.steps;
+	REV.rerun = true;
+	try {
+		jitChunk(st, false, Math.min(until, next > st.steps ? next : until));
+	} finally {
+		REV.rerun = false;
 	}
+	st.catchUp();
+	return st.steps - s0;
 }
 
-// The hits of targets in [st.steps, end): the last one before end, or -1.
-async function revScan(st, targets, end) {
-	let hit = -1, leave = -1, t = realNow();
-	while (st.steps < end) {
-		inputRedo(st);
-		const r = st.run(Math.min(end - st.steps, inputRoom(st)), targets, 50, leave);
-		leave = -1;
-		if (r === "addr") {
-			hit = st.steps;
-			leave = st.nextPhys();
-		} else if (r === "hlt" && st.dead()) {
-			break;
+// Run forward to count target again, each stretch the way it ran (the JIT
+// to the very instruction, or stepping), the logged keys and resets going
+// in at their counts; with targets (a Set of addresses), the stepped
+// stretches stop at them: returns the last hit before target (-1 for none)
+// and the instructions the JIT ran meanwhile. Yields now and then.
+async function revForward(st, target, targets = null, what = "Stepping back") {
+	let t = realNow(), hit = -1, leave = -1, jit = 0;
+	while (st.steps < target) {
+		const seg = revSegAt(st.steps), end = Math.min(target, seg.end);
+		if (seg.kind === "jit") {
+			const s0 = st.steps;
+			const ran = await revJitSlice(st, end);
+			jit += ran;
+			if (!ran && st.steps === s0 && !st.halted())
+				throw new Error("the JIT did not get on at instruction " + num(st.steps));
+			if (st.dead())
+				break;
+		} else {
+			inputRedo(st);
+			REV.rerun = true;
+			let r;
+			try {
+				r = st.run(Math.min(end - st.steps, inputRoom(st)), targets || -1, 50, targets ? leave : undefined);
+			} finally {
+				REV.rerun = false;
+			}
+			leave = -1;
+			if (r === "addr" && targets) {
+				hit = st.steps;
+				leave = st.nextPhys();
+			} else if (r === "hlt" && st.dead()) {
+				break;
+			}
 		}
 		if (realNow() - t > 200) {
+			revStatus(what + "... at " + num(st.steps) + " of " + num(target), "busy");
 			await new Promise((res) => setTimeout(res, 0));
 			if (st !== stepper)
 				throw new Error("the machine was replaced");
 			t = realNow();
 		}
 	}
-	return hit;
+	return { hit, jit };
 }
 
 function revStatus(text, state, ms) {
@@ -320,7 +501,7 @@ function revNoneText() {
 		return "no machine";
 	if (!CLOCK.virtual)
 		return "the clock runs on real time, so a run does not repeat: no reverse history (pick a virtual clock)";
-	return "no reverse history yet: it starts when the page steps the CPU" + (REV.why ? " (" + REV.why + ")" : "");
+	return "no reverse history yet: it starts when the page steps the CPU or runs the JIT on the virtual clock" + (REV.why ? " (" + REV.why + ")" : "");
 }
 
 // Step back n instructions (to the history's start at most).
@@ -333,12 +514,42 @@ function revStepBack(n) {
 		const cp = revFind(target);
 		await revRestore(st, cp, from);
 		const restored = cp.steps;
-		await revForward(st, target);
+		const f = await revForward(st, target);
 		return "Stepped back " + num(from - st.steps) + " instruction" + (from - st.steps === 1 ? "" : "s") + " to " + num(st.steps) +
 			(target > from - n ? ", the start of the reverse history" : "") +
-			": restored the checkpoint at " + num(restored) + ", ran " + num(st.steps - restored) + " again";
+			": restored the checkpoint at " + num(restored) + ", ran " + num(st.steps - restored) + " again" + revHow(f.jit, st.steps - restored);
 	});
 }
+
+// How a re-run of n instructions went, jit of them by the JIT.
+function revHow(jit, n) {
+	if (!jit)
+		return "";
+	return jit === n ? " with the JIT, stopped exactly here by its instruction budget" :
+		" (" + num(jit) + " with the JIT, stopped exactly by its instruction budget, the rest stepped)";
+}
+
+// R5: forward again on the recorded run to count target (not past where it
+// got to): restore the last checkpoint before it and run to it. Step and
+// Continue use it while stepped back where the JIT ran ahead.
+function revStepTo(target, what) {
+	return revRun(what, async (st) => {
+		const from = st.steps, to = Math.min(target, st.ahead);
+		if (to <= from)
+			return what + ": nothing ahead";
+		const cp = revFind(to);
+		await revRestore(st, cp, Math.max(st.ahead, from));
+		const restored = cp.steps;
+		const f = await revForward(st, to, null, what);
+		return what + ": forward " + num(st.steps - from) + " to " + num(st.steps) + " on the recorded run" +
+			(st.behind() ? "" : ", where it had got to") + ": restored the checkpoint at " + num(restored) + ", ran " +
+			num(st.steps - restored) + " again" + revHow(f.jit, st.steps - restored);
+	});
+}
+
+// Stepped back with a stretch the JIT ran in [st.steps, to): forward on
+// the recorded run needs revStepTo (the stepper would run another timeline).
+const revNeedsJit = (st, to) => !!st && REV.st === st && st.behind() && revJitIn(st.steps, Math.min(to, st.ahead));
 
 // Back to (reverse continue): the last time before now the CPU was at one
 // of targets (Run to's addresses); the history's start when none.
@@ -347,24 +558,40 @@ function revBackTo(targets, label) {
 		const from = st.steps;
 		const set = new Set(targets);
 		const cps = REV.cps.filter((c) => c.steps < from && !c.failed);
-		let ran = 0;
+		let ran = 0, jit = 0;
+		// The JIT's stretches are crossed without looking (R5).
+		const jitNote = () => (jit ? "; not looked for in the " + num(jit) + " instructions the JIT ran" : "");
 		for (let i = cps.length - 1; i >= 0; i--) {
 			const end = i + 1 < cps.length ? cps[i + 1].steps : from;
+			const jitOnly = !(function stepped() {
+				for (let s = revSegAt(cps[i].steps); s.at < end; s = revSegAt(s.end)) {
+					if (s.kind === "step")
+						return true;
+					if (s.end === Infinity)
+						break;
+				}
+				return false;
+			})();
+			if (jitOnly) {
+				jit += end - cps[i].steps;
+				continue;
+			}
 			revStatus("Back to " + label + ": looking from instruction " + num(cps[i].steps) + "...", "busy");
 			await revRestore(st, cps[i], from);
-			const hit = await revScan(st, set, end);
+			const f = await revForward(st, end, set, "Back to " + label);
 			ran += st.steps - cps[i].steps;
-			if (hit >= 0) {
+			jit += f.jit;
+			if (f.hit >= 0) {
 				await revRestore(st, cps[i], from);
-				await revForward(st, hit);
+				await revForward(st, f.hit);
 				return "Back to " + label + ": the CPU was last at " + hex(st.nextPhys()) + " at instruction " + num(st.steps) +
-					" (" + num(from - st.steps) + " back; " + num(ran) + " instructions run again to find it)";
+					" (" + num(from - st.steps) + " back; " + num(ran) + " instructions run again to find it" + jitNote() + ")";
 			}
 		}
 		const first = REV.cps[0];
 		await revRestore(st, first, from);
 		return "Back to " + label + ": not reached since instruction " + num(first.steps) +
-			", where the reverse history starts; stopped there";
+			", where the reverse history starts" + jitNote() + " (the JIT runs compiled code the page cannot watch per instruction); stopped there";
 	});
 }
 
@@ -374,19 +601,12 @@ function revBranch(st, why) {
 	if (!st || (!st.behind() && !st.future.length && !INPUT.redo.length))
 		return;
 	REV.cps = REV.cps.filter((c) => c.steps <= st.steps);
+	REV.segs = REV.segs.filter((s) => s.at <= st.steps);
 	revTrim();
 	INPUT.redo = [];
 	st.branch();
 	REV.why = why;
 	revRender();
-}
-
-// The JIT runs from here: no stepped history across it (D1, R3).
-function revJit(st) {
-	if (st && st.behind())
-		revBranch(st, "the JIT ran");
-	if (REV.cps.length && REV.st === st)
-		revReset("the JIT ran at instruction " + num(st.steps));
 }
 
 const revBehind = () => !!stepper && stepper.behind();
@@ -414,7 +634,7 @@ function revRender() {
 		text = "Reverse: " + revNoneText() + ".";
 	else
 		text = "Reverse: back to instruction " + num(REV.cps[0].steps) + " · " + REV.cps.length + " checkpoint" +
-			(REV.cps.length === 1 ? "" : "s") + " every " + revKText() + " · " + kib(bytes) +
+			(REV.cps.length === 1 ? "" : "s") + revEveryText() + " · " + kib(bytes) +
 			(st.behind() ? " · stepped back " + num(st.ahead - st.steps) + ": the recorded call stack, path and Calls go on to " +
 				num(st.ahead) : "");
 	el.textContent = text;

@@ -11,7 +11,13 @@
 # were made before), set_tsc from the clock (a restored TSC is the one
 # saved) and an export jit_reset_hidden() that puts the JIT cache, its maps,
 # the TLB and the TSC's extrapolation into one canonical state; the page
-# calls it after every restore and every snapshot it saves.
+# calls it after every restore and every snapshot it saves. And (R5) an
+# instruction budget, jit_set_budget(on, count): the CPU stops at that
+# value of v86's instruction counter exactly (compiled code does not enter
+# a basic block that would cross it, the rest is interpreted with the
+# counter compiled code reads the clock from), for reverse execution, and
+# jit_stats() (instructions interpreted, compiled calls, interpreted runs:
+# the page spaces its JIT checkpoints by them).
 #
 # Pins: the v86 commit npm 0.5.471 was built from (git checks the commit
 # hash), ubuntu:24.04 by digest, clang and lld 18 and nodejs at the versions
@@ -33,7 +39,7 @@ LLVM=1:18.1.3-1ubuntu1
 NODE=18.19.1+dfsg-6ubuntu5
 APT_PACKAGES="clang-18=$LLVM lld-18=$LLVM libllvm18=$LLVM libclang-cpp18=$LLVM libclang1-18=$LLVM libclang-common-18-dev=$LLVM llvm-18-linker-tools=$LLVM nodejs=$NODE libnode109=$NODE python3 make curl"
 RUST=1.90.0
-SHA256=b3eaf854abc591e318c18e84dc79b2daf4ec0e461e9a528d87393ae1d198893e
+SHA256=c4e8e92eab6da3d11c7f62e17230307ac260818030fb83ac0160a22fa8395257
 
 site=$(cd "$(dirname "$0")" && pwd)
 out=$site/v86/v86.wasm

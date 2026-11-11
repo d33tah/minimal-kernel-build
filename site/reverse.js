@@ -212,7 +212,7 @@ async function revRestore(st, cp, from) {
 	CLOCK.base = cp.clock.base;
 	CLOCK.baseSteps = cp.clock.baseSteps;
 	CLOCK.mips = cp.clock.mips;
-	await v86Restore(emulator, raw, true);
+	await v86Restore(emulator, raw);
 	GUEST.setState(cp.guest);
 	st.cpu.instruction_counter[0] = cp.icount;
 	st.text.set(cp.text);

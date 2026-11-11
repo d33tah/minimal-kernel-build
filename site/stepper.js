@@ -1046,6 +1046,16 @@ class Stepper {
 					return "milestone";
 			}
 		}
+		// n ran out on the instruction that halted after the prompt: the
+		// prompt stop is here as well. The next run() would see the halt
+		// first, but a replay puts the keys recorded at this count in before
+		// it, and the keyboard interrupt wakes the CPU (R3).
+		if (i32.length === 0)
+			u8 = new Uint8Array(mem.buffer);
+		if (u8[IN_HLT] && (this.textSeen & TEXT_PROMPT) && !this.prompt) {
+			this.prompt = { exact: true, ...this.snapshot() };
+			return "prompt";
+		}
 		return "count";
 	}
 

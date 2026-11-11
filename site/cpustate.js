@@ -553,14 +553,14 @@ function v86PciFix(pci) {
 // - value, and read_tsc() has already taken the old offset off: a restored
 // state's TSC comes out shifted by the offset the machine had before the
 // restore. After stepping back (R2) SeaBIOS's TSC calibration came out one
-// off and a byte of its data differed further on. For those restores
-// (exactTsc) the page's set_tsc reads the old offset first, at a clock
-// value no recent reading had (so v86's extrapolation for repeated
-// readings stays out of it), and passes v86's set_tsc the value that leaves
-// the TSC at the one saved. Only there: that extra reading changes v86's
-// extrapolation state (Rust statics outside the state), which the JIT reads
-// on repeated readings, and the fast-forward's restore under the JIT (J1,
-// J4: a replay of a run with JIT stretches) has to stay as it was.
+// off and a byte of its data differed further on. The page's set_tsc reads
+// the old offset first, at a clock value no recent reading had (so v86's
+// extrapolation for repeated readings stays out of it), and passes v86's
+// set_tsc the value that leaves the TSC at the one saved. Every restore
+// does this (R3); R2 had limited it to stepping back because the J4 replay
+// test then failed, but the TSC was not the cause there: the exact
+// fast-forward restore moved Debian's boot so that the (initramfs) prompt
+// stop came from stepping, and the replay lost that stop (Stepper.record).
 function v86TscExact(cpu, set) {
 	const read = cpu.wm.exports.read_tsc, M = (1n << 64n) - 1n;
 	return function (low, high) {
@@ -579,12 +579,12 @@ function v86TscExact(cpu, set) {
 	};
 }
 
-// emulator.restore_state() with the v86 0.5.471 restore bugs worked around.
-// exactTsc: the TSC as saved (v86TscExact), for stepping back (R2).
-async function v86Restore(em, state, exactTsc = false) {
+// emulator.restore_state() with the v86 0.5.471 restore bugs worked around,
+// the TSC as saved (v86TscExact).
+async function v86Restore(em, state) {
 	v86PciFix(em.v86.cpu.devices.pci);
 	const cpu = em.v86.cpu, set = cpu.set_tsc;
-	if (exactTsc && cpu.wm && typeof cpu.wm.exports.read_tsc === "function")
+	if (cpu.wm && typeof cpu.wm.exports.read_tsc === "function")
 		cpu.set_tsc = v86TscExact(cpu, set);
 	try {
 		await em.restore_state(state);

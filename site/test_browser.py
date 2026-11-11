@@ -10395,6 +10395,11 @@ def snapdiff_poweron(browser, base, shots, name, scheme, phone):
 # pressed, so the timer interrupts and every TSC/PIT read after a restore
 # were shifted by the time stepped in between.
 SNAP_REPLAY = {"hello": (600_000, 600_000), "minified-linux": (1_500_000, 500_000)}
+# R3: saved at 1.3 M, hello's SeaBIOS reads the TSC before 1.4 M (its
+# calibration). v86's set_tsc left a restored TSC off by the offset the
+# machine had before the Restore, and SeaBIOS's data then differed (RAM
+# after the 100,000 steps).
+SNAP_REPLAY_TSC = (1_300_000, 100_000)
 SNAP_REPLAY_STATE_JS = """async () => { const c = emulator.v86.cpu, m = emulator.read_memory(0, emuRam);
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m))).map((b) => b.toString(16).padStart(2, '0')).join('');
   return { steps: stepper.steps, eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0), eflags: c.get_eflags() >>> 0,
@@ -10411,13 +10416,13 @@ def snap_step_to(page, target):
     return page.evaluate("stepper.steps")
 
 
-def snapdiff_replay(browser, base, shots, name, scheme, phone):
+def snapdiff_replay(browser, base, shots, name, scheme, phone, point=None):
     """Save at S on the virtual clock, step N, note the machine; Restore,
     step N again: the same EIP, registers, RAM, IRQ0 count (from S) and clock."""
     problems, r, errors = [], {}, []
     w = 390 if phone else 1280
-    tag = f"replay {name} {w} {scheme}"
-    at, n = SNAP_REPLAY[name]
+    at, n = point or SNAP_REPLAY[name]
+    tag = f"replay {name} {w} {scheme}" + (f" at {at:,}" if point else "")
     ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
     page = ctx.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
@@ -10454,7 +10459,7 @@ def snapdiff_replay(browser, base, shots, name, scheme, phone):
     for k in ("eip", "regs", "eflags", "irq0", "clock", "ram"):
         if first[k] != again[k]:
             problems.append(f"{tag}: {k} after Restore + {n} steps differs from the first time: {str(again[k])[:80]} vs {str(first[k])[:80]}")
-    page.screenshot(path=str(shots / f"snapdiff-replay-{name}-{w}-{scheme}.png"), full_page=True)
+    page.screenshot(path=str(shots / f"snapdiff-replay-{name}-{w}-{scheme}{'-' + str(at) if point else ''}.png"), full_page=True)
     if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
         problems.append(f"{tag}: horizontal scroll")
     if errors:
@@ -10497,6 +10502,8 @@ def snapdiff_case(browser, base, shots, linux):
     for name, scheme, phone in rp:
         problems, r = snapdiff_guard(snapdiff_replay, browser, base, shots, name, scheme, phone)
         out.append(report("snapdiff replay", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
+    problems, r = snapdiff_guard(snapdiff_replay, browser, base, shots, "hello", "light", False, SNAP_REPLAY_TSC)
+    out.append(report("snapdiff replay tsc", problems, r, kernel="hello", scheme="light", width=1280))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
         out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))
@@ -13976,6 +13983,69 @@ def replay_stepped(browser, base, shots, name, problems, r):
         ctx.close()
 
 
+# R3: Stepper.run(n) whose n ends on the instruction that halts after the
+# (initramfs) prompt must stop there with "prompt", as a longer run does. A
+# replay clamps its stepping to the next recorded input; when that input is
+# due at the prompt's hlt, run() returned "count", the recorded keys went in
+# and woke the CPU, and the stepper ran past the prompt (and past the run's
+# switch back to the JIT) to the next halt. hello's cli; hlt stands in for
+# the shell's idle halt; the prompt's text is marked seen.
+REPLAY_EDGE_JS = """async (mode) => {
+  const st = stepper;
+  if (mode === 'find') {
+    for (let i = 0; i < 100 && !st.cpu.in_hlt[0]; i++) st.run(1e6, -1, 2000);
+    return { steps: st.steps, hlt: st.cpu.in_hlt[0] };
+  }
+  st.textSeen |= TEXT_PROMPT;
+  st.prompt = null;
+  const r = st.run(mode);
+  return { r, steps: st.steps, hlt: st.cpu.in_hlt[0], prompt: st.prompt && st.prompt.steps };
+}"""
+
+
+def replay_prompt_edge(browser, base, shots, problems, r):
+    tag = "replay prompt at the end of a clamped run (hello 1280 light)"
+    ctx = replay_context(browser, "light", False)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        def start():
+            page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10", timeout=120000)
+            return wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 120, 0.5)
+        if not start():
+            problems.append(f"{tag}: did not start paused")
+            return
+        h = page.evaluate(REPLAY_EDGE_JS, "find")
+        if not h["hlt"]:
+            problems.append(f"{tag}: hello did not halt (test setup): {h}")
+            return
+        out = {}
+        for n in (1, 2):
+            if not start():
+                problems.append(f"{tag}: did not start paused again")
+                return
+            left = h["steps"] - n
+            for _ in range(100):
+                d = left - page.evaluate("stepper.steps")
+                if d <= 0:
+                    break
+                page.evaluate(f"stepper.run({d}, -1, 2000)")
+            if page.evaluate("stepper.steps") != left:
+                problems.append(f"{tag}: could not step to {left} (test setup)")
+                return
+            out[n] = page.evaluate(REPLAY_EDGE_JS, n)
+        r["prompt_edge"] = {"hlt_at": h["steps"], "run": out}
+        for n, o in out.items():
+            if o["r"] != "prompt" or o["prompt"] != h["steps"] or o["steps"] != h["steps"]:
+                problems.append(f"{tag}: run({n}) ending on the hlt at {h['steps']:,} returned {o['r']!r} at {o['steps']:,} "
+                                f"(prompt {o['prompt']}), want 'prompt' there")
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
 def replay_case(browser, base, shots, entries, initrd):
     problems, r = [], {}
     tmp = pathlib.Path(tempfile.mkdtemp())
@@ -13985,6 +14055,7 @@ def replay_case(browser, base, shots, entries, initrd):
         except (PlaywrightError, IndexError, KeyError, TypeError) as e:
             problems.append(f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}")
             return None
+    guard(replay_prompt_edge, browser, base, shots, problems, r)
     if "minified-linux" in entries:
         guard(replay_stepped, browser, base, shots, "minified-linux", problems, r)
     if initrd:

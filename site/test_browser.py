@@ -14430,8 +14430,16 @@ def reverse_keys(browser, base, shots, name):
         got = rev_state(page)
         if rev_diff(got, pe):
             problems.append(f"{tag}: forward to {e} again differs: {rev_diff(got, pe)}")
-        if page.evaluate("JSON.stringify(INPUT.log)") != log_e or page.evaluate("INPUT.redo.length"):
+        # R4: the log also holds the reset of v86's hidden JIT state the
+        # step back's restore did, at the checkpoint's count (a replay resets
+        # there too); the rest is the recorded log.
+        log_g = json.loads(page.evaluate("JSON.stringify(INPUT.log)"))
+        new_resets = [x["at"] for x in log_g if x.get("reset")][len([x for x in json.loads(log_e) if x.get("reset")]):]
+        if [x for x in log_g if not x.get("reset")] != [x for x in json.loads(log_e) if not x.get("reset")] or \
+                page.evaluate("INPUT.redo.length"):
             problems.append(f"{tag}: the input log after going forward again differs from the recorded one")
+        if new_resets != [start]:
+            problems.append(f"{tag}: the step back logged the JIT resets {new_resets}, want one at the checkpoint {start}")
         show_tab(page, "machine")
         page.evaluate("flushScreen()")
         page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")

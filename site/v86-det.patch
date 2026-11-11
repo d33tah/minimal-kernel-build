@@ -57,7 +57,7 @@ index 7b03975..a712903 100644
  use std::ptr;
  
  mod wasm {
-@@ -4355,9 +4355,19 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
+@@ -4355,9 +4355,24 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
  
  #[no_mangle]
  pub unsafe fn set_tsc(low: u32, high: u32) {
@@ -71,9 +71,14 @@ index 7b03975..a712903 100644
 +    tsc_reset_statics();
 +}
 +
++// mkb R4: resolution 1 turns read_tsc's extrapolation of repeated readings
++// off (it adds at most resolution - 1, and resolution only goes down), so
++// the TSC is the clock's alone. With v86's initial u64::MAX the first
++// reading after a reset set the resolution to the whole TSC, and a second
++// reading at the same clock value nearly doubled it.
 +pub unsafe fn tsc_reset_statics() {
 +    tsc_last_value = 0;
-+    tsc_resolution = u64::MAX;
++    tsc_resolution = 1;
 +    tsc_number_of_same_readings = 0;
 +    tsc_speed = 1;
  }

@@ -14495,7 +14495,7 @@ def suite_reverse(ctx):
 # r3replay). And the run is no longer tainted by "the JIT after a snapshot
 # restore": Restore at a pause under the JIT, the (initramfs) prompt comes at
 # the same count, and Replay from boot matches.
-JITSNAP_SHA256 = "a644af5f6759dfb5b02f60bd802988bad946d092f0ee6b992702188f1a9170a8"
+JITSNAP_SHA256 = "b3eaf854abc591e318c18e84dc79b2daf4ec0e461e9a528d87393ae1d198893e"
 # kernel name filter -> (A, B): save at the first slice end at or past A, run to B.
 JITSNAP_WINDOWS = [("debian", False, 1.0e9, 2.55e9), ("debian", True, 2.5e9, 3.3e9)]
 JITSNAP_DRV_JS = """() => { window.JS4 = {
@@ -14526,6 +14526,11 @@ JITSNAP_DRV_JS = """() => { window.JS4 = {
     const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
     return { steps: stepper.steps, icount: cpu.instruction_counter[0] >>> 0, eip: (cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha,
       regs: Array.from(cpu.reg32).map((x) => (x >>> 0).toString(16)).join(','), clock: CLOCK.now(), taint: INPUT.taint };
+  },
+  // The guest's TSC against the virtual clock (offset 0 from power-on): read twice at the same count.
+  tsc() {
+    const c = stepper.cpu, rd = () => { c.store_current_tsc(); return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(CLOCK.now() * 1e6); };
+    return [rd(), rd()];
   },
   async save() {
     const n = snapshots.length;
@@ -14581,11 +14586,14 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
         sv = page.evaluate("() => JS4.save()")
         out["save"] = sv
         out["X1"] = run(b)
+        tscs = {"X1 end": page.evaluate("() => JS4.tsc()")}
         page.evaluate("(id) => JS4.restore(id)", sv["id"])
+        tscs["X2 restored"] = page.evaluate("() => JS4.tsc()")
         out["X2"] = run(b)
         fresh()
         wait_for(lambda: page.evaluate("(id) => !!snapById(id)", sv["id"]), 30)
         page.evaluate("(id) => JS4.restore(id)", sv["id"])
+        tscs["X3 restored"] = page.evaluate("() => JS4.tsc()")
         out["X3"] = run(b)
         fresh()
         run(a, False)
@@ -14593,12 +14601,22 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
         if s4["steps"] != sv["steps"]:
             problems.append(f"{tag}: X4 saved at {s4['steps']:,}, X1 at {sv['steps']:,}: the boot to A differs")
         page.evaluate("(id) => JS4.restore(id)", s4["id"])
+        tscs["X4 restored"] = page.evaluate("() => JS4.tsc()")
         out["X4"] = run(b)
+        tscs["X4 end"] = page.evaluate("() => JS4.tsc()")
+        out["tsc"] = tscs
+        # A restore puts the TSC back as saved: it stays on the virtual
+        # clock, twice in a row at the same count too (v86's extrapolation
+        # of repeated readings once doubled it after a reset: CI run
+        # 43013630565, "TSC off the virtual clock by 232084897999 ticks").
+        for k, v in tscs.items():
+            if any(abs(x) > 1_000_000 for x in v):
+                problems.append(f"{tag}: {k}: the TSC is off the virtual clock by {v} ticks (1 ms = 10^6)")
         page.screenshot(path=str(shots / f"jitsnap-{name}-1280-light.png"))
     finally:
         ctx.close()
     t1 = out.get("X1", {}).get("trace")
-    res = {"saved_at": out.get("save", {}).get("steps")}
+    res = {"saved_at": out.get("save", {}).get("steps"), "tsc": out.get("tsc")}
     for k in ("X1", "X2", "X3", "X4"):
         if k not in out:
             problems.append(f"{tag}: {k} did not run")

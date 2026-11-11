@@ -33,7 +33,7 @@ LLVM=1:18.1.3-1ubuntu1
 NODE=18.19.1+dfsg-6ubuntu5
 APT_PACKAGES="clang-18=$LLVM lld-18=$LLVM libllvm18=$LLVM libclang-cpp18=$LLVM libclang1-18=$LLVM libclang-common-18-dev=$LLVM llvm-18-linker-tools=$LLVM nodejs=$NODE libnode109=$NODE python3 make curl"
 RUST=1.90.0
-SHA256=a644af5f6759dfb5b02f60bd802988bad946d092f0ee6b992702188f1a9170a8
+SHA256=b3eaf854abc591e318c18e84dc79b2daf4ec0e461e9a528d87393ae1d198893e
 
 site=$(cd "$(dirname "$0")" && pwd)
 out=$site/v86/v86.wasm

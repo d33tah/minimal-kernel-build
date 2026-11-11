@@ -293,6 +293,19 @@ jobs:
         path: v86-cache
         key: v86-wasm-${{ hashFiles('site/gen-v86.sh', 'site/v86-det.patch') }}
 
+    # The runner's resolver stopped answering for *.ubuntu.com inside
+    # docker builds (runs 43047910102 to 43058718914: "Could not resolve
+    # 'archive.ubuntu.com'", one of canonical.com's name servers down) while
+    # public resolvers answered: the builds use those.
+    - name: Docker DNS
+      run: |
+        cfg=/etc/docker/daemon.json
+        { sudo cat "$cfg" 2>/dev/null || echo '{}'; } | jq '. + {dns: ["1.1.1.1", "8.8.8.8", "9.9.9.9"]}' > "$RUNNER_TEMP/daemon.json"
+        sudo cp "$RUNNER_TEMP/daemon.json" "$cfg"
+        cat "$cfg"
+        sudo systemctl restart docker
+        docker run --rm ubuntu:24.04 getent hosts archive.ubuntu.com snapshot.ubuntu.com || true
+
     - name: Build v86.wasm
       id: build
       run: |

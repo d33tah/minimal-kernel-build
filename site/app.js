@@ -1916,7 +1916,7 @@ async function resume(now = false) {
 			if (em !== emulator)
 				return;
 			CLOCK.set(true);
-			CLOCK.mips = clockMips(); // from here on (the menu changed while the JIT ran on real time)
+			CLOCK.setMips(clockMips()); // from here on (the menu changed while the JIT ran on real time)
 			inputMark(stepper, "jit");
 			runState = "jit";
 			jitLoop();
@@ -3597,7 +3597,7 @@ function initDebugger() {
 		} else {
 			CLOCK.set(!!clockMips());
 			if (clockMips())
-				CLOCK.mips = clockMips();
+				CLOCK.setMips(clockMips());
 		}
 		renderClock();
 	});

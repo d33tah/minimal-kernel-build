@@ -33,14 +33,28 @@ const CLOCK = {
 		const steps = (this.stepper ? this.stepper.steps : 0) + (this.extraSteps ? this.extraSteps() : 0);
 		return this.base + (steps - this.baseSteps) / (this.mips * 1000);
 	},
-	// Switch modes or attach a stepper, keeping time continuous.
+	// Switch modes or attach a stepper, keeping time continuous. Already
+	// virtual on this stepper: nothing to do. A rebase there (every
+	// Continue did one) rounds base + count / rate, and a replay that does
+	// not pause at the same counts then reads other clock values (J4).
 	set(virtual, stepper = this.stepper) {
+		if (virtual && this.virtual && stepper === this.stepper && stepper)
+			return;
 		const t = this.now();
 		this.stepper = stepper;
 		this.virtual = virtual;
 		this.base = t;
 		this.baseSteps = stepper ? stepper.steps : 0;
 		this.off = t - realNow();
+	},
+	// A new rate from here on (the clock menu), time continuous.
+	setMips(mips) {
+		if (mips === this.mips)
+			return;
+		const t = this.now();
+		this.base = t;
+		this.baseSteps = this.stepper ? this.stepper.steps : 0;
+		this.mips = mips;
 	},
 	// Put the clock at t ms, counting from the stepper's current count (a
 	// restored snapshot: its time and count).

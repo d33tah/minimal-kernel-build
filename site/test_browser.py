@@ -13626,7 +13626,20 @@ def replay_stepped(browser, base, shots, name, problems, r):
         s1 = replay_state(page)
         snap_save(page, 1, True)
         row = snap_rows(page)["rows"][0]["id"]
-        machine_do(page, "tap", "#dbg_continue")
+        # Continue must not rebase the virtual clock (base + count since
+        # baseSteps): a rebase rounds the float, and a replay that does not
+        # pause there reads another clock (CI 42945681996: 141.214 vs
+        # 141.21399999999997 at the bookmark, both inputs "late").
+        ab = page.evaluate("async () => { const a = [CLOCK.base, CLOCK.baseSteps, CLOCK.mips]; await resume(true); "
+                           "return [a, [CLOCK.base, CLOCK.baseSteps, CLOCK.mips]]; }")
+        r["clock_continue"] = ab
+        if ab[0] != ab[1]:
+            problems.append(f"{tag}: Continue rebased the virtual clock: {ab[0]} -> {ab[1]}")
+        for _ in range(3):  # more pauses than the replay has
+            time.sleep(0.4)
+            machine_do(page, "tap", "#dbg_pause")
+            wait_for(lambda: page.evaluate("runState") == "paused", 10)
+            machine_do(page, "tap", "#dbg_continue")
         show_tab(page, "machine")
         page.tap("#screen_container")
         for keys in ("x", "yz"):

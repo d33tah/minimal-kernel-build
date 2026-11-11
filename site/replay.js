@@ -12,7 +12,10 @@
 // the virtual clock: a halted CPU lets time pass without instructions, so
 // the count alone does not name the moment. The log also notes where the
 // machine went from the JIT to stepping and back (Step at a pause, a speed
-// picked): the two are different timelines (D1).
+// picked): the two are different timelines (D1). And where v86's hidden JIT
+// state was reset (v86ResetHidden: a snapshot saved or restored, stepping
+// back): the JIT's slices depend on it, so a replay resets it at the same
+// count (R4).
 //
 // A run: the boot settings (kernel, RAM, command line, clock, speed, count,
 // J2's RTC start and seed), that log, and where it ended (count, clock, v86's
@@ -25,19 +28,20 @@
 // compares. Keys typed during a replay are ignored.
 //
 // What a replay cannot follow is marked in the run (taint), from where it
-// happened: a Run to with the JIT's breakpoints, the clock changed, the JIT
-// after a snapshot restore (a restored machine runs on differently under the
-// JIT, R3). With the real-time clock nothing is recorded.
+// happened: a Run to with the JIT's breakpoints, the clock changed. With the
+// real-time clock nothing is recorded.
 
 const RUN_FORMAT = "mkb-run";
-const RUN_VERSION = 1;
+// 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
+// ends slices elsewhere than npm's build did, so a run of version 1 does
+// not replay.
+const RUN_VERSION = 2;
 
 const INPUT = {
-	log: [],       // { at, t, keys: [scancodes] } and { at, t, mode: "jit" | "stepped" }
+	log: [],       // { at, t, keys: [scancodes] }, { at, t, mode: "jit" | "stepped" } and { at, t, reset: true }
 	pending: [],   // scancodes typed, held for the next boundary
 	mode: null,    // the last mode in the log
 	taint: null,   // { at, t, why }: from here on a replay from boot is not this run
-	restored: false, // a snapshot was restored: the JIT taints the run
 	settings: null,  // the boot settings of this run
 	send: null,      // the PS/2 controller's own kbd_send_code
 	replay: null,    // { run, i, mode, late: [], ignored, done, ok, why }
@@ -69,6 +73,8 @@ function inputRedo(st) {
 		if (e.keys)
 			for (const c of e.keys)
 				INPUT.send(c);
+		if (e.reset)
+			v86ResetHidden(emulator, "save");
 		INPUT.log.push(e);
 	}
 	if (n) {
@@ -105,11 +111,14 @@ function inputFlush(st) {
 			if (e.keys)
 				for (const c of e.keys)
 					INPUT.send(c);
+			if (e.reset)
+				v86ResetHidden(emulator, "save");
 			if (e.mode) {
 				rp.mode = INPUT.mode = e.mode;
 				mode = e.mode;
 			}
-			INPUT.log.push(e.keys ? { at: e.at, t: e.t, keys: e.keys.slice() } : { at: e.at, t: e.t, mode: e.mode });
+			INPUT.log.push(e.keys ? { at: e.at, t: e.t, keys: e.keys.slice() } : e.reset ? { at: e.at, t: e.t, reset: true } :
+				{ at: e.at, t: e.t, mode: e.mode });
 		}
 		renderRunInfo();
 		if (rp.run.end && inputDue(rp.run.end, st) && rp.i >= log.length)
@@ -149,8 +158,6 @@ function inputRoom(st) {
 function inputMark(st, mode) {
 	if (!st || replayActive())
 		return;
-	if (mode === "jit" && INPUT.restored)
-		inputTaint(st, "the JIT ran after a snapshot was restored (a restored machine runs on differently under the JIT)");
 	if (mode !== INPUT.mode && CLOCK.virtual) {
 		INPUT.log.push({ at: st.steps, t: CLOCK.now(), mode });
 		INPUT.mode = mode;
@@ -169,9 +176,25 @@ function inputTaint(st, why) {
 	renderRunInfo();
 }
 
-// A snapshot was restored (snapshots.js): its run goes on from here. Under
-// the JIT a restored machine does not run on as the original did (R3), so
-// the JIT taints the run from then on; stepping is exact.
+// v86's hidden state was reset here (v86ResetHidden, a snapshot saved):
+// part of the run. A replay running stops following its run, which had no
+// reset here.
+function inputReset(st, why) {
+	if (!st || st !== stepper)
+		return;
+	if (replayActive())
+		replayStop("stopped: " + why);
+	if (CLOCK.virtual) {
+		const last = INPUT.log[INPUT.log.length - 1];
+		if (!(last && last.reset && last.at === st.steps))
+			INPUT.log.push({ at: st.steps, t: CLOCK.now(), reset: true });
+	}
+	renderRunInfo();
+}
+
+// A snapshot was restored (snapshots.js): its run goes on from here, with
+// the reset of v86's hidden state the restore did (as the save did: the JIT
+// then runs on as it did from the save, R4).
 function inputRestore(meta) {
 	if (replayActive())
 		replayStop("stopped by a snapshot restore");
@@ -190,9 +213,8 @@ function inputRestore(meta) {
 	} else if (stepper && !INPUT.taint) {
 		INPUT.taint = { at: stepper.steps, t: CLOCK.now(), why: "a snapshot without an input log was restored" };
 	}
-	INPUT.restored = true;
-	if (runState === "jit" && stepper)
-		inputTaint(stepper, "the JIT ran after a snapshot was restored (a restored machine runs on differently under the JIT)");
+	if (stepper && CLOCK.virtual)
+		INPUT.log.push({ at: stepper.steps, t: CLOCK.now(), reset: true });
 	renderRunInfo();
 }
 
@@ -230,7 +252,6 @@ function inputBoot(em) {
 	INPUT.redo = [];
 	INPUT.mode = null;
 	INPUT.taint = null;
-	INPUT.restored = false;
 	INPUT.settings = runSettings();
 	INPUT.replay = null;
 	if (INPUT.next) {
@@ -307,7 +328,7 @@ function runCheck(run) {
 		return "the run was on the real-time clock: its inputs were not recorded";
 	for (let i = 0; i < run.log.length; i++) {
 		const e = run.log[i], p = run.log[i - 1];
-		if (typeof e.at !== "number" || typeof e.t !== "number" || !(Array.isArray(e.keys) || e.mode === "jit" || e.mode === "stepped") ||
+		if (typeof e.at !== "number" || typeof e.t !== "number" || !(Array.isArray(e.keys) || e.mode === "jit" || e.mode === "stepped" || e.reset === true) ||
 			(p && (e.at < p.at || (e.at === p.at && e.t < p.t))))
 			return "the log's entry " + (i + 1) + " is not readable or out of order";
 	}

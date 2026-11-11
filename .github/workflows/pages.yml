@@ -276,11 +276,36 @@ jobs:
         name: debian-initrd
         path: initrd-out/
 
-  site:
-    needs: [kernels, debian-initrd]
+  # The page's v86.wasm: v86's source at the pinned commit with
+  # site/v86-det.patch, built in the pinned Docker image (gen-v86.sh, R4);
+  # the script fails unless the build has the recorded SHA-256.
+  v86:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Build v86.wasm
+      run: |
+        start=$(date +%s)
+        site/gen-v86.sh
+        echo "v86.wasm build: $(( $(date +%s) - start )) s"
+        ls -l site/v86/v86.wasm
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: v86-wasm
+        path: site/v86/v86.wasm
+
+  site:
+    needs: [kernels, debian-initrd, v86]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: v86-wasm
+        path: site/v86
 
     - uses: actions/download-artifact@v4
       with:
@@ -319,6 +344,8 @@ jobs:
         # Every kernel has the data files of every debug feature.
         site/test_kernel_data.py
         site/fetch-v86.sh
+        # The v86 job's build, checked again here.
+        site/gen-v86.sh --check
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks. stamp.py
         # puts ?v=<commit> on every script and stylesheet of index.html and
@@ -418,6 +445,7 @@ jobs:
         - speedasm,runbadge,memeip,graphopen,srcfiles
         - snapdiff,bookmarks,deltasnap
         - jitdet,guestin,replay
+        - jitsnap
         - reverse
         - exactstop
         - followeip

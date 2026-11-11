@@ -549,47 +549,33 @@ function v86PciFix(pci) {
 	pci.mkbSetStateFix = true;
 }
 
-// v86 0.5.471's set_tsc (src/rust/cpu/cpu.rs) sets tsc_offset = read_tsc()
-// - value, and read_tsc() has already taken the old offset off: a restored
-// state's TSC comes out shifted by the offset the machine had before the
-// restore. After stepping back (R2) SeaBIOS's TSC calibration came out one
-// off and a byte of its data differed further on. The page's set_tsc reads
-// the old offset first, at a clock value no recent reading had (so v86's
-// extrapolation for repeated readings stays out of it), and passes v86's
-// set_tsc the value that leaves the TSC at the one saved. Every restore
-// does this (R3); R2 had limited it to stepping back because the J4 replay
-// test then failed, but the TSC was not the cause there: the exact
-// fast-forward restore moved Debian's boot so that the (initramfs) prompt
-// stop came from stepping, and the replay lost that stop (Stepper.record).
-function v86TscExact(cpu, set) {
-	const read = cpu.wm.exports.read_tsc, M = (1n << 64n) - 1n;
-	return function (low, high) {
-		const want = (BigInt(high >>> 0) << 32n) | BigInt(low >>> 0);
-		const now = CLOCK.now, t1 = CLOCK.now() + 1e6;
-		let r;
-		CLOCK.now = () => t1;
-		try {
-			r = BigInt.asUintN(64, BigInt(read()));
-		} finally {
-			CLOCK.now = now;
-		}
-		const off = (BigInt(Math.trunc(t1 * 1e6)) - r) & M;
-		const x = (want - off) & M;
-		return set.call(this, Number(x & 0xffffffffn), Number(x >> 32n));
-	};
+// The page's v86.wasm is v86 0.5.471's source with v86-det.patch
+// (gen-v86.sh, R4). Its set_tsc sets the TSC from the clock itself (v86's
+// took the old offset off twice: a restored TSC came out shifted by the
+// offset the machine had before the restore, R2/R3), so a restore with the
+// virtual clock put back first gives the TSC as saved. Its
+// jit_reset_hidden() puts what save_state() does not keep (compiled code,
+// hotness, the JIT's maps, the free table indices, the TLB, the TSC's
+// extrapolation) into one canonical state. Called after every restore and
+// after every snapshot saved (snapshots.js), and logged with the run (J4):
+// from a snapshot the JIT then runs as it did from there the first time
+// (R3: as shipped, a restored machine ended its JIT slices elsewhere).
+// Compiled blocks still queued (jitFlush) go live first, as they would
+// before the next slice, so none lands in the canonical state later.
+function v86ResetHidden(em, where) {
+	const f = em.v86.cpu.wm.exports.jit_reset_hidden;
+	if (typeof f !== "function")
+		throw new Error("this v86.wasm has no jit_reset_hidden (not the gen-v86.sh build)");
+	f(where === "restore" ? 1 : 0);
 }
 
-// emulator.restore_state() with the v86 0.5.471 restore bugs worked around,
-// the TSC as saved (v86TscExact).
+// emulator.restore_state() with the v86 0.5.471 restore bugs worked
+// around, then the hidden state reset (v86ResetHidden).
 async function v86Restore(em, state) {
 	v86PciFix(em.v86.cpu.devices.pci);
-	const cpu = em.v86.cpu, set = cpu.set_tsc;
-	if (cpu.wm && typeof cpu.wm.exports.read_tsc === "function")
-		cpu.set_tsc = v86TscExact(cpu, set);
-	try {
-		await em.restore_state(state);
-	} finally {
-		cpu.set_tsc = set;
-	}
-	v86RestoreFix(cpu);
+	if (stepper && jitPending(stepper))
+		await jitFlush(stepper);
+	await em.restore_state(state);
+	v86RestoreFix(em.v86.cpu);
+	v86ResetHidden(em, "restore");
 }

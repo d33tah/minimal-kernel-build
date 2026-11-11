@@ -27,8 +27,8 @@
 //
 // The history starts anew (checkpoints dropped) where stepping cannot
 // repeat the run: the JIT ran (the JIT and stepping are two timelines, D1;
-// JIT replay is R3), a snapshot was restored, the clock changed or runs on
-// real time, a new machine. Going on another way after stepping back (keys
+// reverse execution at JIT speed is R5), a snapshot was restored, the clock
+// changed or runs on real time, a new machine. Going on another way after stepping back (keys
 // typed, the JIT) drops what was ahead (Stepper.branch).
 
 const REV_MAX = 32;        // checkpoints kept
@@ -220,11 +220,15 @@ async function revRestore(st, cp, from) {
 	st.idleMs = cp.idleMs;
 	st.irq0 = cp.irq0;
 	st.vgaDirty = false;
-	// v86's hidden state (its JIT, TSC extrapolation) is not the first
-	// run's now: the JIT from here would not repeat it (R3), as after a
-	// snapshot restore.
-	INPUT.restored = true;
 	inputRewind(cp.logLen);
+	// v86Restore reset v86's hidden state (its JIT, the TSC's
+	// extrapolation): logged at the checkpoint's count, so a replay resets
+	// it there too and the JIT from here repeats (R4). The reset of an
+	// earlier step back to this checkpoint is not ahead of it.
+	while (INPUT.redo.length && INPUT.redo[0].reset && INPUT.redo[0].at === cp.steps)
+		INPUT.redo.shift();
+	if (CLOCK.virtual)
+		INPUT.log.push({ at: cp.steps, t: CLOCK.now(), reset: true });
 	st.rewind(cp.steps, from);
 }
 

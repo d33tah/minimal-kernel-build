@@ -837,6 +837,23 @@ class Stepper {
 		this.ahead = 0;
 	}
 
+	// R4: a snapshot taken at count t was restored: the stops recorded after
+	// t (the end, the prompt, the exit, panic() entered) are not this
+	// machine's yet, and the text mirror and the lines seen are the
+	// snapshot's ({ text, textSeen, idleMs } from snapshots.js).
+	restoreStops(t, stop) {
+		for (const key of ["end", "prompt", "exit", "panicEntered"])
+			if (this[key] && this[key].steps > t)
+				this[key] = null;
+		if (this.panicTextFrom !== undefined && this.panicTextFrom > t)
+			this.panicTextFrom = undefined;
+		if (stop.text && stop.text.length === this.text.length)
+			this.text.set(stop.text);
+		this.textSeen = stop.textSeen;
+		this.idleMs = stop.idleMs;
+		this.vgaDirty = false;
+	}
+
 	// R2: the run goes another way from this count than it went before
 	// (keys typed after stepping back, the JIT, another clock): the
 	// recordings ahead are not its future. The calls and task switches

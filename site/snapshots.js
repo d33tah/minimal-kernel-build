@@ -226,7 +226,9 @@ function snapMeta(em, withRun = false) {
 		if (i >= 0)
 			sym = stepper.symName[i] + (phys > stepper.symStart[i] ? "+" + hex(phys - stepper.symStart[i]) : "");
 	}
-	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(), eip: regs.EIP, phys, sym, regs,
+	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(),
+		clockExact: { base: CLOCK.base, baseSteps: CLOCK.baseSteps, mips: CLOCK.mips }, eip: regs.EIP, phys, sym, regs,
+		...(stepper ? { stop: { text: stepper.text.slice(), textSeen: stepper.textSeen, idleMs: stepper.idleMs } } : {}),
 		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}), ...(withRun ? { run: runNow() } : {}) };
 }
 
@@ -254,10 +256,20 @@ async function saveSnapshot() {
 		const b = snapBase && snapById(snapBase.id);
 		const base = b && snapBase.kernelKey === key && b.kernelKey === key && snapBase.ram === emuRam &&
 			(b.where === "stored" || !snapDb) && snapDepth(b) < SNAP_DELTA_MAX ? b : null;
+		// Compiled blocks still queued go live first (v86ResetHidden); from
+		// the meta to the reset below nothing else runs (no await between).
+		while (stepper && jitPending(stepper))
+			await jitFlush(stepper);
+		if (em !== emulator)
+			throw new Error("the machine was replaced");
 		const meta = snapMeta(em, true);
 		const t0 = realNow();
-		let raw = await em.save_state();
+		let raw = em.v86.save_state(); // synchronous in v86 0.5.471 (the emulator's is an async wrapper)
 		const t1 = realNow();
+		// The machine goes on from the hidden state a Restore of this
+		// snapshot starts from, and the run says so (R4).
+		v86ResetHidden(em, "save");
+		inputReset(stepper, "a snapshot was saved");
 		const rawLen = raw.byteLength;
 		// Page hashes, the delta and LZ4 in the Worker; the state is
 		// transferred, not copied.
@@ -334,10 +346,20 @@ async function restoreSnapshot(s) {
 		// restore ran shifted by the time between save and Restore (timer
 		// interrupts at other instructions). Snapshots from before D1 have
 		// no clock.
+		// The clock's own fields when the snapshot has them and the rate is
+		// the same (R4): time from base + count, not a rounded time, so the
+		// run on reads the very same times as the first time.
 		if (s.meta && typeof s.meta.clock === "number") {
 			if (stepper && typeof s.meta.steps === "number")
 				stepper.steps = s.meta.steps;
-			CLOCK.setTime(s.meta.clock);
+			const x = s.meta.clockExact;
+			if (x && CLOCK.virtual && x.mips === CLOCK.mips && stepper && typeof s.meta.steps === "number") {
+				CLOCK.base = x.base;
+				CLOCK.baseSteps = x.baseSteps;
+				CLOCK.off = s.meta.clock - realNow();
+			} else {
+				CLOCK.setTime(s.meta.clock);
+			}
 		}
 		await v86Restore(emulator, raw);
 		snapBase = r.hashes ? { id: s.id, kernelKey: s.kernelKey, ram: s.ram, hashes: r.hashes } : null;
@@ -352,6 +374,12 @@ async function restoreSnapshot(s) {
 		// snapshot's, so the count goes on from where it was.
 		if (s.meta && emulator.v86)
 			emulator.v86.cpu.instruction_counter[0] = s.meta.icount;
+		// What the stepper watches for its stops (R4): the text written, the
+		// lines seen, and no stop recorded past the snapshot, so the run from
+		// here stops where it stopped from there the first time (the
+		// (initramfs) prompt), as a replay from boot does.
+		if (stepper && s.meta && s.meta.stop && typeof s.meta.steps === "number")
+			stepper.restoreStops(s.meta.steps, s.meta.stop);
 		// The run goes on from the snapshot's input log (J4).
 		inputRestore(s.meta);
 		speedReset();

@@ -1,7 +1,8 @@
 # Kernel in the browser: the page
 
 `index.html` boots a bzImage in [v86](https://github.com/copy/v86) (pinned
-version and checksums in `THIRD_PARTY.md` and `fetch-v86.sh`). Plain HTML,
+version and checksums in `THIRD_PARTY.md`, `fetch-v86.sh` and
+`gen-v86.sh`, which builds `v86.wasm` with `v86-det.patch`). Plain HTML,
 JS and CSS with relative URLs; no build step, no libraries besides v86.
 
 Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and
@@ -1176,15 +1177,24 @@ as a colour emoji (also checked once in Firefox and WebKit):
   (the JIT takes over from it). v86 0.5.471's `set_tsc` sets a restored
   TSC off by the offset in effect before the restore: after stepping back,
   SeaBIOS's TSC calibration came out one different and a byte of its data
-  differed further on. Every restore (stepping back, a snapshot's Restore,
-  the fast-forward's slice) puts the TSC back as saved (cpustate.js
-  v86TscExact, R3). A JIT run after stepping back taints the run's replay
-  from boot, as after a snapshot restore: with v86 0.5.471 a restored
-  machine does not run on under the JIT as the original did (R3: v86's JIT
-  walks a page's entry points in hash-map order, and every new map takes
-  the next hash key, so the order depends on how many maps came before;
-  compiled code that is already there changes where the JIT's slices end
-  too, so timer interrupts land elsewhere).
+  differed further on. And as shipped a restored machine does not run on
+  under the JIT as the original did (R3: v86's JIT walks a page's entry
+  points in hash-map order, and every new map takes the next hash key, so
+  the order depends on how many maps came before; compiled code that is
+  already there changes where the JIT's slices end too, so timer interrupts
+  land elsewhere). The page's `v86.wasm` is built from v86's source with
+  `v86-det.patch` (`gen-v86.sh`, R4): hash maps with a fixed hasher,
+  `set_tsc` from the clock (a restore with the clock put back first gives
+  the TSC as saved) and `jit_reset_hidden()`, which puts the JIT's cache,
+  maps and free table indices, the TLB and the TSC's extrapolation into one
+  canonical state. The page calls it after every restore (stepping back, a
+  snapshot's Restore, the fast-forward's slice) and after every snapshot it
+  saves, and logs it in the run (J4) so a replay resets at the same count.
+  From a snapshot the JIT then runs as it did from there the first time:
+  every slice end equal from Debian at 1.0e9 to 2.55e9 and Debian+initrd at
+  2.5e9 to 3.3e9, restored in the same page, a reloaded one or a fresh page
+  that booted to the point itself (test suite `jitsnap`). A JIT run after
+  stepping back or after a Restore no longer taints the run's replay.
   Diff: pick two snapshots of this kernel, or one and "now" (a
   `save_state()` taken for the diff). snapworker.js decompresses and
   compares them in a Worker (the page's main thread only does what Save
@@ -1447,8 +1457,9 @@ per call, mostly through its JIT, and exports no single-step function
 walk, raise #PF on a fault, EIP += 1) and `v86::gen::interpreter::run`
 (execute one instruction given its first byte). `stepper.js` adds both to
 the module's export section when the page loads it (`patchV86Wasm`, about
-20 ms; the code section is untouched, so the checksum in `fetch-v86.sh`
-still covers what runs) and `Stepper.run()` does per instruction what
+20 ms; the code section is untouched, so the checksum in `gen-v86.sh`
+still covers what runs; the build keeps npm's v0 symbol names, which these
+lookups need) and `Stepper.run()` does per instruction what
 v86's interpreter loop `jit_run_interpreted` does: `previous_ip = eip`,
 `read_imm8`, `run(opcode | is_32 << 8)`, `instruction_counter += 1`.
 Timers and interrupts run every 1024 instructions and whenever the CPU
@@ -1656,8 +1667,11 @@ have their own Replay. Replay boots the same kernel with those settings,
 stops each stepper slice at the next logged input (JIT slices end at those
 counts anyway), goes on past the stops the run went on past (the initramfs
 prompt), stops at the run's end and says whether count, EIP, RAM and screen
-match. A JIT Run to (breakpoints), a clock change or the JIT after a
-snapshot restore (R3) mark the run as replayable only up to there. With the
+match. A JIT Run to (breakpoints) or a clock change mark the run as
+replayable only up to there. The log also holds where v86's hidden JIT
+state was reset (a snapshot saved or restored, stepping back: R4), and a
+replay resets it at the same count. Runs recorded before R4 (version 1,
+npm's v86 build) do not replay. With the
 real-time clock nothing is recorded (test suite `replay`).
 
 Before (real time): the minified Linux unmasks only IRQ0 (PIT, HZ=250),
@@ -1884,6 +1898,7 @@ browser-test matrix job named by its suites):
 | J4 record and replay guest input | suite replay. Minified Linux stepped at 1k/s (390 light): keys typed at moments of wall time are logged, a snapshot and then a position bookmark keep the run, the snapshot's Replay and the bookmark's Replay boot again and end at the same count, v86 counter, EIP, RAM SHA-256, virtual time and screen. Debian with its initramfs at J1's full speed (1280 light): keys typed while paused at the prompt are held (14 scancodes for 7 keys), a Step there, a command typed while it runs; the log has the modes JIT, stepped, JIT; the downloaded run and the snapshot's run match the page; Replay in the page and the downloaded file replayed in a fresh 390 dark page started on hello end in the same state, with the command's output on the screen and the page's verdict "match". FAILS on 53f6f94f3 (nothing is held or logged, no Replay) | jitdet,guestin,replay |
 | R2 reverse execution | suite reverse. hello (390 dark, 1280 light) and the minified Linux (1280 light, 390 dark) stepped from the reset vector with a checkpoint every 20,000 instructions, Debian stepped from `startup_32` (JIT before it) with the page's own interval: forward to E, noting the machine at E-deep, E-1000, E-1 and E and every call in the last 20,000 instructions; Step back 1 (run bar), Step back 999 and Step back to E-deep (Debugger) each give the count, EIP, registers, segment registers, EFLAGS, CR0-CR4, v86's counter, clock, IRQ0 count, halt state, RAM SHA-256 and VGA text of the forward run there, 1 and 1,000 within 1 s; the recordings (coverage, paths, symbols, calls, task switches, milestones) unchanged; forward to E again: the same machine and recordings; Back to the function called most, twice: its last two calls with their registers; no jump history entries; a key typed after stepping back drops what was ahead; the JIT drops the history (Step back disabled, the line says why). Debian with its initramfs at the prompt: "echo r2" typed and stepped until r2 is on the screen, Step back to before the keys (the keys waiting, r2 not on the screen), forward again: the same machine and input log. FAILS on 677f8a0fc (no Step back); after stepping back and forward again on hello the RAM differed by one SeaBIOS byte until the TSC fix | reverse |
 | R3 every restore has the TSC as saved; a replay keeps the prompt stop | suite snapdiff, case replay tsc (hello at 1280 light saved at 1,300,000, 100,000 steps across SeaBIOS's TSC calibration, Restore, the same steps: the same RAM SHA-256; FAILS on bcb03313f: RAM differs, v86's set_tsc left the TSC off by the offset before the Restore). Suite replay, case prompt edge (hello paused: the step count of its first hlt; reloaded, stepped to 1 and 2 before it, the prompt text marked seen: run(1) / run(2) end on the hlt with "prompt" there; FAILS on bcb03313f: "count", the stop a replay lost when a recorded key was due at the prompt's hlt) and the Debian+initrd JIT replay with the exact fast-forward restore (the prompt then comes from stepping) | snapdiff,bookmarks,deltasnap; jitdet,guestin,replay |
+| R4 the patched v86, a snapshot repeats the JIT run | suite jitsnap. The page's `v86.wasm` has the SHA-256 of the `gen-v86.sh` build and exports `jit_reset_hidden`, and stepper.js adds its step exports to it. Debian (1.0e9 to 2.55e9) and Debian+initrd (2.5e9 to 3.3e9) at 1280 light, on J1's det JIT from a pause: the page's Save at A, the run on to B (X1); Restore in the same page (X2), in a reloaded page from IndexedDB (X3), and a fresh page that boots to A, saves and restores (X4), each run to B: every slice end (count, EIP, registers and EFLAGS, IRQ0 count) and the end's RAM, registers and clock equal to X1's. Debian+initrd at 390 dark: Pause past 2.5e9, Save (the log gets the reset), Continue to the (initramfs) prompt, Restore, Continue to the prompt again: the same count, EIP, RAM, registers and clock, no taint, Replay from boot matches. On 2f26f8c5d (npm's v86.wasm) it FAILS (see PROGRESS R4) | jitsnap |
 | B1 a power-on snapshot restores | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark, started paused at the reset vector F000:FFF0: the IDE controller's BAR0 and BAR1 have no BAR and the I/O bit set; Save snapshot there, Run to hello_main / start_kernel, Restore: no error, the registers, the instruction count and every RAM page are the snapshot's and the machine is paused; then Run to the same target stops there and hello prints Still alive; no page error, no horizontal scroll; screenshots after Restore and after the boot). FAILS on eb8579e5c: "restore_state failed: TypeError: Cannot read properties of undefined (reading 'original_bar')", the count and 22 pages wrong, a wasm "unreachable" page error | snapdiff |
 | B2 one double tap is one open | suite graphopen (each of its four runs, after the double click or tap above: the same double click (1280 px) or double tap (390 px) on the function's box twice more, once with the open itself taking 900 ms longer (a wrapper around openFunction busy-waits after it) and once with the CPU 10x slower through CDP; each opens the function exactly once and adds one history entry, and Back returns to the Calls tab as it was). FAILS on 250ee59e1: with the 900 ms open every run opens twice, at 390 px that is two history entries (before (0, 2), after (2, 3)); the canvas's dblclick opened it, then the timer of the pointerup double-press detection opened it again because the 600 ms guard counted from the start of the open | speedasm,runbadge,memeip,graphopen,srcfiles |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
@@ -1894,6 +1909,7 @@ browser-test matrix job named by its suites):
 ## Testing
 
     site/fetch-v86.sh
+    site/gen-v86.sh    # v86.wasm: Docker, about 5 minutes
     site/gen-symbols.py minified/vmlinux site/kernels/minified-linux/symbols.json minified-linux
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
     (dwarf/ and src/: see the workflow's "Debug-info builds" step)

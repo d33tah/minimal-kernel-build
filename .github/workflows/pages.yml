@@ -416,7 +416,7 @@ jobs:
         - runstate
         - speedline
         - speedasm,runbadge,memeip,graphopen,srcfiles
-        - snapdiff,bookmarks
+        - snapdiff,bookmarks,deltasnap
         - jitdet,guestin,replay
         - exactstop
         - followeip

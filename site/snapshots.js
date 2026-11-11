@@ -17,6 +17,15 @@
 // state itself (snapworker.js documents the layout) and uses meta for the
 // rest. kernelKey: SHA-256 of the bzImage (and of the initrd, if any), so a
 // snapshot is offered only for the kernel it was taken with.
+//
+// Delta snapshots (R1): the page keeps two 32-bit hashes per 4 KiB page of
+// the last snapshot saved or restored (snapBase, from the Worker). The next
+// save of the same kernel and RAM size stores only the pages whose hashes
+// changed plus v86's state without RAM (snapworker.js documents the
+// format): delta = { base: id, pages }, raw = that state's length, full =
+// the full state's. Restore, Download and the diff rebuild its RAM from the
+// chain (the full snapshot, then each delta's pages). Deleting a base folds
+// it into its deltas first (they become deltas of its base, or full).
 
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
@@ -37,6 +46,8 @@ const snapWaiting = new Map();
 let snapDiff = null;      // { a, b, pages, ... } of the diff shown
 let pageSnapView = null;  // the Page tab shows a snapshot's page: { page, bytes, base, name, against, cur }
 let snapDelAllTimer = null;
+let snapBase = null;      // the last snapshot saved or restored: { id, kernelKey, ram, hashes }
+const SNAP_DELTA_MAX = 31; // deltas in a chain before the next save is full again
 
 const snapCodec = (s) => s.codec || (s.gzip ? "gzip" : "raw");
 const SNAP_EXT = { lz4: ".lz4", gzip: ".gz", raw: "" };
@@ -235,17 +246,30 @@ async function saveSnapshot() {
 	$("snap_save").disabled = true;
 	$("snap_status").textContent = "Saving...";
 	try {
+		snapKernelKey();
+		const key = image.snapKeyP ? await image.snapKeyP : null;
+		// A delta of the last snapshot saved or restored, if it is of this
+		// kernel and RAM size, still there, stored (when this browser
+		// stores), and its chain not too long.
+		const b = snapBase && snapById(snapBase.id);
+		const base = b && snapBase.kernelKey === key && b.kernelKey === key && snapBase.ram === emuRam &&
+			(b.where === "stored" || !snapDb) && snapDepth(b) < SNAP_DELTA_MAX ? b : null;
 		const meta = snapMeta(em, true);
 		const t0 = realNow();
 		let raw = await em.save_state();
 		const t1 = realNow();
 		const rawLen = raw.byteLength;
-		// LZ4 in the Worker; the state is transferred, not copied.
-		let data, codec = "lz4", packMs = 0, why = "";
+		// Page hashes, the delta and LZ4 in the Worker; the state is
+		// transferred, not copied.
+		let data, codec = "lz4", packMs = 0, why = "", delta = null, hashes = null, packedLen = rawLen;
 		try {
-			const r = await snapWorker({ op: "pack", raw }, [raw]);
+			const r = await snapWorker({ op: "pack", raw, base: base ? { key: base.id, hashes: snapBase.hashes } : null }, [raw]);
 			data = r.data;
 			packMs = r.ms;
+			hashes = r.hashes;
+			packedLen = r.rawLen;
+			if (r.delta)
+				delta = { base: base.id, pages: r.delta.pages };
 		} catch (e) {
 			// The worker could not compress (or load the LZ4 module): keep the
 			// state raw (taken again if the failed message took it along).
@@ -255,24 +279,26 @@ async function saveSnapshot() {
 		}
 		raw = null;
 		const t2 = realNow();
-		snapKernelKey();
-		const key = image.snapKeyP ? await image.snapKeyP : null;
 		const time = Date.now();
 		const seq = snapshots.reduce((m, s) => Math.max(m, s.seq || 0), 0) + 1;
 		const s = {
 			id: "s" + time.toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36),
 			seq, name: snapDefaultName(meta, time), time, kernel: snapKernelName(), kernelKey: key, ram: emuRam,
-			raw: codec === "raw" ? data.byteLength : rawLen, size: data.byteLength, codec, level: codec === "lz4" ? SNAP_LZ4_LEVEL : 0, data: new Blob([data]),
+			raw: codec === "raw" ? data.byteLength : packedLen, full: codec === "raw" ? data.byteLength : rawLen, delta,
+			size: data.byteLength, codec, level: codec === "lz4" ? SNAP_LZ4_LEVEL : 0, data: new Blob([data]),
 			saveMs: Math.round(t1 - t0), packMs, packWallMs: Math.round(t2 - t1), meta, where: "memory",
 		};
 		snapshots.push(s);
 		why += await snapStore(s);
+		snapBase = hashes ? { id: s.id, kernelKey: key, ram: emuRam, hashes } : null;
 		// Without storage only the last few stay.
 		const mem = snapshots.filter((x) => x.where === "memory");
-		while (mem.length > MAX_SNAPSHOTS)
-			snapshots.splice(snapshots.indexOf(mem.shift()), 1);
+		if (mem.length > MAX_SNAPSHOTS)
+			await snapDelete(mem.slice(0, mem.length - MAX_SNAPSHOTS), true);
 		$("snap_status").textContent = "Saved #" + seq + " (" + s.name + "): save_state " + s.saveMs + " ms" +
-			(codec === "lz4" ? ", LZ4 level " + SNAP_LZ4_LEVEL + " " + packMs + " ms in a Worker." : ".") + why;
+			(codec === "lz4" ? ", page hashes and LZ4 level " + SNAP_LZ4_LEVEL + " " + packMs + " ms in a Worker" : "") +
+			(delta ? "; a delta of #" + base.seq + ": " + snapPagesText(delta.pages) + ", " + snapFmtSize(s.size) +
+				" stored instead of a full snapshot." : ".") + why;
 	} catch (e) {
 		$("snap_status").textContent = "save_state failed: " + e;
 	}
@@ -290,7 +316,10 @@ async function restoreSnapshot(s) {
 	$("snap_status").textContent = "Restoring “" + s.name + "”...";
 	delete $("snap_status").dataset.restored;
 	try {
-		const raw = await snapUnpack(s);
+		// A delta comes back as a full state, rebuilt in the Worker, with
+		// the page hashes the next save is compared with.
+		const r = await snapWorker({ op: "unpack", s: snapBlob(s), hashes: true });
+		const raw = r.raw;
 		// The stepper's count and the clock go back to the snapshot's before
 		// restore_state, which sets the TSC offset from the clock it reads;
 		// the PIT and RTC keep absolute times. Otherwise everything after a
@@ -303,6 +332,7 @@ async function restoreSnapshot(s) {
 			CLOCK.setTime(s.meta.clock);
 		}
 		await v86Restore(emulator, raw);
+		snapBase = r.hashes ? { id: s.id, kernelKey: s.kernelKey, ram: s.ram, hashes: r.hashes } : null;
 		// The RTC's start date and the generator's state (J2). Snapshots
 		// taken on real time or before J2 have neither: the start date then
 		// goes on from the RTC's last update, the date the guest saw last.
@@ -334,17 +364,51 @@ async function restoreSnapshot(s) {
 	}
 }
 
-// A stored snapshot as the Worker takes it (snapworker.js).
-const snapBlob = (s) => ({ key: s.id, blob: s.data, codec: snapCodec(s), size: s.raw });
+// A stored snapshot as the Worker takes it (snapworker.js); a delta with
+// its chain of bases, the full one first.
+const snapOne = (s) => ({ key: s.id, blob: s.data, codec: snapCodec(s), size: s.raw });
+const snapBlob = (s) => ({ ...snapOne(s), chain: snapChain(s).map(snapOne) });
+
+// The bases of s, the full one first.
+function snapChain(s) {
+	const out = [];
+	for (let x = s; x.delta;) {
+		const b = snapById(x.delta.base);
+		if (!b || out.length > 4096)
+			throw new Error("“" + s.name + "” is a delta of a snapshot that is not here");
+		out.unshift(b);
+		x = b;
+	}
+	return out;
+}
+
+function snapDepth(s) {
+	let n = 0;
+	for (let x = s; x && x.delta; x = snapById(x.delta.base))
+		n++;
+	return n;
+}
+
+const snapPagesText = (n) => n.toLocaleString("en") + " page" + (n === 1 ? "" : "s") + " changed";
 
 // The state of s, decompressed in the Worker.
 async function snapUnpack(s) {
 	return (await snapWorker({ op: "unpack", s: snapBlob(s) })).raw;
 }
 
-function downloadSnapshot(s) {
+async function downloadSnapshot(s) {
+	let blob = s.data;
+	if (s.delta) {
+		// A delta downloads as the full state, rebuilt from its chain.
+		try {
+			blob = new Blob([(await snapWorker({ op: "export", s: snapBlob(s) })).data]);
+		} catch (e) {
+			$("snap_status").textContent = "Download failed: " + ((e && e.message) || e);
+			return;
+		}
+	}
 	const a = document.createElement("a");
-	a.href = URL.createObjectURL(s.data);
+	a.href = URL.createObjectURL(blob);
 	a.download = s.kernel.replace(/[^\w.-]+/g, "_") + "-" + s.ram / 1024 + "k-" + s.seq + "-" +
 		s.name.replace(/[^\w.-]+/g, "_").slice(0, 40) + ".v86state" + SNAP_EXT[snapCodec(s)];
 	a.click();
@@ -364,20 +428,48 @@ async function snapRename(s, name) {
 		inspect();
 }
 
-async function snapDelete(list) {
+// d again without its base x (about to be deleted): a delta of x's base
+// with the pages of both, or a full snapshot when x was full.
+async function snapFold(d, x) {
+	const nb = x.delta ? snapById(x.delta.base) : null;
+	const r = await snapWorker({ op: "rebase", s: snapBlob(d), base: nb ? snapBlob(nb) : null });
+	Object.assign(d, { data: new Blob([r.data]), size: r.data.byteLength, raw: r.rawLen, full: r.full, codec: "lz4",
+		level: SNAP_LZ4_LEVEL, delta: r.delta ? { base: nb.id, pages: r.delta.pages } : null });
+	return d.where === "stored" ? snapStore(d) : "";
+}
+
+// quiet: no status line (the oldest in-memory snapshots dropped on a save).
+async function snapDelete(list, quiet) {
 	const ids = new Set(list.map((s) => s.id));
-	snapshots = snapshots.filter((s) => !ids.has(s.id));
-	if (snapDb)
+	// Newest first: a delta goes before its base, so only bases of
+	// snapshots that stay are folded into them.
+	const order = list.slice().sort((a, b) => (b.seq || 0) - (a.seq || 0) || b.time - a.time);
+	let folded = 0, why = "";
+	for (const x of order) {
 		try {
-			await snapTx("readwrite", (st) => {
-				for (const s of list)
-					if (s.where === "stored")
-						st.delete(s.id);
-			});
+			for (const d of snapshots.filter((y) => y.delta && y.delta.base === x.id && !ids.has(y.id))) {
+				why += await snapFold(d, x);
+				folded++;
+			}
 		} catch (e) {
-			$("snap_status").textContent = "Deleting from IndexedDB failed: " + ((e && e.message) || e);
+			$("snap_status").textContent = "Not deleted: “" + x.name + "” is the base of a delta that could not be rebuilt (" +
+				((e && e.message) || e) + ").";
+			break;
 		}
-	if (snapDiff && (ids.has(snapDiff.a) || ids.has(snapDiff.b))) {
+		snapshots = snapshots.filter((s) => s !== x);
+		if (snapBase && snapBase.id === x.id)
+			snapBase = null;
+		if (snapDb && x.where === "stored")
+			try {
+				await snapTx("readwrite", (st) => st.delete(x.id));
+			} catch (e) {
+				$("snap_status").textContent = "Deleting from IndexedDB failed: " + ((e && e.message) || e);
+			}
+	}
+	if (folded && !quiet)
+		$("snap_status").textContent = "Deleted; " + folded + " delta snapshot" + (folded === 1 ? " was" : "s were") +
+			" rebuilt without " + (list.length === 1 ? "it" : "them") + "." + why;
+	if (snapDiff && (ids.has(snapDiff.a.id) || ids.has(snapDiff.b.id))) {
 		snapDiff = null;
 		renderSnapDiff();
 	}
@@ -401,8 +493,9 @@ function snapDeleteAll() {
 	delete b.dataset.armed;
 	b.textContent = "Delete all";
 	const n = snapshots.length;
-	snapDelete(snapshots.slice());
-	$("snap_status").textContent = "Deleted " + n + " snapshot" + (n === 1 ? "" : "s") + ".";
+	snapDelete(snapshots.slice(), true).then(() => {
+		$("snap_status").textContent = "Deleted " + n + " snapshot" + (n === 1 ? "" : "s") + ".";
+	});
 }
 
 function snapSwitch(s) {
@@ -480,7 +573,8 @@ function renderSnapshots() {
 	for (const s of snapshots) {
 		const tr = tbody.insertRow();
 		const match = snapMatch(s);
-		Object.assign(tr.dataset, { id: s.id, raw: s.raw, stored: s.size, kernel: match, where: s.where, codec: snapCodec(s) });
+		Object.assign(tr.dataset, { id: s.id, raw: s.raw, full: s.full || s.raw, stored: s.size, kernel: match, where: s.where,
+			codec: snapCodec(s), base: s.delta ? s.delta.base : "", depth: snapDepth(s), pages: s.delta ? s.delta.pages : -1 });
 		if (match === "other")
 			tr.className = "snapother";
 		const name = tr.insertCell();
@@ -494,8 +588,9 @@ function renderSnapshots() {
 				day.toLocaleString("en-GB")),
 			s.meta ? "instruction " + s.meta.icount.toLocaleString("en") + ", " + (s.meta.sym || "EIP " + hex(s.meta.eip)) : "",
 			(match === "other" ? "for another kernel: " : "") + s.kernel + ", " + kib(s.ram),
-			snapFmtSize(s.size) + (s.where === "stored" ? ", stored" : ", in memory only"),
-			s.raw.toLocaleString("en"),
+			snapFmtSize(s.size) + (s.where === "stored" ? ", stored" : ", in memory only") + (s.delta ? "; delta of #" +
+				((snapById(s.delta.base) || {}).seq || "?") + ": " + snapPagesText(s.delta.pages) : ""),
+			s.raw.toLocaleString("en") + (s.delta && s.full ? " (full state " + s.full.toLocaleString("en") + ")" : ""),
 			snapCodec(s) !== "raw" ? ratio.toFixed(1) + " : 1 (" + (100 * s.size / s.raw).toFixed(2) + "%)" : "-",
 			snapHow(s),
 		];
@@ -539,11 +634,13 @@ function renderSnapStore() {
 		return;
 	}
 	el.dataset.storage = "indexeddb";
+	const nd = stored.filter((s) => s.delta).length;
 	const est = snapEstimate && snapEstimate.quota ? " This site uses " + snapFmtSize(snapEstimate.usage || 0) + " of " +
 		snapFmtSize(snapEstimate.quota) + " the browser allows it" + (snapPersist === true ? ", kept persistently." :
 		snapPersist === false ? "; the browser may evict it when the disk fills up." : ".") : "";
 	el.textContent = "Stored in this browser (IndexedDB), kept across reloads: " + stored.length + " snapshot" +
 		(stored.length === 1 ? "" : "s") + ", " + snapFmtSize(sum(stored)) +
+		(nd ? " (" + nd + " delta" + (nd === 1 ? "" : "s") + ": only the pages changed since the snapshot before)" : "") +
 		(image ? "; " + mine.length + " for " + snapKernelName() : "") + "." +
 		(mem ? " In memory only (not stored): " + mem + ", " + snapFmtSize(sum(snapshots) - sum(stored)) + "." : "") + est;
 }
@@ -632,7 +729,10 @@ async function snapRunDiff() {
 		};
 		snapDiff = { a: info(a, r.a), b: info(b, r.b), pages: r.pages, ms: Math.round(realNow() - t0), workerMs: r.ms, hex: null };
 		renderSnapDiff();
-		$("snap_diff_status").textContent = "Compared in " + snapDiff.ms + " ms (the comparison itself " + r.ms + " ms, in a Worker).";
+		out.dataset.compared = r.compared >= 0 ? r.compared : "all";
+		$("snap_diff_status").textContent = "Compared in " + snapDiff.ms + " ms (the comparison itself " + r.ms + " ms, in a Worker" +
+			(r.compared >= 0 ? "; one side is a delta of the other, so only its " + r.compared.toLocaleString("en") + " page" +
+				(r.compared === 1 ? " was" : "s were") + " compared" : "") + ").";
 		out.dataset.state = "done";
 	} catch (e) {
 		$("snap_diff_status").textContent = "Diff failed: " + ((e && e.message) || e);
@@ -876,7 +976,9 @@ function pageSnapBanner(on) {
 
 function initSnapshots() {
 	$("snap_save").addEventListener("click", saveSnapshot);
-	$("snap_save").title = "save_state(), then LZ4 level " + SNAP_LZ4_LEVEL + " (lz4-wasm 0.9.2) in a Worker; a download is an LZ4 frame (.v86state.lz4) that lz4 -d reads.";
+	$("snap_save").title = "save_state(), then page hashes and LZ4 level " + SNAP_LZ4_LEVEL + " (lz4-wasm 0.9.2) in a Worker: " +
+		"after the first snapshot only the pages changed since the last one saved or restored are kept (a delta); " +
+		"a download is the full state as an LZ4 frame (.v86state.lz4) that lz4 -d reads.";
 	$("snap_delall").addEventListener("click", snapDeleteAll);
 	$("snap_diff").addEventListener("click", snapRunDiff);
 	for (const id of ["snap_a", "snap_b"])

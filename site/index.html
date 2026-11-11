@@ -262,7 +262,7 @@
 </section>
 
 <section class="panel" id="panel_snapshots" role="tabpanel" aria-labelledby="tab_snapshots" hidden>
-  <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, compressed with LZ4 level 1 in a Worker, so saving does not stall the page; a download is an LZ4 frame that <code>lz4 -d</code> reads. Snapshots are stored in this browser (IndexedDB) and kept across reloads, each for the kernel it was taken with (the bzImage's SHA-256); tap a name to rename it.</p>
+  <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, compressed with LZ4 level 1 in a Worker, so saving does not stall the page. After the first snapshot of a kernel, a snapshot keeps only the 4 KiB pages of RAM that changed since the last one saved or restored (a delta, found by hashing every page) and Restore puts them on top of that one's RAM. A download is the full state as an LZ4 frame that <code>lz4 -d</code> reads. Snapshots are stored in this browser (IndexedDB) and kept across reloads, each for the kernel it was taken with (the bzImage's SHA-256); tap a name to rename it.</p>
   <div class="scan">
     <button id="snap_save" type="button" disabled>Save snapshot</button>
     <span id="snap_status" role="status"></span>

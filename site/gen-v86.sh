@@ -14,8 +14,9 @@
 # calls it after every restore and every snapshot it saves.
 #
 # Pins: the v86 commit npm 0.5.471 was built from (git checks the commit
-# hash), ubuntu:24.04 by digest, Ubuntu's apt snapshot of 2026-11-01 (clang
-# and lld 18, nodejs, python3), Rust 1.90.0 for wasm32-unknown-unknown.
+# hash), ubuntu:24.04 by digest, clang and lld 18 and nodejs at the versions
+# of Ubuntu's apt snapshot of 2026-11-01, Rust 1.90.0 for
+# wasm32-unknown-unknown.
 # RUSTFLAGS -C symbol-mangling-version=v0 gives the function names npm's
 # build has, which stepper.js looks up in the name section. The build runs
 # with the source copied into the container at /src (paths end up in the
@@ -24,7 +25,13 @@ set -eu
 
 V86_COMMIT=94faf3d6b19ecabc53a4010aaa24252fa6a162e2
 UBUNTU=ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+# The toolchain packages at the versions of Ubuntu's apt snapshot of
+# 2026-11-01 (clang and lld 18, nodejs): from the archive while it has
+# them, else from snapshot.ubuntu.com (which answered 502/503 at times).
 APT_SNAPSHOT=20261101T000000Z
+LLVM=1:18.1.3-1ubuntu1
+NODE=18.19.1+dfsg-6ubuntu5
+APT_PACKAGES="clang-18=$LLVM lld-18=$LLVM libllvm18=$LLVM libclang-cpp18=$LLVM libclang1-18=$LLVM libclang-common-18-dev=$LLVM llvm-18-linker-tools=$LLVM nodejs=$NODE libnode109=$NODE python3 make curl"
 RUST=1.90.0
 SHA256=a644af5f6759dfb5b02f60bd802988bad946d092f0ee6b992702188f1a9170a8
 
@@ -64,10 +71,12 @@ git -C "$tmp/v86" apply "$site/v86-det.patch"
 
 cat > "$tmp/Dockerfile" <<DOCKERFILE
 FROM $UBUNTU
-RUN apt-get -o Acquire::Retries=5 update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates \\
-    && apt-get -o Acquire::Retries=5 update --snapshot $APT_SNAPSHOT \\
-    && DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install --snapshot $APT_SNAPSHOT -y --no-install-recommends \\
-       clang-18 lld-18 python3 nodejs make curl \\
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get -o Acquire::Retries=5 update \\
+    && apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates \\
+    && { apt-get -o Acquire::Retries=5 install -y --no-install-recommends $APT_PACKAGES \\
+         || { apt-get -o Acquire::Retries=5 update --snapshot $APT_SNAPSHOT \\
+              && apt-get -o Acquire::Retries=5 install --snapshot $APT_SNAPSHOT -y --no-install-recommends $APT_PACKAGES; }; } \\
     && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/clang-18 /usr/local/bin/clang
 ENV RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:\$PATH
 RUN curl -sSf --retry 5 https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST --target wasm32-unknown-unknown

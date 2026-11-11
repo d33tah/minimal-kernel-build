@@ -1197,10 +1197,10 @@ as a colour emoji (also checked once in Firefox and WebKit):
   stepping back or after a Restore no longer taints the run's replay.
 - Reverse execution at JIT speed (R5). While the JIT runs on the virtual
   clock (jitLoop) the page keeps checkpoints too: one where a stretch the
-  JIT runs starts after stepping, then one about every 1.5 s of JIT running
+  JIT runs starts after stepping, then one about every 3 s of JIT running
   (`?revjitk=N`: every N instructions), each a `save_state()` followed by
   `jit_reset_hidden()`, logged with the run (J4) as a snapshot's reset is.
-  The 1.5 s is an estimate from what the JIT did (4 ms per million
+  The 3 s is an estimate from what the JIT did (4 ms per million
   instructions, 1.2 ms per thousand calls of compiled code, from
   `v86-det.patch`'s `jit_stats()`): with measured time the resets, and with
   them the JIT's slice ends, came at other counts every run.

@@ -55,11 +55,14 @@ const REV_K_MIN = 50000, REV_K_MAX = 20e6;
 // Between two JIT checkpoints: about REV_JIT_MS of JIT running, estimated
 // from what the JIT did (instructions, calls of compiled code: v86-det.patch's
 // jit_stats), so that a run puts its checkpoints, and the resets that come
-// with them, at the same counts every time (measured time would not). Measured on
-// Debian (Chromium): about 4 ms per million instructions of kernel code,
-// and 1.2 ms per thousand calls of compiled code where processes start and
-// exit (the initramfs: 12 instead of 350 MIPS).
-const REV_JIT_MS = 1500;
+// with them, at the same counts every time (measured time would not). The
+// weights are a rough fit on Debian in Chromium (d-claude): the estimate
+// came out 0.5 to 2 times the time measured in 25 M and 50 M stretches of
+// the boot and the initramfs. Each checkpoint costs the JIT its compiled
+// code (the reset) and a save_state() (20 to 55 ms): with 1.5 s the det
+// JIT's speed against v86's own loop (suite jitdet) went from about 1.0 to
+// 0.88, under the suite's 0.9; so 3 s.
+const REV_JIT_MS = 3000;
 const REV_JIT_MS_PER_INSN = 4e-6, REV_JIT_MS_PER_CALL = 1.2e-3;
 const REV_JIT_KMAX = 500e6;  // and at most this many instructions
 

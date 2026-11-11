@@ -1883,7 +1883,7 @@ function stopDriver() {
 // later, which looked like a stall); not when the page itself goes on (the
 // kernel entry, where the counts from the entry start).
 async function resume(now = false) {
-	if (!emulator || !emuReady)
+	if (!emulator || !emuReady || REV.busy)
 		return;
 	jitRunId++; // a running jitLoop stops at its next check
 	stopDriver();
@@ -1907,6 +1907,8 @@ async function resume(now = false) {
 			stepper.markGap();
 		if (stepper)
 			stepper.noteJit(false);
+		if (stepper)
+			revJit(stepper); // no stepping back across what the JIT runs (R2)
 		if (stepper && clockMips()) {
 			// The virtual clock: the page runs the JIT (jitLoop), the same
 			// run every time.
@@ -2154,7 +2156,12 @@ function driverTick() {
 		resume(true);
 		return;
 	}
-	const room = inputRoom(stepper);
+	// A checkpoint for stepping back (R2); not for the count at full speed,
+	// which the JIT takes over from (no stepping back across that).
+	const keep = !(speed() === "full" && runTo === null);
+	if (keep)
+		revTick(stepper);
+	const room = Math.min(inputRoom(stepper), keep ? revRoom(stepper) : Infinity);
 	const now = realNow();
 	let reason;
 	const t0 = now, s0 = stepper.steps;
@@ -2188,6 +2195,7 @@ function driverTick() {
 		reason = n ? stepper.run(Math.min(n, room), -1, SLICE_MS) : "count";
 	}
 	prevTick = now;
+	revRate(stepper.steps - s0, realNow() - t0);
 	if (counting) {
 		countMs += realNow() - t0;
 		countSteps += stepper.steps - s0;
@@ -2489,7 +2497,8 @@ function renderSymbols(phys) {
 	}
 	// History entries are symbols the CPU left; the newest one that is not
 	// the current symbol is "previous".
-	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
+	// Stepped back (R2): the history is the furthest count's.
+	const hist = st.behind() ? [] : st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
 	renderSourceRows(box, phys, cur >= 0 ? st.symName[cur] : null);
 	if (dbgHas())
@@ -2504,7 +2513,8 @@ function renderSymbols(phys) {
 			" left at " + hex(prev.last));
 		p.dataset.name = st.symName[prev.sym];
 	} else {
-		p.append(prev ? symDesc(st, prev.sym, prev.last) : "none recorded yet");
+		p.append(st.behind() ? "recorded at instruction " + num(st.ahead) + ", not here (stepped back)" :
+			prev ? symDesc(st, prev.sym, prev.last) : "none recorded yet");
 		p.dataset.name = "";
 	}
 	const crumbs = row("path");
@@ -2575,6 +2585,8 @@ function unwindHere() {
 	const entryEsp = (pa, esp) => {
 		// The instruction that ran last was a call to here (EIP has not
 		// entered the function yet): the return address is at ESP.
+		if (st.behind()) // stepped back (R2): the recorded frames are the furthest count's
+			return undefined;
 		const m = cpu.mem8, lp = st.lastPhys;
 		if (esp === st.regs().esp && lp >= 0 && lp + 2 < m.length && ((st.espBefore - 4) >>> 0) === esp &&
 		    (m[lp] === 0xe8 || (m[lp] === 0xff && (m[lp + 1] >> 3 & 7) === 2)))
@@ -2604,14 +2616,16 @@ function renderCallStack(box, phys) {
 	const b = document.createElement("b");
 	b.textContent = "call stack";
 	d.append(b, " ");
-	const top = st.stack.length ? st.stack[st.stack.length - 1] : -1;
+	// Stepped back (R2): the recorded call stack is the furthest count's.
+	const behind = st.behind();
+	const top = !behind && st.stack.length ? st.stack[st.stack.length - 1] : -1;
 	const rec = [];
 	let at = phys;
 	// EIP on the first byte of a symbol the stack has not entered yet (a
 	// call about to run, e.g. after Run to): that symbol on top, its caller
 	// at the instruction that ran last.
 	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
-	if (cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fNode[top] !== cur)) {
+	if (!behind && cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fNode[top] !== cur)) {
 		rec.push([-1, phys, cur]);
 		at = st.lastPhys;
 	}
@@ -3347,7 +3361,7 @@ function drawDebugUi() {
 	st.title = st.textContent;
 	const can = !!stepper;
 	$("dbg_pause").disabled = !can || (!ffActive && (runState === "paused" || runState === "off"));
-	$("dbg_continue").disabled = !can || ffActive || runState !== "paused";
+	$("dbg_continue").disabled = !can || ffActive || runState !== "paused" || REV.busy;
 	// "VM paused" over the screen, with why (the debugger's last note, or
 	// the end of the run) and Continue unless the run has ended.
 	const paused = can && !ffActive && runState === "paused";
@@ -3362,7 +3376,8 @@ function drawDebugUi() {
 		$("vm_continue").hidden = !!stepper.end;
 	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
-		$(id).disabled = !can || runState === "off";
+		$(id).disabled = !can || runState === "off" || REV.busy;
+	revRender();
 	renderRunBadge();
 	renderRegs();
 	renderCounters();
@@ -3383,7 +3398,7 @@ async function pauseAll() {
 }
 
 async function doStep(n) {
-	if (!stepper)
+	if (!stepper || REV.busy)
 		return;
 	await pauseAll();
 	if (!stepper)
@@ -3398,7 +3413,24 @@ async function doStep(n) {
 	inputFlush(stepper);
 	inputMark(stepper, "stepped");
 	const before = stepper.steps;
-	const reason = stepper.run(n, -1, 5000);
+	// In pieces: a checkpoint for stepping back every so many instructions
+	// (R2), and after stepping back the logged keys going in at their counts.
+	let reason = "count";
+	const t0 = realNow();
+	while (stepper.steps - before < n) {
+		if (stepper.steps !== before)
+			inputFlush(stepper);
+		revTick(stepper);
+		const s0 = stepper.steps, t1 = realNow();
+		reason = stepper.run(Math.min(n - (s0 - before), REV.kFixed || REV.k, inputRoom(stepper)), -1, Math.max(1, 5000 - (t1 - t0)));
+		revRate(stepper.steps - s0, realNow() - t1);
+		if (reason !== "count")
+			break;
+		if (realNow() - t0 > 5000) {
+			reason = "time";
+			break;
+		}
+	}
 	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
 		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
 			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "prompt" ? " (at the (initramfs) prompt)" : reason === "time" ? " (5 s limit)" : "") + ".";
@@ -3500,7 +3532,7 @@ function runToLine(where) {
 }
 
 async function doRunTo() {
-	if (!stepper)
+	if (!stepper || REV.busy)
 		return;
 	const want = await runToTargets($("dbg_addr").value.trim());
 	if (!want.targets) {
@@ -3590,8 +3622,11 @@ function initDebugger() {
 		} catch (e) {
 			// no storage: until reload
 		}
-		if (stepper && runState !== "off")
+		if (stepper && runState !== "off") {
 			inputTaint(stepper, "the clock was changed to " + $("clock_mips").selectedOptions[0].text);
+			revBranch(stepper, "the clock was changed");
+			revReset("the clock was changed at instruction " + num(stepper.steps));
+		}
 		if (runState === "jit") {
 			resume(true); // the JIT from the page (virtual) or v86's own loop (real)
 		} else {
@@ -3973,6 +4008,7 @@ async function init() {
 	initLegend();
 	drawMaps();
 	initDebugger();
+	initReverse();
 	initGraph();
 	initImport();
 	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });

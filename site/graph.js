@@ -64,7 +64,10 @@ function graphReset(st) {
 const nowStep = () => (G.stepper ? G.stepper.steps : 0);
 // The run starts at the kernel entry once it has been reached.
 const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
-const fEnd = (st, k) => (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]);
+const fEnd = (st, k) => (st.fEnd[k] < 0 ? recTo(st) : st.fEnd[k]);
+// The count the recordings go to: after stepping back (R2) the stepper
+// is behind them, and the timeline still ends there, with now marked.
+const recTo = (st) => (st.behind && st.behind() ? st.ahead : st.steps);
 const hiddenFrame = (st, k) => G.fold && st.fIrq[k];
 
 // Subsystem of a symbol: the top directory of the source file its first
@@ -108,7 +111,7 @@ function frameCounts(st, k) {
 	// Open children are not in fChild yet.
 	for (const o of st.allOpen())
 		if (st.fParent[o] === k)
-			child += st.steps - st.fStart[o];
+			child += recTo(st) - st.fStart[o];
 	return { incl, self: incl - child };
 }
 
@@ -117,7 +120,7 @@ function frameCounts(st, k) {
 // the outermost calls sit under a node per task (like perf's --sort comm).
 function buildTree(st) {
 	const start = runStart();
-	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: st.steps - start, self: 0, calls: 1, kids: new Map() };
+	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: recTo(st) - start, self: 0, calls: 1, kids: new Map() };
 	const nodeOf = new Map(); // frame -> tree node
 	const tasks = st.taskCount > 1 ? taskInfo(st) : null;
 	const taskNode = (t) => {
@@ -329,7 +332,7 @@ function drawTimeline() {
 	const L = timelineLayout(st);
 	const focus = G.focus >= 0 && G.focus < st.fStart.length ? G.focus : -1;
 	const t0 = focus >= 0 ? st.fStart[focus] : runStart();
-	const t1 = Math.max(t0 + 1, focus >= 0 ? fEnd(st, focus) : st.steps);
+	const t1 = Math.max(t0 + 1, focus >= 0 ? fEnd(st, focus) : recTo(st));
 	if (!G.userMoved) {
 		G.x0 = t0;
 		G.x1 = t1;
@@ -666,7 +669,7 @@ function drawTimeline() {
 		const cur = st.stack[st.stack.length - 1];
 		const r = L.row[cur] - rowOff;
 		if (L.row[cur] >= 0 && r >= 0) {
-			const [x, y, rw, rh] = rect(st.fStart[cur], st.steps, Math.min(r, cap));
+			const [x, y, rw, rh] = rect(st.fStart[cur], recTo(st), Math.min(r, cap));
 			c.dataset.curRow = r;
 			c.dataset.curVisible = G.transpose ? (x >= 0 && x + rw <= w) : (y >= areaTop && y + rh <= areaTop + areaH);
 		}
@@ -868,7 +871,7 @@ function timelineSummary() {
 	}
 	big.sort((a, b) => b.incl - a.incl);
 	const d = st.fDepth.slice().sort((a, b) => a - b);
-	return { total: st.steps - start, rootSum, frames: st.fStart.length, top: big.slice(0, 25),
+	return { total: recTo(st) - start, rootSum, frames: st.fStart.length, top: big.slice(0, 25),
 		maxDepth: d.length ? d[d.length - 1] : 0, p99Depth: d.length ? d[Math.floor(d.length * 0.99)] : 0 };
 }
 
@@ -1044,7 +1047,7 @@ function drawTop() {
 		const ids = byDepth.get(d).sort((a, b) => first.get(a) - first.get(b));
 		let x = 8;
 		for (const id of ids) {
-			const label = st.nodeName(id) + " " + pct0(incl.get(id), st.steps - start);
+			const label = st.nodeName(id) + " " + pct0(incl.get(id), recTo(st) - start);
 			const bw = Math.min(w - 16, ctxm.measureText(label).width + 12);
 			if (x + bw > w - 8 && x > 8) {
 				x = 8;
@@ -1398,7 +1401,7 @@ function initGraph() {
 		const [px, py] = G.pointers.get(ev.pointerId);
 		if (G.pointers.size === 1 && G.view === "timeline") {
 			if (G.press && G.press.at[1] < MINI) { // drag in the minimap: move the window there
-				const st = G.stepper, t0 = runStart(), t1 = Math.max(t0 + 1, st.steps);
+				const st = G.stepper, t0 = runStart(), t1 = Math.max(t0 + 1, recTo(st));
 				const span = G.x1 - G.x0, t = t0 + x / c.clientWidth * (t1 - t0);
 				G.x0 = t - span / 2;
 				G.x1 = t + span / 2;

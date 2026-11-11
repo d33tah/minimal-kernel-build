@@ -418,6 +418,7 @@ jobs:
         - speedasm,runbadge,memeip,graphopen,srcfiles
         - snapdiff,bookmarks,deltasnap
         - jitdet,guestin,replay
+        - reverse
         - exactstop
         - followeip
         - followfuzz

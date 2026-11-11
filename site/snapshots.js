@@ -240,7 +240,7 @@ function snapDefaultName(meta, time) {
 }
 
 async function saveSnapshot() {
-	if (!emulator || !emuReady)
+	if (!emulator || !emuReady || REV.busy)
 		return;
 	const em = emulator;
 	$("snap_save").disabled = true;
@@ -308,6 +308,8 @@ async function saveSnapshot() {
 }
 
 async function restoreSnapshot(s) {
+	if (REV.busy)
+		return;
 	if (!emulator || emuRam !== s.ram) {
 		$("snap_status").textContent = "“" + s.name + "” was taken with " + kib(s.ram) +
 			" of RAM; boot with that size to restore it.";
@@ -316,6 +318,12 @@ async function restoreSnapshot(s) {
 	$("snap_status").textContent = "Restoring “" + s.name + "”...";
 	delete $("snap_status").dataset.restored;
 	try {
+		// Another timeline: the reverse history (R2) starts anew from the
+		// snapshot, with the recordings as they were.
+		if (stepper)
+			stepper.unrewind();
+		INPUT.redo = [];
+		revReset("a snapshot was restored");
 		// A delta comes back as a full state, rebuilt in the Worker, with
 		// the page hashes the next save is compared with.
 		const r = await snapWorker({ op: "unpack", s: snapBlob(s), hashes: true });

@@ -1143,6 +1143,45 @@ as a colour emoji (also checked once in Firefox and WebKit):
   557 ms 15 deep, each with the RAM's SHA-256 as at the save. The download
   of the 15th delta (the full state rebuilt and compressed again) takes
   316 ms in the Worker and is 17,404,608 bytes.
+- Reverse execution in stepped mode (R2, reverse.js): Step back (the run
+  bar, and the Debugger's Step back with the instruction count) and Back to
+  (reverse continue to the Run to field's function, address or file:line).
+  While the page steps the CPU on the virtual clock it keeps a checkpoint
+  before a slice whenever half a second of stepping has run since the last
+  one (`?revk=N`: every N instructions): v86's `save_state()` packed in the
+  snapshot Worker as an R1 delta of the checkpoint before (every 8th one
+  full), plus what lives outside v86's state (the count, the clock's base,
+  count and rate exactly, J2's RTC start and generator, v86's instruction
+  counter, the VGA text and lines the stepper mirrors, idle time, IRQ0
+  count, the input log's length). The last 32 (at most 256 MiB packed) stay
+  in memory; the oldest group of 8 goes first. Step back restores the last
+  checkpoint at or before the target and steps forward to it; Back to runs
+  each stretch between checkpoints again from the newest back, watching for
+  the addresses, and stops at the last hit before now (the start of the
+  history when there is none). Below the furthest count reached the
+  stepper re-runs (Stepper.rerun) without recording again: the coverage,
+  jump paths, symbols and Calls stay as they were at the furthest count and
+  are not counted twice; the end, the prompt, panic() entered, exit and the
+  milestone lines come back as the count reaches them, with the stops they
+  made. While stepped back the Debugger's "previous", path and recorded
+  call stack (the frames below the unwound ones) are not shown, and the
+  Calls timeline still ends at the furthest count with now marked. Keys
+  typed in the stretch go in again at their counts (replay.js INPUT.redo).
+  Typing, the JIT or a clock change after stepping back go another way from
+  there: the checkpoints, calls and task switches recorded ahead are
+  dropped and the open calls closed there (a gap, as for a stretch the JIT
+  runs). The history starts anew after the JIT ran (full speed, a Run to
+  with breakpoints, the fast-forward), a snapshot restored, a clock change,
+  a new machine; real time keeps none. Not kept for the count at full speed
+  (the JIT takes over from it). v86 0.5.471's `set_tsc` sets a restored
+  TSC off by the offset in effect before the restore: after stepping back,
+  SeaBIOS's TSC calibration came out one different and a byte of its data
+  differed further on. Stepping back restores with the TSC as saved
+  (cpustate.js v86TscExact). Only there: its extra TSC reading changes
+  v86's extrapolation for repeated readings (Rust statics outside the
+  state), which the JIT reads, and the fast-forward's restore has to stay
+  as J1/J4 replay it. A JIT run after stepping back taints the run's replay
+  from boot, as after a snapshot restore (R3).
   Diff: pick two snapshots of this kernel, or one and "now" (a
   `save_state()` taken for the diff). snapworker.js decompresses and
   compares them in a Worker (the page's main thread only does what Save
@@ -1840,6 +1879,7 @@ browser-test matrix job named by its suites):
 | J2 the guest's date and random numbers on the virtual clock | suite guestin, no init script freezing Date or crypto (hello twice, 1280 light and 390 dark: the same RAM, the BIOS tick count at 0x46C that of 2026-01-01 00:00:00; `?rtc=2031-02-03T04:05:06Z&seed=7`: tick count 267,744 + a few, the Machine tab shows both; real time: the RTC reads the browser's date; a snapshot saved with `?rtc=`/`?seed=5` and restored after a reload with others puts back the start date, seed and generator state; Debian stepped 30,000,000 instructions after its entry twice: the same EIP, clock and RAM; Debian with its initramfs at full speed: `hwclock -u` and `date -u` at the prompt print the start date plus the virtual time, and two hwclock readings move with the virtual clock). FAILS on 01b4e4d15 (tick counts and RAM differ, Debian RAM differs, the shell prints the browser's date); suite jitdet now runs without its init scripts and FAILS on 01b4e4d15 (minified and Debian RAM differ) | jitdet,guestin |
 | J3 exact end stops | suite exactstop (Debian and Debian with its initramfs, each 3 times at 1280 light, 390 dark and 1280 dark, counted stepping `speed=full&count=1` and J1's full JIT speed `count=0`, virtual clock 10/us: the stop is the panic text (marked exact) or the prompt with the CPU halted, and v86's count, steps, EIP, RAM SHA-256, IRQ0, virtual time, the end or prompt row and under the JIT the slice-chain hash are the same in all 3; the count line's rate after the fast-forward, hello 1280 light and Debian 390 dark, is at most 100 M/s); suite jitdet runs Debian on to its exact panic-text stop. FAILS on df0fc50ed (stepped and JIT: the counts, EIP and RAM at both stops differ in every run, the prompt stop is not at a halt; the count line says 251.1 M/s for hello and 239263.1 M/s for Debian) | exactstop |
 | J4 record and replay guest input | suite replay. Minified Linux stepped at 1k/s (390 light): keys typed at moments of wall time are logged, a snapshot and then a position bookmark keep the run, the snapshot's Replay and the bookmark's Replay boot again and end at the same count, v86 counter, EIP, RAM SHA-256, virtual time and screen. Debian with its initramfs at J1's full speed (1280 light): keys typed while paused at the prompt are held (14 scancodes for 7 keys), a Step there, a command typed while it runs; the log has the modes JIT, stepped, JIT; the downloaded run and the snapshot's run match the page; Replay in the page and the downloaded file replayed in a fresh 390 dark page started on hello end in the same state, with the command's output on the screen and the page's verdict "match". FAILS on 53f6f94f3 (nothing is held or logged, no Replay) | jitdet,guestin,replay |
+| R2 reverse execution | suite reverse. hello (390 dark, 1280 light) and the minified Linux (1280 light, 390 dark) stepped from the reset vector with a checkpoint every 20,000 instructions, Debian stepped from `startup_32` (JIT before it) with the page's own interval: forward to E, noting the machine at E-deep, E-1000, E-1 and E and every call in the last 20,000 instructions; Step back 1 (run bar), Step back 999 and Step back to E-deep (Debugger) each give the count, EIP, registers, segment registers, EFLAGS, CR0-CR4, v86's counter, clock, IRQ0 count, halt state, RAM SHA-256 and VGA text of the forward run there, 1 and 1,000 within 1 s; the recordings (coverage, paths, symbols, calls, task switches, milestones) unchanged; forward to E again: the same machine and recordings; Back to the function called most, twice: its last two calls with their registers; no jump history entries; a key typed after stepping back drops what was ahead; the JIT drops the history (Step back disabled, the line says why). Debian with its initramfs at the prompt: "echo r2" typed and stepped until r2 is on the screen, Step back to before the keys (the keys waiting, r2 not on the screen), forward again: the same machine and input log. FAILS on 677f8a0fc (no Step back); after stepping back and forward again on hello the RAM differed by one SeaBIOS byte until the TSC fix | reverse |
 | B1 a power-on snapshot restores | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark, started paused at the reset vector F000:FFF0: the IDE controller's BAR0 and BAR1 have no BAR and the I/O bit set; Save snapshot there, Run to hello_main / start_kernel, Restore: no error, the registers, the instruction count and every RAM page are the snapshot's and the machine is paused; then Run to the same target stops there and hello prints Still alive; no page error, no horizontal scroll; screenshots after Restore and after the boot). FAILS on eb8579e5c: "restore_state failed: TypeError: Cannot read properties of undefined (reading 'original_bar')", the count and 22 pages wrong, a wasm "unreachable" page error | snapdiff |
 | B2 one double tap is one open | suite graphopen (each of its four runs, after the double click or tap above: the same double click (1280 px) or double tap (390 px) on the function's box twice more, once with the open itself taking 900 ms longer (a wrapper around openFunction busy-waits after it) and once with the CPU 10x slower through CDP; each opens the function exactly once and adds one history entry, and Back returns to the Calls tab as it was). FAILS on 250ee59e1: with the 900 ms open every run opens twice, at 390 px that is two history entries (before (0, 2), after (2, 3)); the canvas's dblclick opened it, then the timer of the pointerup double-press detection opened it again because the 600 ms guard counted from the start of the open | speedasm,runbadge,memeip,graphopen,srcfiles |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |

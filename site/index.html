@@ -54,6 +54,7 @@
         <button id="dbg_pause" type="button" disabled title="Stop the CPU">Pause</button>
         <button id="dbg_continue" type="button" disabled title="Run again at the selected speed">Continue</button>
         <button id="dbg_step" type="button" disabled title="Execute one instruction">Step</button>
+        <button id="dbg_back" type="button" disabled title="Undo the last instruction">Step back</button>
         <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second from the kernel entry on. By default BIOS and setup are stepped as fast as possible up to the kernel's 32-bit entry at 0x100000, then the kernel runs at 1k/s so you can watch it. Full speed is v86's JIT: on the virtual clock the page runs it one slice (about 100,000 instructions) at a time, counted, and a run repeats exactly; with the real-time clock v86 runs it on its own, not counted. 10M/s is more than JavaScript stepping reaches on most machines (about 5M/s on a fast desktop); the speed actually reached is shown next to the clock. The choice is remembered in this browser; ?speed=full (or 1000000, 100000, ..., 1) in the URL overrides it.">?</span></span>
           <select id="dbg_speed">
             <option value="full">full (JIT)</option>
@@ -190,10 +191,11 @@
 <section class="panel" id="panel_debugger" role="tabpanel" aria-labelledby="tab_debugger" hidden>
   <div class="scan">
     <span class="group"><button id="dbg_stepn" type="button" disabled title="Execute this many instructions">Step</button>
-      <input id="dbg_n" value="100" size="7" inputmode="numeric" aria-label="instructions to step"></span>
+      <input id="dbg_n" value="100" size="7" inputmode="numeric" aria-label="instructions to step"><button id="dbg_backn" type="button" disabled>Step back</button></span>
     <span class="group"><button id="dbg_runto" type="button" disabled>Run to</button>
-      <input id="dbg_addr" value="0x100000" size="11" aria-label="function, address or file:line to run to"></span><span class="tip" tabindex="0" role="button" title="Step until the next instruction is at this address. A function name (hello_main, start_kernel: every code symbol of that name), hex, physical, or a kernel virtual address (minus the kernel's virtual offset from symbols.json, 0xC0000000 for Linux). An address the CPU cannot stop at (kernel data such as .rodata, or the middle of an instruction) and a name that is no symbol are refused, with similar names, and the CPU stays paused; a target the kernel does not reach before it ends says so. Run to from a target goes on to its next hit. Or a source line, file:line (init/main.c:1000, or main.c:1000 when one file has that name): stops at the first of the line's breakpoint addresses the kernel reaches (the line table's is_stmt rows of that line, in every inlined copy, and the start of each call inlined on it). Clicking a line in the Source panel lists them.">?</span>
+      <input id="dbg_addr" value="0x100000" size="11" aria-label="function, address or file:line to run to"><button id="dbg_backto" type="button" disabled>Back to</button></span><span class="tip" tabindex="0" role="button" title="Step until the next instruction is at this address. A function name (hello_main, start_kernel: every code symbol of that name), hex, physical, or a kernel virtual address (minus the kernel's virtual offset from symbols.json, 0xC0000000 for Linux). An address the CPU cannot stop at (kernel data such as .rodata, or the middle of an instruction) and a name that is no symbol are refused, with similar names, and the CPU stays paused; a target the kernel does not reach before it ends says so. Run to from a target goes on to its next hit. Or a source line, file:line (init/main.c:1000, or main.c:1000 when one file has that name): stops at the first of the line's breakpoint addresses the kernel reaches (the line table's is_stmt rows of that line, in every inlined copy, and the start of each call inlined on it). Clicking a line in the Source panel lists them.">?</span>
   </div>
+  <p class="note revline"><span id="rev_info"></span><span class="tip" tabindex="0" role="button" title="Reverse execution, in stepped mode on the virtual clock. While the page steps the CPU it keeps a checkpoint about every half second of stepping (a v86 snapshot stored as the pages changed since the one before, in memory, the last 32): Step back restores the last checkpoint before the instruction it goes back to and steps forward to it, and Back to (reverse continue) goes back to the last time before now the CPU was at the Run to field&#x27;s address (a function, an address or file:line). A stepped run on the virtual clock repeats exactly, keys typed included (they go in again at their counts), so the registers, RAM and screen are as they were at that instruction. Stepping forward again runs the same instructions; the paths, calls and coverage recorded the first time are not counted twice, and while stepped back the recorded call stack, the path and the Calls timeline are those of the furthest instruction (the timeline marks now). The history starts anew where stepping cannot repeat the run: after the JIT ran (full speed, a Run to with breakpoints, the fast-forward to the kernel entry), a snapshot restored, the clock changed or real time. Typing or running the JIT after stepping back takes another way from there: what was ahead is dropped.">?</span></p>
   <p id="dbg_status" class="note mono" role="status"></p>
   <div id="regs" class="regs mono"></div>
   <div id="cpu_state" class="cpu_state"></div>
@@ -539,6 +541,7 @@
 <script src="settings.js"></script>
 <script src="snapshots.js"></script>
 <script src="replay.js"></script>
+<script src="reverse.js"></script>
 <script src="bookmarks.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>

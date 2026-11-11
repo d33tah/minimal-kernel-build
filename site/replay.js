@@ -42,6 +42,7 @@ const INPUT = {
 	send: null,      // the PS/2 controller's own kbd_send_code
 	replay: null,    // { run, i, mode, late: [], ignored, done, ok, why }
 	next: null,      // a run to replay on the next boot
+	redo: [],        // R2: entries after the count stepped back to, going in again at their counts
 };
 
 // ---- the boundary -------------------------------------------------------------
@@ -54,6 +55,36 @@ const replayMode = () => (replayActive() ? INPUT.replay.mode : null);
 // The moment (count, clock) of entry e has come.
 function inputDue(e, st) {
 	return st.steps > e.at || (st.steps === e.at && (CLOCK.now() >= e.t || !st.halted()));
+}
+
+// R2: after stepping back (reverse.js), the log's entries ahead of the
+// machine go in again as it steps forward, at their counts and times.
+function inputRedo(st) {
+	const redo = INPUT.redo;
+	if (!INPUT.send || !redo.length)
+		return;
+	let n = 0;
+	while (n < redo.length && inputDue(redo[n], st)) {
+		const e = redo[n++];
+		if (e.keys)
+			for (const c of e.keys)
+				INPUT.send(c);
+		INPUT.log.push(e);
+	}
+	if (n) {
+		redo.splice(0, n);
+		renderRunInfo();
+	}
+}
+
+// R2: back to the checkpoint whose log had n entries: the rest wait in
+// INPUT.redo.
+function inputRewind(n) {
+	INPUT.redo = INPUT.log.splice(n).concat(INPUT.redo);
+	INPUT.pending = [];
+	const modes = INPUT.log.filter((e) => e.mode);
+	INPUT.mode = modes.length ? modes[modes.length - 1].mode : null;
+	renderRunInfo();
 }
 
 // The machine is between two slices: put the inputs that are due in. Returns
@@ -86,7 +117,12 @@ function inputFlush(st) {
 		const now = runState === "stepped" ? "stepped" : runState === "jit" ? "jit" : null;
 		return mode && now && mode !== now ? "mode" : null;
 	}
+	if (INPUT.redo.length)
+		inputRedo(st);
 	if (INPUT.pending.length && CLOCK.virtual) {
+		// Typed after stepping back: the run goes another way from here.
+		if (st.behind() || INPUT.redo.length)
+			revBranch(st, "keys were typed at instruction " + st.steps.toLocaleString("en") + " after stepping back");
 		const keys = INPUT.pending.splice(0);
 		for (const c of keys)
 			INPUT.send(c);
@@ -100,12 +136,13 @@ function inputFlush(st) {
 // replay's end (at least 1: a halted CPU waits for the clock there).
 function inputRoom(st) {
 	const rp = INPUT.replay;
-	if (!rp || rp.done)
-		return Infinity;
-	let at = rp.i < rp.run.log.length ? rp.run.log[rp.i].at : Infinity;
-	if (rp.run.end)
-		at = Math.min(at, rp.run.end.at);
-	return Math.max(1, at - st.steps);
+	let at = INPUT.redo.length ? INPUT.redo[0].at : Infinity;
+	if (rp && !rp.done) {
+		at = Math.min(at, rp.i < rp.run.log.length ? rp.run.log[rp.i].at : Infinity);
+		if (rp.run.end)
+			at = Math.min(at, rp.run.end.at);
+	}
+	return at === Infinity ? Infinity : Math.max(1, at - st.steps);
 }
 
 // The machine goes on in mode ("jit" or "stepped") from here.
@@ -140,6 +177,7 @@ function inputRestore(meta) {
 		replayStop("stopped by a snapshot restore");
 	const run = meta && meta.run;
 	INPUT.pending = [];
+	INPUT.redo = [];
 	if (run && Array.isArray(run.log) && !runCheck(run)) {
 		INPUT.log = run.log.map((e) => ({ ...e }));
 		INPUT.taint = run.taint || null;
@@ -189,6 +227,7 @@ function inputBoot(em) {
 	};
 	INPUT.log = [];
 	INPUT.pending = [];
+	INPUT.redo = [];
 	INPUT.mode = null;
 	INPUT.taint = null;
 	INPUT.restored = false;

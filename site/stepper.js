@@ -181,6 +181,13 @@ class Stepper {
 		this.lastTimers = 0;
 		this.idleMs = 0;         // virtual time skipped while halted
 		this.irq0 = 0;           // timer interrupts (IRQ0) raised by the PIT
+		// Reverse execution (R2, reverse.js): after stepping back, the
+		// instructions up to `ahead` (the furthest count reached) run again
+		// without being recorded again (rerun); what was recorded after the
+		// count stepped back to waits in `future` ({ steps, key, i, rec },
+		// by count) until the count gets there.
+		this.ahead = 0;
+		this.future = [];
 		const raise = cpu.device_raise_irq;
 		cpu.device_raise_irq = (irq) => {
 			if (irq === 0)
@@ -768,6 +775,112 @@ class Stepper {
 	// hlt with IF clear: only an NMI or reset wakes it.
 	dead() { return this.halted() && !(this.cpu.get_eflags() & 0x200); }
 
+	// R2: the stepper is back at a count it has recorded past.
+	behind() { return this.steps < this.ahead; }
+
+	// R2: a checkpoint at count t was restored (reverse.js), coming from
+	// count from. What was recorded after t (the end, the prompt, the exit,
+	// panic() entered, milestones) waits in this.future; the kernel entry
+	// is found again by the re-run. The recordings of paths, symbols, calls
+	// and coverage stay as they were at the furthest count.
+	rewind(t, from) {
+		this.ahead = Math.max(this.ahead, from);
+		const keep = (key, rec, i) => {
+			if (!rec || rec.steps <= t)
+				return false;
+			this.future.push({ steps: rec.steps, key, i, rec });
+			return true;
+		};
+		for (const key of ["end", "prompt", "exit", "panicEntered"])
+			if (keep(key, this[key]))
+				this[key] = null;
+		this.milestones.forEach((m, i) => {
+			if (keep("milestone", m.found, i))
+				m.found = null;
+		});
+		this.future.sort((a, b) => a.steps - b.steps);
+		if (this.sinceEntry >= t)
+			this.sinceEntry = -1;
+	}
+
+	// R2: the re-run is at this.steps: what was recorded up to here comes
+	// back. Returns the stop the first run made here: "end" (the panic's
+	// last line, panicBudget), "prompt", "milestone", or "".
+	catchUp() {
+		let why = "";
+		while (this.future.length && this.future[0].steps <= this.steps) {
+			const f = this.future.shift();
+			if (f.key === "milestone") {
+				this.milestones[f.i].found = f.rec;
+				why = why || "milestone";
+			} else {
+				this[f.key] = f.rec;
+				if (f.key === "prompt")
+					why = "prompt";
+				else if (f.key === "end" && (f.rec.kind === "panic-text" || f.rec.kind === "panic-budget"))
+					why = "end";
+			}
+		}
+		return why;
+	}
+
+	// R2: back to the furthest count's recordings without going there (a
+	// snapshot restored: it goes on from the recordings as they were).
+	unrewind() {
+		for (const f of this.future) {
+			if (f.key === "milestone")
+				this.milestones[f.i].found = f.rec;
+			else
+				this[f.key] = f.rec;
+		}
+		this.future = [];
+		this.ahead = 0;
+	}
+
+	// R2: the run goes another way from this count than it went before
+	// (keys typed after stepping back, the JIT, another clock): the
+	// recordings ahead are not its future. The calls and task switches
+	// recorded after here are dropped and the open ones closed here, so the
+	// Calls timeline stays one run; then a gap, as for a stretch the JIT
+	// runs. Counts of paths, symbols and coverage keep what was stepped.
+	branch() {
+		if (!this.behind() && !this.future.length)
+			return;
+		const t = this.steps;
+		this.future = [];
+		this.ahead = 0;
+		let k = this.fStart.length;
+		while (k > 0 && this.fStart[k - 1] > t)
+			k--;
+		for (const a of [this.fStart, this.fEnd, this.fNode, this.fDepth, this.fParent, this.fIrq, this.fChild, this.fEsp,
+			this.fCont, this.fTask, this.fFrom])
+			a.length = k;
+		let s = this.swStep.length;
+		while (s > 0 && this.swStep[s - 1] > t)
+			s--;
+		this.swStep.length = this.swTask.length = this.swIrq.length = s;
+		this.task = s ? this.swTask[s - 1] : 0;
+		this.contFrames = 0;
+		this.fChild.fill(0);
+		for (let f = 0; f < k; f++) {
+			if (this.fEnd[f] < 0 || this.fEnd[f] > t)
+				this.fEnd[f] = t;
+			this.contFrames += this.fCont[f];
+		}
+		for (let f = 0; f < k; f++)
+			if (this.fParent[f] >= 0)
+				this.fChild[this.fParent[f]] += this.fEnd[f] - this.fStart[f];
+		this.stack = [];
+		this.lanes = new Map();
+		this.lane = -1;
+		this.lastTop = -1;
+		this.suspended = new Map();
+		this.freshTask = false;
+		this.tailEsp = -1;
+		this.markGap();
+		this.graphVersion++;
+	}
+
 	// Run up to n instructions. Stops early at stopPhys, an address or a
 	// Set of them (before executing the instruction there, unless it is
 	// the first one: with leave given, only unless it is the first one
@@ -777,6 +890,17 @@ class Stepper {
 	// budgetMs. Returns a reason: "count", "addr", "hlt", "milestone",
 	// "end", "prompt", "time".
 	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
+		let i0 = 0;
+		if (this.steps < this.ahead) {
+			const r = this.rerun(n, stopPhys, budgetMs, leave);
+			if (r !== "ahead")
+				return r;
+			i0 = this.iters; // caught up: recording again from here
+		}
+		return this.record(n, stopPhys, budgetMs, leave, i0);
+	}
+
+	record(n, stopPhys, budgetMs, leave, i0) {
 		// v86's cpu.reg32 etc. are Proxies that build a typed array on
 		// every access; the loop reads wasm memory directly instead (byte
 		// offsets of the globals as in v86 src/cpu.js).
@@ -787,7 +911,7 @@ class Stepper {
 		const seen = this.seen, lo = this.kernelLo, hi = this.kernelHi;
 		const t0 = realNow();
 		const stopSet = stopPhys instanceof Set ? stopPhys : null;
-		for (let i = 0; i < n; i++) {
+		for (let i = i0; i < n; i++) {
 			if (i32.length === 0) { // the buffer was detached by a memory.grow
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
@@ -920,6 +1044,82 @@ class Stepper {
 				}
 				if (this.checkMilestones(phys))
 					return "milestone";
+			}
+		}
+		return "count";
+	}
+
+	// R2: run() below this.ahead: what run() does to the machine (the
+	// timers every 1,024 instructions, the idle clock while halted, v86's
+	// counter, the kernel entry, the VGA text the hook mirrors) and its
+	// stops (stopPhys and leave as in run(), and the stops the first run
+	// made, from this.future), nothing recorded again. Returns as run(), or
+	// "ahead" when it got to this.ahead with iterations left (this.iters
+	// used).
+	rerun(n, stopPhys, budgetMs, leave) {
+		const cpu = this.cpu, read = this.ex.mkb_read_imm8, exec = this.ex.mkb_run;
+		const mem = cpu.wasm_memory;
+		let i32 = new Int32Array(mem.buffer), u8 = new Uint8Array(mem.buffer);
+		const res = this.res >> 2, lo = this.kernelLo;
+		const t0 = realNow();
+		const stopSet = stopPhys instanceof Set ? stopPhys : null;
+		const fresh = () => {
+			i32 = new Int32Array(mem.buffer);
+			u8 = new Uint8Array(mem.buffer);
+		};
+		let i = 0;
+		for (; i < n; i++) {
+			if (this.steps >= this.ahead) {
+				this.iters = i;
+				return "ahead";
+			}
+			if (i32.length === 0)
+				fresh();
+			if (this.future.length && this.future[0].steps <= this.steps && this.catchUp() === "prompt")
+				return "prompt";
+			if (u8[IN_HLT]) {
+				let t = this.timers();
+				for (let k = 0; k < 64 && u8[IN_HLT] && typeof CLOCK === "object" && CLOCK.virtual &&
+					(cpu.get_eflags() & 0x200); k++) {
+					CLOCK.advance(Math.max(t, 0.001));
+					this.idleMs += Math.max(t, 0.001);
+					t = this.timers();
+					fresh();
+				}
+				fresh();
+				if (u8[IN_HLT])
+					return "hlt";
+			}
+			if ((this.steps & 1023) === 0) {
+				if (realNow() - t0 > budgetMs)
+					return "time";
+				this.timers();
+				fresh();
+			}
+			const eip = i32[IP];
+			i32[PREV_IP] = eip;
+			read(this.res);
+			if (i32.length === 0)
+				fresh();
+			if (i32[res] !== 0)
+				continue; // fetch faulted: #PF delivered, nothing executed
+			const phys = (i32[EIP_PHYS] ^ eip) >>> 0;
+			if ((stopSet ? stopSet.has(phys) : phys === stopPhys) && (i > 0 || (leave !== undefined && phys !== leave))) {
+				i32[IP] = eip;
+				return "addr";
+			}
+			exec(i32[res + 1] | u8[IS_32] << 8);
+			if (i32.length === 0)
+				fresh();
+			i32[COUNTER] = i32[COUNTER] + 1;
+			this.steps++;
+			if (phys === lo && this.sinceEntry < 0)
+				this.sinceEntry = this.steps - 1;
+			this.vgaDirty = false;
+			if (this.future.length && this.future[0].steps <= this.steps) {
+				const why = this.catchUp();
+				if (why)
+					return why;
 			}
 		}
 		return "count";

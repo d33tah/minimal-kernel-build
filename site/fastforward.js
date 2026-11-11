@@ -103,6 +103,7 @@ async function jitFlush(st) {
 // (jitPending), await jitFlush(st) first, or they stay out of this slice.
 function jitChunk(st, beforeEntry = false) {
 	const cpu = st.cpu;
+	revJit(st); // stepping back does not cross what the JIT runs (R2)
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
 		st.run(1, -1, 50);
 		return 0;

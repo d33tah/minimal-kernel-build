@@ -284,12 +284,37 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # The last build of this script and patch: used only when the build
+    # cannot run (snapshot.ubuntu.com or another download down), and
+    # checked against the recorded SHA-256 then.
+    - uses: actions/cache/restore@v4
+      id: v86cache
+      with:
+        path: v86-cache
+        key: v86-wasm-${{ hashFiles('site/gen-v86.sh', 'site/v86-det.patch') }}
+
     - name: Build v86.wasm
+      id: build
       run: |
         start=$(date +%s)
-        site/gen-v86.sh
-        echo "v86.wasm build: $(( $(date +%s) - start )) s"
+        if site/gen-v86.sh; then
+          echo "v86.wasm build: $(( $(date +%s) - start )) s"
+          mkdir -p v86-cache && cp site/v86/v86.wasm v86-cache/
+          echo built=1 >> "$GITHUB_OUTPUT"
+        elif [ -f v86-cache/v86.wasm ]; then
+          echo "::warning::gen-v86.sh could not build v86.wasm; using the cached build of the same script and patch"
+          mkdir -p site/v86 && cp v86-cache/v86.wasm site/v86/
+          site/gen-v86.sh --check
+        else
+          exit 1
+        fi
         ls -l site/v86/v86.wasm
+
+    - uses: actions/cache/save@v4
+      if: steps.build.outputs.built == '1' && steps.v86cache.outputs.cache-hit != 'true'
+      with:
+        path: v86-cache
+        key: v86-wasm-${{ hashFiles('site/gen-v86.sh', 'site/v86-det.patch') }}
 
     - uses: actions/upload-artifact@v4
       with:

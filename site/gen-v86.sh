@@ -72,7 +72,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 ENV RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:\$PATH
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST --target wasm32-unknown-unknown
 DOCKERFILE
-docker build -q -t "$image" "$tmp" >/dev/null
+docker build --progress=plain -t "$image" "$tmp" >&2
 
 mkdir -p "$site/v86"
 tar -C "$tmp/v86" --exclude=.git -cf - . |

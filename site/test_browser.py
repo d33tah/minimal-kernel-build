@@ -13413,6 +13413,296 @@ def suite_exactstop(ctx):
     return report("exactstop", *exactstop_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx), initrd, modes))
 
 
+# ---- replay: record and replay guest input (J4) -------------------------------
+# On the virtual clock (J1, J2, J3) a run repeats exactly until someone types:
+# the keyboard reached the PS/2 controller at a moment of wall time. Now a key
+# typed on the virtual clock waits for the next boundary between two JIT
+# slices or two stepper slices and goes in there, logged with the count and
+# the virtual time. A run (boot settings, J2's start date and seed, the log,
+# where it ended) is downloadable, saved with snapshots and position
+# bookmarks, and Replay boots the same kernel and puts the keys in at the
+# same counts: the same count, EIP, RAM and screen at the end.
+REPLAY_STATE_JS = """async () => { flushScreen(); const st = stepper, m = st.cpu.mem8;
+  const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const I = typeof INPUT === 'object' ? INPUT : null, keys = I ? I.log.filter((e) => e.keys) : [];
+  const rs = document.getElementById('run_status');
+  return { steps: st.steps, counter: ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
+    clock: CLOCK.now(), screen: Array.from(document.getElementById('screen_text').children, (e) => e.textContent.replace(/\\s+$/, '')),
+    entries: I ? I.log.length : null, keyEntries: keys.length, scancodes: keys.reduce((n, e) => n + e.keys.length, 0),
+    firstKeyAt: keys.length ? keys[0].at : null, modes: I ? I.log.filter((e) => e.mode).map((e) => e.mode) : null,
+    pending: I ? I.pending.length : null, taint: I ? I.taint : null, prompt: st.prompt ? st.prompt.steps : null, runState,
+    replay: I && I.replay ? { done: I.replay.done, ok: I.replay.ok === undefined ? null : I.replay.ok, late: I.replay.late.length } : null,
+    status: rs ? rs.textContent : null, verdict: rs ? rs.dataset.replay || null : null }; }"""
+REPLAY_SAME = ("steps", "counter", "eip", "ram", "clock", "screen")
+
+
+def replay_context(browser, scheme, phone):
+    return browser.new_context(color_scheme=scheme, accept_downloads=True,
+                               **(PHONE if phone else {"viewport": {"width": 1280, "height": 900}}))
+
+
+def replay_state(page):
+    return page.evaluate(REPLAY_STATE_JS)
+
+
+def replay_wait(page, timeout):
+    """Until a replay has finished and the machine is paused there."""
+    return wait_for(lambda: page.evaluate("typeof INPUT === 'object' && !!INPUT.replay && INPUT.replay.done && runState === 'paused'"),
+                    timeout, 1)
+
+
+def replay_same(a, b, tag, problems):
+    for k in REPLAY_SAME:
+        if a[k] != b[k]:
+            problems.append(f"{tag}: {k} differs from the recorded run: {str(b[k])[:300]} vs {str(a[k])[:300]}")
+
+
+def replay_lines(page):
+    return [l.strip() for l in page.inner_text("#screen_container").splitlines()]
+
+
+def replay_fit(page, tag, problems):
+    if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+        problems.append(f"{tag}: horizontal scroll")
+
+
+def replay_shots(page, shots, stem):
+    show_tab(page, "snapshots")
+    page.eval_on_selector("#run_box", "e => e.scrollIntoView()")
+    time.sleep(0.3)
+    page.screenshot(path=str(shots / f"{stem}-snapshots.png"))
+    show_tab(page, "machine")
+    page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")
+    time.sleep(0.3)
+    page.screenshot(path=str(shots / f"{stem}-machine.png"))
+
+
+def replay_initrd(browser, base, shots, name, tmp, problems, r):
+    """Debian+initrd at J1's full speed: keys typed at the (initramfs) prompt
+    while paused (held until Continue), a Step there, a command typed while
+    it runs; then Replay in the page. Returns (run file, recorded state)."""
+    tag = f"replay {name} jit 1280 light"
+    ctx = replay_context(browser, "light", False)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=120000)
+        if not wait_for(lambda: page.evaluate("!!stepper && !!stepper.prompt && runState === 'paused'"), 900, 1):
+            problems.append(f"{tag}: no pause at the (initramfs) prompt")
+            return None, None
+        show_tab(page, "machine")
+        page.click("#screen_container")
+        time.sleep(0.3)
+        page.keyboard.type("echo j4")
+        held = page.evaluate("typeof INPUT === 'object' ? INPUT.pending.length : -1")
+        r["held_while_paused"] = held
+        if held != 14:
+            problems.append(f"{tag}: 7 keys typed while paused: {held} scancodes held for the next slice, want 14")
+        # A Step at the prompt: the run goes on stepped for a moment.
+        show_tab(page, "debugger")
+        page.fill("#dbg_n", "3")
+        page.click("#dbg_stepn")
+        time.sleep(0.5)
+        machine_do(page, "click", "#vm_continue")
+        if not wait_for(lambda: any("echo j4" in l for l in replay_lines(page)), 60):
+            problems.append(f"{tag}: the keys typed while paused did not reach the shell")
+        show_tab(page, "machine")
+        page.click("#screen_container")
+        time.sleep(0.3)
+        page.keyboard.type(" ok; uname -m")
+        page.keyboard.press("Enter")
+        if not wait_for(lambda: "j4 ok" in replay_lines(page) and any(l in ("i686", "i586", "i386") for l in replay_lines(page)), 90):
+            problems.append(f"{tag}: the typed command did not run: {replay_lines(page)[-6:]}")
+        time.sleep(2)
+        machine_do(page, "click", "#dbg_pause")
+        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        a = replay_state(page)
+        r["recorded"] = {k: a[k] for k in ("steps", "counter", "eip", "ram", "entries", "keyEntries", "scancodes", "modes", "firstKeyAt", "prompt")}
+        if a["keyEntries"] is None or a["scancodes"] < 2 * len("echo j4 ok; uname -m") + 2:
+            problems.append(f"{tag}: the log holds {a['scancodes']} scancodes in {a['keyEntries']} entries, want all typed")
+        if a["modes"] != ["jit", "stepped", "jit"]:
+            problems.append(f"{tag}: the run's modes are {a['modes']}, want JIT, stepped (Step at the prompt), JIT")
+        if a["pending"]:
+            problems.append(f"{tag}: {a['pending']} scancodes still held after the run")
+        if a["taint"]:
+            problems.append(f"{tag}: the run is marked not replayable: {a['taint']}")
+        # Download the run.
+        show_tab(page, "snapshots")
+        path = None
+        try:
+            with page.expect_download(timeout=30000) as d:
+                page.click("#run_dl")
+            path = tmp / d.value.suggested_filename
+            d.value.save_as(path)
+            run = json.loads(path.read_text())
+            r["file"] = {"name": path.name, "bytes": path.stat().st_size, "entries": len(run.get("log", []))}
+            if run.get("format") != "mkb-run" or run.get("kernel") != name or len(run.get("log", [])) != a["entries"] or \
+                    (run.get("end") or {}).get("at") != a["steps"]:
+                problems.append(f"{tag}: the downloaded run does not match the page: "
+                                f"{ {k: run.get(k) for k in ('format', 'kernel', 'end')} }, {len(run.get('log', []))} entries")
+        except (PlaywrightError, ValueError, OSError) as e:
+            problems.append(f"{tag}: Download run: {e}")
+        # A snapshot keeps the run.
+        snap_save(page, 1, False)
+        sr = page.evaluate("(() => { const s = snapshots[snapshots.length - 1]; return s.meta && s.meta.run ? "
+                           "{ n: s.meta.run.log.length, steps: s.meta.run.end && s.meta.run.end.at } : null; })()")
+        r["snapshot_run"] = sr
+        if not sr or sr["n"] != a["entries"] or sr["steps"] != a["steps"]:
+            problems.append(f"{tag}: the snapshot's run is {sr}, want {a['entries']} entries ending at {a['steps']}")
+        if not page.locator("#snapshots button.snapreplay").count():
+            problems.append(f"{tag}: the snapshot row has no Replay")
+        # Replay here.
+        page.click("#run_replay")
+        if not replay_wait(page, 900):
+            problems.append(f"{tag}: the replay did not finish ({page.evaluate('runState')}, "
+                            f"{page.evaluate('stepper && stepper.steps')} steps)")
+        b = replay_state(page)
+        r["replayed"] = {k: b[k] for k in ("steps", "eip", "ram", "verdict", "replay", "status")}
+        replay_same(a, b, tag, problems)
+        if b["verdict"] != "match" or not b["replay"] or b["replay"]["late"]:
+            problems.append(f"{tag}: the page's replay verdict: {b['verdict']} {b['replay']} {b['status']!r}")
+        if not any("j4 ok" == l for l in b["screen"]):
+            problems.append(f"{tag}: the replayed screen lacks the command's output")
+        replay_shots(page, shots, "replay-initrd-1280-light")
+        replay_fit(page, tag, problems)
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+        return path, a
+    finally:
+        ctx.close()
+
+
+def replay_from_file(browser, base, shots, path, a, problems, r):
+    """The downloaded run in a fresh page of another kernel (390 px, dark):
+    Replay a file switches kernels and ends where the run ended."""
+    tag = "replay file 390 dark"
+    ctx = replay_context(browser, "dark", True)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel=hello&mips=10", timeout=120000)
+        wait_for(lambda: page.evaluate("!!stepper && runState !== 'off'"), 60)
+        show_tab(page, "snapshots")
+        page.set_input_files("#run_file", str(path))
+        if not replay_wait(page, 900):
+            problems.append(f"{tag}: the replay did not finish: {page.inner_text('#run_status')[:200]!r}")
+        c = replay_state(page)
+        r["file_replayed"] = {k: c[k] for k in ("steps", "eip", "ram", "verdict", "status")}
+        replay_same(a, c, tag, problems)
+        if c["verdict"] != "match":
+            problems.append(f"{tag}: the page's replay verdict: {c['verdict']} {c['status']!r}")
+        replay_shots(page, shots, "replay-file-390-dark")
+        replay_fit(page, tag, problems)
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
+def replay_stepped(browser, base, shots, name, problems, r):
+    """Stepped at 1k/s (390 px, light): keys at moments of wall time; a
+    snapshot, more keys, a position bookmark; the snapshot's Replay ends at
+    the snapshot, the bookmark's at the bookmark."""
+    tag = f"replay {name} stepped 390 light"
+    ctx = replay_context(browser, "light", True)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&speed=1000&mips=10", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5):
+            problems.append(f"{tag}: no kernel entry")
+            return
+        show_tab(page, "machine")
+        page.tap("#screen_container")
+        for keys in ("ab", "1", "cd"):
+            time.sleep(0.6)
+            page.keyboard.type(keys)
+        time.sleep(0.6)
+        machine_do(page, "tap", "#dbg_pause")
+        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        s1 = replay_state(page)
+        snap_save(page, 1, True)
+        row = snap_rows(page)["rows"][0]["id"]
+        machine_do(page, "tap", "#dbg_continue")
+        show_tab(page, "machine")
+        page.tap("#screen_container")
+        for keys in ("x", "yz"):
+            time.sleep(0.6)
+            page.keyboard.type(keys)
+        time.sleep(0.6)
+        machine_do(page, "tap", "#dbg_pause")
+        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        s2 = replay_state(page)
+        r["stepped"] = {"s1": {k: s1[k] for k in ("steps", "keyEntries", "modes")}, "s2": {k: s2[k] for k in ("steps", "keyEntries", "modes")}}
+        if s1["keyEntries"] < 3 or s2["keyEntries"] <= s1["keyEntries"]:
+            problems.append(f"{tag}: key entries {s1['keyEntries']} then {s2['keyEntries']}")
+        if s2["modes"] != ["stepped"]:
+            problems.append(f"{tag}: modes {s2['modes']}, want stepped only")
+        if not bm_open_list(page, True) or not page.locator("#bm_here").count():
+            problems.append(f"{tag}: no bookmarks list with the position ☆")
+        else:
+            bm_tap(page, "#bm_here", True)
+            b = bm_dialog_save(page, problems, tag, "pos")
+            if b and not (b["t"].get("run") and b["t"]["run"]["end"]["at"] == s2["steps"]):
+                problems.append(f"{tag}: the position bookmark has no run ending at {s2['steps']}: {str(b['t'])[:200]}")
+            bm_close_menu(page)
+        # The snapshot's Replay: boots again and ends at the snapshot.
+        show_tab(page, "snapshots")
+        snap_click(page, f"#snapshots tr[data-id='{row}'] button.snapreplay", True)
+        if not replay_wait(page, 600):
+            problems.append(f"{tag}: the snapshot's replay did not finish")
+        t1 = replay_state(page)
+        replay_same(s1, t1, tag + " (snapshot)", problems)
+        if t1["verdict"] != "match":
+            problems.append(f"{tag}: snapshot replay verdict {t1['verdict']} {t1['status']!r}")
+        replay_shots(page, shots, "replay-stepped-390-light-snapshot")
+        # The bookmark's Replay: ends at the bookmark.
+        if bm_open_list(page, True) and page.locator("#bm_list .bmreplay").count():
+            bm_tap(page, "#bm_list .bmreplay", True)
+            bm_close_menu(page)
+            if not replay_wait(page, 600):
+                problems.append(f"{tag}: the bookmark's replay did not finish")
+            t2 = replay_state(page)
+            replay_same(s2, t2, tag + " (bookmark)", problems)
+            if t2["verdict"] != "match":
+                problems.append(f"{tag}: bookmark replay verdict {t2['verdict']} {t2['status']!r}")
+            r["stepped"]["replays"] = [{k: t[k] for k in ("steps", "ram", "verdict")} for t in (t1, t2)]
+        else:
+            problems.append(f"{tag}: the position bookmark has no Replay")
+        replay_fit(page, tag, problems)
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
+def replay_case(browser, base, shots, entries, initrd):
+    problems, r = [], {}
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    def guard(fn, *args):
+        try:
+            return fn(*args)
+        except (PlaywrightError, IndexError, KeyError, TypeError) as e:
+            problems.append(f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}")
+            return None
+    if "minified-linux" in entries:
+        guard(replay_stepped, browser, base, shots, "minified-linux", problems, r)
+    if initrd:
+        path, a = guard(replay_initrd, browser, base, shots, initrd[0], tmp, problems, r) or (None, None)
+        if path and a:
+            guard(replay_from_file, browser, base, shots, path, a, problems, r)
+    shutil.rmtree(tmp, ignore_errors=True)
+    return problems, r
+
+
+def suite_replay(ctx):
+    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n]]
+    return report("replay", *replay_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, initrd))
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -13460,6 +13750,7 @@ SUITES = {
     "jitdet": (suite_jitdet, False),
     "guestin": (suite_guestin, False),
     "exactstop": (suite_exactstop, False),
+    "replay": (suite_replay, False),
 }
 
 

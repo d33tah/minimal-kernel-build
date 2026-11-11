@@ -12,7 +12,8 @@
 //   fn:   { pa, name }     a function (Calls box, call stack frame, Source tab)
 //   pos:  { pa, eip, icount, sym, snap, snapName }  the machine's position:
 //         EIP's physical and virtual address, v86's instruction counter (the
-//         count snapshots are named by) and the snapshot saved with it, if any.
+//         count snapshots are named by) and the snapshot saved with it, if any;
+//         run: the run up to there (J4, replay.js), so Replay gets there again.
 // kernelKey is S1's identity (SHA-256 of the bzImage and initrd): a
 // bookmark is this kernel's when it matches, else another kernel's (listed
 // apart with a switch). They are kept in localStorage (small JSON); without
@@ -140,7 +141,9 @@ function bmDraftPos() {
 	const sym = i >= 0 ? stepper.symName[i] + (pa > stepper.symStart[i] ? "+" + hex(pa - stepper.symStart[i]) : "") : "";
 	const key = bmKey();
 	const snap = typeof snapshots !== "undefined" ? snapshots.find((s) => s.meta && s.meta.icount === icount && key && s.kernelKey === key) : null;
-	return { kind: "pos", t: { pa, eip, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "" },
+	// The run up to here (J4): Replay boots again and replays it to here.
+	const run = typeof runNow === "function" ? runNow() : null;
+	return { kind: "pos", t: { pa, eip, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}) },
 		name: snapKernelName() + " @" + icount.toLocaleString("en") + (sym ? " " + sym : " " + hex(eip)) };
 }
 
@@ -619,6 +622,19 @@ function bmRowEl(b, group) {
 			r.addEventListener("click", () => restoreSnapshot(s));
 			acts.append(r);
 		}
+	}
+	if (b.kind === "pos" && b.t.run) {
+		const p = document.createElement("button");
+		p.type = "button";
+		p.className = "bmreplay";
+		p.textContent = "Replay";
+		p.title = "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
+			b.t.run.end.at.toLocaleString("en") + " instructions";
+		p.addEventListener("click", () => {
+			runBadgeOpen(false);
+			replayRun(b.t.run).catch((e) => runStatus("Replay failed: " + e, "error"));
+		});
+		acts.append(p);
 	}
 	const link = document.createElement("a");
 	link.className = "bmlink";

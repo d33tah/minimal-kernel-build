@@ -90,7 +90,7 @@
         </table>
       </div>
       <p class="note mono" id="vclock"></p>
-      <p class="note mono" id="guest_in"><span id="guest_in_text"></span> <span class="tip" tabindex="0" role="button" title="What the guest reads from outside the CPU. On the virtual clock the RTC (CMOS clock: the date the kernel and SeaBIOS read) starts at a fixed date when the machine is powered on and runs with the virtual time, and RDRAND and the network card's MAC address come from a random number generator started from a seed, so every run is the same. ?rtc=2026-01-01T00:00:00Z (ISO 8601, the default) and ?seed=1 (the default) in the URL change them. A snapshot keeps the start date and the generator's state, and Restore puts them back. With the real-time clock the guest gets the browser's date and random numbers.">?</span></p>
+      <p class="note mono" id="guest_in"><span id="guest_in_text"></span><span id="guest_keys"></span> <span class="tip" tabindex="0" role="button" title="What the guest reads from outside the CPU. On the virtual clock the RTC (CMOS clock: the date the kernel and SeaBIOS read) starts at a fixed date when the machine is powered on and runs with the virtual time, and RDRAND and the network card's MAC address come from a random number generator started from a seed, so every run is the same. ?rtc=2026-01-01T00:00:00Z (ISO 8601, the default) and ?seed=1 (the default) in the URL change them. A snapshot keeps the start date and the generator's state, and Restore puts them back. Keys typed on the virtual clock go into the guest only between two slices of the JIT or of stepping and are recorded with the instruction count; Replay (Snapshots tab) puts them in at the same counts. With the real-time clock the guest gets the browser's date and random numbers, and keys when they are typed.">?</span></p>
       <p class="note mono" id="entry_info"></p>
       <p id="end_banner" class="banner" role="status" hidden></p>
       <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
@@ -268,6 +268,16 @@
     <span id="snap_status" role="status"></span>
   </div>
   <p id="snap_store" class="note"></p>
+  <div id="run_box">
+    <h3>Input log and replay <span class="tip" tabindex="0" role="button" title="On the virtual clock a run repeats exactly; the keyboard is the one input that comes at a moment of wall time. So a key typed on the virtual clock waits for the next boundary between two JIT slices or two stepping slices and goes into the guest there, recorded with the instruction count and the virtual time. A run is the boot settings (kernel, RAM, command line, clock, speed, the RTC start date and the random seed) and that log. Replay boots the same kernel with those settings, puts each key in at its recorded count, goes on past the stops the run went on past (the initramfs prompt), stops where the run was taken and compares the instruction count, EIP, RAM and screen. Snapshots and position bookmarks keep the run up to them; a run downloads as JSON. Keys typed during a replay are ignored.">?</span></h3>
+    <p id="run_text" class="note"></p>
+    <div class="scan">
+      <button id="run_dl" type="button" disabled>Download run</button>
+      <button id="run_replay" type="button" disabled>Replay</button>
+      <label class="runfile">Replay a file <input id="run_file" type="file" accept=".json,application/json"></label>
+      <span id="run_status" role="status"></span>
+    </div>
+  </div>
   <div class="table-wrap">
     <table id="snapshots" hidden>
       <thead><tr><th>name</th><th>taken</th><th>at</th><th>kernel, RAM</th><th>size</th><th>raw bytes</th><th>ratio</th><th>compression</th><th></th></tr></thead>
@@ -528,6 +538,7 @@
 <script src="fnfacts.js"></script>
 <script src="settings.js"></script>
 <script src="snapshots.js"></script>
+<script src="replay.js"></script>
 <script src="bookmarks.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>

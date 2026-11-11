@@ -1750,6 +1750,7 @@ async function boot() {
 			CLOCK.set(!!clockMips(), stepper);
 			jitDetInstall(stepper, em);
 		}
+		inputBoot(em); // keys go in between slices, logged (J4)
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
 		// "full", count the whole boot in the background, then run the JIT.
@@ -1772,6 +1773,8 @@ async function boot() {
 			runState = "paused";
 			$("dbg_status").textContent = "Paused at the reset vector.";
 			afterStop();
+			if (replayActive())
+				resume(true); // the replayed run went on from here
 		} else if (stepper && ffEnabled() && ffTarget()) {
 			// BIOS, setup and the decompressor at JIT speed, then exactly to
 			// the kernel's link entry; from there as before.
@@ -1838,7 +1841,7 @@ let flashes = 0;
 const speed = () => $("dbg_speed").value;  // "full" or instructions per second
 // Fast stepping (no animation): full speed while counting, Run to, or the
 // way from reset to the kernel entry.
-const fastStepping = () => speed() === "full" || runTo !== null || entryPhase;
+const fastStepping = () => speed() === "full" || runTo !== null || entryPhase || replayActive();
 
 function resetCounters() {
 	counting = false;
@@ -1857,6 +1860,10 @@ function countDone() {
 }
 
 function wantStepped() {
+	// A replay steps where its run stepped and runs the JIT where it did.
+	const rm = replayMode();
+	if (rm && stepper)
+		return rm === "stepped";
 	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase);
 }
 
@@ -1880,9 +1887,16 @@ async function resume(now = false) {
 		return;
 	jitRunId++; // a running jitLoop stops at its next check
 	stopDriver();
+	// Keys typed while paused go in here; a replay's inputs (and its mode)
+	// that are due here too.
+	if (stepper && inputFlush(stepper) === "end") {
+		replayFinish();
+		return;
+	}
 	if (wantStepped()) {
 		if (emulator.is_running())
 			await emulator.stop();
+		inputMark(stepper, "stepped");
 		runState = "stepped";
 		stepCredit = now ? 1 : 0;
 		prevTick = 0;
@@ -1903,6 +1917,7 @@ async function resume(now = false) {
 				return;
 			CLOCK.set(true);
 			CLOCK.mips = clockMips(); // from here on (the menu changed while the JIT ran on real time)
+			inputMark(stepper, "jit");
 			runState = "jit";
 			jitLoop();
 		} else {
@@ -1912,6 +1927,8 @@ async function resume(now = false) {
 				await jitFlush(stepper);
 			if (em !== emulator)
 				return;
+			if (stepper && CLOCK.virtual)
+				inputTaint(stepper, "the clock was switched to real time");
 			CLOCK.set(false);
 			runState = "jit";
 			emulator.run();
@@ -1969,6 +1986,16 @@ async function jitLoop() {
 					if (!live())
 						return;
 				}
+				// Typed keys and a replay's inputs go in between two slices (J4).
+				const input = inputFlush(st);
+				if (input === "end") {
+					replayFinish();
+					return;
+				}
+				if (input === "mode") { // the replayed run stepped from here
+					resume(true);
+					return;
+				}
 				jitChunk(st);
 				if (st.dead()) {
 					watchJitEnd();
@@ -1977,10 +2004,14 @@ async function jitLoop() {
 				const stop = await jitExactStop(st, live, end0);
 				if (stop === "gone")
 					return;
+				if (stop === "replay-end") {
+					replayFinish();
+					return;
+				}
 				if (stop) {
 					counting = false;
 					flushScreen(); // v86 draws the screen only while it runs
-					pause(stop === "prompt" ? "at the (initramfs) prompt" : endText());
+					pause(stop === "prompt" ? "at the (initramfs) prompt" : endText()).then(replayAfterStop);
 					return;
 				}
 				if (realNow() - t0 > JIT.yieldMs)
@@ -2009,7 +2040,8 @@ async function jitLoop() {
 // appears the stepper runs to the very write (Stepper.run "end"); the
 // initramfs prompt stops at the first halt after it, which is a slice's end
 // when the slice ended halted, else the stepper runs to the next hlt.
-// Returns null (go on), "end", "prompt", or "gone" (paused or replaced).
+// Returns null (go on), "end", "prompt", "gone" (paused or replaced) or
+// "replay-end" (a replay reached its run's end).
 // end0: the end the loop started with (Continue after it runs on).
 async function jitExactStop(st, live, end0) {
 	if (st.end)
@@ -2031,7 +2063,9 @@ async function jitExactStop(st, live, end0) {
 		st.panicEntered = { jit: true };
 	let n = 0;
 	for (;;) {
-		const r = st.run(1e6, -1, 20);
+		if (inputFlush(st) === "end")
+			return "replay-end";
+		const r = st.run(Math.min(1e6, inputRoom(st)), -1, 20);
 		if (r === "end" || r === "prompt")
 			return r;
 		if (r === "hlt" && st.dead()) {
@@ -2109,12 +2143,24 @@ let prevTick = 0;
 function driverTick() {
 	if (runState !== "stepped" || !stepper)
 		return;
+	// Typed keys and a replay's inputs go in between two slices (J4); a
+	// replay stops each slice at its next input.
+	const input = inputFlush(stepper);
+	if (input === "end") {
+		replayFinish();
+		return;
+	}
+	if (input === "mode") { // the replayed run ran the JIT from here
+		resume(true);
+		return;
+	}
+	const room = inputRoom(stepper);
 	const now = realNow();
 	let reason;
 	const t0 = now, s0 = stepper.steps;
 	if (entryPhase && runTo === null) {
 		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === V86_KERNEL_ADDR;
-		reason = at ? "addr" : stepper.run(Infinity, V86_KERNEL_ADDR, SLICE_MS);
+		reason = at ? "addr" : stepper.run(room, V86_KERNEL_ADDR, SLICE_MS);
 		if (reason === "addr") {
 			finishEntry();
 			scheduleDriver();
@@ -2125,10 +2171,10 @@ function driverTick() {
 		// start of the Run to (a slice ended by the time budget or a new
 		// line on the screen can stop right before a target).
 		const before = stepper.steps;
-		reason = stepper.run(Infinity, runTo, SLICE_MS, runToMoved ? -1 : runToFrom);
+		reason = stepper.run(room, runTo, SLICE_MS, runToMoved ? -1 : runToFrom);
 		runToMoved = runToMoved || stepper.steps !== before;
-	} else if (speed() === "full") {
-		reason = stepper.run(Infinity, -1, SLICE_MS);
+	} else if (speed() === "full" || replayActive()) {
+		reason = stepper.run(room, -1, SLICE_MS);
 	} else {
 		// Credit for the real time since the last tick, however long a
 		// drawing took (a cap on the time made a 1 s drawing of the listing
@@ -2139,7 +2185,7 @@ function driverTick() {
 		stepCredit = Math.min(stepCredit + rate * dt / 1000, rate + 1);
 		const n = Math.floor(stepCredit);
 		stepCredit -= n;
-		reason = n ? stepper.run(n, -1, SLICE_MS) : "count";
+		reason = n ? stepper.run(Math.min(n, room), -1, SLICE_MS) : "count";
 	}
 	prevTick = now;
 	if (counting) {
@@ -2153,14 +2199,14 @@ function driverTick() {
 	if (reason === "prompt") {
 		counting = false;
 		flushScreen(); // v86 draws the screen only while it runs
-		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the prompt. " : "") + "at the (initramfs) prompt");
+		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the prompt. " : "") + "at the (initramfs) prompt").then(replayAfterStop);
 		return;
 	}
 	if (reason === "hlt" && stepper.dead())
 		stepper.markHalt();
 	if (reason === "end" || (reason === "hlt" && stepper.dead())) {
 		counting = false;
-		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the end. " : "") + endText());
+		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the end. " : "") + endText()).then(replayAfterStop);
 		return;
 	}
 	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
@@ -2173,7 +2219,7 @@ function driverTick() {
 		}
 	}
 	if (reason === "hlt" && stepper.dead()) {
-		pause("The CPU executed hlt with interrupts off: nothing more to run.");
+		pause("The CPU executed hlt with interrupts off: nothing more to run.").then(replayAfterStop);
 		return;
 	}
 	// Slow motion: the Debugger's state when an instruction has executed
@@ -3116,7 +3162,7 @@ function watchJitEnd() {
 		return;
 	stepper.markHalt();
 	counting = false;
-	pause(endText());
+	pause(endText()).then(replayAfterStop);
 }
 
 function renderEnd() {
@@ -3346,6 +3392,11 @@ async function doStep(n) {
 		$("dbg_status").textContent = "The CPU executed hlt with interrupts off: nothing to step.";
 		return;
 	}
+	// The keys typed while paused go in first; the run steps from here (J4).
+	if (replayActive())
+		replayStop("stopped by Step");
+	inputFlush(stepper);
+	inputMark(stepper, "stepped");
 	const before = stepper.steps;
 	const reason = stepper.run(n, -1, 5000);
 	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
@@ -3462,6 +3513,8 @@ async function doRunTo() {
 	await pauseAll();
 	if (!stepper)
 		return;
+	if (replayActive())
+		replayStop("stopped by Run to");
 	// Run to from a target goes on to its next hit, stepped or with the JIT.
 	runToFrom = stepper.nextPhys();
 	runToMoved = false;
@@ -3477,6 +3530,7 @@ async function doRunTo() {
 	const sameSec = t && targets.every((a) => codeRange(t.phys)[0] <= a && a < codeRange(t.phys)[1]);
 	if (t && (sameSec || targets.every((a) => inText(a) && a >= V86_KERNEL_ADDR))) {
 		ffInfo = null;
+		inputTaint(stepper, "a Run to with the JIT and breakpoints");
 		$("dbg_status").textContent = "Running to " + label + " with the JIT...";
 		let ok = true;
 		if (stepper.sinceEntry < 0 || stepper.nextPhys() < V86_KERNEL_ADDR)
@@ -3536,6 +3590,8 @@ function initDebugger() {
 		} catch (e) {
 			// no storage: until reload
 		}
+		if (stepper && runState !== "off")
+			inputTaint(stepper, "the clock was changed to " + $("clock_mips").selectedOptions[0].text);
 		if (runState === "jit") {
 			resume(true); // the JIT from the page (virtual) or v86's own loop (real)
 		} else {
@@ -3979,6 +4035,7 @@ async function init() {
 		}
 	}).observe($("listing"));
 	initSnapshots();
+	initReplay();
 	const canvas = $("pages");
 	canvas.addEventListener("click", (ev) => {
 		const p = pageAt(ev);

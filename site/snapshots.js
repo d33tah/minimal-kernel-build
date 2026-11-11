@@ -12,7 +12,8 @@
 // meta is read on the page at save time: v86's instruction counter (icount),
 // the stepper's count (steps), EIP and its physical address and symbol, the
 // registers with get_eflags() (save_state() keeps the arithmetic flags lazy)
-// and the VGA text lines. The diff reads RAM and the registers from the
+// and the VGA text lines, and the run up to here (J4, replay.js: boot
+// settings, the input log, where it ends). The diff reads RAM and the registers from the
 // state itself (snapworker.js documents the layout) and uses meta for the
 // rest. kernelKey: SHA-256 of the bzImage (and of the initrd, if any), so a
 // snapshot is offered only for the kernel it was taken with.
@@ -197,7 +198,9 @@ async function snapLoad() {
 
 // ---- save, restore, rename, delete ----------------------------------------
 
-function snapMeta(em) {
+// withRun: also the run up to here (a saved snapshot; the diff's "now" does
+// not need it, and its RAM hash would cost a main-thread pass).
+function snapMeta(em, withRun = false) {
 	const c = em.v86.cpu, r = c.reg32, sr = c.sreg;
 	const lin = c.instruction_pointer[0] >>> 0;
 	const regs = { EAX: r[0] >>> 0, ECX: r[1] >>> 0, EDX: r[2] >>> 0, EBX: r[3] >>> 0, ESP: r[4] >>> 0, EBP: r[5] >>> 0,
@@ -213,7 +216,7 @@ function snapMeta(em) {
 			sym = stepper.symName[i] + (phys > stepper.symStart[i] ? "+" + hex(phys - stepper.symStart[i]) : "");
 	}
 	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(), eip: regs.EIP, phys, sym, regs,
-		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}) };
+		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}), ...(withRun ? { run: runNow() } : {}) };
 }
 
 function snapScreen() {
@@ -232,7 +235,7 @@ async function saveSnapshot() {
 	$("snap_save").disabled = true;
 	$("snap_status").textContent = "Saving...";
 	try {
-		const meta = snapMeta(em);
+		const meta = snapMeta(em, true);
 		const t0 = realNow();
 		let raw = await em.save_state();
 		const t1 = realNow();
@@ -311,6 +314,8 @@ async function restoreSnapshot(s) {
 		// snapshot's, so the count goes on from where it was.
 		if (s.meta && emulator.v86)
 			emulator.v86.cpu.instruction_counter[0] = s.meta.icount;
+		// The run goes on from the snapshot's input log (J4).
+		inputRestore(s.meta);
 		speedReset();
 		if (stepper)
 			stepper.jumpForget();
@@ -504,6 +509,10 @@ function renderSnapshots() {
 				" of RAM; then this snapshot can be restored", () => snapSwitch(s)), " ");
 		else if (match === "match")
 			td.append(snapButton("Restore", "restore", "", () => restoreSnapshot(s)), " ");
+		if (s.meta && s.meta.run)
+			td.append(snapButton("Replay", "snapreplay", "Boot " + s.meta.run.kernel + " again and replay this snapshot's run (the same keys at the same " +
+				"instruction counts) to " + s.meta.run.end.at.toLocaleString("en") + " instructions: the same state without restoring it",
+			() => replayRun(s.meta.run).catch((e) => runStatus("Replay failed: " + e, "error"))), " ");
 		td.append(snapButton("Download", "snapdl", "", () => downloadSnapshot(s)), " ",
 			snapButton("Delete", "snapdel", "Delete this snapshot" + (s.where === "stored" ? " from this browser" : ""),
 				() => snapDelete([s])));

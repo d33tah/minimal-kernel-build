@@ -417,7 +417,7 @@ jobs:
         - speedline
         - speedasm,runbadge,memeip,graphopen,srcfiles
         - snapdiff,bookmarks
-        - jitdet,guestin
+        - jitdet,guestin,replay
         - exactstop
         - followeip
         - followfuzz

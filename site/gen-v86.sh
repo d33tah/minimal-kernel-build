@@ -33,7 +33,10 @@ V86_COMMIT=94faf3d6b19ecabc53a4010aaa24252fa6a162e2
 UBUNTU=ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
 # The toolchain packages at the versions of Ubuntu's apt snapshot of
 # 2026-11-01 (clang and lld 18, nodejs): from the archive while it has
-# them, else from snapshot.ubuntu.com (which answered 502/503 at times).
+# them, else from snapshot.ubuntu.com (which answered 502/503 at times),
+# over plain http (apt checks the archive's signatures): when the archive
+# itself was out of reach (CI run 43049983587) ca-certificates could not be
+# installed first, and https to the snapshot needs it.
 APT_SNAPSHOT=20261101T000000Z
 LLVM=1:18.1.3-1ubuntu1
 NODE=18.19.1+dfsg-6ubuntu5
@@ -78,11 +81,11 @@ git -C "$tmp/v86" apply "$site/v86-det.patch"
 cat > "$tmp/Dockerfile" <<DOCKERFILE
 FROM $UBUNTU
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get -o Acquire::Retries=5 update \\
-    && apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates \\
-    && { apt-get -o Acquire::Retries=5 install -y --no-install-recommends $APT_PACKAGES \\
-         || { apt-get -o Acquire::Retries=5 update --snapshot $APT_SNAPSHOT \\
-              && apt-get -o Acquire::Retries=5 install --snapshot $APT_SNAPSHOT -y --no-install-recommends $APT_PACKAGES; }; } \\
+RUN { apt-get -o Acquire::Retries=5 update \\
+      && apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates $APT_PACKAGES; } \\
+    || { sed -i 's#http://\\(archive\\|security\\)\\.ubuntu\\.com/ubuntu/\\?#http://snapshot.ubuntu.com/ubuntu/$APT_SNAPSHOT/#' /etc/apt/sources.list.d/ubuntu.sources \\
+         && apt-get -o Acquire::Retries=5 update \\
+         && apt-get -o Acquire::Retries=5 install -y --no-install-recommends ca-certificates $APT_PACKAGES; } \\
     && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/clang-18 /usr/local/bin/clang
 ENV RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:\$PATH
 RUN curl -sSf --retry 5 https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST --target wasm32-unknown-unknown

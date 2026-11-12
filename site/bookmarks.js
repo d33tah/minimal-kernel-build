@@ -31,7 +31,7 @@ const BM = {
 	draft: null,        // the add dialog's bookmark
 	pending: null,      // { b, until }: jump there once its kernel runs (a link, a switch)
 	hover: null,        // the element under the mouse (the B key's target)
-	longAt: -Infinity,  // realNow() of the last long press that opened the dialog
+	longAt: -Infinity,  // realNow() of the long press that opened the dialog, until the next press
 	marks: null,        // this kernel's targets: see bmMarks
 	keyWait: null,      // the identity promise being waited for
 	undo: null,         // the last deleted bookmark
@@ -835,6 +835,9 @@ function initBookmarks() {
 	};
 	document.addEventListener("pointerdown", (ev) => {
 		unpress();
+		// A new press: the events below that drop the end of the long press
+		// (its mousedown and click) leave this one alone.
+		BM.longAt = -Infinity;
 		if (ev.pointerType === "mouse" || !$("bm_dialog").hidden)
 			return;
 		const x = ev.clientX, y = ev.clientY, el = ev.target;

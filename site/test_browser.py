@@ -41,6 +41,7 @@ import tarfile
 import tempfile
 import threading
 import time
+import traceback
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
@@ -12700,12 +12701,12 @@ def bm_jump_check(page, b, F, syms, problems, tag, phone):
     return ok
 
 
-def bookmarks_run(browser, base, shots, name, scheme, phone, other=None):
+def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problems=None):
     fn, steps, src_path = BOOKMARKS_POINTS[name]
     entry = kernel_entries()[name]
     syms = {s["name"]: s for s in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
     F = json.loads((SITE / entry["dwarf"] / "files.json").read_text())
-    problems, r = [], {}
+    problems, r = [] if problems is None else problems, {}
     errors = []
     width = 390 if phone else 1280
     tag = f"{name} {width} {scheme}"
@@ -12817,6 +12818,17 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None):
             problems.append(f"{tag}: the Memory page bookmark holds page {hex(b['t']['page'])}, the square is {hex(mem_p)}")
         if shown_tab(page) != "memory":
             problems.append(f"{tag}: bookmarking a page left the Memory tab ({shown_tab(page)})")
+        # B3: only the click that ends the long press is dropped. The next
+        # click, here a tab's right after the dialog closed, still works (it
+        # was dropped for 1 s after the press, so CI's next step, the
+        # Debugger tab, sometimes stayed hidden).
+        if phone:
+            r["click_after_long_press_ms"] = round(page.evaluate("realNow() - BM.longAt"))
+            page.click("#tab_debugger")
+            if not wait_for(lambda: shown_tab(page) == "debugger", 3):
+                problems.append(f"{tag}: a click on the Debugger tab {r['click_after_long_press_ms']} ms after the long press "
+                                f"that opened the dialog did nothing (tab {shown_tab(page)})")
+            show_tab(page, "memory")
         wait_for(lambda: page.locator(f'#pages_box .bmpage[data-page="{mem_p}"]').count() > 0, 5)
         bm_star_tip(page, f'#pages_box .bmpage[data-page="{mem_p}"]', b["name"], phone, problems, f"{tag} Memory")
     # The Memory tab's ☆ (the selected page, else EIP's).
@@ -12826,7 +12838,9 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None):
 
     # 5. A line of the Source panel: pick it, its ☆.
     show_tab(page, "debugger")
-    if wait_for(lambda: page.locator("#context .src:not(.nol)").count() > 0, 30):
+    if not wait_for(lambda: shown_tab(page) == "debugger", 3):
+        problems.append(f"{tag}: the Debugger tab did not open (tab {shown_tab(page)})")
+    if wait_for(lambda: page.locator("#context .src:not(.nol)").first.is_visible(), 30):
         page.locator("#context .src:not(.nol)").first.scroll_into_view_if_needed()
         bm_tap(page, "#context .src:not(.nol) >> nth=0", phone)
         if not wait_for(lambda: page.evaluate("!document.getElementById('src_panel').hidden && document.getElementById('src_body').dataset.state === 'ok'"), 25):
@@ -13136,10 +13150,14 @@ def bookmarks_case(browser, base, shots, linux):
         runs += [("minified-linux", "dark", False, None), ("minified-linux", "light", True, None)]
     for name, scheme, phone, other in runs:
         t0 = time.monotonic()
+        problems = []
         try:
-            problems, r = bookmarks_run(browser, base, shots, name, scheme, phone, other)
-        except Exception as e:  # a missing control times out in Playwright: report it, go on
-            problems, r = [f"{name} {390 if phone else 1280} {scheme}: {type(e).__name__}: {str(e)[:300]}"], {}
+            problems, r = bookmarks_run(browser, base, shots, name, scheme, phone, other, problems)
+        except Exception as e:  # a missing control times out in Playwright: report it (and where), go on
+            tb = traceback.extract_tb(e.__traceback__)
+            at = ([f for f in tb if f.filename == __file__] or tb)[-1]
+            problems, r = problems + [f"{name} {390 if phone else 1280} {scheme}: {type(e).__name__} at line {at.lineno} "
+                                      f"({at.line}): {str(e)[:300]}"], {}
         out.append(report("bookmarks", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                           seconds=round(time.monotonic() - t0)))
     return any(out)

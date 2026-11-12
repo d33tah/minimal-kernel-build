@@ -13201,7 +13201,8 @@ JITDET_STATE_JS = """async () => { const st = stepper, w = window.__jd || {}, m 
   const c = ffCounter(st);
   return { steps: st.steps, counter: c, eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
     chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, end: st.end ? st.end.kind : null,
-    exact: st.end ? st.end.exact === true : null,
+    exact: st.end ? st.end.exact === true : null, compiles: st.jitCompiles || 0, waits: st.jitWaits || 0,
+    checkpoints: REV.cps.filter((c) => c.jit).length, save_ms: Math.round(REV.cps.reduce((a, c) => a + (c.jit ? c.saveMs : 0), 0)),
     mips: w.at ? +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1) : null }; }"""
 JITDET_RUNNING_JS = """() => ({ clock: document.getElementById('vclock').textContent, virtual: document.getElementById('vclock').dataset.virtual,
   badge: document.getElementById('runbadge').dataset.state, face: document.getElementById('runbadge_speed').textContent,
@@ -13309,6 +13310,14 @@ def jitdet_case(browser, base, shots, entries, debian):
             if x["end"] != "panic-text" or not x["exact"]:
                 problems.append(f"debian: stopped at count {x['counter']:,} with end {x['end']} (exact {x['exact']}), "
                                 "not at the instruction that wrote the panic's last line")
+        # R6: the det JIT compiles a block where v86 queues it (fastforward.js
+        # jitDetInstall), so the next slice never waits for it. Waiting for
+        # WebAssembly.instantiate() there took about 1.4 s of an 8 s run on
+        # d-claude, and came back after every JIT checkpoint's reset.
+        if browser.browser_type.name == "chromium":
+            for x in det:
+                if x["waits"]:
+                    problems.append(f"debian: the det JIT waited for {x['waits']} of {x['compiles']} compiled blocks")
         if rt and rt.get("mips") and a.get("mips"):
             best = max(x["mips"] for x in det)
             r["speed_ratio"] = round(best / rt["mips"], 3)

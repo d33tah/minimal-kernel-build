@@ -61,10 +61,15 @@ const REV_K_MIN = 50000, REV_K_MAX = 20e6;
 // the boot and the initramfs. Each checkpoint costs the JIT its compiled
 // code (the reset) and a save_state() (20 to 55 ms): with 1.5 s the det
 // JIT's speed against v86's own loop (suite jitdet) went from about 1.0 to
-// 0.88, under the suite's 0.9; so 3 s.
+// 0.88, under the suite's 0.9; so 3 s. R6: the bzImage decompressor's
+// compiled loops ran 2.2 ms per M instructions (d-claude, 2.25e9 of
+// Debian's boot) where the estimate said 4, and the cap of 500 M put a
+// checkpoint there every second (half a second on a fast CI runner, where
+// the speed check went down to 0.874): 2.2 and a cap of 1.5e9 give that
+// stretch one about every 3 s too.
 const REV_JIT_MS = 3000;
-const REV_JIT_MS_PER_INSN = 4e-6, REV_JIT_MS_PER_CALL = 1.2e-3;
-const REV_JIT_KMAX = 500e6;  // and at most this many instructions
+const REV_JIT_MS_PER_INSN = 2.2e-6, REV_JIT_MS_PER_CALL = 1.2e-3;
+const REV_JIT_KMAX = 1.5e9;  // and at most this many instructions
 
 const REV = {
 	st: null,       // the stepper the checkpoints are of

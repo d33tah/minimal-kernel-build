@@ -69,7 +69,19 @@ function jitDetInstall(st, em) {
 			return orig.call(this, idx, start, flags, ptr, len);
 		const code = new Uint8Array(this.wasm_memory.buffer, ptr >>> 0, len >>> 0).slice();
 		const it = { idx, start, flags, inst: null, err: null };
-		it.p = WebAssembly.instantiate(code, { e: this.jit_imports }).then((r) => { it.inst = r.instance; }, (e) => { it.err = e; });
+		// R6: compiled here and now, it is ready when the next main_loop
+		// starts. Waiting for WebAssembly.instantiate() there took 10 ms a
+		// block on average (2 ms median, up to 160 ms; Debian's boot queues
+		// about 140) while new WebAssembly.Module() took 0.5 ms (Chromium,
+		// d-claude): the JIT stood still for about 1.4 s of 8 s, and again
+		// after every JIT checkpoint, whose reset drops the compiled code.
+		// Where synchronous compiling is refused, the promise as before.
+		try {
+			it.inst = new WebAssembly.Instance(new WebAssembly.Module(code), { e: this.jit_imports });
+			it.p = Promise.resolve();
+		} catch (e) {
+			it.p = WebAssembly.instantiate(code, { e: this.jit_imports }).then((r) => { it.inst = r.instance; }, (e) => { it.err = e; });
+		}
 		st.jitQueue.push(it);
 		st.jitCompiles++;
 	};

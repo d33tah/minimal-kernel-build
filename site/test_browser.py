@@ -14529,6 +14529,7 @@ JITREV_RUNS = [  # kernel, scheme, phone, pause past this count (None: the promp
 JITREV_REGS_JS = """() => { const c = stepper.cpu; return { regs: Array.from(c.reg32, (x) => x >>> 0), sregs: Array.from(c.sreg),
   eflags: c.get_eflags() >>> 0, cr: [c.cr[0] >>> 0, c.cr[2] >>> 0, c.cr[3] >>> 0, c.cr[4] >>> 0] }; }"""
 JITREV_LATENCY_MS = 10000
+JITREV_STI_NOTE = "the instruction after an sti runs with it"
 
 
 def jitrev_back(page, phone, sel, n, tag, problems, r, key):
@@ -14604,28 +14605,40 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
             return problems, r
         show_tab(page, "machine")
         s1 = jitrev_back(page, phone, "#dbg_back", None, tag, problems, r, "back 1")
-        if s1["steps"] != N - 1:
-            problems.append(f"{tag}: Step back 1 from {N:,} landed at {s1['steps']:,}")
+        # R6: v86 runs the instruction after an sti in the sti's step, so
+        # from the hlt of "sti; hlt" (the initramfs prompt's halt) Step back
+        # 1 lands on the sti, 2 back, and says why (it said "Stepped back 0
+        # instructions" and stayed at the hlt).
+        e1 = N - 2 if JITREV_STI_NOTE in r["back 1"]["status"] else N - 1
+        r["back 1 expected"] = e1
+        if s1["steps"] != e1:
+            problems.append(f"{tag}: Step back 1 from {N:,} landed at {s1['steps']:,}, not {e1:,}")
+        if e1 == N - 2:
+            op = page.evaluate("emulator.read_memory(stepper.nextPhys(), 1)[0]")
+            r["back 1 opcode"] = op
+            if op != 0xFB:
+                problems.append(f"{tag}: Step back 1 says the target is inside an sti's step, but the instruction there is {op:#x}")
         run1 = page.evaluate("runNow()")
         regs1 = page.evaluate(JITREV_REGS_JS)
         page.screenshot(path=str(shots / f"jitrev-{name}-{w}-{scheme}-back1.png"))
         show_tab(page, "debugger")
         s1000 = jitrev_back(page, phone, "#dbg_backn", 999, tag, problems, r, "back 1000")
         page.screenshot(path=str(shots / f"jitrev-{name}-{w}-{scheme}-back1000.png"))
-        if s1000["steps"] != N - 1000:
-            problems.append(f"{tag}: Step back 1,000 from {N:,} landed at {s1000['steps']:,}")
+        e1000 = e1 - 999 - (1 if JITREV_STI_NOTE in r["back 1000"]["status"] else 0)
+        if s1000["steps"] != e1000:
+            problems.append(f"{tag}: Step back 999 more from {e1:,} landed at {s1000['steps']:,}, not {e1000:,}")
         run1000 = page.evaluate("runNow()")
         regs1000 = page.evaluate(JITREV_REGS_JS)
         # Forward again on the run: at N - 1 and at the pause, as they were.
-        page.fill("#dbg_n", "999")
+        page.fill("#dbg_n", str(e1 - e1000))
         t0 = time.monotonic()
         page.locator("#dbg_stepn").tap() if phone else page.click("#dbg_stepn")
-        wait_for(lambda: page.evaluate("stepper.steps") == N - 1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+        wait_for(lambda: page.evaluate("stepper.steps") == e1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
         r["forward 999 ms"] = round((time.monotonic() - t0) * 1000)
         f1 = page.evaluate(REV_STATE_JS)
         for k in REV_SAME:
             if f1[k] != s1[k]:
-                problems.append(f"{tag}: forward to {N - 1:,} again: {k} {str(f1[k])[:120]} vs stepped back {str(s1[k])[:120]}")
+                problems.append(f"{tag}: forward to {e1:,} again: {k} {str(f1[k])[:120]} vs stepped back {str(s1[k])[:120]}")
         page.evaluate("doStep(1)")
         wait_for(lambda: page.evaluate("stepper.steps") == N and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
         fn = page.evaluate(REV_STATE_JS)
@@ -14649,13 +14662,13 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
             problems.append(f"{tag}: page errors {errs[:3]}")
         # Forward on the run again to N - 1 (from the history's start, where
         # Back to stopped), and Replay that run from boot there.
-        page.evaluate(f"doStep({N - 1} - stepper.steps)")
-        wait_for(lambda: page.evaluate("stepper.steps") == N - 1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+        page.evaluate(f"doStep({e1} - stepper.steps)")
+        wait_for(lambda: page.evaluate("stepper.steps") == e1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
         g1 = page.evaluate(REV_STATE_JS)
         r["forward to N-1 again"] = page.inner_text("#dbg_status")[:300]
         for k_ in REV_SAME:
             if g1[k_] != s1[k_]:
-                problems.append(f"{tag}: forward from the history's start to {N - 1:,}: {k_} {str(g1[k_])[:120]} vs stepped back {str(s1[k_])[:120]}")
+                problems.append(f"{tag}: forward from the history's start to {e1:,}: {k_} {str(g1[k_])[:120]} vs stepped back {str(s1[k_])[:120]}")
         jitrev_replay(page, run1, s1, regs1, tag, problems, r, "replay to N-1", True)
         page.screenshot(path=str(shots / f"jitrev-{name}-{w}-{scheme}-replayed.png"))
         jitrev_replay(page, run1000, s1000, regs1000, tag, problems, r, "replay to N-1000", False)

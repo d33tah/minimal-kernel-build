@@ -514,12 +514,24 @@ function revStepBack(n) {
 		const target = Math.max(start, from - n);
 		if (target >= from)
 			return "Step back: the reverse history starts here, at instruction " + num(start);
-		const cp = revFind(target);
+		let to = target, cp = revFind(to);
 		await revRestore(st, cp, from);
+		let f = await revForward(st, to);
+		// R6: v86 runs the instruction after an sti in the same step as the
+		// sti (instr_FB), so no run stops between them: a target there ends
+		// one past it (Debian's idle "sti; hlt", the initramfs prompt's
+		// halt: Step back 1 from the hlt said "Stepped back 0 instructions").
+		// Then the instruction before it, the sti (a few tries at most).
+		for (let tries = 0; st.steps > to && to > start && tries < 4; tries++) {
+			to--;
+			cp = revFind(to);
+			await revRestore(st, cp, from);
+			f = await revForward(st, to);
+		}
 		const restored = cp.steps;
-		const f = await revForward(st, target);
 		return "Stepped back " + num(from - st.steps) + " instruction" + (from - st.steps === 1 ? "" : "s") + " to " + num(st.steps) +
 			(target > from - n ? ", the start of the reverse history" : "") +
+			(to < target ? " (" + num(target) + " is inside one step of v86: the instruction after an sti runs with it)" : "") +
 			": restored the checkpoint at " + num(restored) + ", ran " + num(st.steps - restored) + " again" + revHow(f.jit, st.steps - restored);
 	});
 }

@@ -10478,6 +10478,121 @@ def snapdiff_guard(fn, *args):
         return [f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}"], {}
 
 
+# ---- one count: every place names the Machine tab's count (X2) -------------
+# The Machine tab, the counters table, the run-badge menu and the Reverse
+# line count the stepper's instructions; v86's own instruction_counter runs
+# 86 (hello) or 87 (minified Linux) ahead of it. Snapshot names and rows, the
+# diff summary and the "This position" bookmark showed v86's number until X2.
+ONECOUNT_JS = """() => { const now = document.querySelector('#counters tr[data-milestone="now"]');
+  return { now: now ? Number(now.dataset.steps) : null, text: document.getElementById('count_text').textContent,
+    badge: Number(document.getElementById('runbadge').dataset.steps || -1), steps: stepper.steps,
+    icount: emulator.v86.cpu.instruction_counter[0] >>> 0 }; }"""
+
+
+def onecount_run(browser, base, shots, name, scheme, phone):
+    """Pause, read the Machine tab's count N, save a snapshot and a "This
+    position" bookmark: each name, row and the diff summary say N."""
+    problems, r, errors = [], {}, []
+    fn, steps, _ = BOOKMARKS_POINTS[name]
+    syms = {s["name"]: s for s in json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]}
+    w = 390 if phone else 1280
+    tag = f"{name} {w} {scheme}"
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+        ctx.close()
+        return [f"{tag}: did not start paused"], r
+    show_tab(page, "debugger")
+    page.fill("#dbg_addr", hex(syms[fn]["vaddr"]))
+    page.click("#dbg_runto")
+    ok, at, status = run_to_wait(page, {syms[fn]["paddr"]}, 240)
+    if not ok:
+        ctx.close()
+        return [f"{tag}: Run to {fn} stopped at {at:#x}: {status}"], r
+    page.fill("#dbg_n", str(steps))
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+             page.evaluate("stepper.steps") > 0, 120)
+    time.sleep(1)
+    show_tab(page, "machine")
+    time.sleep(0.5)
+    m = page.evaluate(ONECOUNT_JS)
+    n = m["now"]
+    r["machine"] = m
+    fmt = f"{n:,}" if n is not None else "?"
+    if n is None or n != m["steps"] or n != m["badge"] or fmt not in m["text"]:
+        problems.append(f"{tag}: the Machine tab does not show one count: counters {n}, run badge {m['badge']}, "
+                        f"line {m['text'][:120]!r}, stepper {m['steps']}")
+        ctx.close()
+        return problems, r
+    if m["icount"] == n:
+        problems.append(f"{tag}: v86's counter equals the stepper's ({n}): the case no longer tells the counts apart")
+    show_tab(page, "machine")
+    shot = lambda s: page.screenshot(path=str(shots / f"onecount-{name}-{w}-{scheme}-{s}.png"), full_page=False)
+    shot("machine")
+
+    # The snapshot: default name, its row and the diff summary against now.
+    st = snap_save(page, 1, phone)
+    row = (st["rows"] or [{}])[0]
+    r["snapshot"] = [row.get("name"), row.get("text", "")[:160]]
+    if "@" + fmt + " " not in row.get("name", ""):
+        problems.append(f"{tag}: snapshot default name {row.get('name')!r} lacks the Machine tab's count @{fmt}")
+    if "instruction " + fmt + "," not in row.get("text", ""):
+        problems.append(f"{tag}: snapshot row {row.get('text', '')[:160]!r} lacks the Machine tab's count {fmt}")
+    page.select_option("#snap_a", row["id"])
+    page.select_option("#snap_b", "now")
+    snap_click(page, "#snap_diff", phone)
+    if not wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 60):
+        problems.append(f"{tag}: the diff did not finish")
+    else:
+        summ = page.evaluate(SNAP_DIFF_JS)["summary"]
+        r["diff"] = summ[:200]
+        if "instruction " + fmt + " → " + fmt + " (" not in summ:
+            problems.append(f"{tag}: the diff summary {summ[:160]!r} does not say instruction {fmt} → {fmt}")
+    shot("snapshots")
+
+    # The "This position" bookmark: default name, the list row (and its snapshot).
+    bm_open_list(page, phone)
+    bm_tap(page, "#bm_here", phone)
+    b = bm_dialog_save(page, problems, tag, "pos", want_default="@" + fmt + " ")
+    if b:
+        r["bookmark"] = [b["name"], b["t"]]
+        st = bm_state(page)
+        bm_open_list(page, phone)
+        st = bm_state(page)
+        what = next((x["what"] for x in st["rows"] if x["id"] == b["id"]), "")
+        r["bookmark row"] = what
+        if "after " + fmt + " instructions" not in what:
+            problems.append(f"{tag}: the bookmark row {what!r} does not say after {fmt} instructions")
+        if b["t"].get("snapName") != row.get("name"):
+            problems.append(f"{tag}: the bookmark is not tied to the snapshot of the same count: {b['t'].get('snapName')!r}")
+        shot("bookmark")
+    bm_close_menu(page)
+    for x in (r.get("snapshot", [""])[0] or "", r.get("diff", ""), (r.get("bookmark") or [""])[0], r.get("bookmark row", "")):
+        if f"{m['icount']:,}" in x:
+            problems.append(f"{tag}: {x[:120]!r} shows v86's counter {m['icount']:,}")
+    # A position bookmark stored before X2 (no steps, only v86's icount) still
+    # lists after a reload, with the count it was saved with.
+    if b:
+        page.evaluate("""(id) => { const j = JSON.parse(localStorage.getItem('mkb-bookmarks'));
+          const o = JSON.parse(JSON.stringify(j.bookmarks.find((x) => x.id === id)));
+          delete o.t.steps; o.id = id + 'old'; o.name = 'pre-X2 position'; j.bookmarks.push(o);
+          localStorage.setItem('mkb-bookmarks', JSON.stringify(j)); }""", b["id"])
+        page.reload()
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        wait_for(lambda: len(bm_state(page)["rows"]) == 2, 20)
+        old = next((x for x in bm_state(page)["rows"] if x["name"] == "pre-X2 position"), None)
+        r["pre-X2 bookmark"] = old and old["what"]
+        if not old or "after " + f"{m['icount']:,}" + " instructions" not in old["what"]:
+            problems.append(f"{tag}: a pre-X2 position bookmark lists as {old}")
+    if errors:
+        problems.append(f"{tag}: page errors: {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
 def snapdiff_case(browser, base, shots, linux):
     out = []
     runs = [("hello", "light", False), ("hello", "dark", True)]
@@ -10508,6 +10623,9 @@ def snapdiff_case(browser, base, shots, linux):
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
         out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))
+    for name, scheme, phone in [("hello", "dark", True)] + ([("minified-linux", "light", False)] if linux else []):
+        problems, r = snapdiff_guard(onecount_run, browser, base, shots, name, scheme, phone)
+        out.append(report("snapdiff one count", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
     for mem in (2 << 20, 64 << 20):
         problems, r = snapdiff_guard(snapdiff_perf, browser, base, shots, mem)
         out.append(report("snapdiff perf", problems, r, mem=mem))
@@ -12730,8 +12848,9 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
     time.sleep(1)
     eip = int(page.get_attribute("#regs", "data-phys"))
-    icount = page.evaluate("emulator.v86.cpu.instruction_counter[0] >>> 0")  # v86's count, as snapshots name it
-    r["eip"] = [hex(eip), icount]
+    icount = page.evaluate("emulator.v86.cpu.instruction_counter[0] >>> 0")  # v86's count: Restore puts it back
+    steps = page.evaluate("stepper.steps")  # the count the Machine tab shows, and the bookmark's name (X2)
+    r["eip"] = [hex(eip), steps, icount]
     show_tab(page, "debugger")
     added = {}
 
@@ -12937,11 +13056,11 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
                 page.focus("#bm_name")
             else:
                 problems.append(f"{tag}: the position dialog offers no snapshot (#bm_snap)")
-        b = bm_dialog_save(page, problems, tag, "pos", want_default="@" + f"{icount:,}", then=None if phone else tick)
+        b = bm_dialog_save(page, problems, tag, "pos", want_default="@" + f"{steps:,}", then=None if phone else tick)
         if b:
             added["pos"] = b
-            if b["t"]["pa"] != eip or b["t"]["icount"] != icount:
-                problems.append(f"{tag}: the position bookmark holds {b['t']}, want EIP {hex(eip)} at {icount}")
+            if b["t"]["pa"] != eip or b["t"].get("steps") != steps or b["t"]["icount"] != icount:
+                problems.append(f"{tag}: the position bookmark holds {b['t']}, want EIP {hex(eip)} at {steps} (v86 {icount})")
             if not phone:
                 if not wait_for(lambda: (bm_state(page)["list"][-1]["t"].get("snap") or "") != "", 30):
                     problems.append(f"{tag}: the position bookmark has no snapshot tied to it: {bm_state(page)['list'][-1]['t']}")
@@ -13160,6 +13279,9 @@ def bookmarks_case(browser, base, shots, linux):
                                       f"({at.line}): {str(e)[:300]}"], {}
         out.append(report("bookmarks", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                           seconds=round(time.monotonic() - t0)))
+    for name, scheme, phone in [("hello", "light", False)] + ([("minified-linux", "dark", True)] if linux else []):
+        problems, r = snapdiff_guard(onecount_run, browser, base, shots, name, scheme, phone)
+        out.append(report("bookmarks one count", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
     return any(out)
 
 

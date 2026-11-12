@@ -10,9 +10,11 @@
 //   line: { path, line }   a source line (Source panel)
 //   file: { path }         a whole source file (Source tab)
 //   fn:   { pa, name }     a function (Calls box, call stack frame, Source tab)
-//   pos:  { pa, eip, icount, sym, snap, snapName }  the machine's position:
-//         EIP's physical and virtual address, v86's instruction counter (the
-//         count snapshots are named by) and the snapshot saved with it, if any;
+//   pos:  { pa, eip, steps, icount, sym, snap, snapName }  the machine's position:
+//         EIP's physical and virtual address, the stepper's count (the one
+//         the Machine tab and snapshot names show), v86's instruction counter
+//         (to find the snapshot of the same state) and the snapshot saved with
+//         it, if any;
 //         run: the run up to there (J4, replay.js), so Replay gets there again.
 // kernelKey is S1's identity (SHA-256 of the bzImage and initrd): a
 // bookmark is this kernel's when it matches, else another kernel's (listed
@@ -107,7 +109,7 @@ function bmTargetText(b) {
 	case "fn":
 		return t.name + "() at " + hex(t.pa);
 	case "pos":
-		return "EIP " + (t.sym || hex(t.eip >>> 0)) + " after " + num(t.icount) + " instructions" + (t.snapName ? ", snapshot " + t.snapName : "");
+		return "EIP " + (t.sym || hex(t.eip >>> 0)) + " after " + num(typeof t.steps === "number" ? t.steps : t.icount) + " instructions" + (t.snapName ? ", snapshot " + t.snapName : "");
 	}
 	return "";
 }
@@ -130,8 +132,10 @@ function bmDraftLine(path, line) {
 	return line ? { kind: "line", t: { path, line }, name: path.replace(/^.*\//, "") + ":" + line } : { kind: "file", t: { path }, name: path };
 }
 
-// The machine's position: EIP and v86's instruction counter; a snapshot of
-// this kernel taken at the same count is tied to it.
+// The machine's position: EIP and the stepper's count, the one the Machine
+// tab shows (X2; bookmarks from before X2 have only v86's counter, icount,
+// and show that). A snapshot of this kernel taken at the same v86 counter is
+// tied to it.
 function bmDraftPos() {
 	if (!stepper || !emulator || runState === "off")
 		return null;
@@ -143,8 +147,9 @@ function bmDraftPos() {
 	const snap = typeof snapshots !== "undefined" ? snapshots.find((s) => s.meta && s.meta.icount === icount && key && s.kernelKey === key) : null;
 	// The run up to here (J4): Replay boots again and replays it to here.
 	const run = typeof runNow === "function" ? runNow() : null;
-	return { kind: "pos", t: { pa, eip, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}) },
-		name: snapKernelName() + " @" + icount.toLocaleString("en") + (sym ? " " + sym : " " + hex(eip)) };
+	const steps = stepper.steps;
+	return { kind: "pos", t: { pa, eip, steps, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}) },
+		name: snapKernelName() + " @" + steps.toLocaleString("en") + (sym ? " " + sym : " " + hex(eip)) };
 }
 
 // A function's start and name for code at pa (a call stack frame).

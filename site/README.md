@@ -534,9 +534,9 @@ as a colour emoji (also checked once in Firefox and WebKit):
   from an instruction (Page listing, Code at EIP), a page of the Memory
   grid, a line of the Source panel, a file or function of the Source
   tab, a box of the Calls tab, a frame of the call stack, or the
-  machine's position (EIP and v86's instruction count, with a snapshot
-  saved alongside if you tick it, or the snapshot of the same count if
-  one exists). Each place has a ☆ button; a right click (Shift+right
+  machine's position (EIP and the instruction count the Machine tab
+  shows, with a snapshot saved alongside if you tick it, or the snapshot
+  of the same state if one exists). Each place has a ☆ button; a right click (Shift+right
   click keeps the browser's menu) or a long press on a line, square, box
   or frame, and the B key over it (or on the tab's place) do the same.
   A small dialog asks for the name, with a default: symbol+offset,
@@ -1070,7 +1070,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
   to 40% (minified Linux) larger. `save_state()` itself took 46 to 74 ms
   (Chromium) and Restore's `restore_state()` 0.4 to 0.6 s for Debian with
   either codec; no Save made a main-thread task over 50 ms with either. Each gets a default name
-  (kernel, v86's instruction count, the symbol at EIP, the time); tapping
+  (kernel, the instruction count, the symbol at EIP, the time); tapping
   the name renames it (Enter or leaving the field saves, Esc cancels).
   Each is tied to the kernel it was taken with: the SHA-256 of the bzImage
   (and of the initrd, if any). Snapshots of another kernel are listed with
@@ -1078,7 +1078,16 @@ as a colour emoji (also checked once in Firefox and WebKit):
   ratio, and has Restore (decompressed in the Worker; the stepper's count
   and the page's clock set back to the snapshot's, then
   `emulator.restore_state()`, then v86's instruction counter set back to the
-  snapshot's: v86 does not keep it in the state), Download and Delete; "Delete all" asks twice. The
+  snapshot's: v86 does not keep it in the state), Download and Delete; "Delete all" asks twice.
+  Every count the page shows is the stepper's: the Machine tab's count line
+  and counters table, the run badge's menu, the Reverse line, snapshot
+  names and rows, the diff summary and the "This position" bookmark (X2).
+  v86's instruction_counter runs a few dozen ahead of it (86 or 87 at the
+  first Hello lines of hello and the minified Linux); a snapshot and a
+  position bookmark keep it too, for Restore, Replay and to tie a bookmark
+  to the snapshot of the same state. Until X2 the snapshot and bookmark
+  names showed v86's number; names saved then keep it, and a bookmark
+  saved then (it has no stepper count) lists with v86's number. The
   line under Save shows how many are stored, their total, the count for
   this kernel and `navigator.storage.estimate()`; the first store calls
   `navigator.storage.persist()`. A write that fails (QuotaExceededError, or
@@ -1941,6 +1950,7 @@ browser-test matrix job named by its suites):
 | R5 reverse execution at JIT speed | suite jitrev. Debian at full speed paused past 2.5e9 (1280 light, `?revjitk=40000000`), Debian+initrd paused past 3.2e9 in the initramfs scripts (390 dark) and at its (initramfs) prompt (1280 light, the last stretch stepped by the exact stop): Step back is enabled with JIT checkpoints in the history; Step back 1 (run bar) and Step back 999 (Debugger) land at N-1 and N-1,000 within 10 s; Step 999 and Step 1 forward again give the registers, segment registers, EFLAGS, CR0-CR4, v86's counter, clock, IRQ0 count, halt state, RAM SHA-256 and VGA text stepped back to at N-1 and the live run's at the pause N; Back to over the JIT's stretches says it did not look there; forward from the history's start to N-1 again the same; Replay from boot (the Snapshots tab's button) of the run ending at N-1, and of the one ending at N-1,000, matches (EIP, RAM, screen, clock, counter) with the same registers. FAILS on 0eb730a31 (Step back disabled after the JIT ran) | jitrev |
 | R6 the det JIT at v86's speed again | suite jitdet: Debian at full speed on the virtual clock (1280 light, 390 dark) waits for none of its compiled blocks in Chromium (FAILS on fcbabc36c: it waited for 112 of 137) and keeps its speed at 0.9 of v86's own loop or more. Suite jitrev, Debian+initrd at the (initramfs) prompt: Step back 1 from the hlt of the idle loop's "sti; hlt" lands on the sti, 2 back, and the status says why (it FAILED once the prompt came at that halt: "Stepped back 0 instructions", the machine still at the hlt) | jitdet,guestin,replay; jitrev |
 | X1 the page says what is deterministic | `check-text.py` also fails on stale claims in the page sources (its STALE list: SeaBIOS waiting on real time, the minified Linux calibrating its delay loop, counts that vary from run to run) (FAILS on 8ec1bc839: the count tooltip, the About tab and this README). The count tooltip and the About tab now say that on the virtual clock every count is the same in every run, stepped and at full JIT speed, and what still changes with the real-time clock | site |
+| X2 one instruction count | suites snapdiff ("one count": hello 390 dark, the minified Linux 1280 light) and bookmarks ("one count": hello 1280 light, the minified Linux 390 dark): paused after Run to `hello_main` / `start_kernel` and 40 / 3,000 steps, the Machine tab's counters "now" row, its count line and the run badge give one count N (hello 1,405,793, v86's counter 1,405,880; minified 1,467,846, v86's 1,467,933); the snapshot's default name says @N, its row "instruction N", the diff to now "instruction N → N", the "This position" bookmark's default name @N and its row "after N instructions", tied to that snapshot; none shows v86's number; a position bookmark stored without the stepper's count (before X2) lists after a reload with v86's number. The bookmarks suite's position bookmark holds both counts. FAILS on c0bf0be0e (every name and row says v86's count, 87 higher) | snapdiff,bookmarks |
 | B1 a power-on snapshot restores | suite snapdiff (hello at 1280 light and 390 dark, the minified Linux at 1280 dark, started paused at the reset vector F000:FFF0: the IDE controller's BAR0 and BAR1 have no BAR and the I/O bit set; Save snapshot there, Run to hello_main / start_kernel, Restore: no error, the registers, the instruction count and every RAM page are the snapshot's and the machine is paused; then Run to the same target stops there and hello prints Still alive; no page error, no horizontal scroll; screenshots after Restore and after the boot). FAILS on eb8579e5c: "restore_state failed: TypeError: Cannot read properties of undefined (reading 'original_bar')", the count and 22 pages wrong, a wasm "unreachable" page error | snapdiff |
 | B2 one double tap is one open | suite graphopen (each of its four runs, after the double click or tap above: the same double click (1280 px) or double tap (390 px) on the function's box twice more, once with the open itself taking 900 ms longer (a wrapper around openFunction busy-waits after it) and once with the CPU 10x slower through CDP; each opens the function exactly once and adds one history entry, and Back returns to the Calls tab as it was). FAILS on 250ee59e1: with the 900 ms open every run opens twice, at 390 px that is two history entries (before (0, 2), after (2, 3)); the canvas's dblclick opened it, then the timer of the pointerup double-press detection opened it again because the 600 ms guard counted from the start of the open | speedasm,runbadge,memeip,graphopen,srcfiles |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |

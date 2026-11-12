@@ -236,8 +236,18 @@ function snapScreen() {
 	return Array.from($("screen_text").children, (e) => e.textContent.replace(/\s+$/, ""));
 }
 
+// The instruction count a snapshot shows: the stepper's, as on the Machine
+// tab, the run badge and the Reverse line (X2). v86's instruction_counter
+// (meta.icount) runs a few dozen ahead of it (86 or 87 in the first 1.5 M
+// instructions of hello and the minified Linux) and stays in the meta for
+// Restore and Replay only. A
+// snapshot taken with no stepper (nothing counted) has only v86's.
+function snapCount(meta) {
+	return typeof meta.steps === "number" ? meta.steps : meta.icount;
+}
+
 function snapDefaultName(meta, time) {
-	return snapKernelName() + " @" + meta.icount.toLocaleString("en") + (meta.sym ? " " + meta.sym : " " + hex(meta.eip)) +
+	return snapKernelName() + " @" + snapCount(meta).toLocaleString("en") + (meta.sym ? " " + meta.sym : " " + hex(meta.eip)) +
 		" " + new Date(time).toLocaleTimeString("en-GB");
 }
 
@@ -622,7 +632,7 @@ function renderSnapshots() {
 		const cells = [
 			"#" + s.seq + ", " + (day.toDateString() === new Date().toDateString() ? day.toLocaleTimeString("en-GB") :
 				day.toLocaleString("en-GB")),
-			s.meta ? "instruction " + s.meta.icount.toLocaleString("en") + ", " + (s.meta.sym || "EIP " + hex(s.meta.eip)) : "",
+			s.meta ? "instruction " + snapCount(s.meta).toLocaleString("en") + ", " + (s.meta.sym || "EIP " + hex(s.meta.eip)) : "",
 			(match === "other" ? "for another kernel: " : "") + s.kernel + ", " + kib(s.ram),
 			snapFmtSize(s.size) + (s.where === "stored" ? ", stored" : ", in memory only") + (s.delta ? "; delta of #" +
 				((snapById(s.delta.base) || {}).seq || "?") + ": " + snapPagesText(s.delta.pages) : ""),
@@ -800,11 +810,13 @@ function renderSnapDiff() {
 	const nm = (x) => (x.id === "now" ? "now" : "“" + x.name + "”");
 	out.dataset.icountA = A.meta.icount;
 	out.dataset.icountB = B.meta.icount;
+	const nA = snapCount(A.meta), nB = snapCount(B.meta);
+	out.dataset.countA = nA;
+	out.dataset.countB = nB;
 	const sum = $("snap_diff_sum");
-	const dIns = (B.meta.icount - A.meta.icount) >>> 0;
-	sum.textContent = "From " + nm(A) + " to " + nm(B) + ": instruction " + A.meta.icount.toLocaleString("en") + " → " +
-		B.meta.icount.toLocaleString("en") + " (" + (B.meta.icount >= A.meta.icount ? "+" + dIns.toLocaleString("en") :
-		"earlier by " + ((A.meta.icount - B.meta.icount) >>> 0).toLocaleString("en")) + "), EIP " +
+	sum.textContent = "From " + nm(A) + " to " + nm(B) + ": instruction " + nA.toLocaleString("en") + " → " +
+		nB.toLocaleString("en") + " (" + (nB >= nA ? "+" + (nB - nA).toLocaleString("en") :
+		"earlier by " + (nA - nB).toLocaleString("en")) + "), EIP " +
 		(A.meta.sym || hex(A.meta.eip)) + " → " + (B.meta.sym || hex(B.meta.eip)) + "; " + d.pages.length + " of " +
 		Math.ceil(Math.max(A.ram, B.ram) / PAGE).toLocaleString("en") + " pages of RAM changed, " +
 		d.pages.reduce((n, p) => n + p[1], 0).toLocaleString("en") + " bytes." +

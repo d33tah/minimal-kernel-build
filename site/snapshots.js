@@ -137,12 +137,11 @@ function snapOpen() {
 			snapDb = req.result;
 			res(snapDb);
 		};
+		// No onblocked: "blocked" comes only with an upgrade while other
+		// connections are open, and version 1 upgrades only a database
+		// that does not exist yet, which nothing can have open.
 		req.onerror = () => {
 			snapDbWhy = (req.error && req.error.message) || "IndexedDB refused";
-			res(null);
-		};
-		req.onblocked = () => {
-			snapDbWhy = "IndexedDB is blocked by another tab";
 			res(null);
 		};
 	});
@@ -468,10 +467,22 @@ async function snapRename(s, name) {
 	s.name = name;
 	if (s.where === "stored")
 		$("snap_status").textContent = "Renamed." + (await snapStore(s));
-	if (snapDiff)
+	// The diff and a snapshot's page in the Page tab hold their own copy of
+	// the name.
+	if (snapDiff) {
+		for (const x of [snapDiff.a, snapDiff.b])
+			if (x.id === s.id)
+				x.name = name;
 		renderSnapDiff();
-	if (pageSnapView && tab === "page")
-		inspect();
+	}
+	if (pageSnapView) {
+		if (pageSnapView.id === s.id)
+			pageSnapView.name = "“" + name + "”";
+		if (pageSnapView.againstId === s.id)
+			pageSnapView.against = "“" + name + "”";
+		if (tab === "page")
+			inspect();
+	}
 }
 
 // d again without its base x (about to be deleted): a delta of x's base
@@ -1003,7 +1014,7 @@ async function snapOpenPage(p, which) {
 	const me = which === "a" ? d.a : d.b, other = which === "a" ? d.b : d.a;
 	const label = (x) => (x.id === "now" ? "now (when diffed)" : "“" + x.name + "”");
 	const view = { page: p, bytes: which === "a" ? r.a : r.b, base: which === "a" ? r.b : r.a,
-		name: label(me), against: label(other), cur: me.meta.phys };
+		id: me.id, name: label(me), againstId: other.id, against: label(other), cur: me.meta.phys };
 	navJump(() => {
 		pageSnapView = view;
 		selectedPage = p;

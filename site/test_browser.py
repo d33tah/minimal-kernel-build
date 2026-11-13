@@ -10734,6 +10734,232 @@ def onecount_run(browser, base, shots, name, scheme, phone):
     return problems, r
 
 
+# Records put into the snapshot store beside the page's own last one: a
+# snapshot of a kernel that is not in the list, one of a listed kernel at a
+# RAM size the menu does not offer, and a delta whose base is gone.
+SNAP_INJECT_JS = """async (recs) => {
+  const s = snapshots[snapshots.length - 1];
+  for (const x of recs) {
+    const rec = { ...snapRecord(s), id: s.id + x.tag, seq: s.seq + x.n, time: s.time + x.n, name: x.name,
+      kernel: x.kernel || s.kernel, kernelKey: x.key || s.kernelKey, ram: x.ram || s.ram, delta: x.delta || null };
+    await snapTx('readwrite', (st) => st.put(rec));
+  }
+  return s.id; }"""
+
+
+def snapdiff_edges(browser, base, shots):
+    """What the table does with records it cannot use as they are, and the
+    small controls around it: a store a newer deploy opened at a higher
+    version (kept in memory, says why), Delete all's second press timing
+    out, a rename shown in the diff, Show live memory after a snapshot's
+    page, a snapshot of a kernel not in the list, one of a listed kernel at
+    a RAM size the menu lacks (the switch adds it), a delta whose base is
+    gone (Download and Restore say so), and Restore at another RAM size."""
+    problems, r, errors = [], {}, []
+
+    # A newer deploy's database version: open() fails with a VersionError.
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    ctx.add_init_script("indexedDB.open('mkb-snapshots', 2)")
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    st = snap_save(page, 1, False)
+    r["version"] = [[x["where"] for x in st["rows"]], st["store"][:200]]
+    if [x["where"] for x in st["rows"]] != ["memory"] or "not stored" not in st["store"] or "version" not in st["store"]:
+        problems.append(f"database at a newer version: rows {r['version'][0]}, note {st['store']!r} (want in memory, the reason named)")
+    page.screenshot(path=str(shots / "snapdiff-edges-version.png"), full_page=True)
+    # In memory only the last 8 stay: the ninth save drops the oldest.
+    first = st["rows"][0]["id"]
+    for n in range(2, 10):
+        snap_save(page, min(n, 8), False)
+    wait_for(lambda: page.text_content("#snap_status").startswith("Saved #9"), 15)
+    ids = [x["id"] for x in snap_rows(page)["rows"]]
+    r["in memory, 9 saves"] = [len(ids), first in ids, page.text_content("#snap_status")[:40]]
+    if len(ids) != 8 or first in ids:
+        problems.append(f"in memory only: 9 saves leave {len(ids)} rows, the first one kept: {first in ids} (want 8, no)")
+    ctx.close()
+
+    # No LZ4 module (a failed download of it): the snapshot is kept raw, says
+    # so, restores and downloads as v86's plain state.
+    # No service worker either (its cache would have the module): register()
+    # fails as in a browser that does not allow them.
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
+    ctx.add_init_script("navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
+    ctx.route("**/lz4_wasm_bg.wasm*", lambda route: route.fulfill(status=404, body="gone"))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    page.evaluate(SNAP_JS)
+    page.evaluate("mkbSnap.keep('A')")
+    icount = page.evaluate("mkbSnap.cpu().icount")
+    st = snap_save(page, 1, False)
+    raw_id = st["rows"][0]["id"]
+    row = page.evaluate(SNAP_ROW_CODEC_JS, raw_id) or {}
+    r["no lz4"] = [st["status"][-90:], row.get("codec"), row.get("text", "")[-80:]]
+    if "Not compressed (" not in st["status"] or "HTTP 404" not in st["status"] or row.get("codec") != "raw" or \
+            "not compressed" not in row.get("text", ""):
+        problems.append(f"no LZ4 module: status {st['status']!r}, row {row}")
+    show_tab(page, "debugger")
+    page.fill("#dbg_n", str(SNAPDIFF_STEPS["hello"]))
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.evaluate("mkbSnap.cpu().icount") != icount and
+             page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    show_tab(page, "snapshots")
+    page.click(f"#snapshots tr[data-id='{raw_id}'] button.restore")
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == raw_id, 30)
+    back = page.evaluate("mkbSnap.cpu().icount")
+    with page.expect_download() as dl:
+        page.click(f"#snapshots tr[data-id='{raw_id}'] button.snapdl")
+    d = dl.value
+    data = pathlib.Path(d.path()).read_bytes()
+    try:
+        ram, _ = snap_parse_state(data)
+        same = bytes(ram) == bytes(page.evaluate("Array.from(mkbSnap.A)"))
+    except (ValueError, KeyError, IndexError) as e:
+        same = str(e)[:100]
+    r["no lz4 restore, download"] = [back == icount, d.suggested_filename, len(data), same]
+    if back != icount:
+        problems.append(f"no LZ4 module: Restore of the raw snapshot gave instruction {back}, want {icount}")
+    if not d.suggested_filename.endswith(".v86state") or same is not True:
+        problems.append(f"no LZ4 module: the download {d.suggested_filename!r} ({len(data)} bytes) is v86's state "
+                        f"with the saved RAM: {same}")
+    ctx.close()
+
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+
+    def start(url):
+        # The same document with another hash would not load again.
+        page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        return ok
+
+    url = f"{base}/index.html?kernel=hello&paused=1#debugger"
+    if not start(url):
+        ctx.close()
+        return ["edges: hello did not start paused"], r
+    ram = page.evaluate("emuRam")
+    st = snap_save(page, 1, False)
+    a_id = st["rows"][0]["id"]
+
+    # Delete all: the first press arms it for 5 s, then it is a plain button again.
+    page.click("#snap_delall")
+    armed = page.text_content("#snap_delall")
+    time.sleep(5.5)
+    after = page.text_content("#snap_delall")
+    r["delete all"] = [armed, after, len(snap_rows(page)["rows"])]
+    if "Press again" not in armed or after != "Delete all" or len(snap_rows(page)["rows"]) != 1:
+        problems.append(f"Delete all: armed {armed!r}, 5 s later {after!r}, {len(snap_rows(page)['rows'])} rows (want 1)")
+
+    # Step on, diff the snapshot with now; a rename shows in the diff at once.
+    show_tab(page, "debugger")
+    page.fill("#dbg_n", str(SNAPDIFF_STEPS["hello"]))
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+             page.evaluate("stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
+    show_tab(page, "snapshots")
+    page.select_option("#snap_a", a_id)
+    page.select_option("#snap_b", "now")
+    page.click("#snap_diff")
+    wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 60)
+    d = page.evaluate(SNAP_DIFF_JS)
+    page.click(f"#snapshots tr[data-id='{a_id}'] button.snapname")
+    page.fill("#snapshots input.snapedit", "edge renamed")
+    page.press("#snapshots input.snapedit", "Enter")
+    renamed = wait_for(lambda: "edge renamed" in (page.evaluate(SNAP_DIFF_JS) or {}).get("text", ""), 10)
+    r["rename in diff"] = renamed
+    if not renamed:
+        problems.append("a rename while the diff is shown: the diff still has the old name")
+    if not d["pages"]:
+        problems.append(f"stepping {SNAPDIFF_STEPS['hello']} instructions changed no page (test setup)")
+    else:
+        p0 = d["pages"][0][0]
+        page.click(f"#snap_pages [data-page='{p0}'] button.snapopen")
+        wait_for(lambda: shown_tab(page) == "page" and page.is_visible("#page_snap"), 15)
+        banner = page.text_content("#page_snap_text") or ""
+        # Renamed again while the Page tab holds the snapshot's page: its note follows.
+        show_tab(page, "snapshots")
+        page.click(f"#snapshots tr[data-id='{a_id}'] button.snapname")
+        page.fill("#snapshots input.snapedit", "edge renamed twice")
+        page.press("#snapshots input.snapedit", "Enter")
+        show_tab(page, "page")
+        wait_for(lambda: "edge renamed twice" in (page.text_content("#page_snap_text") or ""), 10)
+        banner2 = page.text_content("#page_snap_text") or ""
+        page.screenshot(path=str(shots / "snapdiff-edges-page.png"))
+        page.click("#page_snap_live")
+        live = wait_for(lambda: not page.is_visible("#page_snap"), 10)
+        same = page.evaluate(f"""(() => {{ const d = document.getElementById('listing')._drawn;
+            const m = emulator.read_memory({p0} * 4096, 4096);
+            return !!d && d.bytes.length === m.length && d.bytes.every((b, i) => b === m[i]); }})()""")
+        r["live memory"] = [p0, banner[:100], banner2[:100], live, same]
+        if "edge renamed" not in banner or "edge renamed twice" not in banner2:
+            problems.append(f"the snapshot's page in the Page tab: notes {banner[:100]!r}, after a rename {banner2[:100]!r}")
+        if not live or not same:
+            problems.append(f"Show live memory: note hidden {live}, listing is live RAM {same}")
+
+    # Three records the page did not write, then a reload reads them.
+    gone, odd, orphan = a_id + "g", a_id + "o", a_id + "d"
+    page.evaluate(SNAP_INJECT_JS, [
+        {"tag": "g", "n": 1, "name": "of a gone kernel", "kernel": "gone-kernel", "key": "sha256:" + "0" * 64},
+        {"tag": "o", "n": 2, "name": "hello at 3 MiB", "key": "sha256:" + "1" * 64, "ram": 3 << 20},
+        {"tag": "d", "n": 3, "name": "orphan delta", "delta": {"base": "no-such-snapshot", "pages": 3}}])
+    start(url)
+    show_tab(page, "snapshots")
+    snap_wait_rows(page, 4)
+    wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+    rows = {x["id"]: x for x in snap_rows(page)["rows"]}
+    r["injected"] = {k: [rows.get(k, {}).get("kernel"), rows.get(k, {}).get("restore"), rows.get(k, {}).get("sw")]
+                     for k in (gone, odd, orphan)}
+    if r["injected"] != {gone: ["other", False, True], odd: ["other", False, True], orphan: ["match", True, False]}:
+        problems.append(f"stored records after a reload: {r['injected']}")
+    page.screenshot(path=str(shots / "snapdiff-edges-rows.png"), full_page=True)
+
+    def status_after(sel, want):
+        snap_click(page, sel, False)
+        wait_for(lambda: want in page.text_content("#snap_status"), 15)
+        return page.text_content("#snap_status")
+
+    s = status_after(f"#snapshots tr[data-id='{orphan}'] button.snapdl", "Download failed")
+    r["orphan download"] = s[:160]
+    if "Download failed" not in s or "is a delta of a snapshot that is not here" not in s:
+        problems.append(f"Download of a delta without its base: {s!r}")
+    s = status_after(f"#snapshots tr[data-id='{orphan}'] button.restore", "failed")
+    r["orphan restore"] = s[:160]
+    if "is a delta of a snapshot that is not here" not in s:
+        problems.append(f"Restore of a delta without its base: {s!r}")
+    s = status_after(f"#snapshots tr[data-id='{gone}'] button.snapswitch", "not one of the listed kernels")
+    r["gone switch"] = s[:160]
+    if "“gone-kernel” is not one of the listed kernels" not in s or "load that bzImage from disk" not in s:
+        problems.append(f"Switch to a kernel that is not listed: {s!r}")
+
+    # Restore at another RAM size: the page names the size to boot with.
+    other = next(m for m in (4 << 20, 2 << 20) if m != ram)
+    start(f"{base}/index.html?kernel=hello&mem={other}&paused=1#snapshots")
+    show_tab(page, "snapshots")
+    snap_wait_rows(page, 4)
+    wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+    s = status_after(f"#snapshots tr[data-id='{a_id}'] button.restore", "boot with that size")
+    r["ram mismatch"] = s[:160]
+    want = f"was taken with {page.evaluate(f'kib({ram})')} of RAM; boot with that size to restore it."
+    if want not in s:
+        problems.append(f"Restore at {other} bytes of RAM of a {ram}-byte snapshot: {s!r}, want {want!r}")
+
+    # A listed kernel at 3 MiB: the switch adds the size to the menu and boots it.
+    snap_click(page, f"#snapshots tr[data-id='{odd}'] button.snapswitch", False)
+    booted = wait_for(lambda: page.evaluate("emuRam === 3145728 && !!emulator && emuReady"), 120)
+    r["odd ram"] = [page.input_value("#memory"), booted, page.text_content("#snap_status")[:120]]
+    if page.input_value("#memory") != "3145728" or not booted:
+        problems.append(f"Switch to hello at 3 MiB: memory menu {page.input_value('#memory')!r}, booted {booted}")
+    if errors:
+        problems.append(f"edges: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
 def snapdiff_case(browser, base, shots, linux):
     out = []
     runs = [("hello", "light", False), ("hello", "dark", True)]
@@ -10748,6 +10974,8 @@ def snapdiff_case(browser, base, shots, linux):
     out.append(report("snapdiff storage", problems, r))
     problems, r = snapdiff_guard(snapdiff_legacy, browser, base, shots)
     out.append(report("snapdiff S1 gzip", problems, r))
+    problems, r = snapdiff_guard(snapdiff_edges, browser, base, shots)
+    out.append(report("snapdiff edges", problems, r))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_bigsave, browser, base, shots, phone)
         out.append(report("snapdiff big save", problems, r, width=390 if phone else 1280))

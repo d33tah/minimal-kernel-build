@@ -2031,6 +2031,15 @@ uncovered line ranges, `uncoveredLines`):
     node site/jscov/report.js --src site --out /tmp/jscov-report /tmp/jscov
     python3 site/test_jscov.py   # self-test on a fixture page
 
+A function V8 reports without its blocks (it ran, but which branches is
+not known) counts as run and its lines do not. The collector's close line
+counts those per target type, and `raw-*.trace.txt` beside each raw file
+lists attaches, detaches, pauses, takes and answers in order. Chromium
+runs with `--js-flags=--no-compilation-cache`: a reloaded document
+otherwise reuses the functions compiled for the one before it, and when
+the Debugger domain is off those report no blocks (seen in Chromium 158
+with a reload; with the flag they report them).
+
 Block coverage slows the page's own JavaScript: stepping a Debian boot
 again for a Step back took 679 ms instead of 199 ms (3.4x; binary block
 coverage, callCount off, 719 ms), so the wall-clock bounds of reverse,
@@ -2041,7 +2050,8 @@ pwa-install upload their raw coverage;
 the jscov job runs the self-test (a never-called function, one nested in
 it, a Worker's and the service worker's functions and an untaken else must
 show as uncovered, the called ones as covered, also one a page runs just
-before it leaves for another site by itself), merges, writes the table
+before it leaves for another site by itself, and the untaken return of a
+function that runs only after a reload), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
 fails when a total is below `site/jscov-baseline.json`.
 

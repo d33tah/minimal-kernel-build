@@ -21,6 +21,11 @@ JSON lines to MKB_JSCOV/raw-<label>-<pid>.jsonl: {"file", "len",
 "functions"} where len is the script's length in UTF-16 units, so the
 report can refuse a run of a different file with the same name (or "end",
 the furthest range end, when the take has no top-level function).
+Beside it, raw-....trace.txt has one JSON line per attach, detach, pause,
+take, answer, failed command and script a take found run (with how many of
+its functions came without block coverage, which the report cannot split
+into lines and branches): what to read when a number looks wrong. Chromium
+runs with --js-flags=--no-compilation-cache (see with_port()).
 """
 
 import base64
@@ -206,6 +211,10 @@ class Collector:
         self.outdir.mkdir(parents=True, exist_ok=True)
         self.path = self.outdir / f"raw-{label}-{os.getpid()}-{port}.jsonl"
         self.out = open(self.path, "a")
+        # What happened, in order (attach, detach, pause, take, answer, any
+        # failed command): to tell later why a take lost its block coverage.
+        self.trace_file = open(self.path.with_suffix(".trace.txt"), "a")
+        self.t0 = time.monotonic()
         self.next_id = 0
         self.waiting = {}   # message id -> [event, result]
         self.outstanding = {}  # message id of an unanswered take -> session id
@@ -218,6 +227,10 @@ class Collector:
         self.flush_lock = threading.Lock()
         self.closed = False
         self.takes = self.records = 0
+        # Functions a take reported as run without their blocks (the whole
+        # function counts as run, its untaken branches are not seen), by
+        # target type: how much the measurement lost.
+        self.blockless = {}
         self.flush_s = self.flush_max = 0.0
         url = None
         end = time.monotonic() + 30
@@ -235,6 +248,12 @@ class Collector:
         self.call("Target.setAutoAttach", {"autoAttach": True, "waitForDebuggerOnStart": True, "flatten": True})
         threading.Thread(target=self._poller, daemon=True, name="jscov-poller").start()
         log(f"collecting into {self.path} (port {port})")
+
+    def trace(self, what, sid=None, **kw):
+        line = json.dumps({"t": round(time.monotonic() - self.t0, 3), "e": what, "s": (sid or "")[:8], **kw})
+        with self.write_lock:
+            if not self.trace_file.closed:
+                self.trace_file.write(line + "\n")
 
     # ---- protocol ----------------------------------------------------------
 
@@ -288,6 +307,7 @@ class Collector:
             sid = self.outstanding.pop(msg["id"], None)
             if sid and "result" in msg:
                 self.takes += 1
+                self.trace("answer", sid, id=msg["id"])
                 if os.environ.get("MKB_JSCOV_DEBUG"):
                     log(f"answer {msg['id']} {self.sessions.get(sid)}: {[x.get('url', '')[-30:] for x in msg['result'].get('result', [])]}")
                 self._record(sid, msg["result"].get("result", []))
@@ -300,21 +320,27 @@ class Collector:
             if w:
                 w[1] = msg
                 w[0].set()
-            elif "error" in msg and os.environ.get("MKB_JSCOV_DEBUG"):
-                log(f"error {msg}")
+            elif "error" in msg:
+                self.trace("error", msg.get("sessionId"), id=msg["id"], error=str(msg["error"])[:200])
+                if os.environ.get("MKB_JSCOV_DEBUG"):
+                    log(f"error {msg}")
             return
         method, p, sid = msg.get("method"), msg.get("params", {}), msg.get("sessionId")
         if os.environ.get("MKB_JSCOV_DEBUG") and method and method.startswith("Target."):
             log(f"{time.monotonic():.2f} {method} {(sid or '')[:8]} {json.dumps(p)[:200]}")
         if method == "Target.attachedToTarget":
+            self.trace("attach", p["sessionId"], kind=p["targetInfo"].get("type"), url=p["targetInfo"].get("url", "")[-60:],
+                       waiting=p.get("waitingForDebugger"), parent=sid)
             self._attached(p["sessionId"], p["targetInfo"], p.get("waitingForDebugger"))
         elif method == "Target.detachedFromTarget":
+            self.trace("detach", p.get("sessionId"))
             self.sessions.pop(p.get("sessionId"), None)
             for i, o in list(self.outstanding.items()):
                 if o == p.get("sessionId"):
                     self.outstanding.pop(i, None)
                     self.after.pop(i, None)
         elif method == "Debugger.paused" and sid in self.sessions:
+            self.trace("paused", sid, reason=p.get("reason"))
             # TERMINATE_JS's beforeunload pause (or any other): take, then resume.
             self._take(sid, then=("Debugger.resume", None, sid))
         elif method == "Runtime.bindingCalled" and p.get("name") == BINDING:
@@ -372,6 +398,7 @@ class Collector:
             if then:
                 self.after[i] = then
         try:
+            self.trace("take", sid, id=i, why="paused" if then else "")
             self.ws.send(json.dumps({"id": i, "method": "Profiler.takePreciseCoverage", "sessionId": sid}))
         except OSError:
             self.outstanding.pop(i, None)
@@ -391,6 +418,7 @@ class Collector:
             evs = []
             for sid in list(self.sessions):
                 if sid in self.outstanding.values():
+                    self.trace("skip", sid)
                     continue
                 ev = threading.Event()
                 with self.id_lock:
@@ -401,6 +429,7 @@ class Collector:
                 if os.environ.get("MKB_JSCOV_DEBUG"):
                     log(f"{time.monotonic():.2f} take {i} -> {self.sessions.get(sid)} {sid[:8]}")
                 try:
+                    self.trace("take", sid, id=i)
                     self.ws.send(json.dumps({"id": i, "method": "Profiler.takePreciseCoverage", "sessionId": sid}))
                 except OSError:
                     pass
@@ -430,6 +459,13 @@ class Collector:
             n = self.lens.get(key)
             end = max(f["ranges"][0]["endOffset"] for f in s["functions"]) if s["functions"] else 0
             ran = []
+            kind = self.sessions.get(sid) or "gone"
+            nb = sum(1 for f in s["functions"] if not f["isBlockCoverage"] and f["ranges"][0]["count"])
+            if nb:
+                self.blockless[kind] = self.blockless.get(kind, 0) + nb
+            nran = sum(1 for f in s["functions"] if f["ranges"][0]["count"])
+            if nran:
+                self.trace("script", sid, file=name, ran=nran, blockless=nb)
             for f in s["functions"]:
                 ranges = [{"startOffset": r["startOffset"], "endOffset": r["endOffset"], "count": 1 if r["count"] else 0}
                           for r in f["ranges"]]
@@ -439,7 +475,7 @@ class Collector:
                 self.seen.add(sig)
                 ran.append({"functionName": f["functionName"], "isBlockCoverage": f["isBlockCoverage"], "ranges": ranges})
             if os.environ.get("MKB_JSCOV_DEBUG"):
-                log(f"take {self.sessions.get(sid)} {name}: {len(ran)} new of {len(s['functions'])}: "
+                log(f"take {kind} {sid[:8]} {name}: {len(ran)} new of {len(s['functions'])}, {nb} ran without blocks: "
                     + ", ".join(f"{f['functionName'] or '(top)'} {f['ranges'][0]['count']}" for f in ran)[:300])
             if ran:
                 rec = {"file": name, "len": n} if n else {"file": name, "end": end}
@@ -459,8 +495,10 @@ class Collector:
         self.ws.close()
         with self.write_lock:
             self.out.close()
+            self.trace_file.close()
         log(f"{self.takes} takes ({self.flush_s:.1f} s, longest flush {self.flush_max * 1000:.0f} ms), "
-            f"{self.records} records in {self.path}")
+            f"{self.records} records in {self.path}; functions run without block coverage: "
+            f"{json.dumps(self.blockless, sort_keys=True)}")
 
 
 COLLECTORS = []
@@ -482,7 +520,11 @@ def install(label):
 
     def with_port(kw):
         port = free_port()
-        kw["args"] = list(kw.get("args") or []) + [f"--remote-debugging-port={port}"]
+        # --no-compilation-cache: a document loaded again in the same renderer
+        # (reload, goto) otherwise reuses the functions V8 compiled for the
+        # one before, and those report no block coverage (seen in Chromium
+        # 158 whenever the Debugger domain is off).
+        kw["args"] = list(kw.get("args") or []) + [f"--remote-debugging-port={port}", "--js-flags=--no-compilation-cache"]
         return port
 
     launch, persistent = BrowserType.launch, BrowserType.launch_persistent_context

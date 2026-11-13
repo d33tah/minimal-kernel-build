@@ -100,6 +100,17 @@ function otherNever() {
 \treturn 8;
 }
 
+// Runs only in the document after a reload (the same script again).
+function afterReload(x) {
+	if (x)
+		return "again";
+	return "first";
+}
+
+if (sessionStorage.getItem("loaded"))
+	window.again = afterReload(true);
+sessionStorage.setItem("loaded", "1");
+
 // The page leaves for another site itself (a new renderer process).
 function otherLeave(to) {
 	window.left = to;
@@ -115,7 +126,8 @@ window.third = 9;
 """,
 }
 
-WANT_COVERED = {"cov.js": ["ran", "branchy"], "wk.js": ["workerRan"], "sw.js": ["swFetch"], "other.js": ["otherRan", "otherLeave"]}
+WANT_COVERED = {"cov.js": ["ran", "branchy"], "wk.js": ["workerRan"], "sw.js": ["swFetch"],
+                "other.js": ["otherRan", "otherLeave", "afterReload"]}
 WANT_UNCOVERED = {"cov.js": ["never", "outerNever", "innerNever"], "wk.js": ["workerNever"], "sw.js": ["swNever"],
                   "other.js": ["otherNever"]}
 
@@ -155,6 +167,10 @@ def main():
                 time.sleep(0.2)
                 page.goto(base + "/other.html")
                 wait_for(lambda: page.evaluate("window.other === 7"), 10)
+                # The same script in a new document: its blocks must still be seen.
+                page.reload()
+                if not wait_for(lambda: page.evaluate("window.again === 'again'"), 10):
+                    problems.append("fixture: afterReload did not run after the reload")
                 # Not through Playwright: the page navigates itself, cross-site.
                 third = f"http://localhost:{httpd.server_address[1]}/third.html"
                 page.evaluate(f"setTimeout(() => otherLeave({json.dumps(third)}), 0)")
@@ -194,6 +210,15 @@ def main():
             b = cov.get("branches", {})
             if b.get("total") != 2 or b.get("covered") != 1:
                 problems.append(f"cov.js: branches {b}, want the if's then covered and its else not (1 of 2)")
+            # Block detail of the reloaded document: the taken return ran, the other did not.
+            src = FILES["other.js"].split("\n")
+            taken, not_taken = src.index('\t\treturn "again";') + 1, src.index('\treturn "first";') + 1
+            unc = set()
+            for a, _, b in (x.partition("-") for x in s["files"].get("other.js", {}).get("uncoveredLines", "").split(",") if x):
+                unc.update(range(int(a), int(b or a) + 1))
+            if taken in unc or not_taken not in unc:
+                problems.append(f"other.js after a reload: uncovered lines {sorted(unc)}, want {not_taken} (the return "
+                                f"not taken) among them and not {taken}")
             lines = cov.get("lines", {})
             if not lines.get("total") or lines.get("covered", 0) >= lines.get("total", 0):
                 problems.append(f"cov.js: lines {lines}, want some uncovered")

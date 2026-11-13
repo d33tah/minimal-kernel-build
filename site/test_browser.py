@@ -2198,7 +2198,8 @@ def hover_once(page, pa, click):
 
 # Watches whose values at start_kernel are the ELF's own data (gdb prints them from the file).
 TYPES_WATCHES = {
-    "minified-linux": ["init_task.comm", "jiffies_64", "init_task.pid", "current_task"],
+    "minified-linux": ["init_task.comm", "jiffies_64", "init_task.pid", "current_task", "current_task->comm",
+                       "init_task.comm[1]"],
     "debian-6.1-686": ["init_task.comm", "jiffies_64", "init_uts_ns.name.release", "linux_banner", "system_state"],
 }
 
@@ -2505,6 +2506,19 @@ def types_case(browser, base, shots, name):
         key = g[g.index('"'):][:30] if '"' in g else g.split(" ")[0]
         if key not in got:
             problems.append(f"{name}: watch {e} shows {got!r}, gdb prints {w!r}")
+    # What a watch cannot read says why, in its row.
+    bad = {"init_task.nosuch": "struct task_struct has no member nosuch",
+           "jiffies_64->x": "not a pointer",
+           "init_task.comm!": "cannot read “!” (use .member, ->member, [index])",
+           "init_task.pid.x": "pid_t has no member x"}
+    r["watch errors"] = {}
+    for e, want in bad.items():
+        got = watch(page, e)
+        state = page.get_attribute(f'#watches .watch[data-expr="{e}"]', "data-state")
+        r["watch errors"][e] = got[:100]
+        if state != "error" or got != f"{e}: {want}":
+            problems.append(f"{name}: watch {e}: {state} {got!r}, want the error {want!r}")
+        page.locator(f'#watches .watch[data-expr="{e}"] .wdel').click()
     # A struct opens with its members; a pointer opens the Page tab at its target.
     page.locator('#watches .watch[data-expr="init_task.comm"] .wdel').click()
     watch(page, "init_task")

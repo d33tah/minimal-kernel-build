@@ -2111,6 +2111,30 @@ def dwarf_import_case(browser, base, shots):
     samples = dwarf_check(page, "minified-linux", sk["vaddr"] - sk["paddr"], problems, r, DWARF_STEPS[:6])
     r["imported_first"] = r.get("dwarf_first")
     page.screenshot(path=str(shots / "dwarf-import-1280.png"))
+    # Parameters and locals decoded in the browser from the imported DWARF
+    # equal the shipped ones (gen-dwarf.js on the same ELF) at the same count.
+    at = page.evaluate("stepper.steps")
+    wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+    imported = locals_open_all(page)
+    ship = browser.new_page(viewport={"width": 1280, "height": 1000})
+    ship.on("pageerror", lambda e: errors.append(str(e)))
+    ship.goto(url)
+    wait_for(lambda: ship.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    ship.fill("#dbg_addr", hex(sk["vaddr"]))
+    ship.click("#dbg_runto")
+    wait_for(lambda: ship.get_attribute("#dbg_state", "data-state") == "paused"
+             and ship.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120)
+    ship.fill("#dbg_n", str(at - ship.evaluate("stepper.steps")))
+    ship.click("#dbg_stepn")
+    wait_for(lambda: ship.evaluate("stepper.steps") == at and ship.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    wait_for(lambda: ship.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+    shipped = locals_open_all(ship)
+    ship.close()
+    nvars = sum(len(sc["vars"]) for f in imported for sc in f["scopes"])
+    r["imported_locals"] = f"{len(imported)} frames, {nvars} variables, equal to the shipped: {imported == shipped}"
+    if imported != shipped or not nvars:
+        diff = next(((a, b) for a, b in zip(imported, shipped) if a != b), (imported[len(shipped):], shipped[len(imported):]))
+        problems.append(f"imported -g vmlinux: parameters and locals at {at} differ from the shipped DWARF's: {str(diff)[:400]}")
     # Reload: the symbols come back from localStorage, the decoded units from IndexedDB.
     page.goto("about:blank")
     page.goto(url)

@@ -350,6 +350,8 @@ async function replayRun(run) {
 		runStatus("Cannot replay: “" + run.kernel + "” is not one of the listed kernels; load that bzImage from disk (Machine tab) first.", "error");
 		return;
 	}
+	if (![...$("clock_mips").options].some((o) => o.value === run.clock))
+		return runStatus("Cannot replay: this page has no clock of " + run.clock + " instructions per microsecond.", "error");
 	// The settings go into the URL (J2's ?rtc= and ?seed=, ?fastforward=,
 	// ?panicbudget= are read from it at boot) and the controls.
 	const p = new URLSearchParams(location.search);
@@ -366,8 +368,6 @@ async function replayRun(run) {
 	set("panicbudget", run.panicbudget);
 	set("cmdline", run.cmdline);
 	history.replaceState(history.state, "", "?" + p.toString() + location.hash);
-	if (![...$("clock_mips").options].some((o) => o.value === run.clock))
-		return runStatus("Cannot replay: this page has no clock of " + run.clock + " instructions per microsecond.", "error");
 	$("clock_mips").value = run.clock;
 	prefSpeed = [...$("dbg_speed").options].some((o) => o.value === run.speed) ? run.speed : prefSpeed;
 	$("count").checked = !!run.count;

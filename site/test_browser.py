@@ -14834,6 +14834,79 @@ def replay_prompt_edge(browser, base, shots, problems, r):
         ctx.close()
 
 
+def replay_refused(browser, base, shots, problems, r):
+    """What a replay refuses, and a Step that ends one (the minified Linux at
+    1280 light, stepped at 1M/s to its end): a file that is not JSON, a run
+    of another format, of format version 0, of a kernel not in the list and
+    on a clock the page does not offer each say why and leave the page as
+    it was; the run's own replay (at a 20x CPU throttle, so it is still
+    stepping when looked at), paused there and stepped, stops following
+    its run and says so."""
+    tag = "replay refused (minified-linux 1280 light)"
+    ctx = replay_context(browser, "light", False)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    try:
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=1000000&mips=10")
+        if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5):
+            problems.append(f"{tag}: no kernel entry")
+            return
+        entry = int(page.get_attribute("#entry_info", "data-steps"))
+        # It stops by itself (init exits: a panic) a few seconds later.
+        wait_for(lambda: page.evaluate("runState") == "paused", 120)
+        run = page.evaluate("runNow()")
+        url = page.url
+
+        def refused(name, body, want):
+            f = tmp / name
+            f.write_text(body)
+            show_tab(page, "snapshots")
+            page.set_input_files("#run_file", str(f))
+            wait_for(lambda: want in page.text_content("#run_status"), 10)
+            st = page.text_content("#run_status")
+            if want not in st or page.get_attribute("#run_status", "data-replay") != "error" or \
+                    page.url.split("#")[0] != url.split("#")[0]:
+                problems.append(f"{tag}: {name}: status {st!r} ({page.get_attribute('#run_status', 'data-replay')}), "
+                                f"URL {page.url} (want {want!r}, the page as it was)")
+            return st[:120]
+
+        r["refused"] = [
+            refused("junk.json", "this is no JSON", "Cannot replay junk.json: not JSON"),
+            refused("other.json", json.dumps({"format": "something else"}), "Cannot replay: not a run of this page"),
+            refused("v0.json", json.dumps({**run, "version": 0}), "Cannot replay: run format version 0"),
+            refused("gone.json", json.dumps({**run, "kernel": "gone-kernel"}),
+                    "Cannot replay: “gone-kernel” is not one of the listed kernels"),
+            refused("clock.json", json.dumps({**run, "clock": "7"}),
+                    "Cannot replay: this page has no clock of 7 instructions per microsecond"),
+        ]
+        # The run itself, slowed down: pause it while it steps after the
+        # kernel entry, then Step.
+        page.context.new_cdp_session(page).send("Emulation.setCPUThrottlingRate", {"rate": 20})
+        show_tab(page, "snapshots")
+        page.click("#run_replay")
+        stepping = wait_for(lambda: page.evaluate(f"replayActive() && runState === 'stepped' && stepper.steps > {entry}"), 300, 0.2)
+        machine_do(page, "click", "#dbg_pause")
+        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        at = page.evaluate("stepper.steps")
+        machine_do(page, "click", "#dbg_step")
+        wait_for(lambda: "Replay stopped by Step" in page.text_content("#run_status"), 30)
+        st = page.text_content("#run_status")
+        taint = page.evaluate("INPUT.taint")
+        r["stopped by Step"] = [stepping, at, st, page.get_attribute("#run_status", "data-replay"), taint]
+        if not stepping or st != f"Replay stopped by Step at instruction {at:,}." or \
+                page.get_attribute("#run_status", "data-replay") != "stopped" or \
+                not taint or taint.get("why") != "replay stopped by Step" or taint.get("at") != at:
+            problems.append(f"{tag}: a Step during the replay: {r['stopped by Step']}")
+        page.screenshot(path=str(shots / "replay-1280-light-stopped.png"))
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def replay_case(browser, base, shots, entries, initrd):
     problems, r = [], {}
     tmp = pathlib.Path(tempfile.mkdtemp())
@@ -14845,6 +14918,7 @@ def replay_case(browser, base, shots, entries, initrd):
             return None
     guard(replay_prompt_edge, browser, base, shots, problems, r)
     if "minified-linux" in entries:
+        guard(replay_refused, browser, base, shots, problems, r)
         guard(replay_stepped, browser, base, shots, "minified-linux", problems, r)
     if initrd:
         path, a = guard(replay_initrd, browser, base, shots, initrd[0], tmp, problems, r) or (None, None)

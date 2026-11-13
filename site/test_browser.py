@@ -5891,6 +5891,49 @@ def suite_debugger(ctx):
     return failed
 
 
+def fetch_fail_case(browser, base, shots):
+    """A kernel or its initrd the server does not have (404) is named with
+    the HTTP status, and an error nothing else catches shows in the status
+    line with the kernel and RAM (hello at 1280 light, service worker off
+    so the server's answer reaches the page)."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
+    errors = []
+    ctx.on("weberror", lambda e: errors.append(str(e.error)[:200]))
+    ctx.route("**/kernels/hello/bzImage*", lambda route: route.fulfill(status=404, body="no"))
+    page = ctx.new_page()
+    try:
+        page.goto(f"{base}/index.html?kernel=hello")
+        wait_for(lambda: "HTTP 404" in (page.text_content("#status") or ""), 30)
+        r["kernel 404"] = page.text_content("#status")
+        if "kernels/hello/bzImage: HTTP 404" not in r["kernel 404"]:
+            problems.append(f"hello's bzImage answered 404: status {r['kernel 404']!r}")
+        page.screenshot(path=str(shots / "fetch-fail-1280-light.png"))
+        initrds = [n for n, e in kernel_entries().items() if "initrd" in e]
+        if initrds:
+            ctx.route("**/" + kernel_entries()[initrds[0]]["initrd"] + "*", lambda route: route.fulfill(status=404, body="no"))
+            page.goto(f"{base}/index.html?kernel={initrds[0]}")
+            wait_for(lambda: "HTTP 404" in (page.text_content("#status") or ""), 60)
+            r["initrd 404"] = page.text_content("#status")
+            if kernel_entries()[initrds[0]]["initrd"] + ": HTTP 404" not in r["initrd 404"]:
+                problems.append(f"{initrds[0]}'s initrd answered 404: status {r['initrd 404']!r}")
+        ctx.unroute("**/kernels/hello/bzImage*")
+        page.goto(f"{base}/index.html?kernel=hello&paused=1")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        page.evaluate("setTimeout(() => Promise.reject(new Error('nobody catches this')), 0)")
+        wait_for(lambda: "nobody catches this" in (page.text_content("#status") or ""), 10)
+        r["uncaught"] = page.text_content("#status")
+        if not re.match(r"Emulator error: Error: nobody catches this \(hello, 2,048 KiB RAM\)", r["uncaught"] or ""):
+            problems.append(f"an uncaught rejection: status {r['uncaught']!r}")
+        other = [e for e in errors if "nobody catches this" not in e]
+        if other:
+            problems.append(f"page errors besides the test's own: {other[:3]}")
+    finally:
+        ctx.close()
+    return problems, r
+
+
 def suite_misc(ctx):
     """Symbol import, initrds, panic text, determinism, follow mode."""
     failed = report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
@@ -5902,6 +5945,7 @@ def suite_misc(ctx):
         failed |= report("distro_panic", *distro_panic_case(ctx.browser, ctx.base, os.environ["MKB_DISTRO_CACHE"]))
     failed |= report("determinism", *determinism_case(ctx.browser, ctx.base))
     failed |= report("follow", *follow_case(ctx.browser, ctx.base, ctx.shots))
+    failed |= report("fetch_fail", *fetch_fail_case(ctx.browser, ctx.base, ctx.shots))
     return failed
 
 
@@ -10832,7 +10876,7 @@ def snapdiff_edges(browser, base, shots):
     # No service worker either (its cache would have the module): register()
     # fails as in a browser that does not allow them.
     ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
-    ctx.add_init_script("navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
+    ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
     ctx.route("**/lz4_wasm_bg.wasm*", lambda route: route.fulfill(status=404, body="gone"))
     page = ctx.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))

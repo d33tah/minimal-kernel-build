@@ -11373,6 +11373,17 @@ def tabs_case(browser, base, shots, linux=False):
     booted(page)
     if page.get_attribute("#tab_machine", "aria-selected") != "true" if page.locator("#tab_machine").count() else True:
         problems.append("#machine does not open the Machine tab")
+    # A hash the browser has navigated to but whose hashchange has not run
+    # yet: the page's own hash writes (writeHash, e.g. following EIP to
+    # another page) must not overwrite it. CI run 43424964028 lost #coverage
+    # this way and stayed on #calls.
+    page.goto(f"{base}/index.html?kernel=hello#calls")
+    wait_for(lambda: page.evaluate("location.hash") == "#calls", 10)
+    page.evaluate("() => { location.hash = '#coverage'; writeHash(); }")
+    if not wait_for(lambda: page.get_attribute("#tab_source", "aria-selected") == "true"
+                    and page.evaluate("location.hash") == "#source", 10):
+        problems.append(f"#coverage with a hash write before its hashchange: hash {page.evaluate('location.hash')!r}, "
+                        f"Source tab selected {page.get_attribute('#tab_source', 'aria-selected')!r}")
 
     # Booting another kernel from the Machine tab, and Boot again.
     if page.locator("#tab_machine").count():

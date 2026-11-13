@@ -1248,10 +1248,18 @@ function srcHash() {
 	return "~src=" + encodeURI(srcPanel.path) + (l ? ":" + l : "");
 }
 
+// The hash the page last wrote or read. Another one is a navigation (a
+// link, the address bar) whose hashchange has not run yet: writeHash reads
+// it first instead of writing over it.
+let hashOwn = null;
+
 function writeHash() {
+	if (hashOwn !== null && location.hash !== hashOwn)
+		return readHash();
 	const h = navHashNow();
 	if (location.hash !== h)
 		history.replaceState(history.state, "", h); // keeps the entry's place in the jump history
+	hashOwn = location.hash;
 }
 
 function showTab(name) {
@@ -1326,6 +1334,7 @@ function initCompactTabs() {
 // view already, with its scroll positions, and the hash says what is shown.
 function readHash() {
 	bmFromHash(); // a link's #bm=: the bookmark is opened when its kernel runs
+	hashOwn = location.hash;
 	if (navBuilt && location.hash === navHashNow())
 		return;
 	let h = location.hash.slice(1), src = null;
@@ -1445,6 +1454,7 @@ function navJump(jump) {
 			navList.push(after);
 			navAt++;
 			history.pushState({ nav: navAt, id: NAV_ID }, "", navHashNow());
+			hashOwn = location.hash;
 			navRender();
 		}
 	}
@@ -1487,6 +1497,7 @@ function navOnPop(ev) {
 	if (!s || s.id !== NAV_ID || !navList.length)
 		return;
 	const to = Math.min(Math.max(s.nav, 0), navList.length - 1);
+	hashOwn = location.hash; // the entry's own hash: navRestore writes the view's
 	navList[navAt] = navCapture();
 	navAt = to;
 	navRestore(navList[to]);

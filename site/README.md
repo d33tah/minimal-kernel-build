@@ -2056,11 +2056,16 @@ uncovered line ranges, `uncoveredLines`):
 A function V8 reports without its blocks (it ran, but which branches is
 not known) counts as run and its lines do not. The collector's close line
 counts those per target type, and `raw-*.trace.txt` beside each raw file
-lists attaches, detaches, pauses, takes and answers in order. Chromium
-runs with `--js-flags=--no-compilation-cache`: a reloaded document
-otherwise reuses the functions compiled for the one before it, and when
-the Debugger domain is off those report no blocks (seen in Chromium 158
-with a reload; with the flag they report them).
+lists attaches, detaches, pauses, takes and answers in order. Functions
+V8 did not compile itself while block coverage was on report no blocks
+(Chromium 158), so Chromium runs with `--v8-cache-options=none` (the
+site's service worker caches its scripts at install and Chromium loads
+those with a code cache: in CI run 43509415990 every function of a page
+reloaded under it came without blocks) and
+`--js-flags=--no-compilation-cache` (a document loaded again in the same
+renderer reuses the functions compiled for the one before, seen with the
+Debugger domain off). The self-test's reload, of a script its service
+worker serves from its cache, fails without the first.
 
 Block coverage slows the page's own JavaScript: stepping a Debian boot
 again for a Step back took 679 ms instead of 199 ms (3.4x; binary block

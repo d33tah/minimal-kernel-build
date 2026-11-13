@@ -87,11 +87,19 @@ function swNever() {
 \treturn 1;
 }
 
-self.addEventListener("install", () => self.skipWaiting());
+// other.js from the cache it fills at install, as the site's sw.js does
+// (Chromium keeps a V8 code cache of such a script).
+self.addEventListener("install", (e) => e.waitUntil(caches.open("fx").then((c) => c.add("other.js")).then(() => self.skipWaiting())));
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
-self.addEventListener("fetch", (e) => { swFetch(e.request.url); });
+self.addEventListener("fetch", (e) => {
+	swFetch(e.request.url);
+	if (e.request.url.endsWith("/other.js"))
+		e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+});
 """,
     "other.js": """// second page
+// Chromium keeps a code cache only of scripts of 1 KiB and more: this comment
+// makes it one. """ + "-" * 1200 + """
 function otherRan() {
 \treturn 7;
 }

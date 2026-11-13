@@ -25,7 +25,7 @@ Beside it, raw-....trace.txt has one JSON line per attach, detach, pause,
 take, answer, failed command and script a take found run (with how many of
 its functions came without block coverage, which the report cannot split
 into lines and branches): what to read when a number looks wrong. Chromium
-runs with --js-flags=--no-compilation-cache (see with_port()).
+runs without V8's code cache and compilation cache (see with_port()).
 """
 
 import base64
@@ -520,11 +520,16 @@ def install(label):
 
     def with_port(kw):
         port = free_port()
-        # --no-compilation-cache: a document loaded again in the same renderer
-        # (reload, goto) otherwise reuses the functions V8 compiled for the
-        # one before, and those report no block coverage (seen in Chromium
-        # 158 whenever the Debugger domain is off).
-        kw["args"] = list(kw.get("args") or []) + [f"--remote-debugging-port={port}", "--js-flags=--no-compilation-cache"]
+        # Functions V8 did not compile itself under block coverage report
+        # none (Chromium 158): --v8-cache-options=none, no code cache (the
+        # site's service worker caches its scripts at install, and Chromium
+        # loads those with a code cache: every function of a page reloaded
+        # under it came without blocks, CI run 43509415990);
+        # --no-compilation-cache, a document loaded again in the same
+        # renderer does not reuse the functions compiled for the one before
+        # (the same, with the Debugger domain off).
+        kw["args"] = list(kw.get("args") or []) + [f"--remote-debugging-port={port}", "--v8-cache-options=none",
+                                                   "--js-flags=--no-compilation-cache"]
         return port
 
     launch, persistent = BrowserType.launch, BrowserType.launch_persistent_context

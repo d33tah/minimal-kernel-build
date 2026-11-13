@@ -70,9 +70,53 @@ const { spawn } = require("child_process");
 const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
-const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
+const { cfiFromElf, cfiPack, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
 
 const SHARD_BITS = 16;
+
+// CFI shards: the page only reads them (unwind.js cfiDecode, which also
+// describes the format). The FDEs of t that overlap [lo, hi), with the
+// CIEs they use.
+function cfiSlice(t, lo, hi) {
+	const cieIx = new Map(), cies = [], fdes = [];
+	for (let i = 0; i < t.lo.length; i++) {
+		if (t.lo[i] >= hi || t.lo[i] + t.len[i] <= lo)
+			continue;
+		if (!cieIx.has(t.cie[i])) {
+			cieIx.set(t.cie[i], cies.length);
+			cies.push(t.cies[t.cie[i]]);
+		}
+		fdes.push([t.lo[i], t.len[i], cieIx.get(t.cie[i]), t.off[i], t.plen[i]]);
+	}
+	return cfiPack(cies, fdes, t.prog, t.bias);
+}
+
+// A CFI table as an MKBC 1 shard.
+function cfiEncode(t) {
+	const out = [];
+	const uv = (x) => {
+		for (;;) {
+			const c = x % 128;
+			x = Math.floor(x / 128);
+			if (x) out.push(c | 0x80);
+			else { out.push(c); return; }
+		}
+	};
+	const bytes = (a) => { uv(a.length); for (const x of a) out.push(x); };
+	out.push(0x4d, 0x4b, 0x42, 0x43, 1);
+	uv(t.bias === null ? 0 : t.bias + 1);
+	uv(t.cies.length);
+	for (const c of t.cies) {
+		uv(c.caf); uv(c.daf < 0 ? -2 * c.daf - 1 : 2 * c.daf); uv(c.ra); bytes(c.init);
+	}
+	uv(t.lo.length);
+	let pa = 0;
+	for (let i = 0; i < t.lo.length; i++) {
+		uv(t.lo[i] - pa); pa = t.lo[i];
+		uv(t.len[i]); uv(t.cie[i]); bytes(t.prog.subarray(t.off[i], t.off[i] + t.plen[i]));
+	}
+	return Uint8Array.from(out);
+}
 
 function reader(file) {
 	const fd = fs.openSync(file, "r");

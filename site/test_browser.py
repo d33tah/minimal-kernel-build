@@ -46,7 +46,7 @@ import traceback
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
 import jscov
-from test_dwarf import write_core
+from test_dwarf import dwarfdump_cfi, write_core
 
 SITE = pathlib.Path(__file__).resolve().parent
 HELLO = "Hello, World!"
@@ -1378,6 +1378,10 @@ def cpu_state_case(browser, base, shots, name):
     r["translate"] = page.inner_text("#xlate_out").splitlines()[-2:]
     if f"physical 0x{sk['paddr']:08x}" not in page.inner_text("#xlate_out"):
         problems.append(f"translate {hex(sk['vaddr'])} did not give {hex(sk['paddr'])}: {r['translate']}")
+    if page.is_enabled("#dbg_pause"):
+        machine_do(page, "click", "#dbg_pause")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+    cpu_state_tools(page, sk, problems, r)
     page.screenshot(path=str(shots / f"cpu-state-{name}-1280.png"), full_page=True)
     page.set_viewport_size({"width": 390, "height": 900})
     time.sleep(0.5)
@@ -1389,6 +1393,142 @@ def cpu_state_case(browser, base, shots, name):
         problems.append(f"page errors: {errors}")
     page.close()
     return problems, r
+
+
+# Hand-made PAE tables in the top 64 KiB of RAM (saved and put back by the
+# caller): PDPT, PD and PT 4 KiB apart. Linear 0x40000000-0x7fffffff (PDPTE
+# 1) -> the PD; its PDE 0 -> the PT, whose PTE 5 maps 0x40005000 -> 0x123000;
+# its PDE 1 is a 2 MiB page 0x40200000 -> 0x200000. PDPTE 2 is not present.
+PAE_JS = """(on) => {
+    const c = stepper.cpu, m = c.mem8, dv = new DataView(m.buffer, m.byteOffset, m.length);
+    const S = (m.length - 0x10000) & ~0xfff;
+    if (!on) {
+        m.set(window.__paeSaved.bytes, S);
+        c.cr[3] = window.__paeSaved.cr3;
+        c.cr[4] = window.__paeSaved.cr4;
+        return null;
+    }
+    window.__paeSaved = { bytes: m.slice(S, S + 0x3000), cr3: c.cr[3], cr4: c.cr[4] };
+    m.fill(0, S, S + 0x3000);
+    const q = (a, lo) => { dv.setUint32(a, lo >>> 0, true); dv.setUint32(a + 4, 0, true); };
+    q(S + 1 * 8, (S + 0x1000) | 1);
+    q(S + 0x1000, (S + 0x2000) | 3);
+    q(S + 0x1000 + 8, 0x200000 | 0x83);
+    q(S + 0x2000 + 5 * 8, 0x123000 | 3);
+    c.cr[3] = S;
+    c.cr[4] = c.cr[4] | 0x20;
+    return S;
+}"""
+
+
+def cpu_state_tools(page, sk, problems, r):
+    """The Debugger's paging and register tools on a paused machine: the
+    translate box takes a symbol name and refuses junk, the page directory
+    overview's run holding start_kernel maps it where translate does, a
+    hole in it translates to a page fault; PAE (no shipped kernel turns it
+    on) on hand-made tables: a 4 KiB and a 2 MiB page and a missing PDPTE;
+    the GDT and IDT views say "not mapped" for a table at an unmapped
+    address; MMX and SSE registers show once they hold a value, and a
+    changed row is marked."""
+    def xlate(text):
+        page.fill("#xlate_in", text)
+        page.click("#xlate_go")
+        return page.inner_text("#xlate_out")
+    want = f"physical 0x{sk['paddr']:08x}"
+    out = xlate("start_kernel")
+    r["translate_name"] = out.splitlines()[-2:]
+    if want not in out:
+        problems.append(f"translate start_kernel (by name) did not give {want}: {out!r}")
+    out = xlate("no_such_symbol_xyz")
+    if out != "Give a hex address or a symbol name.":
+        problems.append(f"translate of an unknown name: {out!r}")
+    page.click("#pd_view")
+    pd = page.inner_text("#xlate_out").splitlines()
+    r["pd_lines"] = len(pd)
+    runs = []
+    for line in pd:
+        m = re.match(r"0x([0-9a-f]{8})-0x([0-9a-f]{8}) (?:(\d+) PDEs, )?(4 MiB pages|page tables) from 0x([0-9a-f]{8}) flags 0x([0-9a-f]{2})$", line)
+        if not m:
+            problems.append(f"page directory line not understood: {line!r}")
+            continue
+        lo, hi, n = int(m.group(1), 16), int(m.group(2), 16), int(m.group(3) or 1)
+        if hi + 1 - lo != n << 22:
+            problems.append(f"page directory line: {n} PDEs do not span {line!r}")
+        runs.append((lo, hi, m.group(4), int(m.group(5), 16)))
+    hit = [x for x in runs if x[0] <= sk["vaddr"] <= x[1]]
+    r["pd_start_kernel"] = hit
+    if len(hit) != 1:
+        problems.append(f"no single page directory run holds start_kernel 0x{sk['vaddr']:08x}: {hit} of {len(runs)}")
+    elif hit[0][2] == "4 MiB pages" and hit[0][3] + sk["vaddr"] - hit[0][0] != sk["paddr"]:
+        problems.append(f"the page directory maps start_kernel to 0x{hit[0][3] + sk['vaddr'] - hit[0][0]:08x}, translate to 0x{sk['paddr']:08x}")
+    hole = next((a for a in range(0, 1 << 32, 1 << 22) if not any(x[0] <= a <= x[1] for x in runs)), None)
+    if hole is None:
+        problems.append("the page directory has no hole to translate")
+    else:
+        out = xlate(hex(hole + 0x1234))
+        r["hole"] = out.splitlines()[-1]
+        if not out.endswith("not mapped (page fault)"):
+            problems.append(f"translate 0x{hole + 0x1234:08x} (no PDE in the overview): {out!r}")
+    # PAE.
+    page.evaluate(PAE_JS, True)
+    try:
+        pae = {a: xlate(a) for a in ("0x40005abc", "0x40212345", "0x80000000")}
+        page.click("#pd_view")
+        pae["pd"] = page.inner_text("#xlate_out")
+    finally:
+        page.evaluate(PAE_JS, False)
+    r["pae"] = {k: v.splitlines()[-1] for k, v in pae.items()}
+    if not pae["0x40005abc"].endswith("physical 0x00123abc (4 KiB page)") or pae["0x40005abc"].count(" at ") != 3:
+        problems.append(f"PAE: 0x40005abc through PDPTE, PDE, PTE to 0x00123abc: {pae['0x40005abc']!r}")
+    if not pae["0x40212345"].endswith("physical 0x00212345 (2 MiB page)"):
+        problems.append(f"PAE: 0x40212345 in a 2 MiB page at 0x200000: {pae['0x40212345']!r}")
+    if not pae["0x80000000"].endswith("not mapped (page fault)"):
+        problems.append(f"PAE: 0x80000000 (PDPTE 2 not present): {pae['0x80000000']!r}")
+    pdl = pae["pd"].splitlines()
+    if len(pdl) != 4 or "→ PD" not in pdl[1] or not pdl[2].endswith("not present"):
+        problems.append(f"PAE page directory: the four PDPTEs, 1 present, 2 not: {pdl}")
+    if xlate(hex(sk["vaddr"])).find(want) < 0:
+        problems.append("translate after the PAE test: start_kernel no longer maps (CR3/CR4 not restored?)")
+    # GDT and IDT at an unmapped linear address.
+    if hole is not None:
+        saved = page.evaluate(f"""() => {{ const c = stepper.cpu, s = [c.gdtr_offset[0], c.idtr_offset[0]];
+            c.gdtr_offset[0] = c.idtr_offset[0] = {hole}; return s; }}""")
+        try:
+            page.click("#view_gdt")
+            gdt = page.inner_text("#cpu_table").splitlines()
+            page.click("#view_idt")
+            idt = page.inner_text("#cpu_table").splitlines()
+        finally:
+            page.evaluate("(s) => { stepper.cpu.gdtr_offset[0] = s[0]; stepper.cpu.idtr_offset[0] = s[1]; }", saved)
+        r["gdt_unmapped"], r["idt_unmapped"] = gdt[:1], idt[:1]
+        if not gdt or not all(l.endswith(" not mapped") for l in gdt):
+            problems.append(f"GDT at an unmapped address: {gdt[:3]}")
+        if not idt or not all(l.endswith(" not mapped") for l in idt):
+            problems.append(f"IDT at an unmapped address: {idt[:3]}")
+    # MMX and SSE registers: shown once they hold a value; a changed row marked.
+    fpu = lambda: page.evaluate("""() => { renderCpuState(); return [...document.querySelectorAll('#cpu_fpu [data-reg]')]
+        .map((e) => [e.dataset.reg, e.textContent, e.classList.contains('chg')]); }""")
+    before = fpu()
+    saved = page.evaluate("""() => { const c = stepper.cpu, s = [Array.from(c.fpu_st), Array.from(c.reg_xmm32s), c.fpu_stack_empty[0]];
+        c.fpu_st[4] = 0x12345678; c.reg_xmm32s[0] = 0x3f800000; return s; }""")
+    try:
+        mmx = fpu()
+        page.evaluate("stepper.cpu.fpu_stack_empty[0] = stepper.cpu.fpu_stack_empty[0] & 0xfe")
+        st = fpu()
+    finally:
+        page.evaluate("""(s) => { const c = stepper.cpu; c.fpu_st.set(s[0]); c.reg_xmm32s.set(s[1]); c.fpu_stack_empty[0] = s[2];
+            renderCpuState(); }""", saved)
+    names = lambda rows: [x[0] for x in rows]
+    row = lambda rows, n: next((x for x in rows if x[0] == n), None)
+    r["fpu_rows"] = [len(before), len(mmx), len(st)]
+    if "MM1" in names(before) or "XMM0" in names(before):
+        problems.append(f"MMX/SSE rows shown while unused: {names(before)}")
+    if not row(mmx, "MM1") or "12345678" not in row(mmx, "MM1")[1] or "ST0" in names(mmx):
+        problems.append(f"MM1 = 0x12345678 not shown (or ST rows while the stack is empty): {names(mmx)} {row(mmx, 'MM1')}")
+    if not row(mmx, "XMM0") or not row(mmx, "XMM0")[1].rstrip().endswith("3f800000"):
+        problems.append(f"XMM0 = 0x3f800000 not shown: {row(mmx, 'XMM0')}")
+    if "ST0" not in names(st) or not row(st, "FTW") or not row(st, "FTW")[2]:
+        problems.append(f"ST0 in use: ST rows, FTW marked changed: {names(st)[:12]} {row(st, 'FTW')}")
 
 
 def runto_case(browser, base, shots):
@@ -11821,6 +11961,7 @@ def pwa_case(browser, base, shots, timeout):
             time.sleep(3)
             if page.locator("#pwa_update").count() and page.is_visible("#pwa_update"):
                 problems.append("the update notice shows on the new deploy itself")
+            pwa_after_update(page, base, state, timeout, problems, r)
 
     finally:
         if errors:
@@ -11830,6 +11971,50 @@ def pwa_case(browser, base, shots, timeout):
             httpd.shutdown()
             tmp.cleanup()
     return problems, r
+
+
+PWA_RANGE_JS = """async ([path, range]) => {
+    const resp = await fetch(withV(path), { headers: { Range: range } });
+    const b = new Uint8Array(await resp.arrayBuffer());
+    return { status: resp.status, range: resp.headers.get('content-range'), bytes: Array.from(b.slice(0, 16)), n: b.length };
+}"""
+
+
+def pwa_after_update(page, base, state, timeout, problems, r):
+    """The new deploy's service worker (block coverage from its start, the
+    first one's often begins late): a Range request for a cached file gets
+    its bytes from the cache (206, a suffix range, 416 past the end); a
+    POST is not answered by it; offline again the page loads from its
+    cache, hello boots, and a file never fetched gets the offline note."""
+    data = (SITE / kernel_entries()["hello"]["path"]).read_bytes()
+    n = len(data)
+    got = {}
+    for rng, want in (("bytes=0-9", (206, f"bytes 0-9/{n}", list(data[:10]), 10)),
+                      ("bytes=-4", (206, f"bytes {n - 4}-{n - 1}/{n}", list(data[-4:]), 4)),
+                      (f"bytes={n}-", (416, f"bytes */{n}", [], 0))):
+        g = page.evaluate(PWA_RANGE_JS, [kernel_entries()["hello"]["path"], rng])
+        got[rng] = [g["status"], g["range"], g["n"]]
+        if (g["status"], g["range"], g["bytes"], g["n"]) != want:
+            problems.append(f"after the update, Range {rng} of kernels/hello/bzImage: {g}, want {want[:2]} and {want[3]} bytes of the file")
+    r["ranges"] = got
+    post = page.evaluate("fetch('version.json', { method: 'POST' }).then((x) => x.status)")
+    r["post_status"] = post
+    if post != 501:
+        problems.append(f"a POST answered {post}, want the server's 501 (the service worker leaves non-GET requests alone)")
+    state["down"] = True
+    page.context.set_offline(True)
+    try:
+        page.goto(f"{base}/index.html?kernel=hello")
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append(f"offline after the update: hello did not boot: {page.inner_text('#status')!r}")
+        page.goto(f"{base}/index.html?kernel=debian-6.1-686")
+        wait_for(lambda: "not available offline yet" in (page.text_content("#pwa_notes") or ""), 30)
+        r["offline_note_after_update"] = (page.text_content("#pwa_notes") or "")[:120]
+        if "not available offline yet" not in r["offline_note_after_update"]:
+            problems.append(f"offline after the update, a file never fetched: no note ({r['offline_note_after_update']!r})")
+    finally:
+        page.context.set_offline(False)
+        state["down"] = False
 
 
 def suite_pwa(ctx):
@@ -15124,6 +15309,215 @@ def suite_jitsnap(ctx):
     return report("jitsnap", *jitsnap_case(ctx.browser, ctx.base, ctx.shots, ctx.entries))
 
 
+# ---- CFI parsing and unwinding on a hand-written fixture ---------------------
+# The kernels' CFI is .debug_frame with the rules compilers emit; this
+# fixture (llvm-mc from assembly, linked by ld.lld at 0xc1000000) has the
+# rest: .eh_frame (CIE "zR", pc-relative FDE pointers) and .debug_frame,
+# DW_CFA_offset_extended(_sf), restore_extended, undefined, same_value,
+# register, val_offset(_sf), def_cfa_sf, def_cfa_offset_sf,
+# val_expression, def_cfa_expression, advance_loc4, set_loc (.debug_frame
+# only: in .eh_frame its operand is in the FDE pointer encoding) and a CFA
+# expression of DW_OP const2s, const4s, const1u, drop, neg, abs, mod, shr,
+# xor (it evaluates to ESP+12). f2's return address is undefined (the
+# outermost frame).
+CFI_FIXTURE = """%(sections)s
+	.text
+	.globl f1
+	.type f1,@function
+f1:
+	.cfi_startproc
+	pushl %%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset %%ebp, -8
+	movl %%esp, %%ebp
+	.cfi_def_cfa_register %%ebp
+	pushl %%ebx
+	.cfi_offset %%ebx, -12
+	.cfi_register %%esi, %%edi
+	.cfi_undefined %%eax
+	.cfi_same_value %%ecx
+	nop
+	.cfi_remember_state
+	.cfi_restore %%ebx
+	.cfi_escape 0x11, 0x07, 0x7d
+	.cfi_escape 0x14, 0x06, 0x02
+	.cfi_escape 0x15, 0x02, 0x7e
+	nop
+	.cfi_restore_state
+	.cfi_escape 0x05, 0x06, 0x04
+	.cfi_escape 0x06, 0x06
+	.cfi_escape 0x12, 0x04, 0x10
+	nop
+	.cfi_escape 0x13, 0x08
+	nop
+	.cfi_escape 0x16, 0x03, 0x02, 0x75, 0x00
+	.cfi_escape 0x0f, 0x02, 0x74, 0x08
+	nop
+	.cfi_escape 0x04, 0x02, 0x00, 0x00, 0x00
+	.cfi_escape 0x0f, 0x1c, 0x74, 0x00, 0x0b, 0xf8, 0xff, 0x22, 0x0d, 0x10, 0x00, 0x00, 0x00, 0x22, 0x08, 0x07, 0x13, 0x35, 0x1f, 0x19, 0x33, 0x1d, 0x31, 0x25, 0x31, 0x27, 0x22, 0x08, 0x04, 0x22
+%(setloc)s	nop
+	nop
+	nop
+	ret
+	.cfi_endproc
+	.size f1, .-f1
+	.globl f2
+	.type f2,@function
+f2:
+	.cfi_startproc
+	.cfi_undefined %%eip
+	nop
+	ret
+	.cfi_endproc
+	.size f2, .-f2
+"""
+CFI_BASE, CFI_OFFSET = 0xc1000000, 0xc0000000
+
+
+def cfi_fixture(tmp, kind):
+    """The fixture as an ELF with .eh_frame or .debug_frame (and DWARF for
+    the import: llvm-mc -g)."""
+    s = CFI_FIXTURE % {"sections": "\t.cfi_sections .debug_frame" if kind == "debug_frame" else "",
+                       # DW_CFA_set_loc 0xc100000c, then DW_CFA_def_cfa ESP+20.
+                       "setloc": "\t.cfi_escape 0x01, 0x0c, 0x00, 0x00, 0xc1, 0x0c, 0x04, 0x14\n" if kind == "debug_frame" else ""}
+    src, obj, elf = (tmp / f"cfi-{kind}.{x}" for x in ("s", "o", "elf"))
+    src.write_text(s)
+    subprocess.run(["llvm-mc", "-g", "-triple=i386-linux-gnu", "-filetype=obj", str(src), "-o", str(obj)], check=True)
+    subprocess.run(["ld.lld", "-m", "elf_i386", "-e", "f1", f"-Ttext=0x{CFI_BASE:x}", str(obj), "-o", str(elf)], check=True)
+    return elf
+
+
+# In the page: the ELF through dwarfworker.js (as "From disk / Symbols"
+# opens a vmlinux), its CFI table back, then unwind.js on it.
+CFI_TABLE_JS = """async ([b64, offset]) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const w = new Worker('dwarfworker.js' + location.search);
+    const ask = (m) => new Promise((res) => { w.onmessage = (e) => res(e.data); w.postMessage(m); });
+    const o = await ask({ type: 'open', file: new File([bytes], 'cfi.elf'), offset });
+    const c = o.ok ? await ask({ type: 'cfi' }) : null;
+    w.terminate();
+    window.__cfi = c && c.table;
+    return { open: o.ok ? 'ok' : o.why, source: c && c.source, why: c && c.why };
+}"""
+
+CFI_ROWS_JS = """(pas) => pas.map((pa) => { const r = cfiRow(window.__cfi, pa); return r === null ? null : r.why ? 'why: ' + r.why : cfiRowText(r); })"""
+
+# unwind() from regs over a memory of { address: value }; the code is the fixture's.
+CFI_UNWIND_JS = """([regs, mem, lo, hi, offset]) => {
+    const env = { rowAt: (pa) => cfiRow(window.__cfi, pa), read32: (va) => mem[va >>> 0],
+                  toPhys: (va) => (va >= lo && va < hi ? va - offset : null), symAt: () => null, isEntry: () => false };
+    const u = unwind(regs, env);
+    return { state: u.state, why: u.why, frames: u.frames.map((f) => ({ pc: f.pc, method: f.method, cfa: f.cfa, regs: f.regs })) };
+}"""
+
+
+def cfi_unwind_checks(page, hi, problems, r):
+    """unwind() through the fixture's rows from registers and a made-up
+    stack: the return address and saved registers are where the row says,
+    each kind of rule gives the caller's value, and the walk ends or stops
+    with its reason."""
+    B = CFI_BASE
+    ra_f2 = B + 0xe  # the return lands after f2's first byte: f2's row, EIP undefined: the outermost frame
+
+    def walk(eip, regs, mem):
+        return page.evaluate(CFI_UNWIND_JS, [{"eip": eip, **regs}, {str(k): v for k, v in mem.items()}, B, hi, CFI_OFFSET])
+
+    def caller(u):
+        return {int(k): v for k, v in u["frames"][1]["regs"].items()} if len(u["frames"]) > 1 else {}
+    cases = []
+    # Row 0xc1000001: CFA=ESP+8, EBP=[CFA-8], EIP=[CFA-4].
+    u = walk(B + 1, {"esp": 0x1000, "ebp": 0x1}, {0x1000: 0x2222, 0x1004: ra_f2})
+    cases.append(("push ebp", u["state"] == "ok" and len(u["frames"]) == 2 and u["frames"][1]["pc"] == ra_f2 and
+                  caller(u).get(5) == 0x2222 and caller(u).get(4) == 0x1008 and u["frames"][1]["method"] == "cfi", u))
+    u = walk(B + 1, {"esp": 0x1000}, {0x1000: 0x2222})
+    cases.append(("return address unreadable", u["state"] == "stopped" and u["why"] == "the return address at CFA-4 cannot be read", u))
+    # Row 0xc1000003: CFA=EBP+8 with EBP unknown.
+    u = walk(B + 3, {"esp": 0x1000}, {})
+    cases.append(("CFA register unknown", u["why"] == "CFA = EBP+8, and EBP is not known here", u))
+    # Row 0xc1000004: ESI=EDI (register rule), EBX=[CFA-12], EAX undefined, ECX same.
+    u = walk(B + 4, {"esp": 0x2ff0, "ebp": 0x3000, "edi": 0x99, "ecx": 0x11, "eax": 0x55},
+             {0x3000: 0x5555, 0x3004: ra_f2, 0x2ffc: 0x3333})
+    c = caller(u)
+    cases.append(("register, same, undefined", u["state"] == "ok" and c.get(6) == 0x99 and c.get(1) == 0x11 and 0 not in c and
+                  c.get(3) == 0x3333 and c.get(5) == 0x5555, u))
+    # Row 0xc1000005: EDX=CFA+8 and ESI=CFA-8 (val_offset), EDI=[CFA+12].
+    u = walk(B + 5, {"esp": 0x2ff0, "ebp": 0x3000}, {0x3000: 0x5555, 0x3004: ra_f2, 0x3014: 0x7777})
+    c = caller(u)
+    cases.append(("val_offset", u["state"] == "ok" and c.get(2) == 0x3010 and c.get(6) == 0x3000 and c.get(7) == 0x7777, u))
+    # Row 0xc1000009: CFA=DW_OP_breg4 ESP+8, EBX=DW_OP_breg5 EBP+0 (val_expression).
+    u = walk(B + 9, {"esp": 0x4000, "ebp": 0x4444}, {0x4000: 0x6000, 0x4004: ra_f2})
+    c = caller(u)
+    cases.append(("expressions", u["state"] == "ok" and u["frames"][0]["cfa"] == 0x4008 and c.get(3) == 0x4444 and c.get(5) == 0x6000, u))
+    u = walk(B + 9, {"ebp": 0x4444}, {})
+    cases.append(("CFA expression without ESP", u["state"] == "stopped" and (u["why"] or "").startswith("CFA (DW_OP_breg4 ESP+8): "), u))
+    # Row 0xc100000b: the long CFA expression, ESP+12.
+    u = walk(B + 0xb, {"esp": 0x5000, "ebp": 0x1}, {0x5000: 0x1, 0x5004: 0x6000, 0x5008: ra_f2})
+    cases.append(("CFA expression ops", u["state"] == "ok" and u["frames"][0]["cfa"] == 0x500c, u))
+    # The caller's row (0xc1000006: CFA=ESP-64) puts its CFA below this frame's: a corrupt stack.
+    u = walk(B + 1, {"esp": 0x1000}, {0x1000: 0x2222, 0x1004: B + 7, 0xfc4: ra_f2})
+    cases.append(("stack does not grow", u["state"] == "stopped" and (u["why"] or "").startswith("the stack does not grow back up"), u))
+    u = walk(0x1234, {"esp": 0x1000}, {})
+    cases.append(("not code", u["why"] == "0x1234 is not code of this kernel", u))
+    r["unwind"] = {name: ok for name, ok, _ in cases}
+    for name, ok, u in cases:
+        if not ok:
+            problems.append(f"unwind on the CFI fixture, {name}: {json.dumps(u)[:400]}")
+
+
+def cfi_case(browser, base, shots):
+    """The fixture's CFI, .eh_frame and .debug_frame, opened in the page
+    like an imported vmlinux: every row equals llvm-dwarfdump's (the long
+    CFA expression's row: its value, as dwExprText abbreviates the rarer
+    ops), no row outside the FDEs, the frame summary of f1, then unwind()."""
+    problems, r = [], {}
+    page = browser.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1")
+    wait_for(lambda: page.evaluate("typeof cfiRow === 'function' && typeof unwind === 'function'"), 30)
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as tmp:
+        for kind in ("eh_frame", "debug_frame"):
+            elf = cfi_fixture(pathlib.Path(tmp), kind)
+            fdes = dwarfdump_cfi(str(elf))
+            got = page.evaluate(CFI_TABLE_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET])
+            r[kind] = got
+            if got["open"] != "ok" or got["source"] != "." + kind:
+                problems.append(f"{kind}: the fixture did not open with its CFI: {got}")
+                continue
+            hi = max(f[1] for f in fdes)
+            rows = [(va, text) for f in fdes for va, text in f[2]]
+            want = {}
+            for va in range(CFI_BASE, hi + 2):
+                f = next((f for f in fdes if f[0] <= va < f[1]), None)
+                prev = [t for a, t in (f[2] if f else []) if a <= va]
+                want[va] = prev[-1] if prev else None
+            have = dict(zip(want, page.evaluate(CFI_ROWS_JS, [va - CFI_OFFSET for va in want])))
+            bad = [(hex(va), want[va], have[va]) for va in want
+                   if want[va] != have[va] and not (want[va] and "DW_OP_const2s" in want[va])]
+            r[kind + "_rows"] = f"{len(want) - len(bad)}/{len(want)} addresses, {len(rows)} rows"
+            if bad or len(rows) < 10:
+                problems.append(f"{kind}: rows differ from llvm-dwarfdump: {bad[:4]} ({len(rows)} rows)")
+            if kind == "debug_frame" and "CFA=ESP+20" not in (want.get(CFI_BASE + 0xc) or ""):
+                problems.append(f"debug_frame: llvm-dwarfdump has no DW_CFA_set_loc row at 0xc100000c: {want.get(CFI_BASE + 0xc)}")
+            info = page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", CFI_BASE + 4 - CFI_OFFSET)
+            r[kind + "_frame"] = info
+            # .debug_frame's last row (DW_CFA_set_loc) is CFA=ESP+20.
+            want_info = (f"frame pointer: CFA = EBP+8 from +0x3 (before that at most ESP+{20 if kind == 'debug_frame' else 8}); the call frame information does not "
+                         "say how far below EBP the frame goes; saves EDI at CFA+12, EBP at CFA-8, EBX at CFA-12; a CFA expression somewhere")
+            if info != want_info:
+                problems.append(f"{kind}: f1's frame summary {info!r}, want {want_info!r}")
+            if kind == "eh_frame":
+                cfi_unwind_checks(page, hi, problems, r)
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    page.close()
+    return problems, r
+
+
+def suite_cfi(ctx):
+    return report("cfi", *cfi_case(ctx.browser, ctx.base, ctx.shots))
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -15167,6 +15561,7 @@ SUITES = {
     "followeip": (suite_followeip, False),
     "followfuzz": (suite_followfuzz, False),
     "nopath": (suite_nopath, False),
+    "cfi": (suite_cfi, False),
     "tipmarks": (suite_tipmarks, False),
     "legend": (suite_legend, True),
     "jitdet": (suite_jitdet, False),

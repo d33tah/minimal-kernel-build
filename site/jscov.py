@@ -439,10 +439,14 @@ class Collector:
                 self.seen.add(sig)
                 ran.append({"functionName": f["functionName"], "isBlockCoverage": f["isBlockCoverage"], "ranges": ranges})
             if os.environ.get("MKB_JSCOV_DEBUG"):
-                log(f"take {self.sessions.get(sid)} {name}: {len(ran)} new of {len(s['functions'])}")
+                log(f"take {self.sessions.get(sid)} {name}: {len(ran)} new of {len(s['functions'])}: "
+                    + ", ".join(f"{f['functionName'] or '(top)'} {f['ranges'][0]['count']}" for f in ran)[:300])
             if ran:
-                lines.append(json.dumps({"file": name, "len": n, "functions": ran} if n else
-                                        {"file": name, "end": end, "functions": ran}))
+                rec = {"file": name, "len": n} if n else {"file": name, "end": end}
+                if self.sessions.get(sid) == "service_worker":
+                    rec["kind"] = "service_worker"
+                rec["functions"] = ran
+                lines.append(json.dumps(rec))
         if lines:
             with self.write_lock:
                 self.out.write("\n".join(lines) + "\n")

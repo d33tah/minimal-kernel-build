@@ -488,7 +488,7 @@ jobs:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs,pwa
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
-        - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
+        - types,covtree,unwind,lineaddr,fnfacts,branches,nopath,cfi
         - runstate
         - speedline
         - speedasm,runbadge,memeip,graphopen,srcfiles
@@ -541,8 +541,9 @@ jobs:
         echo "$sum  $f" | sha256sum -c
         dpkg-deb --fsys-tarfile "$f" | tar -x -O ./usr/lib/debug/boot/vmlinux-6.1.0-50-686 > debug-elfs/debian-6.1-686.elf
         sudo apt-get update
-        # lz4: snapdiff checks the downloaded snapshot with `lz4 -d`.
-        sudo apt-get install -y llvm gdb lz4
+        # lz4: snapdiff checks the downloaded snapshot with `lz4 -d`; lld:
+        # the cfi suite links its fixture (llvm-mc assembles it).
+        sudo apt-get install -y llvm lld gdb lz4
         ls -l debug-elfs
 
     - name: Install Playwright and Chromium

@@ -106,9 +106,14 @@ async function main() {
 			}
 			// A take without the top-level function (coverage started after
 			// it ran): a root range of count 0, so the code it did not report
-			// counts as not run, not as covered by default.
+			// counts as not run, not as covered by default. A service worker
+			// (Playwright resumes it before the collector's coverage starts,
+			// most runs) is the exception: its handlers exist only once its
+			// top level ran, so a record with a function that ran means the
+			// top level ran (sw.js's top level has no branch to miss).
+			const ranAny = r.kind === "service_worker" && r.functions.some((f) => f.ranges[0].count > 0);
 			const functions = r.functions.some((f) => f.ranges[0].startOffset === 0 && f.ranges[0].endOffset === n) ? r.functions
-				: [{ functionName: "", isBlockCoverage: true, ranges: [{ startOffset: 0, endOffset: n, count: 0 }] }, ...r.functions];
+				: [{ functionName: "", isBlockCoverage: true, ranges: [{ startOffset: 0, endOffset: n, count: ranAny ? 1 : 0 }] }, ...r.functions];
 			(byFile[r.file] = byFile[r.file] || []).push({ functions });
 		}
 	}

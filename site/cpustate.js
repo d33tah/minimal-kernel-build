@@ -176,7 +176,7 @@ const CPU_SECTIONS = [
 				"computed by v86 on each rdtsc from its clock; reading it here would change v86's rdtsc state, so it is not read"],
 			["SYSENTER_CS", x4(c.sysenter_cs[0])], ["SYSENTER_ESP", x8(c.sysenter_esp[0])],
 			["SYSENTER_EIP", x8(c.sysenter_eip[0]) + " " + symAtLinear(st, c.sysenter_eip[0])],
-			["APIC_BASE", c.acpi_enabled[0] ? "0xfee00000" + (c.apic_enabled[0] ? " EN" : " (disabled)") : "0 (no APIC: v86 started without ACPI)"],
+			["APIC_BASE", "0 (no APIC: v86 started without ACPI)"],
 			["PAT", x8(pat[1]) + x8(pat[0]).slice(2)],
 			["EFER", x8(c.efer[0])],
 			["MISC_ENABLE", "0x1 (fixed: fast strings; writes ignored)"],
@@ -248,24 +248,9 @@ const CPU_SECTIONS = [
 					(pit.counter_reload[i] ? " (" + (1193182 / pit.counter_reload[i]).toFixed(1) + " Hz)" : "") +
 					" count at its last load/latch " + pit.counter_start_value[i] + (pit.counter_enabled[i] ? "" : " (disabled)"),
 					"v86 computes the current count from the elapsed time when read; shown: the value it started from"]);
-		if (c.acpi_enabled[0]) {
-			// apic.rs Apic (u32 index): 0 id, 1 divider, 3 initial count, 4 current count,
-			// 6-7 timer_last_tick (f64), 8 LVT timer, 9 perf, 10 LINT0, 11 LINT1,
-			// 12 error, 13 TPR, 16-23 IRR, 24-31 ISR, 40 spurious vector.
-			const a = new Uint32Array(c.wasm_memory.buffer, c.get_apic_addr(), 46);
-			const reg8 = (o) => Array.from(a.subarray(o, o + 8)).reverse().map((v) => (v >>> 0).toString(16).padStart(8, "0")).join("");
-			rows.push(["LAPIC", (c.apic_enabled[0] ? "enabled" : "disabled") + " id " + a[0] + " TPR " + x2(a[13]) + " SVR " + x4(a[40]) +
-				" LVT timer " + x8(a[8]) + " LINT0 " + x8(a[10]) + " LINT1 " + x8(a[11]) + " error " + x8(a[12])]);
-			rows.push(["LAPIC timer", "initial " + a[3] + " current " + a[4] + " divider " + a[1]]);
-			rows.push(["LAPIC IRR/ISR", "IRR " + reg8(16) + " ISR " + reg8(24)]);
-			const io = new Uint32Array(c.wasm_memory.buffer, c.get_ioapic_addr(), 52);
-			const unmasked = [];
-			for (let i = 0; i < 24; i++)
-				if (!(io[i] & 0x10000))
-					unmasked.push(i + "→" + x2(io[i]) + (io[i] & 0x8000 ? " level" : ""));
-			rows.push(["IOAPIC", "id " + io[49] + " IRR " + x8(io[50]) + " unmasked pins " + (unmasked.join(", ") || "none")]);
-		} else
-			rows.push(["APIC, IOAPIC", "not enabled (v86 runs this machine without ACPI)"]);
+		// app.js starts v86 without acpi: true, so it has no LAPIC or IOAPIC
+		// (acpi_enabled is 0 and not part of a saved state).
+		rows.push(["APIC, IOAPIC", "not enabled (v86 runs this machine without ACPI)"]);
 		const rtc = c.devices.rtc;
 		if (rtc)
 			rows.push(["RTC", new Date(rtc.rtc_time).toISOString().replace("T", " ").slice(0, 19) + " UTC, reg A " + x2(rtc.cmos_a) +

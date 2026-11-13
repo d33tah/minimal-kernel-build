@@ -170,21 +170,6 @@ function cfiPack(cies, fdes, src, bias) {
 	return t;
 }
 
-// The FDEs of t that overlap [lo, hi), with the CIEs they use.
-function cfiSlice(t, lo, hi) {
-	const cieIx = new Map(), cies = [], fdes = [];
-	for (let i = 0; i < t.lo.length; i++) {
-		if (t.lo[i] >= hi || t.lo[i] + t.len[i] <= lo)
-			continue;
-		if (!cieIx.has(t.cie[i])) {
-			cieIx.set(t.cie[i], cies.length);
-			cies.push(t.cies[t.cie[i]]);
-		}
-		fdes.push([t.lo[i], t.len[i], cieIx.get(t.cie[i]), t.off[i], t.plen[i]]);
-	}
-	return cfiPack(cies, fdes, t.prog, t.bias);
-}
-
 // Index of the FDE covering pa, or -1.
 function cfiFind(t, pa) {
 	let a = 0, b = t.lo.length;
@@ -196,36 +181,11 @@ function cfiFind(t, pa) {
 }
 
 // ---- shard files ------------------------------------------------------------
+// Written by gen-dwarf.js (cfiSlice, cfiEncode; the page only reads them):
 // "MKBC" 1, bias + 1 (0: mixed), CIEs (count, then code alignment,
 // data alignment zigzag, return address column, program length, program),
 // FDEs (count, then start delta, length, CIE, program length, program),
 // numbers unsigned LEB128.
-
-function cfiEncode(t) {
-	const out = [];
-	const uv = (x) => {
-		for (;;) {
-			const c = x % 128;
-			x = Math.floor(x / 128);
-			if (x) out.push(c | 0x80);
-			else { out.push(c); return; }
-		}
-	};
-	const bytes = (a) => { uv(a.length); for (const x of a) out.push(x); };
-	out.push(0x4d, 0x4b, 0x42, 0x43, 1);
-	uv(t.bias === null ? 0 : t.bias + 1);
-	uv(t.cies.length);
-	for (const c of t.cies) {
-		uv(c.caf); uv(c.daf < 0 ? -2 * c.daf - 1 : 2 * c.daf); uv(c.ra); bytes(c.init);
-	}
-	uv(t.lo.length);
-	let pa = 0;
-	for (let i = 0; i < t.lo.length; i++) {
-		uv(t.lo[i] - pa); pa = t.lo[i];
-		uv(t.len[i]); uv(t.cie[i]); bytes(t.prog.subarray(t.off[i], t.off[i] + t.plen[i]));
-	}
-	return Uint8Array.from(out);
-}
 
 function cfiDecode(b) {
 	if (b[0] !== 0x4d || b[1] !== 0x4b || b[2] !== 0x42 || b[3] !== 0x43 || b[4] !== 1)
@@ -413,7 +373,7 @@ function cfiFrameText(f) {
 	if (f.why)
 		return "call frame information unreadable: " + f.why;
 	const saved = Object.keys(f.saved).map(Number).sort((a, b) => f.saved[b] - f.saved[a])
-		.map((n) => (CFI_REGS[n] || "r" + n) + " at CFA" + f.saved[n]);
+		.map((n) => (CFI_REGS[n] || "r" + n) + " at CFA" + (f.saved[n] < 0 ? "" : "+") + f.saved[n]);
 	const regs = saved.length ? "; saves " + saved.join(", ") : "; saves no registers";
 	if (f.fp >= 0)
 		return "frame pointer: CFA = EBP+" + f.fpOff + " from +0x" + f.fp.toString(16) + " (before that at most ESP+" + f.max +
@@ -957,4 +917,4 @@ function cfiRowText(row) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, cfiFrameText, cfiStep, dwExpr, dwExprText, unwind };
+	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiPack, cfiFind, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, cfiFrameText, cfiStep, dwExpr, dwExprText, unwind };

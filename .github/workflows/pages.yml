@@ -252,7 +252,7 @@ jobs:
         # The page's compiler makes CI's objects: one object per kernel and
         # build (plain and -g) compiled again by clang.wasm from its exact
         # command line must equal the build's object byte for byte.
-        hcmd() { make -s -n -B -C "$1" LLVM=1 "${@:2}" boot/hello.o | /usr/bin/grep -- ' -o boot/hello.o '; }
+        hcmd() { d=$1; shift; make -s -n -B -C "$d" LLVM=1 "$@" boot/hello.o | /usr/bin/grep -- ' -o boot/hello.o '; }
         w=site/clang/clang.wasm
         node site/check-wasm-objects.mjs --self-test "$w" hello "boot/hello.o=$(hcmd hello OPT=-O0)"
         node site/check-wasm-objects.mjs "$w" "$RUNNER_TEMP/hello-os" "boot/hello.o=$(hcmd "$RUNNER_TEMP/hello-os")"

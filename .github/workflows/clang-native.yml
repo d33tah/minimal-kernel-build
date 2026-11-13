@@ -1,0 +1,81 @@
+name: native clang 22 (CI's kernel compiler)
+
+# site/gen-clang-native.sh builds clang/lld 22.1.0 for x86_64 Linux from
+# clang.wasm's source (about 1.5 hours); its result is cached by the
+# script's hash without its SHA256 line (the pin does not change the
+# build, so a new pin is checked against the cached build). A push that
+# changes the script builds it here, so the Pages workflow (which calls
+# this one) finds it cached instead of waiting for the build.
+on:
+  push:
+    branches: [ "hello-kernel" ]
+    paths: [ "site/gen-clang-native.sh", ".github/workflows/clang-native.yml" ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clang-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cache key
+      id: key
+      run: echo "key=clang-native-$(sed '/^SHA256=/d' site/gen-clang-native.sh | sha256sum | cut -c1-64)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache/restore@v4
+      id: cache
+      with:
+        path: clang-native-cache
+        key: ${{ steps.key.outputs.key }}
+
+    # Same as clang-wasm.yml: the runner's resolver failed for Debian
+    # mirrors inside docker builds while public resolvers answered.
+    - name: Docker DNS
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        cfg=/etc/docker/daemon.json
+        { sudo cat "$cfg" 2>/dev/null || echo '{}'; } | jq '. + {dns: ["1.1.1.1", "8.8.8.8", "9.9.9.9"]}' > "$RUNNER_TEMP/daemon.json"
+        sudo cp "$RUNNER_TEMP/daemon.json" "$cfg"
+        sudo systemctl restart docker
+
+    # A build that does not match the pin is cached too (the check below
+    # fails on it), so a new pin can be checked without another build.
+    - name: Build the native clang (cache miss)
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        df -h / "$RUNNER_TEMP"
+        mkdir -p clang-native-cache
+        if time site/gen-clang-native.sh; then
+          cp site/clang-native/clang-native.tar clang-native-cache/
+        else
+          cp site/clang-native/clang-native.tar.rejected clang-native-cache/clang-native.tar
+        fi
+        sha256sum clang-native-cache/clang-native.tar
+
+    - uses: actions/cache/save@v4
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: clang-native-cache
+        key: ${{ steps.key.outputs.key }}
+
+    # The pinned SHA-256, on the cached copy too; a changed byte must fail
+    # the check.
+    - name: Check the native clang
+      run: |
+        mkdir -p site/clang-native && cp clang-native-cache/clang-native.tar site/clang-native/
+        site/gen-clang-native.sh --check
+        cp site/clang-native/clang-native.tar "$RUNNER_TEMP/t" && echo >> site/clang-native/clang-native.tar
+        if site/gen-clang-native.sh --check 2>/dev/null; then echo "--check passed a changed file" >&2; exit 1; fi
+        mv "$RUNNER_TEMP/t" site/clang-native/clang-native.tar && ls -l site/clang-native
+        mkdir "$RUNNER_TEMP/c" && tar -C "$RUNNER_TEMP/c" -xf site/clang-native/clang-native.tar
+        "$RUNNER_TEMP/c/bin/clang" --version
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: clang-native
+        path: site/clang-native/clang-native.tar

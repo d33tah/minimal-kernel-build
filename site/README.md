@@ -1963,10 +1963,27 @@ browser-test matrix job named by its suites):
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
+## In-browser toolchain
+
+`clang/clang.wasm` is clang and ld.lld 22.1.0 (with llvm-ar, llvm-nm,
+llvm-objcopy, llvm-objdump, llvm-readobj and llvm-strip in the same
+multicall module) with the x86 backend, built for wasm32-wasip1 by
+`gen-clang-wasm.sh` (pins, licences and SHA-256 in `THIRD_PARTY.md`). It
+is the compiler and linker for rebuilding a kernel in the page. The E0
+spike (plan site-edit-rebuild, PROGRESS) compiled hello, minified Linux
+and Debian 6.1 files and linked their kernels with it in Chromium,
+Firefox and Node, byte-identical to a native clang/lld of the same
+commit. `clang-wasm.yml` builds it when the script changes (about two
+hours), caches it by the script's hash and checks every file
+(`gen-clang-wasm.sh --check`, plus a changed licence file that must fail
+the check); the Pages workflow calls it and deploys `clang/`. The page
+does not load it yet and the service worker does not precache it.
+
 ## Testing
 
     site/fetch-v86.sh
     site/gen-v86.sh    # v86.wasm: Docker, about 5 minutes
+    site/gen-clang-wasm.sh    # clang.wasm: Docker, about 2 hours
     site/gen-symbols.py minified/vmlinux site/kernels/minified-linux/symbols.json minified-linux
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
     (dwarf/ and src/: see the workflow's "Debug-info builds" step)

@@ -334,8 +334,13 @@ jobs:
         name: v86-wasm
         path: site/v86/v86.wasm
 
+  # clang/lld 22.1.0 for wasm32-wasip1 (gen-clang-wasm.sh): clang-wasm.yml
+  # builds it when the script changes and caches it; this run checks it.
+  clang-wasm:
+    uses: ./.github/workflows/clang-wasm.yml
+
   site:
-    needs: [kernels, debian-initrd, v86]
+    needs: [kernels, debian-initrd, v86, clang-wasm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -344,6 +349,11 @@ jobs:
       with:
         name: v86-wasm
         path: site/v86
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
 
     - uses: actions/download-artifact@v4
       with:
@@ -384,6 +394,8 @@ jobs:
         site/fetch-v86.sh
         # The v86 job's build, checked again here.
         site/gen-v86.sh --check
+        # The clang-wasm job's files, checked again here.
+        site/gen-clang-wasm.sh --check
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks. stamp.py
         # puts ?v=<commit> on every script and stylesheet of index.html and
@@ -396,10 +408,14 @@ jobs:
     # The browser test runs in its own job (browser-test below) so the
     # deploy does not wait ~11 minutes for it; a failing test still fails
     # the workflow run.
+    # Without clang/ (77 MB, not loaded by the page yet): every
+    # browser-test job downloads this artifact.
     - uses: actions/upload-artifact@v4
       with:
         name: site
-        path: site/
+        path: |
+          site/
+          !site/clang/
 
     - uses: actions/configure-pages@v5
 

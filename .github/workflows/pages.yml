@@ -474,14 +474,16 @@ jobs:
         name: jscov-raw-pwa
         path: jscov-raw/
 
-  # The browser test's suites in parallel jobs (test_browser.py --suites),
-  # grouped so each job takes about the same time.
+  # The suites in parallel jobs, grouped to take about the same time; each group
+  # plain (every assertion) and with coverage (site/jscov.py: up to ~3x slower
+  # JavaScript, so timing bounds may fail there; the jscov job judges that run).
   browser-test:
     needs: site
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        coverage: [false, true]
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs,pwa
@@ -498,7 +500,7 @@ jobs:
         - exactstop
         - followeip
         - followfuzz
-    name: browser-test (${{ matrix.suites }})
+    name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:
     - uses: actions/checkout@v4
 
@@ -550,9 +552,10 @@ jobs:
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
 
     - name: Browser test (${{ matrix.suites }})
+      continue-on-error: ${{ matrix.coverage }}
       env:
         MKB_DEBUG_ELF_DIR: ${{ github.workspace }}/debug-elfs
-        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+        MKB_JSCOV: ${{ matrix.coverage && format('{0}/jscov-raw', github.workspace) || '' }}
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites "${{ matrix.suites }}"'
 
     - uses: actions/upload-artifact@v4
@@ -562,14 +565,14 @@ jobs:
         path: site/test-screenshots/
 
     - uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && matrix.coverage
       with:
         name: jscov-raw-${{ strategy.job-index }}
         path: jscov-raw/
 
-  # e2e coverage of the site's JavaScript (site/jscov.py in every browser
-  # job above and in pwa-install): merged, reported, and held to the
-  # committed floor site/jscov-baseline.json. Runs when a test job failed too.
+  # e2e coverage of the site's JavaScript (the coverage browser-test jobs
+  # and pwa-install): merged, reported, and held to the committed floor
+  # site/jscov-baseline.json. Runs when a test job failed too.
   jscov:
     needs: [browser-test, pwa-install]
     if: ${{ !cancelled() }}

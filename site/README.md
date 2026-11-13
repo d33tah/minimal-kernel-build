@@ -2003,7 +2003,13 @@ functions, branches per file, and every function that never ran):
     node site/jscov/report.js --src site --out /tmp/jscov-report /tmp/jscov
     python3 site/test_jscov.py   # self-test on a fixture page
 
-In CI every browser-test job and pwa-install upload their raw coverage;
+Block coverage slows the page's own JavaScript: stepping a Debian boot
+again for a Step back took 679 ms instead of 199 ms (3.4x; binary block
+coverage, callCount off, 719 ms), so the wall-clock bounds of reverse,
+snapdiff, exactstop and tasks fail under it. CI therefore runs every
+browser-test group twice: plain, with every assertion, and with coverage,
+where a failing test step does not fail the job. The coverage jobs and
+pwa-install upload their raw coverage;
 the jscov job runs the self-test (a never-called function, one nested in
 it, a Worker's and the service worker's functions and an untaken else must
 show as uncovered, the called ones as covered), merges, writes the table

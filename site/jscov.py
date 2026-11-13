@@ -6,7 +6,7 @@ Playwright's sync API: a launched Chromium also listens on a DevTools port,
 and a Collector (its own CDP connection, threads, stdlib only) auto-attaches
 to every target (pages, popups, dedicated Workers, the service worker),
 starts Profiler.startPreciseCoverage(callCount, detailed) before the target
-runs a line, and polls Profiler.takePreciseCoverage. Coverage is also taken
+runs a line, and takes Profiler.takePreciseCoverage every 30 s. Coverage is also taken
 before Playwright closes a page, context or browser and before goto/reload
 (a navigation can move the page to a new renderer process), and before the
 page terminates a Worker (Worker.prototype.terminate waits for the take).
@@ -33,8 +33,12 @@ import urllib.request
 
 SITE = pathlib.Path(__file__).resolve().parent
 SCRIPT_NAMES, SITE_DIRS = set(), set()
-POLL_S = 3.0
+POLL_S = 30.0
 TAKE_TIMEOUT_S = 10.0
+# A service worker whose context closed never answers until it detaches
+# (about 20 s later); a live one answers in milliseconds. Its answer is
+# recorded whenever it comes, the flush just does not wait longer.
+SW_WAIT_S = 1.0
 BINDING = "__mkbJscovFlush"
 WAIT_TYPES = {"page", "iframe", "worker", "service_worker", "shared_worker"}
 
@@ -368,10 +372,9 @@ class Collector:
                     self.ws.send(json.dumps({"id": i, "method": "Profiler.takePreciseCoverage", "sessionId": sid}))
                 except OSError:
                     pass
-                evs.append(ev)
-            end = time.monotonic() + TAKE_TIMEOUT_S
-            for ev in evs:
-                ev.wait(max(0.0, end - time.monotonic()))
+                evs.append((ev, SW_WAIT_S if self.sessions.get(sid) == "service_worker" else TAKE_TIMEOUT_S))
+            for ev, wait in evs:
+                ev.wait(max(0.0, t0 + wait - time.monotonic()))
             if self.outstanding and os.environ.get("MKB_JSCOV_DEBUG"):
                 log(f"unanswered takes: {[self.sessions.get(s) for s in self.outstanding.values()]}")
             dt = time.monotonic() - t0

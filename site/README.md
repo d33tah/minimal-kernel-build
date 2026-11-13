@@ -1990,7 +1990,7 @@ With `MKB_JSCOV=DIR` set, test_browser.py and test_pwa_install.py collect
 V8 precise coverage (`site/jscov.py`): their Chromium also opens a
 DevTools port, and a second CDP connection attaches to every page, popup,
 Worker and the service worker before it runs, starts block coverage and
-takes it every 3 s, before Playwright closes or navigates a page, and
+takes it every 30 s, before Playwright closes or navigates a page, and
 before the page terminates a Worker. Only the site's top-level scripts are
 kept (not v86/, iced/, lz4/, nor the node tools gen-dwarf.js and
 gen-src.js). `site/jscov/report.js` (monocart-coverage-reports, pinned with

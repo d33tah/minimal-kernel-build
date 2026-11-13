@@ -92,7 +92,12 @@ async function main() {
 				foreign[r.file] = (foreign[r.file] || 0) + 1;
 				continue;
 			}
-			(byFile[r.file] = byFile[r.file] || []).push({ functions: r.functions });
+			// A take without the top-level function (coverage started after
+			// it ran): a root range of count 0, so the code it did not report
+			// counts as not run, not as covered by default.
+			const functions = r.functions.some((f) => f.ranges[0].startOffset === 0 && f.ranges[0].endOffset === n) ? r.functions
+				: [{ functionName: "", isBlockCoverage: true, ranges: [{ startOffset: 0, endOffset: n, count: 0 }] }, ...r.functions];
+			(byFile[r.file] = byFile[r.file] || []).push({ functions });
 		}
 	}
 	console.log(`${files.length} raw files, ${records} records, ${Object.keys(byFile).length} of ${names.length} scripts ran`);

@@ -566,8 +566,41 @@ def show_canvas(page):
     time.sleep(0.2)
 
 
+def timeline_pan(page, problems, r):
+    """A drag on the timeline moves its time window by the dragged share of
+    it (the span stays) and stops following the run; a drag in the minimap
+    centres the window where the pointer is."""
+    show_canvas(page)
+    if not page.is_checked("#graph_follow"):
+        page.check("#graph_follow")
+    box = page.locator("#graph_canvas").bounding_box()
+    x0, x1, w = page.evaluate("[G.x0, G.x1, document.getElementById('graph_canvas').clientWidth]")
+    cx, cy = box["x"] + box["width"] / 2, box["y"] + 120
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    page.mouse.move(cx - 200, cy, steps=5)
+    page.mouse.up()
+    a0, a1, follow = page.evaluate("[G.x0, G.x1, G.follow || document.getElementById('graph_follow').checked]")
+    want = 200 / w * (x1 - x0)
+    r["pan"] = [round(a0 - x0), round(want), follow]
+    if abs((a0 - x0) - want) > 0.01 * (x1 - x0) or abs((a1 - a0) - (x1 - x0)) > 1e-6 * (x1 - x0) or follow:
+        problems.append(f"a 200 px drag on the timeline moved [{x0}, {x1}] to [{a0}, {a1}] (want +{want:.0f}, the same span), "
+                        f"still following {follow}")
+    y = box["y"] + 10
+    page.mouse.move(box["x"] + box["width"] * 0.25, y)
+    page.mouse.down()
+    page.mouse.move(box["x"] + box["width"] * 0.5, y, steps=5)
+    page.mouse.up()
+    mid, want_mid, full = page.evaluate("""() => { const t0 = runStart(), t1 = Math.max(t0 + 1, recTo(G.stepper));
+        return [(G.x0 + G.x1) / 2, t0 + (t1 - t0) / 2, t1 - t0]; }""")
+    r["minimap"] = [round(mid), round(want_mid)]
+    if abs(mid - want_mid) > 0.01 * full:
+        problems.append(f"a drag to the middle of the minimap centred the window at {mid:.0f}, want {want_mid:.0f}")
+
+
 def timeline_views(page, problems, shots, tag, r):
     """Focus, sandwich, search, depth cap, transposed and flame views."""
+    timeline_pan(page, problems, r)
     k = page.evaluate("""() => { const st = G.stepper; let best = -1, w = -1;
         for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'start_kernel') {
             const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k]; if (e > w) { w = e; best = k; } }

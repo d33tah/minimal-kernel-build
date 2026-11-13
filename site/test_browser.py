@@ -13434,6 +13434,17 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
                     problems.append(f"{tag}: Escape did not cancel the dialog")
             else:
                 problems.append(f"{tag}: the B key opened no dialog the second time")
+        # The function's label line above its first instruction: a bookmark of the function.
+        lbl = f'#listing .lbl[data-addr="{target}"]'
+        if not page.locator(lbl).count():
+            problems.append(f"{tag}: the Page listing has no label line of {fn}")
+        else:
+            bm_press(page, lbl, phone, cdp)
+            b = bm_dialog_save(page, problems, tag + " label line", "fn", name="label " + fn, want_default=fn)
+            if b:
+                added["label"] = b
+                if b["t"].get("pa") != target or b["t"].get("name") != fn:
+                    problems.append(f"{tag}: the label line's bookmark holds {b['t']}, want {fn} at {hex(target)}")
     bm_shots(page, shots, f"bookmarks-{name}-{width}-listing", scheme)
 
     # 4. A page of the Memory grid: context menu / long press on its square.

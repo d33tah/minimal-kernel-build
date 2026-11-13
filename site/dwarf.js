@@ -2200,39 +2200,6 @@ function dwarfPack(strings, la, lf, ll, rg, lk, sx) {
 	return t;
 }
 
-// The part of table t for [lo, hi): the line row in force at lo is
-// repeated at lo, ranges overlapping it are kept. Strings are re-indexed.
-function dwarfSlice(t, lo, hi) {
-	const strings = [], map = new Map();
-	const sid = (k) => {
-		if (k < 0)
-			return -1;
-		let v = map.get(k);
-		if (v === undefined) {
-			v = strings.length;
-			strings.push(t.strings[k]);
-			map.set(k, v);
-		}
-		return v;
-	};
-	const la = [], lf = [], ll = [], lk = [];
-	let a = dwarfRow(t, lo);
-	if (a < 0)
-		a = 0;
-	for (let k = a; k < t.la.length && t.la[k] < hi; k++) {
-		la.push(Math.max(lo, t.la[k]));
-		lf.push(sid(t.lf[k]));
-		ll.push(t.ll[k]);
-		lk.push(t.la[k] >= lo && t.lk && t.lk[k] ? 1 : 0); // the row in force at lo starts before it
-	}
-	const sx = Array.from(t.sx || []).filter((x) => x >= lo && x < hi);
-	const rg = [];
-	for (let k = 0; k < t.ra.length; k++)
-		if (t.ra[k] < hi && t.rh[k] > lo)
-			rg.push([t.ra[k], t.rh[k], t.rd[k], sid(t.rn[k]), sid(t.rf[k]), t.rl[k]]);
-	return dwarfPack(strings, la, lf, ll, rg, lk, sx);
-}
-
 // Index of the line row in force at pa, or -1.
 function dwarfRow(t, pa) {
 	let a = 0, b = t.la.length;
@@ -2392,52 +2359,12 @@ function dwarfFunction(t, pa) {
 }
 
 // ---- shard files ----------------------------------------------------------
-// "MKBD" 2, strings (count, then NUL-terminated UTF-8), line rows (count,
+// Written by gen-dwarf.js (dwarfSlice, dwarfEncode; the page only reads
+// them): "MKBD" 2, strings (count, then NUL-terminated UTF-8), line rows (count,
 // then address delta, file+1 zigzag delta * 2 + lk, line zigzag delta),
 // ranges (count, then start delta, length, depth, name+1, call file+1,
 // call line), breakpoint addresses inside rows (count, then address
 // deltas), all unsigned LEB128. Version 1 had no lk bit and no sx.
-
-function dwarfEncode(t) {
-	const out = [];
-	const uv = (x) => {
-		for (;;) {
-			const c = x % 128;
-			x = Math.floor(x / 128);
-			if (x) out.push(c | 0x80);
-			else { out.push(c); return; }
-		}
-	};
-	const zv = (v) => v < 0 ? -2 * v - 1 : 2 * v;
-	const zz = (v) => uv(zv(v));
-	out.push(0x4d, 0x4b, 0x42, 0x44, 2);
-	uv(t.strings.length);
-	const enc = new TextEncoder();
-	for (const s of t.strings) {
-		for (const c of enc.encode(s))
-			out.push(c);
-		out.push(0);
-	}
-	uv(t.la.length);
-	let pa = 0, pf = 0, pl = 0;
-	for (let k = 0; k < t.la.length; k++) {
-		uv(t.la[k] - pa); pa = t.la[k];
-		uv(zv(t.lf[k] + 1 - pf) * 2 + (t.lk[k] ? 1 : 0)); pf = t.lf[k] + 1;
-		zz(t.ll[k] - pl); pl = t.ll[k];
-	}
-	uv(t.ra.length);
-	pa = 0;
-	for (let k = 0; k < t.ra.length; k++) {
-		uv(t.ra[k] - pa); pa = t.ra[k];
-		uv(t.rh[k] - t.ra[k]); uv(t.rd[k]); uv(t.rn[k] + 1); uv(t.rf[k] + 1); uv(t.rl[k]);
-	}
-	uv(t.sx.length);
-	pa = 0;
-	for (const x of t.sx) {
-		uv(x - pa); pa = x;
-	}
-	return Uint8Array.from(out);
-}
 
 function dwarfDecode(b) {
 	const ver = b[4];
@@ -2490,4 +2417,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfPack, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfDecode, dwDisplayPath };

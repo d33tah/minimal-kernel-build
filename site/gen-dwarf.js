@@ -67,12 +67,89 @@ const fs = require("fs");
 const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
-const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
+const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfRow, dwarfPack, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
 const { cfiFromElf, cfiPack, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
 
 const SHARD_BITS = 16;
+
+// Line shards: the page only reads them (dwarf.js dwarfDecode, which
+// also describes the format). The part of table t for [lo, hi): the line
+// row in force at lo is repeated at lo, ranges overlapping it are kept.
+// Strings are re-indexed.
+function dwarfSlice(t, lo, hi) {
+	const strings = [], map = new Map();
+	const sid = (k) => {
+		if (k < 0)
+			return -1;
+		let v = map.get(k);
+		if (v === undefined) {
+			v = strings.length;
+			strings.push(t.strings[k]);
+			map.set(k, v);
+		}
+		return v;
+	};
+	const la = [], lf = [], ll = [], lk = [];
+	let a = dwarfRow(t, lo);
+	if (a < 0)
+		a = 0;
+	for (let k = a; k < t.la.length && t.la[k] < hi; k++) {
+		la.push(Math.max(lo, t.la[k]));
+		lf.push(sid(t.lf[k]));
+		ll.push(t.ll[k]);
+		lk.push(t.la[k] >= lo && t.lk && t.lk[k] ? 1 : 0); // the row in force at lo starts before it
+	}
+	const sx = Array.from(t.sx || []).filter((x) => x >= lo && x < hi);
+	const rg = [];
+	for (let k = 0; k < t.ra.length; k++)
+		if (t.ra[k] < hi && t.rh[k] > lo)
+			rg.push([t.ra[k], t.rh[k], t.rd[k], sid(t.rn[k]), sid(t.rf[k]), t.rl[k]]);
+	return dwarfPack(strings, la, lf, ll, rg, lk, sx);
+}
+
+// A line table as an MKBD 2 shard.
+function dwarfEncode(t) {
+	const out = [];
+	const uv = (x) => {
+		for (;;) {
+			const c = x % 128;
+			x = Math.floor(x / 128);
+			if (x) out.push(c | 0x80);
+			else { out.push(c); return; }
+		}
+	};
+	const zv = (v) => v < 0 ? -2 * v - 1 : 2 * v;
+	const zz = (v) => uv(zv(v));
+	out.push(0x4d, 0x4b, 0x42, 0x44, 2);
+	uv(t.strings.length);
+	const enc = new TextEncoder();
+	for (const s of t.strings) {
+		for (const c of enc.encode(s))
+			out.push(c);
+		out.push(0);
+	}
+	uv(t.la.length);
+	let pa = 0, pf = 0, pl = 0;
+	for (let k = 0; k < t.la.length; k++) {
+		uv(t.la[k] - pa); pa = t.la[k];
+		uv(zv(t.lf[k] + 1 - pf) * 2 + (t.lk[k] ? 1 : 0)); pf = t.lf[k] + 1;
+		zz(t.ll[k] - pl); pl = t.ll[k];
+	}
+	uv(t.ra.length);
+	pa = 0;
+	for (let k = 0; k < t.ra.length; k++) {
+		uv(t.ra[k] - pa); pa = t.ra[k];
+		uv(t.rh[k] - t.ra[k]); uv(t.rd[k]); uv(t.rn[k] + 1); uv(t.rf[k] + 1); uv(t.rl[k]);
+	}
+	uv(t.sx.length);
+	pa = 0;
+	for (const x of t.sx) {
+		uv(x - pa); pa = x;
+	}
+	return Uint8Array.from(out);
+}
 
 // CFI shards: the page only reads them (unwind.js cfiDecode, which also
 // describes the format). The FDEs of t that overlap [lo, hi), with the

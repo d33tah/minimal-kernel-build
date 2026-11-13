@@ -13458,6 +13458,148 @@ def bm_fit(page, tag, problems):
         problems.append(f"{tag}: horizontal scroll with the bookmarks list open (page {got['hdoc']}, list {got['hlist']})")
 
 
+# Storage that fails on demand: setItem throws a QuotaExceededError while
+# window.__bmFail is set; every access throws (a browser keeping no data
+# for the page) when the URL has nostore=1.
+BM_STORAGE_JS = """(() => {
+  if (new URLSearchParams(location.search).get('nostore') === '1') {
+    Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('no storage here', 'SecurityError'); } });
+    return;
+  }
+  const set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    if (window.__bmFail) throw new DOMException('full', 'QuotaExceededError');
+    return set.call(this, k, v);
+  };
+})();"""
+
+
+def bm_status(page):
+    return page.text_content("#bm_status") or ""
+
+
+def bookmarks_edges(browser, base, shots):
+    """Bookmarks off the main path, on hello paused at 1280: B in the
+    About, Page and Memory tabs; import of a file that is no JSON, of
+    JSON without bookmarks, and of a list with one new, one already there
+    and one unreadable entry; delete and Undo; another page of the same
+    site sees a change at once (the storage event); a link that cannot be
+    read; a link from another build of hello (goes there, says so); the
+    switch for a kernel that is not listed; storing failing (quota) and a
+    browser that keeps no data: the list says so."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    ctx.add_init_script(BM_STORAGE_JS)
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    url = f"{base}/index.html?kernel=hello&paused=1"
+    page.goto(url + "#machine")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    tmp = tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP"))
+    try:
+        # B in three tabs: the machine's position (About: no place of its own;
+        # in the Machine tab B is the VM's key), the Page tab's page, the
+        # Memory tab's page.
+        kinds = {}
+        for tab, kind in (("about", "pos"), ("page", None), ("memory", "page")):
+            show_tab(page, tab)
+            page.click(f'.tabbar [role=tab][data-tab="{tab}"]')
+            if tab == "page":
+                page.evaluate("selectPage(0x100000 / 4096)")
+                time.sleep(0.5)
+            page.mouse.move(5, 5)
+            page.evaluate("document.activeElement && document.activeElement.blur && document.activeElement.blur()")
+            page.keyboard.press("b")
+            got = bm_dialog_save(page, problems, "edges", kind or (page.evaluate(BM_DIALOG_JS) or {}).get("kind", "?"))
+            kinds[tab] = got and got["kind"]
+        r["b_key"] = kinds
+        if kinds.get("about") != "pos" or kinds.get("page") not in ("code", "page") or kinds.get("memory") != "page":
+            problems.append(f"B in the About, Page and Memory tabs: {kinds}, want pos, code or page, page")
+        st = bm_state(page)
+        pos = next((b for b in st["list"] if b["kind"] == "pos"), None)
+        if not pos:
+            problems.append(f"no machine position bookmark to go on with: {st['list']}")
+            return problems, r
+        bm_open_list(page, False)
+        # Import: no JSON, no bookmarks, a mixed list.
+        d = pathlib.Path(tmp.name)
+        files = {"junk.json": "this is not JSON", "nolist.json": json.dumps({"format": "x"}),
+                 "mixed.json": json.dumps({"bookmarks": [pos, {"name": 3, "kind": "nope"}, {**pos, "id": "bnew1", "name": "another one"}]})}
+        want = {"junk.json": "junk.json is not a bookmarks file", "nolist.json": "nolist.json has no bookmarks",
+                "mixed.json": "Imported 1 bookmarks from mixed.json, 1 were here already, 1 unreadable."}
+        for n, text in files.items():
+            (d / n).write_text(text)
+            page.set_input_files("#bm_import_file", str(d / n))
+            ok = wait_for(lambda: want[n] in bm_status(page), 5)
+            r["import_" + n] = bm_status(page)[:100]
+            if not ok:
+                problems.append(f"import {n}: status {bm_status(page)!r}, want {want[n]!r}")
+        n0 = len(bm_state(page)["list"])
+        # Another page of the site (same storage) follows.
+        other = ctx.new_page()
+        other.goto(url + "#machine")
+        wait_for(lambda: other.evaluate("typeof BM === 'object' && BM.list.length") == n0, 30)
+        # Delete, Undo.
+        page.click('#bm_list .bmrow[data-id="bnew1"] .bmdel')
+        wait_for(lambda: len(bm_state(page)["list"]) == n0 - 1, 3)
+        seen = wait_for(lambda: other.evaluate("BM.list.length") == n0 - 1, 5)
+        r["other_page_follows"] = seen
+        if not seen:
+            problems.append(f"another page of the site still lists {other.evaluate('BM.list.length')} bookmarks after a delete, want {n0 - 1}")
+        page.click("#bm_status button")
+        if not wait_for(lambda: len(bm_state(page)["list"]) == n0 and "“another one” is back." in bm_status(page), 3):
+            problems.append(f"Undo of a delete: {len(bm_state(page)['list'])} bookmarks, status {bm_status(page)!r}")
+        other.close()
+        # A bookmark of a kernel the menu does not list: its switch says so.
+        (d / "alien.json").write_text(json.dumps([{**pos, "id": "balien", "name": "alien", "kernel": "no-such-kernel", "kernelKey": "f" * 64}]))
+        page.set_input_files("#bm_import_file", str(d / "alien.json"))
+        wait_for(lambda: page.locator('#bm_list .bmrow[data-id="balien"] .bmswitch').count() > 0, 5)
+        page.click('#bm_list .bmrow[data-id="balien"] .bmswitch')
+        if "“no-such-kernel” is not one of the listed kernels" not in bm_status(page):
+            problems.append(f"switch to a kernel not listed: {bm_status(page)!r}")
+        # Storing fails: the list says the bookmarks are not kept.
+        page.evaluate("window.__bmFail = true")
+        page.click('#bm_list .bmrow[data-id="balien"] .bmdel')
+        wait_for(lambda: page.is_visible("#bm_store"), 3)
+        r["store_fail"] = page.text_content("#bm_store")
+        if "storing them failed (QuotaExceededError)" not in (r["store_fail"] or ""):
+            problems.append(f"storing failing: #bm_store {r['store_fail']!r}")
+        page.evaluate("window.__bmFail = false")
+        page.screenshot(path=str(shots / "bookmarks-edges-1280.png"))
+        page.close()
+        # Links: one that cannot be read, one from another build of hello.
+        p2 = ctx.new_page()
+        p2.on("pageerror", lambda e: errors.append(str(e)[:200]))
+        p2.goto(url + "#bm=@@not-base64@@")
+        if not wait_for(lambda: "The link's bookmark could not be read." in bm_status(p2), 30):
+            problems.append(f"a link that cannot be read: status {bm_status(p2)!r}")
+        data = {"n": "elsewhere", "k": pos["kind"], "t": pos["t"], "kn": "hello", "kk": "0" * 64}
+        b64 = base64.urlsafe_b64encode(json.dumps(data).encode()).decode().rstrip("=")
+        p2.goto(url + "#bm=" + b64)
+        ok = wait_for(lambda: "“elsewhere” was made with another build of hello" in bm_status(p2), 60)
+        r["other_build"] = bm_status(p2)[:120]
+        if not ok:
+            problems.append(f"a link from another build of hello: status {bm_status(p2)!r}")
+        p2.close()
+        # A browser that keeps no data for the page.
+        p3 = ctx.new_page()
+        p3.on("pageerror", lambda e: errors.append(str(e)[:200]))
+        p3.goto(f"{base}/index.html?kernel=hello&paused=1&nostore=1#machine")
+        wait_for(lambda: p3.evaluate("typeof BM === 'object'"), 30)
+        bm_open_list(p3, False)
+        r["no_storage"] = p3.text_content("#bm_store")
+        if "this browser keeps no data for the page (SecurityError)" not in (r["no_storage"] or "") or not p3.is_visible("#bm_store"):
+            problems.append(f"no storage: #bm_store {r['no_storage']!r}")
+        p3.screenshot(path=str(shots / "bookmarks-nostore-1280.png"))
+    finally:
+        tmp.cleanup()
+        if errors:
+            problems.append(f"page errors: {errors[:3]}")
+        ctx.close()
+    return problems, r
+
+
 def bookmarks_case(browser, base, shots, linux):
     out = []
     names = kernel_entries()
@@ -13476,6 +13618,7 @@ def bookmarks_case(browser, base, shots, linux):
                                       f"({at.line}): {str(e)[:300]}"], {}
         out.append(report("bookmarks", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                           seconds=round(time.monotonic() - t0)))
+    out.append(report("bookmarks edges", *bookmarks_edges(browser, base, shots)))
     for name, scheme, phone in [("hello", "light", False)] + ([("minified-linux", "dark", True)] if linux else []):
         problems, r = snapdiff_guard(onecount_run, browser, base, shots, name, scheme, phone)
         out.append(report("bookmarks one count", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))

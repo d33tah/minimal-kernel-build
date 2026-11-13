@@ -11933,6 +11933,27 @@ def tabs_case(browser, base, shots, linux=False):
         tabs_settings(page, problems, r, shots)
     c.close()
 
+    # A browser that keeps no data (site data blocked: localStorage throws,
+    # no IndexedDB): Settings says nothing is remembered and its controls
+    # still work for this page.
+    c, page = fresh()
+    c.add_init_script("""Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('blocked by the test', 'SecurityError'); } });
+        Object.defineProperty(window, 'indexedDB', { get() { return undefined; } });""")
+    page.goto(f"{base}/index.html?kernel=hello")
+    if booted(page):
+        show_tab(page, "settings")
+        time.sleep(0.5)
+        none = page.text_content("#settings_stored") or ""
+        page.select_option("#set_speed", "100")
+        r["no storage"] = [none[:80], page.input_value("#dbg_speed")]
+        if "Nothing remembered for any kernel yet." not in none or page.locator("#settings_stored .setrow").count():
+            problems.append(f"Settings without storage: {none[:200]!r}")
+        if page.input_value("#dbg_speed") != "100":
+            problems.append(f"Settings without storage: speed 100/s set, the Machine tab shows {page.input_value('#dbg_speed')}")
+    else:
+        problems.append("without storage: hello did not boot")
+    c.close()
+
     tabs_u5(browser, base, shots, problems, r, fresh, linux)
 
     # 390 px, light and dark: shorter header, no sideways scroll, compact by default.

@@ -5,7 +5,9 @@ A fixture site in a temporary directory: a page script with a function it
 calls, one it never calls, a never-called function nested in a never-called
 one and an if whose else never runs; a Worker that runs a function in its
 top-level code, posts the result and is terminated by the page at once; a
-service worker whose fetch handler runs; a second page reached by goto.
+service worker whose fetch handler runs; a second page reached by goto,
+which then leaves for a third page on another site by itself (location.href:
+its last function runs just before the old renderer process goes away).
 The coverage of one headless Chromium run goes through report.js, and the
 report must show each executed function covered and each unexecuted one
 uncovered (the plan's V1 self-test), with the branch and line counts.
@@ -21,7 +23,7 @@ import sys
 import tempfile
 import time
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
 import jscov
 from test_browser import serve, wait_for
@@ -98,13 +100,32 @@ function otherNever() {
 \treturn 8;
 }
 
+// The page leaves for another site itself (a new renderer process).
+function otherLeave(to) {
+	window.left = to;
+	location.href = to;
+}
+
 window.other = otherRan();
+""",
+    "third.html": """<!doctype html><meta charset="utf-8"><title>jscov fixture 3</title>
+<script src="third.js"></script>""",
+    "third.js": """// third page, on another site (localhost)
+window.third = 9;
 """,
 }
 
-WANT_COVERED = {"cov.js": ["ran", "branchy"], "wk.js": ["workerRan"], "sw.js": ["swFetch"], "other.js": ["otherRan"]}
+WANT_COVERED = {"cov.js": ["ran", "branchy"], "wk.js": ["workerRan"], "sw.js": ["swFetch"], "other.js": ["otherRan", "otherLeave"]}
 WANT_UNCOVERED = {"cov.js": ["never", "outerNever", "innerNever"], "wk.js": ["workerNever"], "sw.js": ["swNever"],
                   "other.js": ["otherNever"]}
+
+
+def where(page):
+    """[location.href, window.third], or None while the page is between documents."""
+    try:
+        return page.evaluate("[location.href, window.third]")
+    except PlaywrightError:
+        return None
 
 
 def main():
@@ -134,6 +155,11 @@ def main():
                 time.sleep(0.2)
                 page.goto(base + "/other.html")
                 wait_for(lambda: page.evaluate("window.other === 7"), 10)
+                # Not through Playwright: the page navigates itself, cross-site.
+                third = f"http://localhost:{httpd.server_address[1]}/third.html"
+                page.evaluate(f"setTimeout(() => otherLeave({json.dumps(third)}), 0)")
+                if not wait_for(lambda: where(page) == [third, 9], 10):
+                    problems.append(f"fixture: the page did not reach {third} itself ({where(page)})")
                 ctx.close()
                 browser.close()
         finally:

@@ -1990,13 +1990,19 @@ With `MKB_JSCOV=DIR` set, test_browser.py and test_pwa_install.py collect
 V8 precise coverage (`site/jscov.py`): their Chromium also opens a
 DevTools port, and a second CDP connection attaches to every page, popup,
 Worker and the service worker before it runs, starts block coverage and
-takes it every 30 s, before Playwright closes or navigates a page, and
-before the page terminates a Worker. Only the site's top-level scripts are
+takes it every 30 s, before Playwright closes or navigates a page, when
+the page navigates by itself (location.reload(), location.href: its
+beforeunload pauses in the debugger while the collector takes; the new
+document can be in another renderer process, without the old one's
+coverage: in CI run 43438427659 pwaReload showed as never run although the
+pwa suite clicks Reload), and before the
+page terminates a Worker. Only the site's top-level scripts are
 kept (not v86/, iced/, lz4/, nor the node tools gen-dwarf.js and
 gen-src.js). `site/jscov/report.js` (monocart-coverage-reports, pinned with
 its SHA-512 integrity hashes in `site/jscov/package-lock.json`) merges the
 raw files of every job into an HTML report and `summary.json` (lines,
-functions, branches per file, and every function that never ran):
+functions, branches per file, every function that never ran and the
+uncovered line ranges, `uncoveredLines`):
 
     MKB_JSCOV=/tmp/jscov python3 site/test_browser.py --suites hello
     npm ci --prefix site/jscov --ignore-scripts
@@ -2012,7 +2018,8 @@ where a failing test step does not fail the job. The coverage jobs and
 pwa-install upload their raw coverage;
 the jscov job runs the self-test (a never-called function, one nested in
 it, a Worker's and the service worker's functions and an untaken else must
-show as uncovered, the called ones as covered), merges, writes the table
+show as uncovered, the called ones as covered, also one a page runs just
+before it leaves for another site by itself), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
 fails when a total is below `site/jscov-baseline.json`.
 

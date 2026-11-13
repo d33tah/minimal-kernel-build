@@ -10,6 +10,10 @@ runs a line, and takes Profiler.takePreciseCoverage every 30 s. Coverage is also
 before Playwright closes a page, context or browser and before goto/reload
 (a navigation can move the page to a new renderer process), and before the
 page terminates a Worker (Worker.prototype.terminate waits for the take).
+A navigation the page starts itself (location.reload(), location.href, a
+link) is caught in the old document's beforeunload: a `debugger` statement
+there pauses it (the Debugger domain is on in pages), the collector takes
+the coverage and resumes it.
 
 Only the site's own top-level *.js files are kept (not v86/, iced/, lz4/).
 Each take writes the functions (counts 0/1, repeats dropped) as
@@ -73,6 +77,8 @@ TERMINATE_JS = """(() => {
     bind(id);
   };
   globalThis.Worker = Wrapped;
+  // The collector takes the coverage while this pause lasts (Debugger.paused).
+  addEventListener('beforeunload', () => { debugger; });
 })();""" % {"b": BINDING}
 
 
@@ -203,6 +209,7 @@ class Collector:
         self.next_id = 0
         self.waiting = {}   # message id -> [event, result]
         self.outstanding = {}  # message id of an unanswered take -> session id
+        self.after = {}     # message id of a take -> what to send once it is answered
         self.sessions = {}  # session id -> target type
         self.lens = {}      # (session, scriptId, url) -> script length
         self.seen = set()
@@ -286,6 +293,9 @@ class Collector:
                 self._record(sid, msg["result"].get("result", []))
             elif sid:
                 log(f"take {msg['id']} on a {self.sessions.get(sid)}: {msg.get('error')}")
+            then = self.after.pop(msg["id"], None)
+            if then:
+                self.post(*then)
             w = self.waiting.pop(msg["id"], None) if sid else self.waiting.get(msg["id"])
             if w:
                 w[1] = msg
@@ -303,6 +313,10 @@ class Collector:
             for i, o in list(self.outstanding.items()):
                 if o == p.get("sessionId"):
                     self.outstanding.pop(i, None)
+                    self.after.pop(i, None)
+        elif method == "Debugger.paused" and sid in self.sessions:
+            # TERMINATE_JS's beforeunload pause (or any other): take, then resume.
+            self._take(sid, then=("Debugger.resume", None, sid))
         elif method == "Runtime.bindingCalled" and p.get("name") == BINDING:
             threading.Thread(target=self._terminate_flush, args=(sid, p.get("executionContextId"), p.get("payload")),
                              daemon=True).start()
@@ -331,6 +345,7 @@ class Collector:
             self.post("Runtime.enable", session=sid)
             self.post("Runtime.addBinding", {"name": BINDING}, session=sid)
             self.post("Page.addScriptToEvaluateOnNewDocument", {"source": TERMINATE_JS}, session=sid)
+            self.post("Debugger.enable", session=sid)
         if waiting:
             self.post("Runtime.runIfWaitingForDebugger", session=sid)
 
@@ -346,6 +361,23 @@ class Collector:
         if sid in self.sessions:
             self.post("Runtime.evaluate", {"expression": f"globalThis.__mkbJscovDone && __mkbJscovDone({json.dumps(payload)})",
                                            "contextId": ctx}, session=sid)
+
+    def _take(self, sid, then=None):
+        """Ask one target for its coverage without waiting (the reader
+        records the answer, then sends then: (method, params, session))."""
+        with self.id_lock:
+            self.next_id += 1
+            i = self.next_id
+            self.outstanding[i] = sid
+            if then:
+                self.after[i] = then
+        try:
+            self.ws.send(json.dumps({"id": i, "method": "Profiler.takePreciseCoverage", "sessionId": sid}))
+        except OSError:
+            self.outstanding.pop(i, None)
+            if then:
+                self.after.pop(i, None)
+                self.post(*then)
 
     def flush(self):
         """Take the coverage of every attached target (all at once); the

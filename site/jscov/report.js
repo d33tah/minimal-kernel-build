@@ -68,6 +68,18 @@ function lineOf(source, offset) {
 	return n;
 }
 
+function ranges(nums) {
+	const out = [];
+	for (const n of nums.sort((x, y) => x - y)) {
+		const last = out[out.length - 1];
+		if (last && last[1] === n - 1)
+			last[1] = n;
+		else
+			out.push([n, n]);
+	}
+	return out.map(([a, b]) => (a === b ? String(a) : `${a}-${b}`)).join(",");
+}
+
 async function main() {
 	const a = args(process.argv.slice(2));
 	const src = path.resolve(a.src);
@@ -140,6 +152,8 @@ async function main() {
 		const source = sources[name] || "";
 		s.uncoveredFunctions = (f.data && f.data.functions || []).filter((r) => !r.count && !r.ignored)
 			.map((r) => ({ name: r.name || "(anonymous)", line: lineOf(source, r.start) }));
+		// Line numbers of the code lines that never ran, as "a-b" ranges.
+		s.uncoveredLines = ranges(Object.entries(f.data && f.data.lines || {}).filter(([, c]) => !c).map(([l]) => +l));
 		s.sourceLines = source.split("\n").length - (source.endsWith("\n") ? 1 : 0);
 		summary.files[name] = s;
 	}

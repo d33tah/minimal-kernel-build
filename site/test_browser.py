@@ -12245,9 +12245,80 @@ def pwa_after_update(page, base, state, timeout, problems, r):
         state["down"] = False
 
 
+def pwa_edges(browser, shots, timeout):
+    """Two cases the main one does not reach (local only, they need their
+    own deploys). No service worker can be registered (sw.js missing): the
+    page says so in the console and boots as a plain page. Another tab
+    activates a newer deploy's worker: a page of the old deploy, now
+    controlled by it, shows the new-version notice."""
+    problems, r, errors = [], {}, []
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
+        root = pathlib.Path(t)
+        pwa_deploy(root, PWA_V[0], "A")
+        (root / "sw.js").unlink()
+        httpd, _ = pwa_server(root)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        c = browser.new_context(viewport={"width": 1280, "height": 900})
+        try:
+            page = c.new_page()
+            page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            warns = []
+            page.on("console", lambda m: m.type == "warning" and warns.append(m.text[:200]))
+            page.goto(f"{base}/index.html?kernel=hello")
+            booted = wait_for(lambda: gate_on_screen(page), timeout)
+            wait_for(lambda: any("service worker:" in w for w in warns), 10)
+            r["no sw.js"] = [booted, warns[:2], page.evaluate("!!navigator.serviceWorker.controller"),
+                             (page.text_content("#pwa_notes") or "")[:80]]
+            if not booted or not any("service worker:" in w for w in warns):
+                problems.append(f"without sw.js: booted {booted}, console warnings {warns[:3]}")
+            if page.evaluate("!!navigator.serviceWorker.controller") or (page.text_content("#pwa_notes") or "").strip():
+                problems.append(f"without sw.js: a controller or a note: {r['no sw.js']}")
+        finally:
+            c.close()
+            httpd.shutdown()
+
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
+        root = pathlib.Path(t)
+        pwa_deploy(root, PWA_V[0], "A")
+        httpd, _ = pwa_server(root)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        c = browser.new_context(viewport={"width": 1280, "height": 900})
+        try:
+            old = c.new_page()
+            old.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            old.goto(f"{base}/index.html?kernel=hello")
+            if not wait_for(lambda: gate_on_screen(old), timeout) or not pwa_controlled(old):
+                problems.append("another tab: the first page did not boot under its worker")
+                return problems, r
+            pwa_deploy(root, PWA_V[1], "B")
+            new = c.new_page()
+            new.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            new.goto(f"{base}/index.html?kernel=hello")
+            wait_for(lambda: new.evaluate(PWA_SW_VERSION_JS) == PWA_V[1], 60)
+            shown = wait_for(lambda: old.locator("#pwa_update").count() and old.is_visible("#pwa_update"), 30)
+            note = old.text_content("#pwa_update") if old.locator("#pwa_update").count() else ""
+            r["another tab"] = [new.evaluate(PWA_SW_VERSION_JS), old.evaluate(PWA_SW_VERSION_JS), note[:120],
+                                new.locator("#pwa_update").count()]
+            if not shown or "build " + PWA_V[1] not in note:
+                problems.append(f"another tab activated deploy B: the deploy A page shows {note!r}")
+            if new.locator("#pwa_update").count() and new.is_visible("#pwa_update"):
+                problems.append("another tab: the new deploy's own page shows the new-version notice")
+            old.bring_to_front()
+            old.screenshot(path=str(shots / "pwa-1280-light-other-tab.png"))
+        finally:
+            c.close()
+            httpd.shutdown()
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    return problems, r
+
+
 def suite_pwa(ctx):
     base = ctx.base if ctx.args.base else None
-    return report("pwa", *pwa_case(ctx.browser, base, ctx.shots, ctx.args.timeout))
+    failed = report("pwa", *pwa_case(ctx.browser, base, ctx.shots, ctx.args.timeout))
+    if not base:
+        failed |= report("pwa edges", *pwa_edges(ctx.browser, ctx.shots, ctx.args.timeout))
+    return failed
 
 
 # ---- follow EIP: the asm views show the stepper's EIP --------------------

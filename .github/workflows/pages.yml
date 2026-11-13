@@ -14,7 +14,11 @@ concurrency:
 
 jobs:
   kernels:
-    # Same base image and packages as Dockerfile-build-and-run.
+    # Same base image as Dockerfile-build-and-run. The compiler and linker
+    # are the native clang/lld 22.1.0 of gen-clang-native.sh (clang.wasm's
+    # source, so the page's compiler makes the same objects); Debian's llvm
+    # package only adds llvm-dwarfdump and llvm-symbolizer for the checks.
+    needs: [clang-native, clang-wasm]
     runs-on: ubuntu-latest
     container: debian:trixie
     env:
@@ -23,9 +27,32 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl nodejs gdb
+        apt-get install -y build-essential llvm nasm qemu-system-x86 expect python3 curl nodejs gdb
 
     - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-native
+        path: site/clang-native
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
+
+    - name: Native clang 22.1.0 first in PATH
+      run: |
+        site/gen-clang-native.sh --check
+        site/gen-clang-wasm.sh --check
+        mkdir -p /opt/clang-22 && tar -C /opt/clang-22 -xf site/clang-native/clang-native.tar
+        echo /opt/clang-22/bin >> "$GITHUB_PATH"
+        export PATH=/opt/clang-22/bin:$PATH
+        for t in clang ld.lld llvm-ar llvm-nm llvm-objcopy llvm-objdump llvm-readelf llvm-strip; do
+          test "$(command -v $t)" = /opt/clang-22/bin/$t
+        done
+        clang --version
+        ld.lld --version
 
     # The page's hello is built with -O0 (hello/Makefile's OPT; the
     # Makefile's default is -Os) so the debugger has a location for every
@@ -222,6 +249,19 @@ jobs:
         site/test_dwarf.py "$g/hello-os/boot/high/kernel.elf" out/hello-os/dwarf --samples 500 --types 200 --cfi 200 --locals 200 --operands 200 --lines 200 --funcs 200 --vars 200 --strip "$(realpath "$g/hello-os")/"
         site/test_dwarf.py --eh-frame 2000
         site/test_dwarf.py --inline-blocks
+        # The page's compiler makes CI's objects: one object per kernel and
+        # build (plain and -g) compiled again by clang.wasm from its exact
+        # command line must equal the build's object byte for byte.
+        hcmd() { make -s -n -B -C "$1" LLVM=1 "${@:2}" boot/hello.o | /usr/bin/grep -- ' -o boot/hello.o '; }
+        w=site/clang/clang.wasm
+        node site/check-wasm-objects.mjs --self-test "$w" hello "boot/hello.o=$(hcmd hello OPT=-O0)"
+        node site/check-wasm-objects.mjs "$w" "$RUNNER_TEMP/hello-os" "boot/hello.o=$(hcmd "$RUNNER_TEMP/hello-os")"
+        node site/check-wasm-objects.mjs "$w" "$g/hello" "boot/hello.o=$(hcmd "$g/hello" OPT=-O0 CC="clang -g")"
+        node site/check-wasm-objects.mjs "$w" "$g/hello-os" "boot/hello.o=$(hcmd "$g/hello-os" CC="clang -g")"
+        node site/check-wasm-objects.mjs --self-test "$w" "$o/minified" fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs "$w" minified fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs "$w" "$g/minified" fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs "$w" "$g/minified-os" fs/namei.o init/main.o
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
         mkdir -p debug-elfs
         cp "$g/minified/vmlinux" debug-elfs/minified-linux.elf
@@ -239,6 +279,106 @@ jobs:
       with:
         name: debug-elfs
         path: debug-elfs/
+
+  # Debian 6.1 686 rebuilt from its source package and config with the
+  # native clang 22.1.0 (gen-debian-clang.sh, LLVM=1, bzImage only): the
+  # kernel the page will rebuild in the browser (plan step E6). It boots in
+  # qemu to the root-fs panic, and objects of it compiled again by
+  # clang.wasm equal the build's. The page's Debian sample stays Debian's
+  # own GCC-built binary.
+  debian-clang:
+    needs: [clang-native, clang-wasm]
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+    - name: Install packages
+      run: |
+        apt-get update
+        apt-get install -y build-essential flex bison bc libelf-dev libssl-dev python3 cpio kmod xz-utils patch curl nodejs qemu-system-x86
+
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-native
+        path: site/clang-native
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
+
+    - name: Native clang 22.1.0 first in PATH
+      run: |
+        site/gen-clang-native.sh --check
+        site/gen-clang-wasm.sh --check
+        mkdir -p /opt/clang-22 && tar -C /opt/clang-22 -xf site/clang-native/clang-native.tar
+        echo /opt/clang-22/bin >> "$GITHUB_PATH"
+        /opt/clang-22/bin/clang --version
+
+    # The kernels job's pinned source package (same cache key) and the
+    # image package for its config.
+    - uses: actions/cache/restore@v4
+      with:
+        path: debian-src
+        key: debian-src-6.1.176-1-9aad4025973f-10477b04dc15
+
+    - name: Debian source and config
+      run: |
+        mkdir -p debian-src
+        get() { # file, pool path, sha256
+          if [ ! -f "$1" ] || ! echo "$3  $1" | sha256sum -c --quiet; then
+            curl -sSfL --retry 3 -o "$1" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$2" ||
+              curl -sSfL --retry 3 -o "$1" "https://deb.debian.org/debian/$2"
+          fi
+          echo "$3  $1" | sha256sum -c
+        }
+        get debian-src/linux_6.1.176.orig.tar.xz pool/main/l/linux/linux_6.1.176.orig.tar.xz \
+          9aad4025973feea3f0d978e82ab7db97d8d5ce3f59fcc6b1f316153d66e3a504
+        get debian-src/linux_6.1.176-1.debian.tar.xz pool/main/l/linux/linux_6.1.176-1.debian.tar.xz \
+          10477b04dc15f7c1c52d8c812c889be5fd37aa178163e352755cd137c73ade6b
+        get "$RUNNER_TEMP/image.deb" pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
+          526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4
+        dpkg-deb --fsys-tarfile "$RUNNER_TEMP/image.deb" | tar -x -O ./boot/config-6.1.0-50-686 > "$RUNNER_TEMP/config"
+        site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$RUNNER_TEMP/deb"
+
+    - name: Build with clang 22
+      run: site/gen-debian-clang.sh "$RUNNER_TEMP/deb" "$RUNNER_TEMP/config"
+
+    - name: Boot in qemu (to the root-fs panic)
+      run: |
+        d="$RUNNER_TEMP/deb"
+        mkdir -p out
+        timeout 900 qemu-system-i386 -m 256M -nographic -no-reboot -kernel "$d/arch/x86/boot/bzImage" \
+          -append "console=ttyS0 panic=-1 nokaslr" < /dev/null > out/boot.log 2>&1 || true
+        tail -5 out/boot.log
+        /usr/bin/grep -q "Linux version 6.1.176 .*clang version 22.1.0" out/boot.log
+        /usr/bin/grep -q "Kernel panic - not syncing: VFS: Unable to mount root fs" out/boot.log
+        if sed '/Kernel panic - not syncing/q' out/boot.log | /usr/bin/grep -E "WARNING:|BUG:|Oops|Call Trace"; then
+          echo "the clang-built Debian kernel warned before the root-fs panic" >&2; exit 1
+        fi
+
+    # recordmcount rewrites the kernel's objects after the compile (the
+    # command kbuild keeps in .cmd), so those are compared with the native
+    # compiler's output of the same command; the decompressor's objects
+    # (no mcount calls) with the build's.
+    - name: Objects compiled again by clang.wasm equal the native clang's
+      run: |
+        node site/check-wasm-objects.mjs --self-test --native-rerun site/clang/clang.wasm "$RUNNER_TEMP/deb" \
+          fs/open.o kernel/sched/core.o
+        node site/check-wasm-objects.mjs site/clang/clang.wasm "$RUNNER_TEMP/deb" \
+          arch/x86/boot/compressed/misc.o arch/x86/boot/compressed/string.o
+
+    - name: Collect
+      run: |
+        d="$RUNNER_TEMP/deb"
+        cp "$d/arch/x86/boot/bzImage" "$d/.config" "$d/config.diff" out/
+        ls -l out
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: debian-clang
+        path: out/
 
   # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
   # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
@@ -338,6 +478,12 @@ jobs:
   # builds it when the script changes and caches it; this run checks it.
   clang-wasm:
     uses: ./.github/workflows/clang-wasm.yml
+
+  # The native clang/lld 22.1.0 the kernels are built with
+  # (gen-clang-native.sh): clang-native.yml builds it when the script
+  # changes and caches it; this run checks it.
+  clang-native:
+    uses: ./.github/workflows/clang-native.yml
 
   site:
     needs: [kernels, debian-initrd, v86, clang-wasm]

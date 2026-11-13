@@ -1979,6 +1979,28 @@ hours), caches it by the script's hash and checks every file
 the check); the Pages workflow calls it and deploys `clang/`. The page
 does not load it yet and the service worker does not precache it.
 
+CI builds the kernels with the native clang/lld 22.1.0 of
+`gen-clang-native.sh`: the same source and pins as `clang.wasm`, the same
+tools in one llvm-driver binary, a Release build for x86_64 Linux,
+written as a reproducible tar whose SHA-256 the script pins (`--check`
+also fails when its pins differ from `gen-clang-wasm.sh`'s).
+`clang-native.yml` builds and caches it like `clang-wasm.yml`; the
+kernels job unpacks it to `/opt/clang-22` and puts its `bin/` first in
+PATH (Debian's llvm package stays for llvm-dwarfdump and
+llvm-symbolizer). `check-wasm-objects.mjs` runs `clang.wasm` under Node's
+WASI on the exact command line of a build's object (kbuild's `.cmd`, or
+`make -n` for hello) in the build directory and fails unless the object
+is byte-identical: in CI for hello and hello -Os, the minified Linux -O0
+and -Os, each plain and -g, and for the `debian-clang` job, which builds
+Debian 6.1 686 from its source package and config with the same clang
+(`gen-debian-clang.sh`, LLVM=1, bzImage), boots it in qemu to the root-fs
+panic and checks four of its objects (kbuild's recordmcount rewrites the
+kernel's objects after the compile, so `fs/open.o` and
+`kernel/sched/core.o` are compared with the native clang's output of the
+same command, `--native-rerun`; the decompressor's `misc.o` and
+`string.o` with the build's). Its `--self-test` compiles the first object
+at another `-O` level and must see a difference.
+
 ## Testing
 
     site/fetch-v86.sh

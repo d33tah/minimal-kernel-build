@@ -28,7 +28,7 @@ LLVM_COMMIT=97196c8eeb1d495fa43bb8af2fb26af5ef5b89fb
 DEBIAN=debian:trixie@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6
 APT_SNAPSHOT=20261113T000000Z
 APT_PACKAGES="cmake=3.31.6-2 cmake-data=3.31.6-2 ninja-build=1.12.1-1 g++-14=14.2.0-19 python3=3.13.5-1"
-SHA256=PENDING
+SHA256=7483ebcabbba9b8fada85b5a07a88cfa0db2017d5a54ac630f1835ca446b0a86
 
 site=$(cd "$(dirname "$0")" && pwd)
 dir=$site/clang-native

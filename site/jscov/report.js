@@ -175,6 +175,11 @@ async function main() {
 		for (const m of METRICS)
 			if (summary.total[m].pct < base[m])
 				failed.push(`${m} ${summary.total[m].pct}% < baseline ${base[m]}%`);
+		// "fileLines": the floor of every script's own line coverage.
+		if (typeof base.fileLines === "number")
+			for (const [n, f] of Object.entries(summary.files))
+				if (f.lines.pct < base.fileLines)
+					failed.push(`${n} lines ${f.lines.pct}% < the per-file floor ${base.fileLines}%`);
 		summary.baseline = base;
 	}
 	summary.failed = failed;
@@ -186,7 +191,8 @@ async function main() {
 		"## e2e coverage of the site's JavaScript",
 		"",
 		`${t.lines.covered} of ${t.lines.total} code lines ran (${t.sourceLines} lines of source in ${names.length} scripts; ` +
-			`${summary.ran} scripts ran). Baseline: ${a.baseline ? METRICS.map((m) => `${m} ${summary.baseline[m]}%`).join(", ") : "none"}.`,
+			`${summary.ran} scripts ran). Baseline: ${a.baseline ? METRICS.map((m) => `${m} ${summary.baseline[m]}%`).join(", ") +
+				(typeof summary.baseline.fileLines === "number" ? `, every file's lines ${summary.baseline.fileLines}%` : "") : "none"}.`,
 		failed.length ? `\n**Below the baseline:** ${failed.join("; ")}` : "",
 		"",
 		"| file | lines | functions | branches |",

@@ -45,6 +45,7 @@ import traceback
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
+import jscov
 from test_dwarf import write_core
 
 SITE = pathlib.Path(__file__).resolve().parent
@@ -15196,6 +15197,8 @@ def main():
     ctx = argparse.Namespace(args=args, cases=cases or default_cases(), shots=shots, entries=entries,
                              base=args.base.rstrip("/") if args.base else f"http://127.0.0.1:{httpd.server_address[1]}")
     failed = False
+    # With MKB_JSCOV set: V8 coverage of the site's scripts (site/jscov.py).
+    jscov.install("browser-" + re.sub(r"[^a-z0-9]+", "-", ",".join(names))[:60])
     with sync_playwright() as p:
         ctx.browser = p.chromium.launch()
         for name in names:

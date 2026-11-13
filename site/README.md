@@ -1984,6 +1984,32 @@ startup_32. hello-os (-Os): the values from the DWARF location lists
 (registers) and put_line's s shown as optimized out. Both: the Source tab's tree
 and the honest "no variables" and "no current_task" lines.
 
+### Coverage of the page's JavaScript (jscov)
+
+With `MKB_JSCOV=DIR` set, test_browser.py and test_pwa_install.py collect
+V8 precise coverage (`site/jscov.py`): their Chromium also opens a
+DevTools port, and a second CDP connection attaches to every page, popup,
+Worker and the service worker before it runs, starts block coverage and
+takes it every 3 s, before Playwright closes or navigates a page, and
+before the page terminates a Worker. Only the site's top-level scripts are
+kept (not v86/, iced/, lz4/, nor the node tools gen-dwarf.js and
+gen-src.js). `site/jscov/report.js` (monocart-coverage-reports, pinned with
+its SHA-512 integrity hashes in `site/jscov/package-lock.json`) merges the
+raw files of every job into an HTML report and `summary.json` (lines,
+functions, branches per file, and every function that never ran):
+
+    MKB_JSCOV=/tmp/jscov python3 site/test_browser.py --suites hello
+    npm ci --prefix site/jscov --ignore-scripts
+    node site/jscov/report.js --src site --out /tmp/jscov-report /tmp/jscov
+    python3 site/test_jscov.py   # self-test on a fixture page
+
+In CI every browser-test job and pwa-install upload their raw coverage;
+the jscov job runs the self-test (a never-called function, one nested in
+it, a Worker's and the service worker's functions and an untaken else must
+show as uncovered, the called ones as covered), merges, writes the table
+into the job summary, uploads the report (artifact `jscov-report`) and
+fails when a total is below `site/jscov-baseline.json`.
+
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;
 each prints `suite NAME: N s`.

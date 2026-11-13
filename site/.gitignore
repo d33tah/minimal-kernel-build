@@ -9,3 +9,4 @@
 /kernels.json
 /test-screenshots/
 __pycache__/
+node_modules/

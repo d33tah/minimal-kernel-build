@@ -1,0 +1,9 @@
+{
+  "name": "mkb-site-jscov",
+  "private": true,
+  "description": "Line, function and branch coverage of the page's JavaScript from the e2e suites (site/jscov.py collects, report.js merges)",
+  "license": "GPL-2.0-only",
+  "dependencies": {
+    "monocart-coverage-reports": "2.13.2"
+  }
+}

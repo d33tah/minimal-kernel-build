@@ -451,12 +451,15 @@ jobs:
         sudo apt-get install -y xvfb
 
     - name: Install the local copy, the broken copies must fail
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py
 
     # page_url is http:// for a custom domain; installing needs https.
     - name: Install the live site
       env:
         PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py --base "https://${PAGE_URL#*://}"
 
     - uses: actions/upload-artifact@v4
@@ -464,6 +467,12 @@ jobs:
       with:
         name: pwa-install-screenshots
         path: site/test-screenshots/
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-raw-pwa
+        path: jscov-raw/
 
   # The browser test's suites in parallel jobs (test_browser.py --suites),
   # grouped so each job takes about the same time.
@@ -543,6 +552,7 @@ jobs:
     - name: Browser test (${{ matrix.suites }})
       env:
         MKB_DEBUG_ELF_DIR: ${{ github.workspace }}/debug-elfs
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites "${{ matrix.suites }}"'
 
     - uses: actions/upload-artifact@v4
@@ -550,3 +560,54 @@ jobs:
       with:
         name: browser-screenshots-${{ strategy.job-index }}
         path: site/test-screenshots/
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-raw-${{ strategy.job-index }}
+        path: jscov-raw/
+
+  # e2e coverage of the site's JavaScript (site/jscov.py in every browser
+  # job above and in pwa-install): merged, reported, and held to the
+  # committed floor site/jscov-baseline.json. Runs when a test job failed too.
+  jscov:
+    needs: [browser-test, pwa-install]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: jscov-raw-*
+        path: jscov-raw
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-${{ runner.os }}-v1
+
+    # monocart-coverage-reports and its dependencies at the versions and
+    # SHA-512 integrity hashes of site/jscov/package-lock.json.
+    - name: Install the report tool, Playwright and Chromium
+      run: |
+        npm ci --prefix site/jscov --ignore-scripts --no-audit --no-fund
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
+
+    - name: Self-test (an unexecuted function shows as uncovered)
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_jscov.py'
+
+    # The tests ran the deployed files: sw.js and index.html stamped with
+    # the commit (the site job), so the same stamp here.
+    - name: Merge and report, check the baseline
+      run: |
+        site/stamp.py site "$GITHUB_SHA"
+        node site/jscov/report.js --src site --out jscov-report --baseline site/jscov-baseline.json --summary "$GITHUB_STEP_SUMMARY" jscov-raw
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-report
+        path: jscov-report/

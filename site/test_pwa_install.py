@@ -50,6 +50,7 @@ import time
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
+import jscov
 import test_browser as tb
 
 SITE = tb.SITE
@@ -311,6 +312,8 @@ def main():
     only = set(args.only.split(",")) if args.only else None
     failed = []
     results = []
+    # With MKB_JSCOV set: V8 coverage of the site's scripts (site/jscov.py).
+    jscov.install("pwa-live" if args.base else "pwa")
     with sync_playwright() as pw:
         exe = args.chromium or pw.chromium.executable_path
         if args.base:

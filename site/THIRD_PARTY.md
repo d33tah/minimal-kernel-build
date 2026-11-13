@@ -25,6 +25,23 @@ browser after the file is fetched (`read_imm8` and the
 interpreter's `run`, found by name in the module's name section); the
 code itself is not modified.
 
+## In-browser toolchain (clang.wasm)
+
+`gen-clang-wasm.sh` builds `clang/clang.wasm`: LLVM's multicall binary
+(clang, ld.lld, llvm-ar, llvm-nm, llvm-objcopy, llvm-objdump,
+llvm-readobj, llvm-strip; argv[0] picks the tool) with the x86 backend
+only, for wasm32-wasip1, for rebuilding kernels in the page. Built in CI
+by `.github/workflows/clang-wasm.yml` (also called by the Pages workflow),
+cached by the script's hash, never committed; every file in `clang/` is
+checked against a SHA-256 recorded in the script (`--check`).
+
+| file | source | pin | licence |
+|---|---|---|---|
+| `clang/clang.wasm` | [YoWASP/llvm-project](https://github.com/YoWASP/llvm-project) (LLVM 22.1.0 with YoWASP's WASI patches), built after YoWASP's `build.sh` recipe (MinSizeRel, no threads, 8 MiB stack, 4 GiB max memory, no LTO) with `LLVM_TARGETS_TO_BUILD=X86` and the llvm-driver, by [wasi-sdk 29](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-29) (`wasi-sdk-29.0-x86_64-linux.tar.gz`, SHA-256 `87d1d1a2879d139cdc624b968efad3d4a97b8078cdff95e63ac88ecafd1a0171`; its wasi-libc `ac020b86fd44`, libc++, libc++abi and compiler-rt builtins from LLVM 21.1.4 are linked in), in Docker `debian:trixie@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6` with cmake 3.31.6-2, ninja-build 1.12.1-1, g++-14 14.2.0-19 and python3 3.13.5-1 (from snapshot.debian.org `20261113T000000Z` when the archive no longer has them); SHA-256 `8b619cdac1f34d4cc29e667b3115ae168a0bdd514866f6e22c5e98020b755827` (the same from the E0 spike build, another container with another tblgen compiler, and from this script on d-claude; the clang-wasm workflow builds it again whenever the script changes) | commit `97196c8eeb1d495fa43bb8af2fb26af5ef5b89fb` (branch `llvmorg-22.1.0+wasm`; `clang --version` says 22.1.0) | Apache-2.0 WITH LLVM-exception: `clang/LICENSE.llvm`, `.clang`, `.lld` and `.libcxx`, `.libcxxabi`, `.compiler-rt` (the wasi-sdk runtime libraries); third-party code in LLVM's Support library: `LICENSE.blake3` (CC0-1.0 or Apache-2.0), `LICENSE.regex` (BSD, Henry Spencer's regex), `LICENSE.xxhash` (BSD-2-Clause), `LICENSE.md5` (public domain or a cut-down BSD licence), `LICENSE.unicode` and `LICENSE.unicode-convertutf` (Unicode licence); wasi-libc: `LICENSE.wasi-libc` (Apache-2.0 WITH LLVM-exception or Apache-2.0 or MIT: `LICENSE.wasi-libc-apache-llvm`, `-apache`, `-mit`; dlmalloc CC0), `LICENSE.wasi-libc-cloudlibc` (BSD-2-Clause), `LICENSE.wasi-libc-musl` (MIT) |
+
+To move the pin, change `LLVM_COMMIT`, the wasi-sdk and Debian pins and the
+checksums in `gen-clang-wasm.sh` together, and the table above.
+
 ## Debian sample kernel
 
 The workflow downloads two Debian bookworm packages (from

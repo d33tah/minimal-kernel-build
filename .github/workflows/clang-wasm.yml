@@ -1,0 +1,66 @@
+name: clang.wasm (in-browser toolchain)
+
+# site/gen-clang-wasm.sh builds clang/lld 22.1.0 for wasm32-wasip1 (about
+# two hours); its result is cached by the script's hash. A push that changes
+# the script builds it here, so the Pages workflow (which calls this one)
+# finds it cached instead of waiting for the build.
+on:
+  push:
+    branches: [ "hello-kernel" ]
+    paths: [ "site/gen-clang-wasm.sh", ".github/workflows/clang-wasm.yml" ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clang-wasm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/cache/restore@v4
+      id: cache
+      with:
+        path: clang-cache
+        key: clang-wasm-${{ hashFiles('site/gen-clang-wasm.sh') }}
+
+    # Same as the v86 job in pages.yml: the runner's resolver failed for
+    # Debian and Ubuntu mirrors inside docker builds while public resolvers answered.
+    - name: Docker DNS
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        cfg=/etc/docker/daemon.json
+        { sudo cat "$cfg" 2>/dev/null || echo '{}'; } | jq '. + {dns: ["1.1.1.1", "8.8.8.8", "9.9.9.9"]}' > "$RUNNER_TEMP/daemon.json"
+        sudo cp "$RUNNER_TEMP/daemon.json" "$cfg"
+        sudo systemctl restart docker
+
+    - name: Build clang.wasm (cache miss)
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        df -h / "$RUNNER_TEMP"
+        time site/gen-clang-wasm.sh
+        mkdir -p clang-cache && cp site/clang/* clang-cache/
+
+    - uses: actions/cache/save@v4
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: clang-cache
+        key: clang-wasm-${{ hashFiles('site/gen-clang-wasm.sh') }}
+
+    # The pinned SHA-256 of every file, on the cached copy too; a changed
+    # licence file must fail the check.
+    - name: Check clang.wasm and its licences
+      run: |
+        mkdir -p site/clang && cp clang-cache/* site/clang/
+        site/gen-clang-wasm.sh --check
+        cp site/clang/LICENSE.llvm "$RUNNER_TEMP/l" && echo >> site/clang/LICENSE.llvm
+        if site/gen-clang-wasm.sh --check 2>/dev/null; then echo "--check passed a changed file" >&2; exit 1; fi
+        cp "$RUNNER_TEMP/l" site/clang/LICENSE.llvm && ls -l site/clang
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang/

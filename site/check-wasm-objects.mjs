@@ -74,9 +74,9 @@ function kbuildCommand(dir, obj) {
 
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 
-// One compile in this process (the child of runWasm): the process exits
-// with clang's exit code (WASI proc_exit) and writes {code, ms, mem} to
-// RESULT as it exits.
+// One compile in this process (the child of runWasm): writes
+// {code, ms, mem} to RESULT when clang calls WASI proc_exit (before Node
+// handles the exit) or returns from main.
 async function wasmChild(wasmPath, dir, argvJson, result) {
   const argv = JSON.parse(argvJson);
   const module = await WebAssembly.compile(fs.readFileSync(wasmPath));
@@ -84,22 +84,33 @@ async function wasmChild(wasmPath, dir, argvJson, result) {
   const wasi = new WASI({
     version: 'preview1', args: argv, env: { PWD: abs }, preopens: { '/': abs, [abs]: abs },
   });
-  const inst = await WebAssembly.instantiate(module, wasi.getImportObject());
-  const t = performance.now();
-  process.on('exit', (code) => fs.writeFileSync(result, JSON.stringify({
-    code, ms: Math.round(performance.now() - t), mem: inst.exports.memory.buffer.byteLength })));
+  const imports = wasi.getImportObject();
+  const p1 = imports.wasi_snapshot_preview1;
+  let inst, t;
+  const done = (code) => fs.writeFileSync(result, JSON.stringify({
+    code, ms: Math.round(performance.now() - t), mem: inst.exports.memory.buffer.byteLength }));
+  const procExit = p1.proc_exit;
+  p1.proc_exit = (code) => { done(code); return procExit(code); };
+  inst = await WebAssembly.instantiate(module, imports);
+  t = performance.now();
   wasi.start(inst);
+  done(0);
 }
 
-// Each compile in its own Node process, which ends with clang's exit:
-// Node 20.19's WASI with returnOnExit crashed (SIGSEGV, or a V8 fatal
-// error) after Debian-size compiles, and on a later instance in the same
-// process.
+// Each compile in its own Node process, which ends with clang's exit, run
+// with V8's fast API calls off: with them, Node's WASI (Node 20.19 and
+// 22.23) crashed the process (SIGSEGV, or a V8 fatal error) in every
+// compile of Debian's kernel/sched/core.c (wasm memory 105 MiB), before or
+// after clang's exit, and on later instances in one process; without them
+// 5 of 5 runs were clean. clang's exit code is what counts; how Node
+// exits is reported.
 function runWasm(wasmPath, dir, argv) {
   const result = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'cwo-')), 'r.json');
-  const r = spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--wasm-child', wasmPath, dir, JSON.stringify(argv), result],
+  const r = spawnSync(process.execPath, [...process.execArgv, '--no-turbo-fast-api-calls', fileURLToPath(import.meta.url), '--wasm-child', wasmPath, dir, JSON.stringify(argv), result],
     { stdio: ['ignore', 'inherit', 'inherit'] });
-  const out = fs.existsSync(result) ? JSON.parse(fs.readFileSync(result, 'utf8')) : { code: `node ${r.status ?? r.signal}`, ms: 0, mem: 0 };
+  const out = fs.existsSync(result) ? JSON.parse(fs.readFileSync(result, 'utf8'))
+    : { code: `none: node exited with ${r.signal ?? r.status}${r.error ? ' ' + r.error : ''} before clang did`, ms: 0, mem: 0 };
+  if (r.status !== out.code) out.node = r.signal ?? r.status;
   fs.rmSync(path.dirname(result), { recursive: true, force: true });
   return out;
 }
@@ -144,7 +155,8 @@ async function main(args) {
       const out = fs.existsSync(objPath) ? fs.readFileSync(objPath) : null;
       const same = r.code === 0 && out !== null && sha(out) === sha(ref);
       console.log(`${same ? 'SAME' : 'DIFFERENT'} ${obj}: clang.wasm ${out ? out.length + ' B ' + sha(out) : 'no output (exit ' + r.code + ')'}, ` +
-        `${refName} ${ref.length} B ${sha(ref)} (${r.ms} ms, wasm memory ${r.mem >> 20} MiB)`);
+        `${refName} ${ref.length} B ${sha(ref)} (clang exit ${r.code}, ${r.ms} ms, wasm memory ${r.mem >> 20} MiB` +
+        (r.node !== undefined ? `; node then exited with ${r.node}` : '') + ')');
       if (selfTest && obj === (objs[0].split('=')[0])) {
         const other = argv.map((a) => /^-O[0-9sz]?$/.test(a) ? (a === '-O0' || a === '-Os' ? '-O2' : '-Os') : a);
         if (!other.some((a, k) => a !== argv[k])) other.splice(1, 0, '-Os');

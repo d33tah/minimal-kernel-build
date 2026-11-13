@@ -1773,7 +1773,8 @@ def text_check(page, name, samples, texts, entry_fn, problems, r):
     """The C text shown with the source rows is the kernel's: the entry line
     of entry_fn or one of the ten before it (the first row can be the "{" or
     the first statement after a comment) names it, and the call line of an inlined function mostly names that
-    function (macros and multi-line calls do not)."""
+    function (macros and multi-line calls do not; judged from 3 call lines on: in clang 22.1.0's -O0
+    minified Linux 260 of 459 inlined call sites name the callee, so one or two can all be macros)."""
     rows = sum(1 for t in texts for x in t if x)
     calls = [(t[k], fr[k - 1]["func"]) for (_, st, fr), t in zip(samples, texts) if st == "ok"
              for k in range(1, min(len(fr), len(t))) if fr[k]["line"]]
@@ -1785,7 +1786,7 @@ def text_check(page, name, samples, texts, entry_fn, problems, r):
     if not r["entry_text"] or not texts[0] or texts[0][0] != (r["entry_text"][-1] or "").strip() or \
             not any(entry_fn + "(" in (t or "") for t in r["entry_text"]):
         problems.append(f"{name}: the C line at the entry of {entry_fn} is {r['entry_text']!r}")
-    if calls and named * 2 < len(calls):
+    if len(calls) >= 3 and named * 2 < len(calls):
         problems.append(f"{name}: call lines name the inlined function in only {named} of {len(calls)}")
 
 

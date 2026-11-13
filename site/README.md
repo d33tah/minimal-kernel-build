@@ -2080,7 +2080,10 @@ show as uncovered, the called ones as covered, also one a page runs just
 before it leaves for another site by itself, and the untaken return of a
 function that runs only after a reload), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
-fails when a total is below `site/jscov-baseline.json`.
+fails when a total is below `site/jscov-baseline.json` or a file's lines
+are below its `fileLines` (70: sw.js went from 92% to 72% between two
+runs, a worker started again runs Chromium's cached compile of sw.js,
+which reports no blocks).
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;

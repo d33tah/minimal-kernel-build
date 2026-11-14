@@ -561,6 +561,7 @@ function srcShown() {
 	renderSourcePanel();
 	srcRemember(srcPanel.path);
 	writeHash();
+	edPanelShown();
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
@@ -1323,6 +1324,7 @@ function closeSource() {
 	srcSwClose(false);
 	$("src_panel").hidden = true;
 	srcPanel = null;
+	edPanelShown();
 	writeHash();
 	const a = srcLinkAgain(srcOpener);
 	if (a)

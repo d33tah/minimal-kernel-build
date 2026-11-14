@@ -266,6 +266,13 @@
     <button id="cov_export" type="button">lcov</button><span class="tip" tabindex="0" role="button" title="Download an lcov tracefile (genhtml, IDE coverage plugins): every file's lines with code, DA:line,1 for a line that has executed, 0 for one that has not (ran or not, not how often). For a big kernel this first reads every shard of its line table (Debian: about 5 MB).">?</span>
     <span id="cov_export_status" class="note"></span>
   </div>
+  <div id="ed_box" class="edbox">
+    <div class="scan"><b>Your edits:</b> <span id="ed_count" class="note"></span></div>
+    <div class="scan"><button id="ed_download" type="button" disabled>Download patch</button> <button id="ed_upload_btn" type="button">Upload a patch</button><input id="ed_upload" type="file" accept=".patch,.diff,text/x-diff,text/x-patch,text/plain" hidden> <button id="ed_revert_all" type="button" disabled>Revert all</button><span class="tip" tabindex="0" role="button" title="Edit any file of this kernel's source: open it in the Source panel (a file below, a C line in a listing, or Files) and press Edit. The edits are kept in this browser per kernel and file (IndexedDB), over the tree the kernel was built from; the listings and the coverage keep showing that tree. Download patch: every changed file as one patch, which `git apply` takes in the kernel's tree (the paths are the DWARF's, relative to the tree). Upload a patch: a unified diff (git diff, diff -u) applied to your edits, every file of it or none; it may make new files or delete them.">?</span></div>
+    <p id="ed_status" class="note" role="status"></p>
+    <ul id="ed_list" class="edlist"></ul>
+    <pre id="ed_diff" class="eddiff" hidden></pre>
+  </div>
   <p id="cov_status" class="note"></p>
   <div id="cov_tree" class="ctree covtree"></div>
   <p id="covtree_info" class="note"></p>
@@ -436,6 +443,12 @@
       <span><b>Green</b> (●): a line whose code has executed; ○ not yet; ┆ and a lighter green: more lines of the statement above or below (not counted). <b>Blue box</b>: the line at EIP or the line opened. <b>Brown bar</b> on the left: the picked line, whose addresses are listed above the text. Recorded while stepping. Where: Source panel.</span></li>
     <li><span class="lgs plain" inert><span class="covbar" style="width: 8rem"><span style="width: 62%"></span></span></span>
       <span><b>Coverage bar</b>: the share of lines (or instructions) that ran while stepping. Where: Source tab.</span></li>
+    <li><span class="lgs plain" inert><pre class="eddiff"><span class="edf">diff --git a/boot/hello.c b/boot/hello.c</span>
+<span class="edh">@@ -30,2 +30,3 @@</span>
+ 	put_line(row, "Hello, World!");
+<span class="eda">+	/* your line */</span>
+<span class="edd">-	put_line(row + 1, "Still alive");</span></pre></span>
+      <span><b>A diff of your edits</b>: green lines added, red lines removed, blue the place of each change (old and new line numbers), bold the file's header; the other lines are unchanged context. Where: Source panel (Diff while editing), Source tab (Your edits).</span></li>
   </ul>
   <h4>Memory tab</h4>
   <p class="note">One square per 4 KiB page, coloured by region of the boot memory map or by the kernel's ELF section:</p>
@@ -477,12 +490,15 @@
 </main>
 
 <aside id="src_panel" class="srcpanel" hidden aria-label="Source">
-  <div class="scan srchead"><b id="src_title"></b> <span class="srcbtns"><button id="bm_add_src" type="button" class="bmadd" aria-label="Bookmark the picked line" title="Bookmark the picked line (tap a line to pick it), else the line opened, or the whole file; or right-click (long-press) a line, or press B">&#9734;</button> <button id="src_files" type="button" aria-expanded="false" aria-controls="src_switch" title="Open another file: the call stack's, the recent ones, or any file of the kernel's debug info and source, filtered by name or path (arrows and Enter, Escape closes). A directory of the path in the title lists its files."><span aria-hidden="true">📂</span> Files</button> <button id="src_close" type="button">Close</button></span></div>
+  <div class="scan srchead"><b id="src_title"></b> <span class="srcbtns"><button id="bm_add_src" type="button" class="bmadd" aria-label="Bookmark the picked line" title="Bookmark the picked line (tap a line to pick it), else the line opened, or the whole file; or right-click (long-press) a line, or press B">&#9734;</button> <button id="src_files" type="button" aria-expanded="false" aria-controls="src_switch" title="Open another file: the call stack's, the recent ones, or any file of the kernel's debug info and source, filtered by name or path (arrows and Enter, Escape closes). A directory of the path in the title lists its files."><span aria-hidden="true">📂</span> Files</button> <button id="src_edit" type="button" aria-pressed="false"><span aria-hidden="true">✎</span> Edit</button> <button id="src_close" type="button">Close</button></span></div>
   <div id="src_switch" class="srcswitch" hidden>
     <input id="src_q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="src_list" aria-label="Filter the source files by name or path" placeholder="file name or path, e.g. printk" autocomplete="off" spellcheck="false">
     <ul id="src_list" role="listbox" aria-label="Source files"></ul>
   </div>
   <div id="src_nav" class="srcnav" hidden><select id="src_outline" aria-label="Go to a function of this file"></select> <select id="src_incl" aria-label="Open a header whose code is inlined into this file"></select></div>
+  <div id="ed_bar" class="edbar" hidden><span id="ed_state" class="note" role="status"></span> <span class="edbtns"><button id="ed_diffbtn" type="button" aria-pressed="false" title="This file's changes as a diff, in place of its text (again: back to the text)">Diff</button> <button id="ed_revert" type="button" title="Throw away your edits of this file (press twice)">Revert</button></span></div>
+  <div id="ed_area" class="edarea"><pre id="ed_gutter" class="edgutter" aria-hidden="true"></pre><textarea id="ed_text" class="edtext" wrap="off" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Text of the file"></textarea></div>
+  <pre id="ed_pdiff" class="eddiff edpanel"></pre>
   <p id="src_info" class="note"></p>
   <div id="src_addrs" class="note srcaddrs" hidden></div>
   <pre id="src_body" class="srcview" tabindex="0"></pre>
@@ -539,6 +555,7 @@
 <script src="asmnames.js"></script>
 <script src="dbginfo.js"></script>
 <script src="source.js"></script>
+<script src="srcedit.js"></script>
 <script src="coverage.js"></script>
 <script src="symimport.js"></script>
 <script src="livedis.js"></script>

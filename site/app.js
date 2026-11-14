@@ -4058,6 +4058,7 @@ async function init() {
 	if (params.get("count") === "0" || (!params.has("count") && storedCount === "0"))
 		$("count").checked = false;
 	initSource();
+	initSrcEdit();
 	initJumps();
 	initCoverage();
 	setupVars();

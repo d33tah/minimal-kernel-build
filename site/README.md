@@ -2205,6 +2205,58 @@ same command, `--native-rerun`; the decompressor's `misc.o` and
 `string.o` with the build's). Its `--self-test` compiles the first object
 at another `-O` level and must see a difference.
 
+### Editing the source (srcedit.js)
+
+The Source panel's Edit turns the file shown into an editor: a
+`<textarea>` (no wrapping, Tab inserts a tab, Escape gives the focus back
+to Edit, Ctrl+S saves at once) with a column of line numbers scrolled with
+it. Measured before choosing: CodeMirror 6 (`codemirror` 6.0.1,
+`@codemirror/lang-cpp` 6.0.2, esbuild 0.24.0, minified IIFE) is 518,778 B
+(166,662 B gzip -9) with its basic setup and C highlighting, 278,914 B
+(90,386 B gzip) with only the view, the state and the default keymap,
+against 862,628 B (270,353 B gzip) for all of the page's own scripts. The
+textarea costs nothing, keeps the browser's undo, selection, IME and phone
+keyboard, and opens Debian's `kernel/sched/core.c` (11,293 lines) in about
+0.6 s; what it lacks is highlighting.
+
+Edits are an overlay over the tree the kernel was built from: IndexedDB
+`mkb-srcedit`, store `edits`, key [kernel, path], value
+`{ kernel, path, base, text }` (base: the text the edit started from, null
+for a new file; text null: deleted); a file typed back to its base is no
+longer an edit. Without IndexedDB they stay in memory and the page says
+they go with a reload. The listings, the Debugger and the panel's own view
+keep the built text (their line numbers and coverage belong to that
+build); the panel says when its file has edits. The Source tab's "Your
+edits" lists the changed files (+added -removed lines) with a diff and a
+revert each (a revert takes a second press within 5 s), downloads all of
+them as `<kernel>-edits.patch`, a git patch with a/ and b/ paths relative
+to the kernel's tree (`git apply` in the tree), and applies an uploaded
+unified diff (git diff or diff -u, with or without a/ b/, new and deleted
+files, "\ No newline at end of file") to the edits: each hunk at its line
+or the nearest place its old lines are, every file or none.
+
+`srcOverlay` is the API for the in-browser build (E3, E4), for the shown
+kernel: `ready` (a promise: the stored edits are read), `paths()` (the
+changed files, sorted), `read(path)` (the text with the overlay applied;
+null when deleted or not in the tree), `original(path)` (the built text;
+null for a new file), `write(path, text)`, `revert(path)`, `patch()` and
+`apply(patchText)`.
+
+Tests: `test_srcedit.mjs` (site job) runs the diff, the patch writer and
+the patch reader against git on random texts and edits (lines added,
+removed, changed, the last newline taken or given, new and deleted files):
+each patch srcedit.js writes must `git apply` to the edited text, and each
+patch git writes must give it through srcedit.js. Suite `srcedit` of
+`test_browser.py` edits hello's `boot/hello.c` (at 1280 px light and 390 px
+dark), the minified Linux's `init/main.c` plus a header and a new file
+(1280 dark, 390 light) and Debian's `kernel/sched/core.c`: the editor holds
+the shipped text with one number per line, typed text and Tab land in it
+(also while the Machine tab has the VM's keys), the numbers follow the
+scroll, the downloaded patch `git apply`s on the shipped files, a git
+patch with one stale hunk changes nothing and names the file, the good one
+applies, a reload keeps everything, typing the shipped text back drops the
+edit, Revert and Revert all need two presses; and once without IndexedDB.
+
 ## Testing
 
     site/fetch-v86.sh

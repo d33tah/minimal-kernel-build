@@ -21466,6 +21466,474 @@ def suite_memevents(ctx):
     return report("memevents", problems, r)
 
 
+# ---- srcedit: edit the kernel's source in the page (E2) --------------------
+# The Source panel's Edit turns the file shown into a text editor (a textarea
+# with line numbers); the edits live in an IndexedDB overlay over the shipped
+# tree (srcedit.js) and survive a reload. The Source tab lists the changed
+# files with a diff and a revert each, downloads all of them as one patch
+# that `git apply` takes on the shipped files, and applies an uploaded patch
+# (every file or none). srcOverlay is the API the in-browser build (E3, E4)
+# reads: the changed paths and a file's text with the overlay applied.
+SRCEDIT_FILES = {
+    # kernel: (file edited in the editor, its line to insert before, file a patch changes, a new file)
+    "hello": ("boot/hello.c", 'put_line(row + 1, "Still alive");', None, None),
+    "minified-linux": ("init/main.c", "panic(\"cannot execute /init\");", "include/linux/list.h", "init/e2_new.h"),
+    "debian-6.1-686": ("kernel/sched/core.c", None, None, None),
+}
+
+SRCEDIT_STATE_JS = """() => { const p = document.getElementById('src_panel'), ta = document.getElementById('ed_text'), g = document.getElementById('ed_gutter');
+  const shown = (e) => !!e && !e.hidden && e.getClientRects().length > 0, b = document.getElementById('src_edit');
+  const r = (e) => { const x = e.getBoundingClientRect(); return [Math.round(x.left), Math.round(x.top), Math.round(x.right), Math.round(x.bottom)]; };
+  return { editing: p.classList.contains('editing'), open: !p.hidden, value: ta.value, gutterLines: g.textContent.trim().split('\\n').length,
+    gutterTop: Math.round(g.scrollTop), taTop: Math.round(ta.scrollTop), state: document.getElementById('ed_state').textContent,
+    pressed: b.getAttribute('aria-pressed'), editDisabled: b.disabled, editTitle: b.title, editShown: shown(b),
+    taShown: shown(ta), bodyShown: shown(document.getElementById('src_body')), pdiffShown: shown(document.getElementById('ed_pdiff')),
+    pdiff: document.getElementById('ed_pdiff').textContent, barShown: shown(document.getElementById('ed_bar')),
+    active: document.activeElement ? document.activeElement.id : '',
+    list: [...document.querySelectorAll('#ed_list li[data-path]')].map((li) => ({ path: li.dataset.path, add: Number(li.dataset.add), del: Number(li.dataset.del) })),
+    count: document.getElementById('ed_count').textContent, status: document.getElementById('ed_status').textContent,
+    diff: document.getElementById('ed_diff').textContent, diffShown: shown(document.getElementById('ed_diff')),
+    download: !document.getElementById('ed_download').disabled, hscroll: document.documentElement.scrollWidth > innerWidth + 1,
+    ta: r(ta), gutter: r(g), panel: r(p), vw: innerWidth, vh: innerHeight }; }"""
+
+
+def srcedit_state(page):
+    return page.evaluate(SRCEDIT_STATE_JS)
+
+
+def srcedit_orig(entry, path):
+    return gzip.decompress((SITE / entry["src"] / (path + ".gz")).read_bytes()).decode()
+
+
+def srcedit_press(page, sel, phone):
+    # The list of edited files is drawn again when the DWARF or the source
+    # arrives: a button can be replaced between finding and pressing it.
+    for i in range(3):
+        try:
+            loc = page.locator(sel).first
+            loc.scroll_into_view_if_needed(timeout=10000)
+            loc.tap(timeout=10000) if phone else loc.click(timeout=10000)
+            return
+        except PlaywrightError:
+            if i == 2:
+                raise
+            time.sleep(0.5)
+
+
+def srcedit_open(page, path, phone):
+    """The whole file in the Source panel, then Edit: the editor with its text."""
+    page.evaluate("(p) => openSourceFile(p)", path)
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok" and page.get_attribute("#src_body", "data-file") == path, 60)
+    t0 = time.monotonic()
+    if not srcedit_state(page)["editing"]:
+        srcedit_press(page, "#src_edit", phone)
+    ok = wait_for(lambda: (lambda s: s["editing"] and s["taShown"])(srcedit_state(page)), 30, 0.05)
+    return ok, time.monotonic() - t0
+
+
+def srcedit_ready(page, name):
+    """The overlay read from storage and the kernel shown (paths() are the shown kernel's)."""
+    page.wait_for_function("typeof srcOverlay !== 'undefined' && srcOverlay.ready", timeout=60000)
+    page.evaluate("srcOverlay.ready")
+    page.wait_for_function("(n) => srcKernelKey() === n", arg=name, timeout=60000)
+
+
+def srcedit_overlay(page):
+    return page.evaluate("""async () => { await srcOverlay.ready; const paths = srcOverlay.paths(), out = {};
+      for (const p of paths) out[p] = [await srcOverlay.read(p), await srcOverlay.original(p)];
+      return { paths, files: out }; }""")
+
+
+def srcedit_download(page, phone, tmp, stem):
+    show_tab(page, "source")
+    with page.expect_download(timeout=20000) as dl:
+        srcedit_press(page, "#ed_download", phone)
+    d = dl.value
+    out = tmp / f"{stem}.patch"
+    d.save_as(str(out))
+    return d.suggested_filename, out
+
+
+def srcedit_git_apply(tmp, files, patch):
+    """Write the shipped files into a fresh tree, `git apply` the patch there:
+    (ok, message, {path: text after})."""
+    tree = tmp / ("tree-" + patch.stem)
+    if tree.exists():
+        shutil.rmtree(tree)
+    tree.mkdir()
+    for p, text in files.items():
+        (tree / p).parent.mkdir(parents=True, exist_ok=True)
+        (tree / p).write_bytes(text.encode())
+    for args in (["--check"], []):
+        r = subprocess.run(["git", "apply", *args, str(patch)], cwd=tree, capture_output=True, text=True)
+        if r.returncode:
+            return False, (r.stderr or r.stdout).strip()[:400], {}
+    after = {}
+    for f in tree.rglob("*"):
+        if f.is_file():
+            after[str(f.relative_to(tree))] = f.read_bytes().decode()
+    return True, "", after
+
+
+def srcedit_git_patch(tmp, files, change, stem):
+    """A patch made by git: files (path -> text) committed, change (path ->
+    new text, None deletes) applied, `git diff` with new files added -N."""
+    tree = tmp / ("git-" + stem)
+    if tree.exists():
+        shutil.rmtree(tree)
+    tree.mkdir()
+    git = lambda *a: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tree, check=True, capture_output=True, text=True).stdout
+    git("init", "-q")
+    for p, text in files.items():
+        (tree / p).parent.mkdir(parents=True, exist_ok=True)
+        (tree / p).write_bytes(text.encode())
+    git("add", ".")
+    git("commit", "-q", "-m", "base")
+    for p, text in change.items():
+        if text is None:
+            (tree / p).unlink()
+            continue
+        (tree / p).parent.mkdir(parents=True, exist_ok=True)
+        (tree / p).write_bytes(text.encode())
+        if p not in files:
+            git("add", "-N", p)
+    out = tmp / f"{stem}.patch"
+    out.write_text(git("diff"))
+    return out
+
+
+def srcedit_upload(page, phone, patch):
+    show_tab(page, "source")
+    page.evaluate("delete document.getElementById('ed_status').dataset.state")
+    page.set_input_files("#ed_upload", str(patch))
+    wait_for(lambda: page.evaluate("document.getElementById('ed_status').dataset.state") in ("applied", "refused"), 30)
+    return page.evaluate("[document.getElementById('ed_status').dataset.state, document.getElementById('ed_status').textContent]")
+
+
+def srcedit_counts(a, b):
+    import difflib
+    add = dele = 0
+    for line in difflib.unified_diff(a.splitlines(True), b.splitlines(True), n=3):
+        if line.startswith("+") and not line.startswith("+++"):
+            add += 1
+        elif line.startswith("-") and not line.startswith("---"):
+            dele += 1
+    return add, dele
+
+
+def srcedit_fit(page, tag, problems):
+    st = srcedit_state(page)
+    if st["hscroll"]:
+        problems.append(f"{tag}: the page scrolls sideways")
+    for k in ("ta", "panel"):
+        if st[k][2] > st["vw"] + 1 or st[k][0] < -1:
+            problems.append(f"{tag}: {k} {st[k]} leaves the viewport {st['vw']}")
+
+
+def srcedit_run(browser, base, shots, name, scheme, phone, tmp):
+    path, before, header, newfile = SRCEDIT_FILES[name]
+    entry = kernel_entries()[name]
+    orig = srcedit_orig(entry, path)
+    problems, r, errors = [], {}, []
+    width = 390 if phone else 1280
+    tag = f"{name} {width} {scheme}"
+    stem = f"srcedit-{name}-{width}"
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True, accept_downloads=True) if phone else \
+        browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.emulate_media(color_scheme=scheme)
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#source")
+    try:
+        srcedit_ready(page, name)
+    except PlaywrightError as e:
+        ctx.close()
+        return [f"{tag}: no srcOverlay: {str(e)[:200]}"], r
+    st = srcedit_state(page)
+    if st["list"] or st["download"]:
+        problems.append(f"{tag}: a fresh browser lists edits {st['list']} or offers a download")
+
+    # 1. Edit: the editor holds the shipped text, one line number per line.
+    ok, sec = srcedit_open(page, path, phone)
+    st = srcedit_state(page)
+    r["open editor s"] = round(sec, 2)
+    if not ok or st["value"] != orig:
+        ctx.close()
+        return problems + [f"{tag}: Edit did not show {path} as shipped: editing {st['editing']}, {len(st['value'])} vs {len(orig)} chars"], r
+    if st["gutterLines"] != len(orig.split("\n")):
+        problems.append(f"{tag}: {st['gutterLines']} line numbers for {len(orig.split(chr(10)))} lines")
+    if st["pressed"] != "true" or st["bodyShown"]:
+        problems.append(f"{tag}: while editing Edit is pressed {st['pressed']}, the listing still shown {st['bodyShown']}")
+    if st["active"] != "ed_text":
+        problems.append(f"{tag}: the focus is on {st['active']!r}, not in the editor")
+    if name == "debian-6.1-686" and sec > 5:
+        problems.append(f"{tag}: Edit of {path} ({len(orig.splitlines())} lines) took {sec:.1f} s")
+    srcedit_fit(page, f"{tag} editor", problems)
+
+    # 2. Type: Tab inserts a tab (the focus stays), Enter a line.
+    at = orig.index(before) if before else orig.index("\n", len(orig) // 2) + 1
+    at = orig.rfind("\n", 0, at) + 1
+    page.evaluate("(at) => { const t = document.getElementById('ed_text'); t.focus(); t.setSelectionRange(at, at); }", at)
+    page.keyboard.press("Tab")
+    page.keyboard.type("/* E2 edit */")
+    page.keyboard.press("Enter")
+    want = orig[:at] + "\t/* E2 edit */\n" + orig[at:]
+    if name == "hello":
+        # The last newline taken away: the patch says "\ No newline at end of file".
+        page.keyboard.press("Control+End")
+        page.keyboard.press("Backspace")
+        want = want[:-1]
+    st = srcedit_state(page)
+    if st["value"] != want or st["active"] != "ed_text":
+        problems.append(f"{tag}: typed text wrong or the focus left (Tab): active {st['active']!r}, "
+                        f"{st['value'][at - 5:at + 30]!r} vs {want[at - 5:at + 30]!r}")
+    saved = wait_for(lambda: "saved" in srcedit_state(page)["state"], 10)
+    st = srcedit_state(page)
+    r["state"] = st["state"]
+    if not saved or "line" not in st["state"]:
+        problems.append(f"{tag}: the status does not say saved and where the caret is: {st['state']!r}")
+    if st["gutterLines"] != len(want.split("\n")):
+        problems.append(f"{tag}: {st['gutterLines']} line numbers after the edit, {len(want.split(chr(10)))} lines")
+    # Scrolled to the end: the line numbers follow.
+    page.evaluate("document.getElementById('ed_text').scrollTop = 1e9")
+    wait_for(lambda: (lambda s: s["gutterTop"] == s["taTop"])(srcedit_state(page)), 5)
+    st = srcedit_state(page)
+    if st["gutterTop"] != st["taTop"]:
+        problems.append(f"{tag}: the line numbers scrolled to {st['gutterTop']}, the text to {st['taTop']}")
+    page.evaluate("document.getElementById('ed_text').scrollTop = 0")
+    if not phone:
+        srcedit_shots(page, shots, f"{stem}-editor", scheme)
+    else:
+        page.screenshot(path=str(shots / f"{stem}-editor-{scheme}.png"))
+
+    # 3. Escape leaves the editor (to Edit), the panel stays open.
+    page.focus("#ed_text")
+    page.keyboard.press("Escape")
+    st = srcedit_state(page)
+    if st["active"] != "src_edit" or not st["open"] or not st["editing"]:
+        problems.append(f"{tag}: Escape in the editor: focus {st['active']!r}, panel open {st['open']}, editing {st['editing']}")
+
+    # 4. The panel's Diff: this file's diff instead of the text, and back.
+    srcedit_press(page, "#ed_diffbtn", phone)
+    wait_for(lambda: srcedit_state(page)["pdiffShown"], 5)
+    st = srcedit_state(page)
+    if not st["pdiffShown"] or st["taShown"] or "+\t/* E2 edit */" not in st["pdiff"] or "@@ -" not in st["pdiff"]:
+        problems.append(f"{tag}: the panel's Diff: shown {st['pdiffShown']}, editor shown {st['taShown']}, {st['pdiff'][:200]!r}")
+    if name == "hello" and "\\ No newline at end of file" not in st["pdiff"]:
+        problems.append(f"{tag}: the diff does not say the last line lost its newline: {st['pdiff'][-200:]!r}")
+    page.screenshot(path=str(shots / f"{stem}-pdiff-{scheme}.png"))
+    srcedit_press(page, "#ed_diffbtn", phone)
+    wait_for(lambda: srcedit_state(page)["taShown"], 5)
+
+    # 5. While the Machine tab shows the VM, keys typed in the editor stay there.
+    if name == "hello" and not phone:
+        show_tab(page, "machine")
+        page.click("#ed_text")
+        page.keyboard.press("Control+Home")
+        page.keyboard.type("xy")
+        st = srcedit_state(page)
+        if not st["value"].startswith("xy"):
+            problems.append(f"{tag}: typed with the Machine tab shown, the editor has {st['value'][:20]!r}")
+        page.keyboard.press("Backspace")
+        page.keyboard.press("Backspace")
+        wait_for(lambda: srcedit_state(page)["value"] == want, 5)
+
+    # 6. The Source tab: the file listed with its counts, its diff, the patch.
+    show_tab(page, "source")
+    wait_for(lambda: srcedit_state(page)["list"], 10)
+    st = srcedit_state(page)
+    add, dele = srcedit_counts(orig, want)
+    r["list"] = st["list"]
+    if st["list"] != [{"path": path, "add": add, "del": dele}]:
+        problems.append(f"{tag}: the Source tab lists {st['list']}, want {path} +{add} -{dele}")
+    srcedit_press(page, f'#ed_list li[data-path="{path}"] button.eddiffbtn', phone)
+    wait_for(lambda: srcedit_state(page)["diffShown"], 5)
+    st = srcedit_state(page)
+    if "+++ b/" + path not in st["diff"]:
+        problems.append(f"{tag}: the Source tab's Diff of {path}: {st['diff'][:200]!r}")
+    srcedit_fit(page, f"{tag} Source tab", problems)
+    srcedit_shots(page, shots, f"{stem}-list", scheme)
+    fname, patch = srcedit_download(page, phone, tmp, stem + "-1")
+    r["download"] = fname
+    if not fname.endswith(".patch") or name not in fname:
+        problems.append(f"{tag}: the patch is called {fname!r}")
+    ok, msg, after = srcedit_git_apply(tmp, {path: orig}, patch)
+    if not ok or after.get(path) != want:
+        problems.append(f"{tag}: git apply of the downloaded patch: {msg or 'other text'}")
+    ov = srcedit_overlay(page)
+    if ov["paths"] != [path] or ov["files"][path] != [want, orig]:
+        problems.append(f"{tag}: srcOverlay: paths {ov['paths']}, read/original equal {[x == y for x, y in zip(ov['files'].get(path, []), [want, orig])]}")
+
+    # 7. An uploaded patch (made by git on the edited tree): all files or none.
+    files = {path: want}
+    change = {path: want.replace("/* E2 edit */", "/* E2 edit, patched */")}
+    if header:
+        hdr = srcedit_orig(entry, header)
+        files[header] = hdr
+        change[header] = hdr.replace("\n", "\n/* E2 header */\n", 1)
+        change[newfile] = "#define E2_NEW 1\n"
+    good = srcedit_git_patch(tmp, files, change, stem + "-up")
+    # The same changes but this file's hunk made on the shipped text at the
+    # edited line: it does not match, so no file changes.
+    line_end = orig.index("\n", at)
+    stale = dict(change, **{path: orig[:line_end] + " /* stale */" + orig[line_end:]})
+    bad = srcedit_git_patch(tmp, dict(files, **{path: orig}), stale, stem + "-bad")
+    if name == "hello":
+        # Not a patch, and a rename: refused with the reason, nothing changed.
+        for stem2, body, why in (("junk", "hello\n", "not a unified diff"),
+                                 ("rename", f"diff --git a/{path} b/x.c\nsimilarity index 100%\nrename from {path}\nrename to x.c\n", "renames")):
+            junk = tmp / f"{stem}-{stem2}.patch"
+            junk.write_text(body)
+            state, text = srcedit_upload(page, phone, junk)
+            if state != "refused" or why not in text or srcedit_overlay(page) != ov:
+                problems.append(f"{tag}: the {stem2} upload: {state} {text!r}")
+    state, text = srcedit_upload(page, phone, bad)
+    r["refused"] = text
+    ov2 = srcedit_overlay(page)
+    if state != "refused" or path not in text or ov2 != ov:
+        problems.append(f"{tag}: a patch with a hunk that does not match: {state} {text!r}; overlay changed {ov2 != ov}")
+    state, text = srcedit_upload(page, phone, good)
+    r["applied"] = text
+    ov = srcedit_overlay(page)
+    want_paths = sorted(change)
+    if state != "applied" or ov["paths"] != want_paths or any(ov["files"][p][0] != change[p] for p in want_paths):
+        problems.append(f"{tag}: the git patch: {state} {text!r}; paths {ov['paths']} vs {want_paths}; "
+                        f"text equal {[ov['files'].get(p, [None])[0] == change[p] for p in want_paths]}")
+    if newfile and ov["files"].get(newfile, [0, 0])[1] is not None:
+        problems.append(f"{tag}: the new file {newfile} has an original: {ov['files'].get(newfile)}")
+    st = srcedit_state(page)
+    if [x["path"] for x in st["list"]] != want_paths:
+        problems.append(f"{tag}: after the patch the Source tab lists {st['list']}")
+
+    # 8. A reload keeps the edits; the editor opens on them.
+    page.reload()
+    srcedit_ready(page, name)
+    ov3 = srcedit_overlay(page)
+    if ov3 != ov:
+        problems.append(f"{tag}: after a reload srcOverlay has {ov3['paths']}, before {ov['paths']}")
+    # Not editing, the panel says the file has edits; its Diff shows them.
+    page.evaluate("(p) => openSourceFile(p)", path)
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 60)
+    wait_for(lambda: srcedit_state(page)["barShown"], 10)
+    st = srcedit_state(page)
+    if not st["barShown"] or "You changed this file" not in st["state"] or st["editing"]:
+        problems.append(f"{tag}: after a reload the panel does not say {path} has edits: {st['state']!r}")
+    srcedit_press(page, "#ed_diffbtn", phone)
+    wait_for(lambda: srcedit_state(page)["pdiffShown"], 10)
+    st = srcedit_state(page)
+    if not st["pdiffShown"] or "/* E2 edit, patched */" not in st["pdiff"]:
+        problems.append(f"{tag}: Diff without Edit first: shown {st['pdiffShown']}, {st['pdiff'][:120]!r}")
+    srcedit_press(page, "#ed_diffbtn", phone)
+    ok, _ = srcedit_open(page, path, phone)
+    st = srcedit_state(page)
+    if not ok or st["value"] != change[path]:
+        problems.append(f"{tag}: after a reload Edit shows other text ({ok})")
+    # A second download: git apply on the shipped files gives every file.
+    shipped = {path: orig}
+    if header:
+        shipped[header] = srcedit_orig(entry, header)
+    _, patch2 = srcedit_download(page, phone, tmp, stem + "-2")
+    ok, msg, after = srcedit_git_apply(tmp, shipped, patch2)
+    if not ok or any(after.get(p) != change[p] for p in want_paths):
+        problems.append(f"{tag}: git apply of the second patch: {msg or [after.get(p) == change[p] for p in want_paths]}")
+
+    # 9. Typed back to the shipped text: no longer an edit.
+    if name == "hello":
+        srcedit_open(page, path, phone)
+        page.fill("#ed_text", orig)
+        if not wait_for(lambda: srcedit_overlay(page)["paths"] == [], 10):
+            problems.append(f"{tag}: the shipped text typed back is still an edit: {srcedit_overlay(page)['paths']}")
+
+    # 10. Revert (press twice) one file, then Revert all.
+    if path in srcedit_overlay(page)["paths"]:
+        # The panel's Revert: the editor gets the shipped text back.
+        srcedit_press(page, "#ed_revert", phone)
+        srcedit_press(page, "#ed_revert", phone)
+        wait_for(lambda: path not in srcedit_overlay(page)["paths"], 10)
+        st = srcedit_state(page)
+        if path in srcedit_overlay(page)["paths"] or st["value"] != orig:
+            problems.append(f"{tag}: the panel's Revert of {path}: edited {srcedit_overlay(page)['paths']}, the editor has "
+                            f"{st['value'][:60]!r}, status {st['status']!r}, bar {st['state']!r}")
+    show_tab(page, "source")
+    left = srcedit_overlay(page)["paths"]
+    if left:
+        one = left[0]
+        sel = f'#ed_list li[data-path="{one}"] button.edrevert'
+        srcedit_press(page, sel, phone)
+        armed = page.text_content(sel)
+        if srcedit_overlay(page)["paths"] != left:
+            problems.append(f"{tag}: one press of Revert reverted {one}")
+        srcedit_press(page, sel, phone)
+        wait_for(lambda: one not in srcedit_overlay(page)["paths"], 10)
+        if one in srcedit_overlay(page)["paths"] or "again" not in (armed or ""):
+            problems.append(f"{tag}: Revert of {one}: armed label {armed!r}, still edited {one in srcedit_overlay(page)['paths']}")
+    if srcedit_overlay(page)["paths"]:
+        srcedit_press(page, "#ed_revert_all", phone)
+        srcedit_press(page, "#ed_revert_all", phone)
+        wait_for(lambda: srcedit_overlay(page)["paths"] == [], 10)
+    st = srcedit_state(page)
+    if srcedit_overlay(page)["paths"] or st["list"] or st["download"]:
+        problems.append(f"{tag}: after Revert all: {srcedit_overlay(page)['paths']} {st['list']} download {st['download']}")
+    if errors:
+        problems.append(f"{tag}: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def srcedit_shots(page, shots, stem, scheme):
+    for s in ("light", "dark"):
+        page.emulate_media(color_scheme=s)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"{stem}-{s}.png"))
+    page.emulate_media(color_scheme=scheme)
+
+
+def srcedit_nostore_run(browser, base, shots):
+    """Without IndexedDB the edits stay in the page until a reload, and it says so."""
+    problems, r, errors = [], {}, []
+    entry = kernel_entries()["hello"]
+    path = SRCEDIT_FILES["hello"][0]
+    orig = srcedit_orig(entry, path)
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    ctx.add_init_script("Object.defineProperty(window, 'indexedDB', { get() { throw new Error('storage blocked'); } })")
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#source")
+    srcedit_ready(page, "hello")
+    ok, _ = srcedit_open(page, path, False)
+    page.evaluate("(at) => { const t = document.getElementById('ed_text'); t.focus(); t.setSelectionRange(at, at); }", 0)
+    page.keyboard.type("// x\n")
+    wait_for(lambda: "reload" in srcedit_state(page)["state"], 10)
+    st = srcedit_state(page)
+    r["state"] = st["state"]
+    ov = srcedit_overlay(page)
+    if not ok or "reload" not in st["state"] or ov["paths"] != [path] or ov["files"][path][0] != "// x\n" + orig:
+        problems.append(f"no IndexedDB: state {st['state']!r}, overlay {ov['paths']}")
+    show_tab(page, "source")
+    if "reload" not in page.text_content("#ed_count") + page.text_content("#ed_status"):
+        problems.append(f"no IndexedDB: the Source tab does not say the edits go with a reload: {page.text_content('#ed_count')!r}")
+    if errors:
+        problems.append(f"no IndexedDB: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def suite_srcedit(ctx):
+    failed = False
+    runs = [("hello", "light", False), ("hello", "dark", True)]
+    if "minified-linux" in ctx.entries:
+        runs += [("minified-linux", "dark", False), ("minified-linux", "light", True)]
+    runs += [(n, "light", False) for n in debian_names(ctx) if n in SRCEDIT_FILES]
+    with tempfile.TemporaryDirectory() as td:
+        for name, scheme, phone in runs:
+            t0 = time.monotonic()
+            problems, r = srcedit_run(ctx.browser, ctx.base, ctx.shots, name, scheme, phone, pathlib.Path(td))
+            failed |= report("srcedit", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
+                             seconds=round(time.monotonic() - t0))
+    failed |= report("srcedit", *srcedit_nostore_run(ctx.browser, ctx.base, ctx.shots), kernel="hello", storage="none")
+    return failed
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -21523,6 +21991,7 @@ SUITES = {
     "jitrev": (suite_jitrev, False),
     "genimport": (suite_genimport, True),
     "memevents": (suite_memevents, False),
+    "srcedit": (suite_srcedit, False),
 }
 
 

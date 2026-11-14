@@ -1023,6 +1023,13 @@ def import_edges(browser, base, shots):
     if r["forgotten"] != [True, True, "", True, True]:
         problems.append(f"Forget on a bzImage from disk: [booted, no symbols, status, Forget hidden, booted again] {r['forgotten']}")
     page.screenshot(path=str(shots / "import-edges-1280.png"))
+    # Its Page tab: code decoded live without names for the memory operands (no symbols, no DWARF).
+    show_tab(page, "memory")
+    open_page(page, 0x100)
+    wait_for(lambda: page.locator("#listing .ins").count() > 0, 10)
+    r["no_names"] = [page.locator("#listing .ins").count(), page.locator("#listing .opn").count()]
+    if not r["no_names"][0] or r["no_names"][1]:
+        problems.append(f"bzImage from disk without symbols: instructions, operand names in its listing {r['no_names']}")
     page.close()
     shutil.rmtree(tmp, ignore_errors=True)
     if errors:
@@ -1711,6 +1718,47 @@ TASK_PAGE_JS = """() => { const st = stepper, info = taskInfo(st);
              off: varsOffset(), types: dbgTypes().state }; }"""
 
 
+def tasks_late_types(browser, base, shots, name, r):
+    """The variables (types.json) held back until the end of a counted run:
+    no task switch could read current_task, yet once they arrive the tasks
+    are named from their task_struct (the running one through
+    current_task, the boot task as init_task) and task_names_check holds
+    as on a normal run. While they are held a byte of init_task in the Page
+    listing says they are being read, and it names init_task's member once
+    they are in."""
+    problems = []
+    held = []
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.route(re.compile(r"/dwarf/types\.json(\?|$)"), lambda route: held.append(route))
+    page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 1):
+        page.close()
+        return [f"{name} with the variables held back: no end of the run"]
+    T = json.loads((SITE / kernel_entries()[name]["dwarf"] / "types.json").read_text())
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    show_tab(page, "memory")
+    open_page(page, it[1] // 4096)
+    pa = it[1] + 16
+    hover_byte(page, pa)
+    loading = [page.get_attribute("#var_info", "data-state"), page.inner_text("#var_info")]
+    for x in held:
+        x.continue_()
+    page.route(re.compile(r"/dwarf/types\.json(\?|$)"), lambda route: route.continue_())
+    wait_for(lambda: page.get_attribute("#var_info", "data-state") == "ok", 30)
+    after = [page.get_attribute("#var_info", "data-state"), page.get_attribute("#var_info", "data-path")]
+    r["late_types_hover"] = [loading, after, len(held)]
+    if not held or loading[0] != "loading" or not loading[1].startswith(f"{pa:#x}: ") or after[0] != "ok" or not (after[1] or "").startswith("init_task."):
+        problems.append(f"{name}: a byte of init_task while the variables are held back {loading}, then {after}")
+    late = shots / "late-types"
+    late.mkdir(exist_ok=True)
+    rl = {}
+    show_tab(page, "calls")
+    problems += [p + " (variables held back)" for p in task_names_check(page, name, late, rl)]
+    r["late_types_tasks"] = [rl.get("task_names"), rl.get("tasks_checked")]
+    page.close()
+    return problems
+
+
 def gdb_task_layout(elf):
     """gdb's offsets of task_struct's comm, pid, stack, tasks (None if it has
     no such member) and the addresses of current_task, __per_cpu_offset
@@ -2184,6 +2232,8 @@ def tasks_case(browser, base, shots, name):
         problems += graph_controls(page, name, shots, r)
     problems += task_names_check(page, name, shots, r)
     page.close()
+    if name == "minified-linux":
+        problems += tasks_late_types(browser, base, shots, name, r)
     if r["tasks"] < 2:
         problems.append(f"fewer than 2 tasks: {r}")
     # One set of rows for all tasks (no per-task bands).
@@ -3037,6 +3087,8 @@ def dwarf_case(browser, base, shots, name):
     bins = set()  # DWARF shards fetched
     page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
             bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
+    # A watch list in this browser that is not JSON: the panel starts with no watches.
+    page.add_init_script(f"localStorage.setItem('mkb-watch:{name}', '[\"init_task\", oops')")
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -3487,6 +3539,218 @@ def eip_box_check(page, name, problems, r, shots):
     page.emulate_media(color_scheme="light")
 
 
+# vars_edges: watches whose row the case checks, per kernel. (expression,
+# what to check): "error: text" (the row's error), "gdb" (its value is gdb's
+# print), "addr=NAME" (its address is variable NAME's), "note: text" (a
+# note under it starts so), "kids N: note" (opened: N children and that
+# note), "summary: text", "type=gdb" (its type is gdb's whatis), "decl: text".
+VARS_EDGES = {
+    "minified-linux": [
+        ("123", "error: not a variable name: 123"),
+        ("no_such_var_xyz", "error: no variable no_such_var_xyz in this kernel's DWARF"),
+        ("*high_memory", "error: the pointer (0x0) is not a kernel address in RAM"),
+        ("vc0.vc_need_wrap.x", "error: a bit field has no members"),
+        ("vc0.vc_need_wrap", "gdb"),
+        ("kmalloc_caches[0][3]", "gdb"),
+        ("kmalloc_caches[0][20]", "note: index 20 is past the end (14 elements)"),
+        ("kmalloc_caches[0]", "kids 14: "),
+        ("*delay_fn", "type=gdb"),
+        ("*current_task", "addr=init_task"),
+        ("current_task[0]", "addr=init_task"),
+        ("kmem_cache_init::boot_kmem_cache", "note: static local of kmem_cache_init()"),
+        ("initcall_levels", "note: in .init.data: freed once the kernel has booted (free_initmem), then the memory is reused"),
+        ("vector_irq", "kids 64: first 64 of 256 elements: watch name[i] for others"),
+        ("vector_irq[1000000]", "value: (not in RAM)"),
+        ("slash_name.hash", "gdb"),
+    ],
+    "debian-6.1-686": [
+        ("cpu_tss_rw", "note: per-CPU variable"),
+        ("do_initcalls::__func__", "decl: defined at an unknown place (its DIE has no DW_AT_decl_file)"),
+        ("posix_clocks", "summary: [?]"),
+        ("posix_clocks", "kids 0: flexible array: its length is not in the type"),
+    ],
+}
+
+
+def vars_edges(page, name, T, off, elf, shots, problems, r):
+    """Watches past the common ones (VARS_EDGES), each against gdb's print
+    of the ELF or the types.json numbers; the task row's Watch and a +
+    suggestion add theirs; Watch with an empty field adds
+    nothing, Enter in the field adds; an opened row closed again stays
+    closed after Refresh; the name suggestions stop at 40. In the Page
+    listing: a byte pointed at in the ASCII column names what its hex
+    column names, a byte in no variable says so, one in a union names the
+    union's other members, a per-CPU variable's byte is its template, a
+    click on a hex row's address unpins the description."""
+    T_names = {v[0] for v in T["vars"]}
+    show_tab(page, "debugger")
+    sel = lambda e: f'#watches .watch[data-expr="{e}"]'
+    # The task row's Watch: *current_task, the task_struct of init_task at start_kernel.
+    page.locator("#cur_task button").click()
+    wait_for(lambda: page.locator(sel("*current_task")).count() > 0, 10)
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    r["task_row_watch"] = page.get_attribute(sel("*current_task"), "data-addr") if page.locator(sel("*current_task")).count() else None
+    if r["task_row_watch"] != str(it[1]):
+        problems.append(f"{name}: the task row's Watch: *current_task at {r['task_row_watch']}, init_task is at {it[1]}")
+    # A "+ name" suggestion adds that watch.
+    quick = page.locator("#watch_quick button").first
+    qname = quick.inner_text()[2:] if quick.count() else None
+    if qname:
+        quick.click()
+        wait_for(lambda: page.locator(sel(qname)).count() > 0, 10)
+    r["quick_watch"] = [qname, page.locator(sel(qname)).count() if qname else 0]
+    if not qname or qname not in T_names or r["quick_watch"][1] != 1 or page.locator(f'#watch_quick button:text-is("+ {qname}")').count():
+        problems.append(f"{name}: a + suggestion: {r['quick_watch']}")
+    n0 = page.locator("#watches .watch").count()
+    page.fill("#watch_expr", "  ")
+    page.click("#watch_add")
+    if page.locator("#watches .watch").count() != n0:
+        problems.append(f"{name}: Watch with an empty field added a watch")
+    gdb = lambda exprs: gdb_values(elf, exprs) or [None] * len(exprs)
+    r["vars_edges"] = {}
+    for e, want in VARS_EDGES[name]:
+        if not page.locator(sel(e)).count():
+            page.fill("#watch_expr", e)
+            page.press("#watch_expr", "Enter")
+            wait_for(lambda: page.locator(sel(e)).count() > 0, 10)
+        w = page.locator(sel(e))
+        if not w.count():
+            problems.append(f"{name}: Enter did not add the watch {e}")
+            continue
+        state = w.get_attribute("data-state")
+        text = w.inner_text().replace("×", "").strip()
+        val = w.locator(".wval").first.inner_text() if w.locator(".wval").count() else None
+        notes = w.locator(":scope > div.note:not(.wdecl):not(.wothers)").all_inner_texts()
+        got = text if want.startswith("error") else val
+        kind, _, arg = want.partition(": ") if ": " in want else (want, "", "")
+        if want.startswith("error: "):
+            ok = state == "error" and text == f"{e}: {arg}"
+        elif want == "gdb":
+            g = gdb([e])[0]
+            got = [val, g]
+            ok = state == "ok" and g is not None and val == ("NULL" if re.sub(r"^\([^)]*\) ", "", g) == "0x0" else g)
+        elif want == "type=gdb":
+            g = subprocess.run(["gdb", "-nx", "-batch", "-ex", f"whatis {e}", str(elf)], capture_output=True, text=True).stdout.strip() if elf else ""
+            got = [val, w.locator(".wtype").first.inner_text(), g]
+            ok = state == "ok" and val == "" and g == "type = " + got[1]
+        elif want.startswith("addr="):
+            v = next(x for x in T["vars"] if x[0] == want[5:])
+            got = w.get_attribute("data-addr")
+            ok = state == "ok" and got == str(v[1])
+        elif kind == "note":
+            got = notes
+            if e == "cpu_tss_rw":
+                # The template until setup_per_cpu_areas() set __per_cpu_offset[0] (gdb: its value in the ELF).
+                pco = gdb(["__per_cpu_offset[0]"])[0]
+                arg = "the template in .data..percpu" if pco == "0" else "CPU 0's copy (template + __per_cpu_offset[0]"
+                ok = state == "ok" and notes[:1] == ["per-CPU variable"] and any(n.startswith(arg) for n in notes)
+            else:
+                ok = state == "ok" and any(n.startswith(arg) for n in notes)
+            if e == "kmem_cache_init::boot_kmem_cache":
+                g = gdb(["&kmem_cache_init::boot_kmem_cache"])[0]
+                got = [notes, w.get_attribute("data-addr"), g]
+                ok = ok and g is not None and f"{int(w.get_attribute('data-addr')) + off:#x}" in g
+        elif kind == "decl":
+            got = w.locator(".wdecl").inner_text() if w.locator(".wdecl").count() else None
+            ok = got == arg
+        elif kind in ("summary", "value"):
+            ok = state == "ok" and val == arg
+            if e == "vector_irq[1000000]":
+                ok = ok and notes == ["index 1000000 is past the end (256 elements)"]
+                got = [val, notes]
+        elif kind.startswith("kids "):
+            n = int(kind[5:])
+            w.locator("summary").first.click()
+            wait_for(lambda: w.locator(".wkids").count() > 0, 5)
+            kids = w.locator(".wkids").first
+            names = kids.locator(":scope > * .wname").all_inner_texts()
+            knote = kids.locator(":scope > .note").all_inner_texts()
+            got = [len(names), knote, val]
+            ok = len(names) == n and knote == ([arg] if arg else [])
+            if e == "kmalloc_caches[0]":
+                # gdb: {0x0 <repeats 14 times>}
+                vals = kids.locator(":scope > * .wval").all_inner_texts()
+                g = gdb([e])[0]
+                got.append(g)
+                ok = ok and val == "[14]" and names == [f"[{i}]" for i in range(14)] and \
+                    g == "{0x0 <repeats 14 times>}" and vals == ["NULL"] * 14
+            if e == "vector_irq":
+                # Closed again: it stays closed after Refresh.
+                w.locator("summary").first.click()
+                page.click("#watch_refresh")
+                closed = page.evaluate("(s) => !document.querySelector(s + ' details').open", sel(e))
+                got.append(["closed after Refresh", closed])
+                ok = ok and closed
+        else:
+            ok = False
+        r["vars_edges"][e + " " + want[:12]] = str(got)[:200]
+        if not ok:
+            problems.append(f"{name}: watch {e} ({want}): {got}")
+    # The name suggestions: at most 40 of those starting with what is typed.
+    page.fill("#watch_expr", "in")
+    page.dispatch_event("#watch_expr", "input")
+    opts = page.eval_on_selector_all("#watch_names option", "os => os.map((o) => o.value)")
+    want_n = min(40, sum(1 for x in T_names if x.startswith("in")))
+    r["suggestions_in"] = [len(opts), want_n]
+    if len(opts) != want_n or not all(o.startswith("in") and o in T_names for o in opts) or len(set(opts)) != len(opts):
+        problems.append(f"{name}: suggestions for 'in': {len(opts)} {opts[:5]}, want {want_n} names starting with it")
+    page.fill("#watch_expr", "")
+    page.screenshot(path=str(shots / f"vars-edges-{name}-1280.png"), full_page=True)
+    # The Page listing.
+    show_tab(page, "memory")
+    picks = {"minified-linux": {"union": "slash_name", "gap": 0x125000},
+             "debian-6.1-686": {"gap": 0x1c43e40, "percpu": "cpu_tss_rw"}}[name]
+    def at(pa):
+        if str(pa // 4096) != page.get_attribute("#listing", "data-page"):
+            open_page(page, pa // 4096)
+        return hover_byte(page, pa)
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    pa = it[1] + 16 + it[3] // 3
+    hexpath = at(pa)
+    xy = page.evaluate("""(pa) => { for (const l of document.querySelectorAll('#listing .hex')) {
+        if (pa < +l.dataset.addr || pa >= +l.dataset.end) continue;
+        l.scrollIntoView({ block: 'center' });
+        const r = l.getBoundingClientRect(), cw = r.width / l.textContent.length, i = pa - +l.dataset.row, per = +l.dataset.per;
+        return [r.left + (9 + per * 3 - 1 + (per === 16 ? 1 : 0) + 2 + i + 0.5) * cw, r.top + r.height / 2]; }
+        return null; }""", pa)
+    page.mouse.move(*xy)
+    wait_for(lambda: page.get_attribute("#var_info", "data-addr") == str(pa), 3)
+    r["ascii_column"] = [hexpath, page.get_attribute("#var_info", "data-path")]
+    if not hexpath or page.get_attribute("#var_info", "data-path") != hexpath:
+        problems.append(f"{name}: byte {pa:#x} in the ASCII column names {r['ascii_column'][1]!r}, its hex column {hexpath!r}")
+    at(picks["gap"])
+    r["no_variable"] = page.inner_text("#var_info")
+    if any(v[1] <= picks["gap"] < v[1] + max(v[3], 1) for v in T["vars"]) or page.get_attribute("#var_info", "data-state") != "none" or \
+            r["no_variable"] != f"{picks['gap']:#x} ({picks['gap'] + off:#x}): no variable of the DWARF here (heap, stack, page tables, code, or data without debug info)":
+        problems.append(f"{name}: byte {picks['gap']:#x} (in no variable): {r['no_variable']!r}")
+    if "union" in picks:
+        # slash_name: a struct qstr, whose first member is a union of an anonymous struct (hash, len) and hash_len.
+        u = next(v for v in T["vars"] if v[0] == picks["union"])
+        at(u[1])
+        r["union"] = page.inner_text("#var_info")
+        if f"{u[1] + off:#x} slash_name.hash: u32 = " not in r["union"] or "; the same bytes are also hash_len (union)" not in r["union"]:
+            problems.append(f"{name}: a byte of {picks['union']}'s union does not name the union's other member: {r['union']!r}")
+    if "percpu" in picks:
+        v = next(x for x in T["vars"] if x[0] == picks["percpu"])
+        at(v[1] + 8)
+        r["percpu_hover"] = page.inner_text("#var_info")
+        if "(this is the template; the Variables panel shows CPU 0's copy)" not in r["percpu_hover"]:
+            problems.append(f"{name}: a byte of {picks['percpu']} does not say it is the template: {r['percpu_hover']!r}")
+    # Pinned, then a click on the row's address: unpinned.
+    at(pa)
+    hover_byte(page, pa, click=True)
+    pinned = page.locator("#var_watch").count()
+    xy = page.evaluate("""(pa) => { for (const l of document.querySelectorAll('#listing .hex')) {
+        if (pa < +l.dataset.addr || pa >= +l.dataset.end) continue;
+        const r = l.getBoundingClientRect(), cw = r.width / l.textContent.length;
+        return [r.left + 2.5 * cw, r.top + r.height / 2]; } return [0, 0]; }""", pa)
+    page.mouse.click(*xy)
+    r["unpin"] = [pinned, page.inner_text("#var_info"), page.get_attribute("#var_info", "data-state")]
+    if r["unpin"] != [1, "", ""]:
+        problems.append(f"{name}: a click on a hex row's address after a pin: [Watch button before, text, state] {r['unpin']}")
+    show_tab(page, "debugger")
+
+
 def var_decl(T, v):
     """Where types.json says variable v is defined: (file, line) or (None, None)."""
     return (T["files"][v[7]], v[8]) if "files" in T and len(v) > 7 and v[7] >= 0 else (None, None)
@@ -3687,6 +3951,8 @@ def types_case(browser, base, shots, name):
     bins = set()  # DWARF shards fetched
     page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
             bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
+    # A watch list in this browser that is not JSON: the panel starts with no watches.
+    page.add_init_script(f"localStorage.setItem('mkb-watch:{name}', '[\"init_task\", oops')")
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -3698,6 +3964,8 @@ def types_case(browser, base, shots, name):
     eip_box_check(page, name, problems, r, shots)
     r["status"] = page.inner_text("#watch_status") if wait_for(
         lambda: page.get_attribute("#watches", "data-state") == "ok", 120) else page.inner_text("#watch_status")
+    if page.locator("#watches .watch").count() or not page.inner_text("#watches").startswith("No watches"):
+        problems.append(f"{name}: a stored watch list that is not JSON: {page.inner_text('#watches')[:100]!r}")
     if f"{len(T['vars'])} variables" not in r["status"]:
         problems.append(f"{name}: Variables status {r['status']!r}")
     exprs = TYPES_WATCHES[name]
@@ -3812,6 +4080,7 @@ def types_case(browser, base, shots, name):
     if not r["tap_watch"] or page.get_attribute(f'#watches .watch[data-expr="{path}"]', "data-state") != "ok":
         problems.append(f"{name}: tapping a byte did not offer a working watch of {path!r}")
     vardecl_checks(page, name, T, off, elf, shots, problems, r)
+    vars_edges(page, name, T, off, elf, shots, problems, r)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -3969,6 +4238,8 @@ def debian_case(browser, base, shots, name):
     bins = set()  # DWARF shards fetched
     page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
             bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
+    # A watch list in this browser that is not JSON: the panel starts with no watches.
+    page.add_init_script(f"localStorage.setItem('mkb-watch:{name}', '[\"init_task\", oops')")
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))

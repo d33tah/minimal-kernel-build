@@ -347,30 +347,26 @@ function varsScalar(T, type, pa, bits) {
 }
 
 // Children of an aggregate: [[label, pa, type, bits]] and a note.
+// (Only for what varsScalar leaves: a struct, union or array.)
 function varsChildren(T, type, pa) {
 	const s = dwStrip(T, type);
-	const t = s >= 0 ? T.types[s] : null;
-	if (!t)
-		return { list: [] };
+	const t = T.types[s];
 	if (t[0] === DWT.struct || t[0] === DWT.union) {
 		if (!t[3])
 			return { list: [], note: "only declared: this kernel's DWARF has no members for " + dwTypeName(T, s) };
 		return { list: t[3].map((m) => [m[0] ? "." + m[0] : "(anonymous " + dwTypeName(T, m[2]).split(" ")[0] + ")", pa + m[1], m[2],
 			m.length > 3 ? [m[3], m[4]] : null]) };
 	}
-	if (t[0] === DWT.array) {
-		const n = t[2][0];
-		const inner = t[2].slice(1);
-		const etype = inner.length ? varsSubArray(T, t[1], inner) : t[1];
-		const es = dwTypeSize(T, etype);
-		const shown = n < 0 ? 0 : Math.min(n, WATCH_MAX_ELEMENTS);
-		const list = [];
-		for (let i = 0; i < shown; i++)
-			list.push(["[" + i + "]", pa + i * es, etype, null]);
-		return { list, note: n < 0 ? "flexible array: its length is not in the type" :
-			n > shown ? "first " + shown + " of " + n + " elements: watch name[i] for others" : "" };
-	}
-	return { list: [] };
+	const n = t[2][0];
+	const inner = t[2].slice(1);
+	const etype = inner.length ? varsSubArray(T, t[1], inner) : t[1];
+	const es = dwTypeSize(T, etype);
+	const shown = n < 0 ? 0 : Math.min(n, WATCH_MAX_ELEMENTS);
+	const list = [];
+	for (let i = 0; i < shown; i++)
+		list.push(["[" + i + "]", pa + i * es, etype, null]);
+	return { list, note: n < 0 ? "flexible array: its length is not in the type" :
+		n > shown ? "first " + shown + " of " + n + " elements: watch name[i] for others" : "" };
 }
 
 // The one-line value of an aggregate: a char array as a string, else {…}.
@@ -761,8 +757,6 @@ function localsGroup(T, lf, k, f, ctx, key, fr) {
 // uw (unwindHere), or the reason there are none.
 function renderLocals(uw) {
 	const box = $("locals"), st = $("locals_status");
-	if (!box)
-		return;
 	varsCells = [];
 	box.textContent = "";
 	if (!uw) {
@@ -965,11 +959,10 @@ function varsTaskRead(L, va) {
 }
 
 // The running task through current_task: varsTaskRead's fields plus how,
-// or { why }.
+// or { why }. Only for a kernel with a task_struct layout (varsTaskLayout
+// without why: each caller checks).
 function varsCurrentTask(T) {
 	const L = varsTaskLayout(T);
-	if (L.why)
-		return L;
 	const e = varsEval(T, "current_task");
 	const b = e.error ? null : varsRead(e.pa, 4);
 	if (!b)

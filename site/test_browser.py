@@ -8039,7 +8039,19 @@ def nav_jump(page, views, kinds, kind, prep, problems, act="click"):
             target(None)
             view = page.evaluate("window.mkbView")
         else:
-            target.scroll_into_view_if_needed()
+            # A list the page draws again (the Coverage tree after its
+            # rows were opened) can drop the element just found (CI run
+            # 43544246661: "Element is not attached to the DOM"): find it
+            # again in the new drawing, as a user's next look would.
+            for again in range(3):
+                try:
+                    target.scroll_into_view_if_needed()
+                    break
+                except PlaywrightError as e:
+                    if "not attached" not in str(e) or again == 2:
+                        raise
+                    time.sleep(0.5)
+                    target = prep()
             page.evaluate("window.mkbView = null")
             target.tap() if act == "tap" else target.click()
             view = page.evaluate("window.mkbView")
@@ -16569,6 +16581,7 @@ union word gword;
 enum color gcolor = BLUE;
 const volatile int cv[2][3];
 binop gop;
+int (*vfp)(int, ...);
 double gdbl = 1.5;
 long long gll = -7;
 
@@ -16674,12 +16687,17 @@ DWF_BUILDS = {
     "gcc-dwarf2": ("gcc", ["-gdwarf-2", "-mregparm=3"], 2, "m.c"),
     "gcc-dwarf3": ("gcc", ["-gdwarf-3", "-O0"], 3, "m.c"),
     "gcc-dwarf4": ("gcc", ["-gdwarf-4", "-mregparm=3", "-msse2", "-mfpmath=sse"], 4, "m.c"),
+    "gcc-dwarf5": ("gcc", ["-gdwarf-5", "-mregparm=3"], 5, "m.c"),
+    # Location lists with DW_LLE_GNU_view_pair entries (neither gdb nor
+    # llvm-dwarfdump reads them): the same code, so the page must say what
+    # it says for gcc-dwarf5.
+    "gcc-dwarf5-views": ("gcc", ["-gdwarf-5", "-gvariable-location-views=incompat5", "-mregparm=3"], 5, "m.c"),
     "clang-dwarf4": ("clang", ["-gdwarf-4"], 4, "m.c"),
     "clang-dwarf5": ("clang", ["-gdwarf-5", "-mregparm=3"], 5, "m.c"),
     "g++-dwarf4": ("g++", ["-gdwarf-4", "-fno-exceptions", "-fno-rtti"], 4, "c.cc"),
 }
 DWF_FUNCS = ("sum", "stop", "mix", "use", "entry")
-DWF_VARS = ("shared", "gflags", "gword", "gcolor", "cv", "gop", "gdbl", "gll")
+DWF_VARS = ("shared", "gflags", "gword", "gcolor", "cv", "gop", "vfp", "gdbl", "gll")
 
 DWF_JS = """async ([b64, offset, lo, hi, src]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
@@ -16725,6 +16743,9 @@ DWF_JS = """async ([b64, offset, lo, hi, src]) => {
         noret: !!(e[3] & 4), varargs: !!(e[3] & 2) }));
     out.vars = T.vars.map((v) => ({ name: v[0], va: v[1] + offset, size: v[3], at: dwVarDeclText(T, v), type: dwTypeName(T, v[2]),
         where: [...Array(v[3]).keys()].map((k) => { const x = dwWhere(T, v[1] + k); return x ? x.path + (x.note ? ' ' + x.note : '') : null; }) }));
+    // The static local by its function's name (a watch's mix::calls).
+    const pick = (q) => { const p = dwVarsPick(T, T.vars.filter((v) => v[0] === 'calls'), q, 'calls'); return p.v ? [p.v[0], p.v[1] + offset, p.v[6]] : p.why; };
+    out.picks = [pick('mix'), pick('use')];
     out.flags = T.types.filter((t) => t[0] === DWT.struct && t[1] === 'flags' && t[3]).map((t) => t[3])[0] || null;
     out.enums = T.types.filter((t) => t[0] === DWT.enum && t[1] === 'color').map((t) => t[3])[0] || null;
     // The variables at each address: name and kind of location there, as
@@ -17242,7 +17263,7 @@ def pa_of(elf, name):
 
 def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     from test_dwarf import symbolize, gdb_scopes
-    problems, r = [], {}
+    problems, r, seen = [], {}, {}
     page = browser.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
@@ -17264,7 +17285,8 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
             if got.get("open") != "ok" or got.get("error"):
                 problems.append(f"{name}: the fixture did not open: {str(got)[:300]}")
                 continue
-            p = dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes)
+            seen[name] = (got, None, lo, hi)
+            p = dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes, seen)
             r[name] = "ok" if not p else f"{len(p)} problems"
             problems += p
             if name == "clang-dwarf5":
@@ -17306,8 +17328,11 @@ def dwf_locals_checks(name, elf, got, vas, gdb_scopes):
     # (The page turns clang's DW_OP_addrx into DW_OP_addr with the address.)
     mine = {(n, a, b): t for n, a, b, t in got["exprs"]}
     theirs = {k: v for k, v in dwf_dwarfdump_exprs(elf).items() if k[0] not in DWF_VARS + ("gc", "total") and not (v or "").startswith("DW_OP_addrx")}
+    # dwExprText abbreviates the rarer operations' operands ("…"): there
+    # only the operations must be llvm-dwarfdump's.
+    same = lambda m, t: m == t or (m is not None and "…" in m and re.findall(r"DW_OP_\w+", m) == re.findall(r"DW_OP_\w+", t))
     differ = [(k, mine.get(k), theirs.get(k)) for k in sorted(set(mine) | set(theirs), key=str)
-              if theirs.get(k) is not None and mine.get(k) != theirs.get(k)]
+              if theirs.get(k) is not None and not same(mine.get(k), theirs[k])]
     if differ or len(theirs) < 5:
         problems.append(f"{name}: location expressions differ from llvm-dwarfdump's ({len(theirs)}): {differ[:4]}")
     return problems
@@ -17335,7 +17360,7 @@ def dwf_cxx_checks(name, elf, got, nm):
     return problems
 
 
-def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
+def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes, seen):
     problems = []
     want_ver = DWF_BUILDS[name][2]
     if got["versions"] != [want_ver]:
@@ -17371,6 +17396,14 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
     bad = [(hex(va), rows[va], g) for va, g in zip(vas, got["rows"]) if rows[va] != g]
     if bad or not fdes:
         problems.append(f"{name}: CFI rows ({got['cfi']}) differ from llvm-dwarfdump: {bad[:3]} ({len(fdes)} FDEs)")
+    if name.endswith("-views"):
+        other, _, olo, ohi = seen.get(name[:-len("-views")], (None, None, 0, 0))
+        text = lambda e: subprocess.run(["llvm-objcopy", "-O", "binary", "--only-section=.text", str(e), "/dev/stdout"], capture_output=True).stdout
+        if not other or (olo, ohi) != (lo, hi) or text(elf) != text(elf.parent / (name[:-len("-views")] + ".elf")):
+            problems.append(f"{name}: not the same code as {name[:-len('-views')]}")
+        elif got["locals"] != other["locals"] or sorted(map(tuple, got["exprs"])) != sorted(map(tuple, other["exprs"])):
+            problems.append(f"{name}: parameters and locals or their locations differ from {name[:-len('-views')]}'s")
+        return problems
     if DWF_BUILDS[name][3] == "c.cc":
         return problems + dwf_cxx_checks(name, elf, got, nm) + dwf_locals_checks(name, elf, got, vas, gdb_scopes)
     # Functions and variables against gdb.
@@ -17397,6 +17430,10 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
         m = re.search(rf"^(\d+):\t[^\n]*\b{v}\b[^\n]*;$", g.get("info", ""), re.M)
         if have and m and have["at"] != f"m.c:{m.group(1)}":
             problems.append(f"{name}: {v} at {have['at']!r}, gdb's info variables m.c:{m.group(1)}")
+    # mix's static local by its function's name, at its ELF symbol (GCC calls.0, clang mix.calls).
+    sym = next((a for k, a in nm.items() if re.fullmatch(r"calls(\.\d+)?|mix\.calls", k)), None)
+    if got["picks"] != [["calls", sym, "mix"], "no variable use::calls in this kernel's DWARF"]:
+        problems.append(f"{name}: mix::calls and use::calls: {got['picks']}, the symbol at {sym}")
     # struct flags as gdb's ptype/o lays it out: [name, byte, bits, bit in byte].
     lay = []
     for m in re.finditer(r"/\*\s+(\d+)(?:\s*:\s*(\d+))?\s*\|\s*\d+\s*\*/\s+[^;]*?(\w+)(?:\s*:\s*(\d+))?;", g.get("flags", "")):

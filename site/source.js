@@ -159,8 +159,11 @@ async function srcPickTar(file) {
 					return;
 			}
 			const p = off - bufAt;
-			if (buf[p] === 0)
-				break; // end of archive
+			// End of archive: a zero block. A header's name field alone may
+			// be empty: ustar puts a directory's whole path in the prefix
+			// field when it is longer than 100 bytes.
+			if (buf.subarray(p, p + 512).every((x) => x === 0))
+				break;
 			if (str(buf, p + 257, 5) !== "ustar" && !/^[0-7 ]+\0?$/.test(str(buf, p + 148, 8)))
 				throw new Error("not a tar archive (no header at byte " + off + ")");
 			const size = parseInt(str(buf, p + 124, 12).trim() || "0", 8);

@@ -4,6 +4,8 @@
 # gen-clang-native.sh), bzImage only, in the source tree:
 #
 #   site/gen-debian-clang.sh SRCDIR CONFIG [JOBS]
+#   site/gen-debian-clang.sh --make SRCDIR [JOBS]   the build's make command
+#                                                  again (capture-host-tools.py)
 #
 # SRCDIR is gen-debian-source.sh's tree, CONFIG Debian's config of
 # linux-image-6.1.0-50-686 (/boot/config-6.1.0-50-686 in the package).
@@ -16,6 +18,17 @@
 # object keeps its compile command (check-wasm-objects.mjs).
 set -euo pipefail
 
+# The bzImage build: the same command for the build and for --make.
+build() {
+	make ARCH=i386 LLVM=1 -j"$1" KBUILD_BUILD_VERSION=1 KBUILD_BUILD_TIMESTAMP="2026-07-04" \
+		KBUILD_BUILD_USER=mkb KBUILD_BUILD_HOST=mkb bzImage
+}
+
+if [ "${1:-}" = --make ] && [ $# -ge 2 ]; then
+	cd "$2"
+	build "${3:-$(nproc)}"
+	exit
+fi
 if [ $# -lt 2 ]; then
 	sed -n '2,/^set /p' "$0" | sed '$d' >&2
 	exit 2
@@ -36,7 +49,6 @@ diff <(/usr/bin/grep -v '^#' "$config" | sort) <(/usr/bin/grep -v '^#' .config |
 echo "config lines changed from Debian's: $(/usr/bin/grep -c '^[<>]' config.diff)"
 clang --version | head -1
 start=$(date +%s)
-make ARCH=i386 LLVM=1 -j"$jobs" KBUILD_BUILD_VERSION=1 KBUILD_BUILD_TIMESTAMP="2026-07-04" \
-	KBUILD_BUILD_USER=mkb KBUILD_BUILD_HOST=mkb bzImage
+build "$jobs"
 echo "Debian 6.1 686 bzImage with clang: $(( $(date +%s) - start )) s"
 ls -l vmlinux arch/x86/boot/bzImage

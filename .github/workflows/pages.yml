@@ -283,6 +283,56 @@ jobs:
         cp "$g/hello-os/boot/high/kernel.elf" debug-elfs/hello-os.elf
         ls -l out/*/
 
+    # The build's host tools for the page's Worker (plan E0d): nasm, hello's
+    # tools/build and the minified Linux's mkpiggy and tools/build, built
+    # for wasm32-wasip1 by the wasi-sdk gen-clang-wasm.sh pins
+    # (gen-host-tools.py), and per kernel what the native tools (with
+    # clang.wasm's ld.lld, llvm-objcopy, llvm-nm) read and wrote in the
+    # steps after the compile, recorded by running those steps again
+    # (capture-host-tools.py; the bzImages must come out the same). The
+    # clang-worker job runs them in the browsers on the same inputs.
+    - name: Host tools in wasm and what the build's tools read and wrote
+      run: |
+        eval "$(/usr/bin/grep -E '^WASI_SDK(_URL|_SHA256)?=' site/gen-clang-wasm.sh)"
+        curl -sSfL --retry 5 -o "$RUNNER_TEMP/wasi-sdk.tgz" "$WASI_SDK_URL"
+        echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tgz" | sha256sum -c
+        tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/wasi-sdk.tgz"
+        sdk="$RUNNER_TEMP/$WASI_SDK"
+        m="$RUNNER_TEMP/hostwasm"
+        o="$RUNNER_TEMP/o0"
+        site/gen-host-tools.py --wasi-sdk "$sdk" nasm "$m/nasm"
+        site/gen-host-tools.py --check "$m/nasm"
+        site/gen-host-tools.py --wasi-sdk "$sdk" hello hello "$m/hello"
+        site/gen-host-tools.py --wasi-sdk "$sdk" hello "$RUNNER_TEMP/hello-os" "$m/hello-os"
+        site/gen-host-tools.py --wasi-sdk "$sdk" kbuild "$o/minified" "$m/minified"
+        site/gen-host-tools.py --wasi-sdk "$sdk" kbuild minified "$m/minified-os"
+        hello() { # name, tree, make args
+          n=$1 t=$2; shift 2
+          site/capture-host-tools.py --name "$n" --tree "$t" --out tool-fixtures \
+            --tool tools/build --path-tool nasm --path-tool ld.lld --path-tool llvm-objcopy --path-tool llvm-nm \
+            --module build="$m/$n/build.wasm" --module nasm="$m/nasm/nasm.wasm" \
+            --module ld.lld=clang --module llvm-objcopy=clang --module llvm-nm=clang \
+            --rm boot/head.o --rm boot/high/setup.bin --rm boot/low/setup.bin --rm boot/high/kernel.elf \
+            --rm boot/low/kernel.elf --rm boot/high/kernel.bin --rm boot/low/kernel.bin --rm bzImage --rm bzImage.low \
+            --same bzImage --same bzImage.low -- make LLVM=1 "$@"
+        }
+        hello hello hello OPT=-O0
+        hello hello-os "$RUNNER_TEMP/hello-os"
+        minified() { # name, tree, make args
+          n=$1 t=$2; shift 2
+          site/capture-host-tools.py --name "$n" --tree "$t" --out tool-fixtures \
+            --tool arch/x86/boot/tools/build --tool arch/x86/boot/compressed/mkpiggy \
+            --path-tool 'llvm-objcopy=arch/x86/boot/*' \
+            --module build="$m/$n/build.wasm" --module mkpiggy="$m/$n/mkpiggy.wasm" --module llvm-objcopy=clang \
+            --rm arch/x86/boot/compressed/vmlinux.bin --rm arch/x86/boot/setup.bin \
+            --same arch/x86/boot/bzImage -- make LLVM=1 -j6 "$@"
+        }
+        minified minified "$o/minified" KCFLAGS=-O0
+        minified minified-os minified
+        cp "$m/nasm/LICENSE.nasm" tool-fixtures/modules/
+        ls tool-fixtures/*.json | wc -l
+        du -sh tool-fixtures
+
     - uses: actions/upload-artifact@v4
       with:
         name: kernels
@@ -297,6 +347,11 @@ jobs:
       with:
         name: clang-fixtures
         path: clang-fixtures/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: tool-fixtures
+        path: tool-fixtures/
 
   # Debian 6.1 686 rebuilt from its source package and config with the
   # native clang 22.1.0 (gen-debian-clang.sh, LLVM=1, bzImage only): the
@@ -392,6 +447,33 @@ jobs:
           site/clang/clang.wasm "$RUNNER_TEMP/deb" fs/open.o kernel/sched/core.o
         du -sh clang-fixtures
 
+    # The host tools of this build in wasm, and what the native ones read
+    # and wrote after the compile (as in the kernels job): recordmcount on
+    # the two objects above, kallsyms and sorttable in the vmlinux link,
+    # relocs, mkpiggy, tools/build and llvm-objcopy of the bzImage.
+    - name: Host tools in wasm and what the build's tools read and wrote
+      run: |
+        eval "$(/usr/bin/grep -E '^WASI_SDK(_URL|_SHA256)?=' site/gen-clang-wasm.sh)"
+        curl -sSfL --retry 5 -o "$RUNNER_TEMP/wasi-sdk.tgz" "$WASI_SDK_URL"
+        echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tgz" | sha256sum -c
+        tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/wasi-sdk.tgz"
+        d="$RUNNER_TEMP/deb"
+        m="$RUNNER_TEMP/hostwasm/debian"
+        site/gen-host-tools.py --wasi-sdk "$RUNNER_TEMP/$WASI_SDK" kbuild "$d" "$m"
+        start=$(date +%s)
+        site/capture-host-tools.py --name debian --tree "$d" --out tool-fixtures \
+          --tool scripts/kallsyms --tool scripts/sorttable --tool 'scripts/recordmcount=fs/open.o,kernel/sched/core.o' \
+          --tool arch/x86/tools/relocs --tool arch/x86/boot/tools/build --tool arch/x86/boot/compressed/mkpiggy \
+          --path-tool 'llvm-objcopy=arch/x86/boot/*' --extra sorttable=System.map \
+          --module kallsyms="$m/kallsyms.wasm" --module sorttable="$m/sorttable.wasm" \
+          --module recordmcount="$m/recordmcount.wasm" --module relocs="$m/relocs.wasm" \
+          --module build="$m/build.wasm" --module mkpiggy="$m/mkpiggy.wasm" --module llvm-objcopy=clang \
+          --rm vmlinux --rm fs/open.o --rm kernel/sched/core.o \
+          --same arch/x86/boot/bzImage -- "$PWD/site/gen-debian-clang.sh" --make "$d"
+        echo "relink with the tools recorded: $(( $(date +%s) - start )) s"
+        ls tool-fixtures/*.json | wc -l
+        du -sh tool-fixtures
+
     - name: Collect
       run: |
         d="$RUNNER_TEMP/deb"
@@ -407,6 +489,11 @@ jobs:
       with:
         name: clang-fixtures-debian
         path: clang-fixtures/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: tool-fixtures-debian
+        path: tool-fixtures/
 
   # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
   # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
@@ -788,6 +875,12 @@ jobs:
         merge-multiple: true
         path: clang-fixtures
 
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: tool-fixtures*
+        merge-multiple: true
+        path: tool-fixtures
+
     - uses: actions/cache@v4
       with:
         path: ~/.cache/ms-playwright
@@ -816,8 +909,9 @@ jobs:
       run: |
         site/gen-clang-wasm.sh --check
         ls -l clang-fixtures
+        ls tool-fixtures/*.json | wc -l
         "$RUNNER_TEMP/venv/bin/python" site/test_clang_worker.py --fixtures clang-fixtures \
-          --browsers chromium,firefox,webkit --json clang-worker.json
+          --tool-fixtures tool-fixtures --browsers chromium,firefox,webkit --json clang-worker.json
 
     - uses: actions/upload-artifact@v4
       if: always()

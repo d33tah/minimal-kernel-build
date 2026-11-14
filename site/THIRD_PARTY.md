@@ -37,10 +37,33 @@ checked against a SHA-256 recorded in the script (`--check`).
 
 | file | source | pin | licence |
 |---|---|---|---|
-| `clang/clang.wasm` | [YoWASP/llvm-project](https://github.com/YoWASP/llvm-project) (LLVM 22.1.0 with YoWASP's WASI patches), built after YoWASP's `build.sh` recipe (MinSizeRel, no threads, 8 MiB stack, 4 GiB max memory, no LTO) with `LLVM_TARGETS_TO_BUILD=X86` and the llvm-driver, by [wasi-sdk 29](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-29) (`wasi-sdk-29.0-x86_64-linux.tar.gz`, SHA-256 `87d1d1a2879d139cdc624b968efad3d4a97b8078cdff95e63ac88ecafd1a0171`; its wasi-libc `ac020b86fd44`, libc++, libc++abi and compiler-rt builtins from LLVM 21.1.4 are linked in), in Docker `debian:trixie@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6` with cmake 3.31.6-2, ninja-build 1.12.1-1, g++-14 14.2.0-19 and python3 3.13.5-1 (from snapshot.debian.org `20261113T000000Z` when the archive no longer has them); SHA-256 `8b619cdac1f34d4cc29e667b3115ae168a0bdd514866f6e22c5e98020b755827` (the same from the E0 spike build, another container with another tblgen compiler, and from this script on d-claude; the clang-wasm workflow builds it again whenever the script changes) | commit `97196c8eeb1d495fa43bb8af2fb26af5ef5b89fb` (branch `llvmorg-22.1.0+wasm`; `clang --version` says 22.1.0) | Apache-2.0 WITH LLVM-exception: `clang/LICENSE.llvm`, `.clang`, `.lld` and `.libcxx`, `.libcxxabi`, `.compiler-rt` (the wasi-sdk runtime libraries); third-party code in LLVM's Support library: `LICENSE.blake3` (CC0-1.0 or Apache-2.0), `LICENSE.regex` (BSD, Henry Spencer's regex), `LICENSE.xxhash` (BSD-2-Clause), `LICENSE.md5` (public domain or a cut-down BSD licence), `LICENSE.unicode` and `LICENSE.unicode-convertutf` (Unicode licence); wasi-libc: `LICENSE.wasi-libc` (Apache-2.0 WITH LLVM-exception or Apache-2.0 or MIT: `LICENSE.wasi-libc-apache-llvm`, `-apache`, `-mit`; dlmalloc CC0), `LICENSE.wasi-libc-cloudlibc` (BSD-2-Clause), `LICENSE.wasi-libc-musl` (MIT) |
+| `clang/clang.wasm` | [YoWASP/llvm-project](https://github.com/YoWASP/llvm-project) (LLVM 22.1.0 with YoWASP's WASI patches), built after YoWASP's `build.sh` recipe (MinSizeRel, no threads, 8 MiB stack, 4 GiB max memory, no LTO) with `LLVM_TARGETS_TO_BUILD=X86` and the llvm-driver, by [wasi-sdk 29](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-29) (`wasi-sdk-29.0-x86_64-linux.tar.gz`, SHA-256 `87d1d1a2879d139cdc624b968efad3d4a97b8078cdff95e63ac88ecafd1a0171`; its wasi-libc `ac020b86fd44`, libc++, libc++abi and compiler-rt builtins from LLVM 21.1.4 are linked in), in Docker `debian:trixie@sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6` with cmake 3.31.6-2, ninja-build 1.12.1-1, g++-14 14.2.0-19 and python3 3.13.5-1 (from snapshot.debian.org `20261113T000000Z` when the archive no longer has them); SHA-256 `4f4bd4b16f41b0d4263c2ed33442311315837eab0d08d81be1c300a9fe9255fe` with the patch below (this script on d-claude; the clang-wasm workflow builds it again whenever the script changes and must get the same; without the patch the E0 spike, d-claude and CI all gave `8b619cdac1f34d4cc29e667b3115ae168a0bdd514866f6e22c5e98020b755827`) | commit `97196c8eeb1d495fa43bb8af2fb26af5ef5b89fb` (branch `llvmorg-22.1.0+wasm`; `clang --version` says 22.1.0) | Apache-2.0 WITH LLVM-exception: `clang/LICENSE.llvm`, `.clang`, `.lld` and `.libcxx`, `.libcxxabi`, `.compiler-rt` (the wasi-sdk runtime libraries); third-party code in LLVM's Support library: `LICENSE.blake3` (CC0-1.0 or Apache-2.0), `LICENSE.regex` (BSD, Henry Spencer's regex), `LICENSE.xxhash` (BSD-2-Clause), `LICENSE.md5` (public domain or a cut-down BSD licence), `LICENSE.unicode` and `LICENSE.unicode-convertutf` (Unicode licence); wasi-libc: `LICENSE.wasi-libc` (Apache-2.0 WITH LLVM-exception or Apache-2.0 or MIT: `LICENSE.wasi-libc-apache-llvm`, `-apache`, `-mit`; dlmalloc CC0), `LICENSE.wasi-libc-cloudlibc` (BSD-2-Clause), `LICENSE.wasi-libc-musl` (MIT) |
 
 To move the pin, change `LLVM_COMMIT`, the wasi-sdk and Debian pins and the
 checksums in `gen-clang-wasm.sh` together, and the table above.
+
+`clang.wasm` is built from that commit with one patch (in
+`gen-clang-wasm.sh`, under the same licence): on WASI, LLVM's
+`setPermissions(FD)` succeeds without calling fchmod, which wasi-libc
+answers with ENOSYS (llvm-objcopy and llvm-strip failed after writing
+their output).
+
+## Kernel build host tools in wasm
+
+`gen-host-tools.py` builds the host tools of the kernel builds for
+wasm32-wasip1 (plan step E0d); CI builds them in the kernels and
+debian-clang jobs and the clang-worker job runs them in the browsers
+(they are test inputs, not deployed yet). Pinned in the script:
+
+| file | source | pin | licence |
+|---|---|---|---|
+| `nasm.wasm` | [NASM](https://www.nasm.us/) 2.16.03 release tarball `nasm-2.16.03.tar.xz` (SHA-256 `1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148`), configured for wasm32-wasip1, stripped, built by wasi-sdk 29 (pinned above) | SHA-256 `9f6346a0c130eb74ba1a8458d62aaf1515aa0cb7ba62530685684bb56b17818b` (two builds in different directories, `--check`) | BSD-2-Clause, the tarball's `LICENSE` copied to `LICENSE.nasm` (SHA-256 `1563996c52e220e15ef2418e67d39488255aa8c28c89e617074d3afe3ee329e0`) |
+| `<elf.h>` used to compile the kernel tools | musl's `include/elf.h` in wasi-libc `ac020b86fd44` (the wasi-libc of wasi-sdk 29; wasi-libc does not install it) | SHA-256 `ebfb1791bae850a20dbd4ede3908365d63a38c3677f89397d36ea5a706ec6f4a` | MIT (`clang/LICENSE.wasi-libc-musl`) |
+| `kallsyms`, `sorttable`, `recordmcount`, `relocs`, `build`, `mkpiggy` | each kernel tree's own source (`scripts/`, `arch/x86/tools/`, `arch/x86/boot/`): this repository's `minified/` and `hello/`, and Debian's source package pinned below | the kernel source they are built from | GPL-2.0 (the Linux kernel) |
+
+Each module links wasi-libc and the compiler-rt builtins of wasi-sdk 29
+(licences as for `clang.wasm` above) and `hosttools/wasi-shim.c` (this
+repository).
 
 ## Debian sample kernel
 

@@ -2004,9 +2004,46 @@ PWD set to it, like `check-wasm-objects.mjs` does with Node's WASI, so
 relative paths and `DW_AT_comp_dir` are what the native build saw. A
 WASI call it does not have answers ENOSYS, so a module that imports more
 still instantiates.
-llvm-objcopy fails to write an output file in this module ("Function not
-implemented", from its libc, under Node's WASI too); writing to stdout
-(`-`) works.
+llvm-objcopy and llvm-strip write their output and then set its mode
+with fchmod, which wasi-libc answers with ENOSYS without asking the WASI
+layer, so they failed with "Function not implemented" after writing the
+file (found in E0c, under Node's WASI too). `gen-clang-wasm.sh` applies
+one patch to the pinned source: on WASI, LLVM's `setPermissions(FD)`
+does nothing and succeeds (WASI preview1 has no file modes).
+
+The kernel builds' host tools run in the same Worker (plan step E0d):
+`gen-host-tools.py` builds them for wasm32-wasip1 with the wasi-sdk that
+`gen-clang-wasm.sh` pins, from each kernel's own source and with the
+compile command its build used (kbuild's `.cmd` file of the tool, or
+`make -n` for hello): `scripts/kallsyms`, `scripts/sorttable`,
+`scripts/recordmcount` (it rewrites Debian's objects after the compile:
+the clang build's config has `FTRACE_MCOUNT_USE_RECORDMCOUNT`, where
+Debian's GCC build records mcount calls in the compiler),
+`arch/x86/tools/relocs`, `arch/x86/boot/tools/build` and
+`arch/x86/boot/compressed/mkpiggy` of the Debian tree (the minified
+Linux has only the last two), hello's `tools/build`, and nasm 2.16.03
+from its release tarball (SHA-256 of the tarball and of `nasm.wasm`
+pinned; `--check`). `hosttools/wasi-shim.c` is linked into each: mmap
+that writes a shared mapping back at munmap (sorttable sorts vmlinux in
+place), a thread function run to its end in `pthread_create` and the one
+`popen` sorttable makes (grep and awk on System.map); the kernel sources
+stay unchanged. `ClangWorker.load(url, name)` loads such a module under
+a name and `run(argv, { module: name })` runs it; `mkdir(paths)` makes
+the directories a tool writes into.
+`capture-host-tools.py` records, after a full build, what each native
+tool read and wrote: it puts a wrapper in place of each tool (and of
+nasm, ld.lld, llvm-objcopy and llvm-nm in PATH), deletes the files that
+come before the steps of interest, runs the build's own command again
+and then checks that the bzImage came out the same. The clang-worker
+job runs every recorded run again in the page's Worker in Chromium,
+Firefox and WebKit (`test_clang_worker.py --tool-fixtures`): every file
+written and the stdout must equal CI's bytes, for hello -O0 and -Os
+(nasm, ld.lld, llvm-objcopy, llvm-nm, tools/build), the minified Linux
+-O0 and -Os (llvm-objcopy, mkpiggy, tools/build) and Debian built with
+clang (recordmcount on `fs/open.o` and `kernel/sched/core.o`, kallsyms,
+sorttable, relocs, llvm-objcopy, mkpiggy, tools/build); per tool, its
+first run again with its largest input cut to half must fail or write
+other bytes.
 
 `test_clang_worker.py` (CI job `clang-worker`, Chromium, Firefox and
 WebKit) feeds a page's `ClangWorker` the inputs of CI's own compiles and
@@ -2020,7 +2057,8 @@ clang's rerun). Fixtures: hello and hello -Os, plain and -g;
 and -g; Debian's `fs/open.o` and `kernel/sched/core.o`. On the first one
 it also checks that another `-O` level and an edited source give other
 bytes and the source written back gives CI's again, runs ld.lld -r,
-llvm-objcopy -O binary to stdout, llvm-ar and llvm-nm, and the API's
+llvm-objcopy -O binary to stdout and to a file (the same bytes), llvm-ar
+and llvm-nm, and the API's
 failures (a run before load, a 404 module, a Worker that does not start,
 terminate with a request pending). `testdata/wasi-probe.c`, built in the
 job by the wasi-sdk that `gen-clang-wasm.sh` pins, runs in a ClangWorker
@@ -2028,7 +2066,7 @@ of its own and checks the WASI calls the way wasi-libc makes them (stdin,
 clocks, files that grow, shrink and have holes, append, seek, directories
 and readdir, rename, unlink, rmdir, and the errors: EEXIST, ENOENT,
 EISDIR, ENOTDIR, ENOTEMPTY, ENOTSUP for links and sleeping); the kbuild
-host tools of step E0d will be such programs. Node's WASI fails 5 of its
+host tools of step E0d are such programs. Node's WASI fails 5 of its
 53 checks (it has symlinks and sleeps), so the probe tells layers apart. It prints the times and the peak RSS
 of the browser; `--json` keeps them, `--firefox-profile` profiles
 Firefox (Gecko profiler) and prints where the Worker's thread spent its

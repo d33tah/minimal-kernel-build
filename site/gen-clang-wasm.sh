@@ -20,7 +20,8 @@
 # versions of Debian's archive of 2026-11-13 (from the archive while it
 # has them, else from snapshot.debian.org). The recipe is YoWASP's
 # build.sh (MinSizeRel, no threads, 8 MiB stack, 4 GiB max memory) with
-# LLVM_TARGETS_TO_BUILD=X86 and without LTO. Native llvm-tblgen and
+# LLVM_TARGETS_TO_BUILD=X86 and without LTO, and one patch (below: a
+# WASI file mode call). Native llvm-tblgen and
 # clang-tblgen are built first in the same container. The tree is copied
 # into the container at /w (no .git, so no revision in the version
 # string), so the result does not depend on where this runs.
@@ -41,11 +42,11 @@ site=$(cd "$(dirname "$0")" && pwd)
 dir=$site/clang
 
 # Every file of site/clang/: clang.wasm and the licences of what is in it.
-# clang.wasm: the same SHA-256 from the E0 spike's build (another container
-# and tblgen compiler, same recipe) and this script's on d-claude.
+# clang.wasm: this script's build on d-claude with the patch below (E0d;
+# without it the E0 spike, d-claude and CI all gave 8b619cda...b755827).
 sums() {
 	cat <<SUMS
-8b619cdac1f34d4cc29e667b3115ae168a0bdd514866f6e22c5e98020b755827  clang.wasm
+4f4bd4b16f41b0d4263c2ed33442311315837eab0d08d81be1c300a9fe9255fe  clang.wasm
 6a94bedb8b707ed97f6e310d0d015ab14e0683ffa0a612b02958581b9cc9fc0e  LICENSE.blake3
 ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47  LICENSE.clang
 1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d  LICENSE.compiler-rt
@@ -97,6 +98,28 @@ git -c init.defaultBranch=main init -q "$tmp/src"
 git -C "$tmp/src" fetch -q --depth 1 "$LLVM_REPO" "$LLVM_COMMIT"
 git -C "$tmp/src" -c advice.detachedHead=false checkout -q FETCH_HEAD
 test "$(git -C "$tmp/src" rev-parse HEAD)" = "$LLVM_COMMIT"
+# One change to the pinned source. llvm-objcopy and llvm-strip write their
+# output, then set its mode with fchmod, which wasi-libc answers with
+# ENOSYS without asking the WASI host (WASI preview1 has no file modes):
+# the run failed with "Function not implemented" after writing the file
+# (E0c). On WASI setPermissions(FD) does nothing and succeeds.
+git -C "$tmp/src" apply <<'PATCH'
+--- a/llvm/lib/Support/Unix/Path.inc
++++ b/llvm/lib/Support/Unix/Path.inc
+@@ -830,6 +830,12 @@ std::error_code setPermissions(const Twine &Path, perms Permissions) {
+ }
+ 
+ std::error_code setPermissions(int FD, perms Permissions) {
++#if defined(__wasi__)
++  // WASI preview1 has no file modes; wasi-libc's fchmod fails with ENOSYS.
++  (void)FD;
++  (void)Permissions;
++  return std::error_code();
++#endif
+   if (::fchmod(FD, Permissions))
+     return errnoAsErrorCode();
+   return std::error_code();
+PATCH
 curl -sSfL --retry 5 -o "$tmp/wasi-sdk.tgz" "$WASI_SDK_URL"
 echo "$WASI_SDK_SHA256  $tmp/wasi-sdk.tgz" | sha256sum -c --quiet
 

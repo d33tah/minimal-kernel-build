@@ -10,6 +10,11 @@
 //                          { cwd: "/b/hello", outputs: ["/b/hello/boot/hello.o"] });
 //   // r.code, r.stdout, r.stderr (text), r.stdoutBytes, r.ms, r.mem,
 //   // r.files [[path, Uint8Array]]
+//   // A kernel build's host tool (gen-host-tools.py), a wasm32-wasip1
+//   // module of its own, on the same files:
+//   await cc.load("tools/kallsyms.wasm", "kallsyms");
+//   await cc.run(["scripts/kallsyms", "--base-relative", "vmlinux.syms"],
+//                { cwd: "/b/linux", module: "kallsyms" });
 //   cc.terminate();
 //
 // Requests run in order; a failure rejects with the Worker's message.
@@ -49,9 +54,11 @@ class ClangWorker {
 	}
 
 	// clang.wasm is pinned by SHA-256 (gen-clang-wasm.sh), so its URL has no
-	// deploy stamp and stays in the HTTP cache across deploys.
-	load(url = "clang/clang.wasm") {
-		return this.request({ op: "load", url: new URL(url, location.href).href });
+	// deploy stamp and stays in the HTTP cache across deploys. name: the
+	// module's name for run's module option (another module, e.g. a host
+	// tool, under its own name; clang.wasm is "clang").
+	load(url = "clang/clang.wasm", name = "clang") {
+		return this.request({ op: "load", url: new URL(url, location.href).href, name });
 	}
 
 	// files: [[path, Uint8Array | string]]; the arrays' buffers move to the
@@ -69,15 +76,20 @@ class ClangWorker {
 		return this.request({ op: "remove", paths });
 	}
 
+	// Directories (with their parents) a tool writes into.
+	mkdir(paths) {
+		return this.request({ op: "mkdir", paths });
+	}
+
 	list() {
 		return this.request({ op: "list" });
 	}
 
 	// One tool run: args[0] is the tool (clang, ld.lld, llvm-objcopy, ...),
 	// cwd the absolute build directory, stdin its input (bytes or text);
-	// outputs: paths to send back.
-	run(args, { cwd = "/", env = {}, stdin = "", outputs = [] } = {}) {
-		return this.request({ op: "run", args, cwd, env, stdin, outputs });
+	// outputs: paths to send back; module: the loaded module that runs it.
+	run(args, { cwd = "/", env = {}, stdin = "", outputs = [], module = "clang" } = {}) {
+		return this.request({ op: "run", args, cwd, env, stdin, outputs, module });
 	}
 
 	terminate() {

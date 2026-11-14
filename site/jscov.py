@@ -103,52 +103,83 @@ TERMINATE_JS = """(() => {
 # waits until the browser has the collector's coverage start (the file
 # <MKB_JSCOV_SW>/<targetId>; a waiting worker answers nothing before it
 # runs, and gets the commands the browser holds for it first), at most
-# 20 s. JSCOV_HOOK_OK in the driver's stderr says the patch is in.
+# 20 s. JSCOV_HOOK_OK in the driver's stderr says it held one. It works on
+# the driver's pipe to Chromium, not on Playwright's classes (bundled into
+# one file since Playwright 1.6x).
 HOLD_SW_JS = r"""'use strict';
-const Module = require('module');
+// On the driver's pipe to Chromium (--remote-debugging-pipe: JSON messages,
+// each ended by a NUL), whatever Playwright's version and bundling: reads
+// note the sessions of new service workers waiting for a debugger; the
+// write that runs one, and every write after it on that pipe, wait for the
+// collector's marker.
+const net = require('net');
 const fs = require('fs');
 const path = require('path');
 const dir = process.env.MKB_JSCOV_SW;
-const load = Module._load;
-let done = false;
-function ready(target, t0) {
-  return new Promise((resolve) => {
-    const poll = () => {
-      if (fs.existsSync(path.join(dir, target)))
-        return resolve(true);
-      if (Date.now() - t0 > 20000) {
-        process.stderr.write('jscov: service worker ' + target + ': no coverage start from the collector in 20 s, run anyway\n');
-        return resolve(false);
-      }
-      setTimeout(poll, 5);
-    };
-    poll();
-  });
-}
-Module._load = function (request, parent, isMain) {
-  const m = load.apply(this, arguments);
-  if (!done && dir && m && typeof m.CRConnection === 'function' && typeof m.CRSession === 'function' &&
-      m.CRConnection.prototype._onMessage && m.CRSession.prototype.send) {
-    done = true;
-    const C = m.CRConnection.prototype, S = m.CRSession.prototype, recv = C._onMessage, send = S.send;
-    C._onMessage = function (msg) {
-      if (msg && msg.method === 'Target.attachedToTarget' && msg.params && msg.params.targetInfo &&
-          msg.params.targetInfo.type === 'service_worker' && msg.params.waitingForDebugger)
-        (this.__mkbSw || (this.__mkbSw = new Map())).set(msg.params.sessionId, msg.params.targetInfo.targetId);
-      return recv.apply(this, arguments);
-    };
-    S.send = function (method, params) {
-      const sw = this._connection && this._connection.__mkbSw;
-      const target = sw && sw.get(this._sessionId);
-      if (method !== 'Runtime.runIfWaitingForDebugger' || !target)
-        return send.apply(this, arguments);
-      sw.delete(this._sessionId);
-      return ready(target, Date.now()).then(() => send.call(this, method, params));
-    };
-    process.stderr.write('jscov: JSCOV_HOOK_OK a new service worker runs once its coverage started\n');
+const ATTACH = Buffer.from('"Target.attachedToTarget"'), RUN = 'Runtime.runIfWaitingForDebugger';
+const sessions = new Map(); // sessionId -> targetId
+const emit = net.Socket.prototype.emit, write = net.Socket.prototype.write;
+let said = false;
+function scan(sock, chunk) {
+  const parts = sock.__mkbIn || (sock.__mkbIn = []);
+  let from = 0;
+  for (let end = chunk.indexOf(0); end >= 0; from = end + 1, end = chunk.indexOf(0, from)) {
+    const msg = parts.length ? Buffer.concat([...parts, chunk.subarray(from, end)]) : chunk.subarray(from, end);
+    parts.length = 0;
+    if (msg.indexOf(ATTACH) < 0)
+      continue;
+    try {
+      const m = JSON.parse(msg.toString('utf8'));
+      const p = m.params || {};
+      if (p.targetInfo && p.targetInfo.type === 'service_worker' && p.waitingForDebugger)
+        sessions.set(p.sessionId, p.targetInfo.targetId);
+    } catch (e) {}
   }
-  return m;
-};
+  if (from < chunk.length)
+    parts.push(chunk.subarray(from));
+}
+function ready(target, t0, go) {
+  if (fs.existsSync(path.join(dir, target)))
+    return go();
+  if (Date.now() - t0 > 20000) {
+    process.stderr.write('jscov: service worker ' + target + ': no coverage start from the collector in 20 s, run anyway\n');
+    return go();
+  }
+  setTimeout(() => ready(target, t0, go), 5);
+}
+if (dir) {
+  net.Socket.prototype.emit = function (ev, chunk) {
+    if (ev === 'data' && Buffer.isBuffer(chunk))
+      scan(this, chunk);
+    return emit.apply(this, arguments);
+  };
+  net.Socket.prototype.write = function (data) {
+    if (this.__mkbHeld) {
+      this.__mkbHeld.push(arguments);
+      return true;
+    }
+    if (typeof data === 'string' && data.indexOf(RUN) >= 0) {
+      let m = null;
+      try { m = JSON.parse(data); } catch (e) {}
+      const target = m && m.method === RUN && sessions.get(m.sessionId);
+      if (target) {
+        sessions.delete(m.sessionId);
+        if (!said) {
+          said = true;
+          process.stderr.write('jscov: JSCOV_HOOK_OK a new service worker runs once its coverage started\n');
+        }
+        const held = this.__mkbHeld = [arguments];
+        ready(target, Date.now(), () => {
+          this.__mkbHeld = null;
+          for (const a of held)
+            write.apply(this, a);
+        });
+        return true;
+      }
+    }
+    return write.apply(this, arguments);
+  };
+}
 """
 
 

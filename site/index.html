@@ -164,6 +164,28 @@
   <ul class="legend" id="grid_legend"></ul>
   <p class="note mono" id="focus_info" aria-live="polite"></p>
   <p class="note" id="hover_info" aria-live="polite"></p>
+  <details id="mm" class="mm">
+    <summary>Live memory map <span class="tip" tabindex="0" role="button" title="The whole 32-bit physical address space on a Hilbert curve: addresses next to each other stay next to each other on the square. It is cut at every region a standard the guest used names (IBM PC memory map, the BIOS&#x27;s E820 answers, PCI BARs, ACPI or MultiProcessor tables, IA32_APIC_BASE) and at the end of RAM; each region gets cells by its size, at least 16 so the small ones show, and stretches no standard names get a few hatched cells. While this is open the page records memory events (as the Memory events list does) and lights their cells in the initiator&#x27;s colour, then they fade: the CPU outside RAM (memory-mapped I/O) with a pulse from the cell of the code that did it (the ring), a device in RAM (DMA) from its PCI region or the edge, the emulator as a drop poured along the curve (the loader places the kernel before the first instruction). The CPU&#x27;s writes to RAM are sampled per frame by page (a write needs a TLB entry made for writing; the map empties the TLB each frame). Beside it, the colour text memory at 0xB8000 as the guest writes it. The slider moves through the log event by event, Replay plays it, Live follows the machine again; a step back cuts the log and the map follows. Click a cell, or focus the map and use the arrow keys, PageUp/PageDown (regions) and Enter, for its events: go there steps back to the instruction, file:line opens the Source panel. Only first touch: each region lights once per initiator and the story lists who touched it first. Closed, nothing is recorded or drawn.">?</span></summary>
+    <div class="mm-bar">
+      <button id="mm_play" type="button" aria-pressed="false">Replay</button>
+      <button id="mm_live" type="button">Live</button>
+      <label>speed <select id="mm_speed"><option value="0.25">0.25x</option><option value="1" selected>1x</option><option value="4">4x</option></select></label>
+      <label><input type="checkbox" id="mm_first"> only first touch</label>
+      <input type="range" id="mm_time" min="0" max="0" value="0" step="1" aria-label="Position in the memory event log">
+    </div>
+    <p class="note" id="mm_status" aria-live="off"></p>
+    <div class="mm-view">
+      <canvas id="mm_map" class="mm-map" width="512" height="512" tabindex="0" role="img" aria-label="Memory map of the physical address space; arrow keys move a cursor, PageUp and PageDown go by region, Enter lists the cell's events"></canvas>
+      <figure class="mm-textfig"><canvas id="mm_text" class="mm-text" width="640" height="400" role="img" aria-label="The colour text memory as the guest wrote it"></canvas><figcaption class="note" id="mm_text_cap"></figcaption></figure>
+    </div>
+    <p class="note mono" id="mm_cursor" aria-live="polite"></p>
+    <ul class="legend" id="mm_key"></ul>
+    <div id="mm_info" class="mm-info" aria-live="polite"></div>
+    <h4>Who touched each region first</h4>
+    <ol class="mev-list mm-story" id="mm_story"></ol>
+    <h4>Regions along the curve</h4>
+    <ul class="mev-list mono" id="mm_regions"></ul>
+  </details>
   <details id="mev" class="mev">
     <summary>Memory events <span class="tip" tabindex="0" role="button" title="While this is open the page records who touches which physical address: the CPU outside RAM (memory-mapped I/O), devices in RAM (DMA) and the emulator itself (the loader, a snapshot restore). Region names come only from standards the guest used: the IBM PC memory map, the BIOS's E820 answers, PCI configuration, ACPI tables, IA32_APIC_BASE. Newest first.">?</span></summary>
     <p class="note" id="mev_status" aria-live="polite"></p>
@@ -471,6 +493,13 @@
     <li><span class="lgs plain rbsamples" inert><span class="rbtog" data-state="paused"><span class="rbtop"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews"></span></span><span class="rbspeed">paused</span></span></span>
       <span><b>Pink dot</b> on its corner: a new version of this page is deployed; the menu says which and offers Reload.</span></li>
   </ul>
+  <h4>Live memory map (Memory tab)</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain" inert><span class="mm-sw mm-l0"></span> <span class="mm-sw mm-l1"></span> <span class="mm-sw mm-l2"></span> <span class="mm-sw mm-l3"></span></span>
+      <span>Who touched the cells, bright when new, fading after: <b>blue</b> the CPU outside RAM (memory-mapped I/O, with a pulse from the ring on the cell of the code that did it), <b>orange</b> a device in RAM (DMA), <b>green</b> the emulator (the loader&#x27;s drop, a snapshot restore, the page&#x27;s own writes), <b>light blue</b> the CPU writing a RAM page (sampled per frame). Where: Live memory map, its story and its key.</span></li>
+    <li><span class="lgs plain" inert><span class="mm-sw mm-k-ram"></span> <span class="mm-sw mm-k-reserved"></span> <span class="mm-sw mm-k-mmio"></span> <span class="mm-sw mm-k-rom"></span> <span class="mm-sw mm-k-none"></span></span>
+      <span>The regions under them, pale until touched: <b>grey</b> RAM, <b>dark grey</b> reserved (E820), <b>purple</b> memory-mapped I/O (video memory, PCI BARs, APICs, HPET), <b>yellow</b> ROM, <b>hatched</b> addresses no standard the guest used names. Where: Live memory map and its region list.</span></li>
+  </ul>
   <h4>Bookmarks</h4>
   <ul class="lgnd">
     <li><span class="lgs asm" inert><span class="ins">00126280 55        push %ebp <span class="bmstar tipmark">&#9733;</span></span></span>
@@ -562,6 +591,7 @@
 <script src="fastforward.js"></script>
 <script src="cpustate.js"></script>
 <script src="memevents.js"></script>
+<script src="memmap.js"></script>
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
 <script src="settings.js"></script>

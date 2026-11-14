@@ -1909,6 +1909,53 @@ TLB at each interval. The test (`test_browser.py`, suite `memevents`) runs
 it to the end of hello, the minified Linux (-O0 and -Os) and Debian, and
 writes one byte behind the API's back, which must be the only failure.
 
+## Live memory map (M2)
+
+The Memory tab's "Live memory map" (`memmap.js`, closed by default, its
+state remembered in this browser; `?memmap=1` opens it) draws the whole
+32-bit physical address space on a Hilbert curve of 128 x 128 cells, so
+addresses next to each other stay next to each other on the square. It is
+cut at every region `MEV` knows and at the end of RAM: each region gets at
+least 16 cells, RAM shares 60% of the rest by size and the other regions
+the remainder by the square root of their size (a 16 MiB framebuffer
+would otherwise dwarf 2 MiB of RAM), and stretches no standard names get
+24 hatched cells each. Every label names its standard.
+
+While it is open the page records memory events (the same log as the
+list) and lights each event's cells in its initiator's colour, fading in
+about a second: the CPU outside RAM with a pulse from the cell of the code
+that did it (a ring marks it), a device in RAM from its PCI region (or the
+map's edge), the emulator as a drop poured along the curve (the loader
+places the kernel before the first instruction). The CPU's RAM writes are
+not events; the map reads v86.wasm's checking-mode bitmap every frame (the
+pages that got a TLB entry made for writing, which only a write makes;
+`mev_track_begin` empties the TLB) and lights those pages too. Beside the
+map, the colour text memory at 0xB8000 is drawn from the log's writes (CGA
+layout, code page 437, the CGA palette): the characters appear as the
+guest paints them, and the window follows the last row written. The story
+lists, in position order, who touched each region first (per initiator
+and source: the region of the code, the device, the emulator's reason)
+with the function and file:line, and what the guest learned from the
+standards (`MEV.facts`).
+
+Time: live, the map follows the log; the slider moves through it event by
+event; Replay plays it from the first event (the whole log in 20 s at 1x;
+0.25x and 4x); Live goes back. A step back cuts the log and the map
+follows. A click on a cell (or the keyboard: arrows, PageUp/PageDown by
+region, Home/End, Enter) lists its events with "go there" (a step back to
+the instruction) and file:line links. "Only first touch" lights each
+region once per initiator and source, with callouts for the newest.
+
+Cost: closed, nothing is recorded or drawn (the jitdet floor is unchanged).
+Shown, live drawing is limited to about 20 frames a second; Debian at full
+JIT speed to 2.5e9 instructions on d-claude ran at 0.91 times the speed
+with the map closed (330.7 against 363.1 MIPS, 3.4 ms a frame). The test
+(`test_browser.py`, suite `memmap`) checks the layout, the text rebuilt
+from the log against the stepper's mirror of the screen, the story on the
+minified Linux and Debian, Replay's drop, the slider, a click, the
+keyboard, go there, only first touch, closing, that the events equal the
+list's, and the cost.
+
 
 ## Debug info: help, sizes, times and tests
 

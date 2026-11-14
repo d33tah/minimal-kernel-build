@@ -23,6 +23,7 @@ site = Path(__file__).resolve().parent
 # Classes with colours that mark nothing: the reason for each.
 CHROME = {
     "controls": "labels of the controls above the screen (muted)",
+    "mm-map": "the frame around the live memory map (a grey border)",
     "runbar": "labels of the run controls (muted)",
     "srcpick": "labels of the source picker (muted)",
     "note": "notes under controls (muted text)",

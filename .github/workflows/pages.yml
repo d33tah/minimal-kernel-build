@@ -795,6 +795,7 @@ jobs:
         - followeip
         - followfuzz
         - memevents
+        - memmap
     name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:
     - uses: actions/checkout@v4

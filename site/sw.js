@@ -21,7 +21,7 @@ const DATA = "mkb-data-" + V;
 const PRECACHE_PLAIN = ["index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png"];
 const PRECACHE_STAMPED = [
 	"style.css", "clock.js", "v86/libv86.js", "jumps.js", "stepper.js", "graph.js", "dwarf.js", "unwind.js", "asmnames.js",
-	"dbginfo.js", "source.js", "srcedit.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "memevents.js", "vars.js",
+	"dbginfo.js", "source.js", "srcedit.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "memevents.js", "memmap.js", "vars.js",
 	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "genimport.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
 ];
 const PRECACHE_KERNELS = [

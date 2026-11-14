@@ -21471,6 +21471,307 @@ def suite_memevents(ctx):
     return report("memevents", problems, r)
 
 
+# ---- memmap: the live memory map (M2) ----------------------------------------
+# memmap.js draws the 32-bit physical address space on a Hilbert curve, cut
+# at the regions memevents.js names (each label names its standard), and
+# lights the cells of each memory event in its initiator's colour; the CPU's
+# RAM writes are sampled per frame from v86.wasm's write bitmap. Checked: the
+# layout covers the address space with every named region at least 16 cells;
+# the loader's drop (Replay from the first event); the colour text memory
+# rebuilt from the log equals the stepper's mirror of the screen; the story
+# of first touches (the loader's parts, the kernel's code writing the
+# screen with its function and line, Debian's I/O APIC from the
+# MultiProcessor table, the E820 answers it learned); the slider and Live;
+# a cell's events from a click and from the keyboard, "go there" stepping
+# back to the event's instruction (the map follows the cut log); only
+# first touch; closing stops recording and drawing; the events are the same
+# as with the debug list (the map changes nothing); screenshots at 1280 and
+# 390 px, light and dark, and a filmstrip of a replay; the cost at full JIT
+# speed on Debian with the map shown against closed.
+MM_STATE_JS = """() => { const M = MMAP, segs = M.segs; const st = stepper;
+  let gaps = 0; for (let k = 1; k < segs.length; k++) if (segs[k].lo !== segs[k - 1].hi || segs[k].c0 !== segs[k - 1].c1) gaps++;
+  const dec = (b, from, n) => { let s = ''; for (let i = from; i < from + n; i += 2) s += String.fromCharCode(b[i] || 32); return s; };
+  let diff = 0; for (let i = 0; i < M.text.length; i += 2) if (M.text[i] !== st.text[i] || M.text[i + 1] !== st.text[i + 1]) diff++;
+  return { segs: segs.length, first: segs.length ? segs[0].lo : -1, last: segs.length ? segs[segs.length - 1].hi : -1, cells: segs.length ? segs[segs.length - 1].c1 : 0, gaps,
+    small: segs.filter((g) => g.kind !== 'none' && g.cells < 16).map((g) => M.segName(g)),
+    nostd: segs.filter((g) => g.kind !== 'none' && !/\\(.+\\)/.test(M.segName(g))).map((g) => M.segName(g)),
+    idx: M.idx, n: MEV.n, live: M.live, on: MEV.on, frames: M.frames, raf: !!M.raf, track: M.trackFrom, samples: M.samples.length,
+    textDiff: diff, textFrom: M.textFrom, screen: dec(M.text, M.textTop * 160, 4000),
+    story: [...document.querySelectorAll('#mm_story li')].map((l) => l.textContent),
+    storyLinks: document.querySelectorAll('#mm_story .srclink').length,
+    status: document.getElementById('mm_status').textContent, regions: document.querySelectorAll('#mm_regions li').length,
+    hscroll: document.documentElement.scrollWidth > innerWidth + 1, drawMs: M.drawMs, steps: st.steps }; }"""
+
+
+def mm_open(browser, base, name, scheme="light", phone=False, q="memmap=1"):
+    ctx, page, errs = mev_page(browser, scheme, phone)
+    page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10&{q}", timeout=180000)
+    show_tab(page, "memory")
+    return ctx, page, errs
+
+
+def mm_cell_xy(page, d):
+    """Viewport point of map cell d."""
+    page.locator("#mm_map").scroll_into_view_if_needed()
+    box = page.locator("#mm_map").bounding_box()
+    x, y = page.evaluate("(d) => [MMAP.cellX[d], MMAP.cellY[d]]", d)
+    return box["x"] + (x + 0.5) / 128 * box["width"], box["y"] + (y + 0.5) / 128 * box["height"]
+
+
+def mm_frames(page, n=3):
+    """Let the map draw n frames."""
+    page.evaluate("(n) => new Promise((ok) => { const f = () => (--n > 0 ? requestAnimationFrame(f) : ok()); requestAnimationFrame(f); })", n)
+
+
+def mm_story_case(browser, base, shots, name, problems, r):
+    """To the end with the map shown: layout, text, story; light 1280."""
+    ctx, page, errs = mm_open(browser, base, name)
+    try:
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 600, 0.5):
+            problems.append(f"{name}: no end with the map open")
+            return
+        time.sleep(0.5)
+        mm_frames(page, 5)
+        s = page.evaluate(MM_STATE_JS)
+        r[name] = {k: s[k] for k in ("segs", "cells", "idx", "n", "samples", "textDiff", "storyLinks", "drawMs", "frames")}
+        r[name + " story"] = s["story"][:40]
+        if s["first"] != 0 or s["last"] != 2 ** 32 or s["cells"] != 128 * 128 or s["gaps"]:
+            problems.append(f"{name}: the layout does not cover the address space once: {s['first']}..{s['last']} {s['cells']} cells, {s['gaps']} gaps")
+        if s["small"] or s["nostd"]:
+            problems.append(f"{name}: regions under 16 cells {s['small']} or without a standard {s['nostd']}")
+        if not s["live"] or s["idx"] != s["n"] or not s["on"]:
+            problems.append(f"{name}: the map is not live at the log's end: {s['idx']} of {s['n']}, on {s['on']}")
+        if s["textDiff"]:
+            problems.append(f"{name}: the text rebuilt from the log differs from the screen in {s['textDiff']} cells")
+        if not s["samples"]:
+            problems.append(f"{name}: no CPU RAM write sampled")
+        story = "\n".join(s["story"])
+        for want in ("the emulator first touched", "kernel protected-mode part", "BIOS image"):
+            if want not in story:
+                problems.append(f"{name}: the story has no {want!r}: {s['story'][:8]}")
+        kern = [x for x in s["story"] if "the CPU running code in usable RAM" in x and "colour text (CGA) video memory (IBM PC memory map)" in x]
+        # Debian's first writes from RAM are its decompressor's (no DWARF)
+        if not kern or (".c:" not in kern[-1] and not name.startswith("debian")):
+            problems.append(f"{name}: no story line of the kernel's code writing the screen with its file:line: {kern}")
+        if not s["storyLinks"]:
+            problems.append(f"{name}: the story has no Source link")
+        if name.startswith("debian"):
+            if "I/O APIC 0 (MultiProcessor Specification table)" not in story:
+                problems.append(f"{name}: the I/O APIC's first touch is not in the story")
+            if "the guest learned E820:" not in story or "the guest learned PCI" not in story:
+                problems.append(f"{name}: the story lacks what the guest learned (E820, PCI)")
+            if "Kernel panic" not in s["screen"] and "panic" not in s["screen"]:
+                problems.append(f"{name}: the text window does not show the end: {s['screen'][-400:]!r}")
+        else:
+            if "Hello, World!" not in s["screen"]:
+                problems.append(f"{name}: the text window lacks Hello, World!: {s['screen'][:300]!r}")
+        page.evaluate("document.getElementById('mm').scrollIntoView()")
+        page.screenshot(path=str(shots / f"memmap-{name}-end-1280-light.png"))
+        if errs:
+            problems.append(f"{name}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
+def mm_ui_case(browser, base, shots, problems, r):
+    """Replay (the drop), slider, Live, a cell from a click and the keyboard,
+    go there, only first touch, closing; 1280 dark then 390 light and dark."""
+    name = "minified-linux"
+    ctx, page, errs = mm_open(browser, base, name, "dark")
+    try:
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 600, 0.5):
+            problems.append("ui: no end")
+            return
+        mm_frames(page)
+        n = page.evaluate("MEV.n")
+        # Replay: the loader's drop first
+        page.click("#mm_play")
+        wait_for(lambda: page.evaluate("MMAP.anims.some((a) => a.type === 'drop')"), 5, 0.02)
+        drop = page.evaluate("""() => ({ drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]),
+          heat: MMAP.heat[2 * 16384 + MMAP.cellOf(0x100000)], playing: MMAP.playing, status: document.getElementById('mm_status').textContent })""")
+        r["replay"] = drop
+        if "kernel protected-mode part" not in drop["drops"] or drop["heat"] < 0.3 or not drop["playing"]:
+            problems.append(f"ui: Replay shows no drop of the kernel at 1 MiB: {drop}")
+        film = []
+        page.select_option("#mm_speed", "4")
+        for k in range(6):
+            time.sleep(0.7)
+            page.evaluate("document.getElementById('mm').scrollIntoView()")
+            p = shots / f"memmap-replay-{k}-1280-dark.png"
+            page.screenshot(path=str(p))
+            film.append(page.evaluate("[MMAP.idx, MMAP.anims.length]"))
+        r["filmstrip"] = film
+        if len({f[0] for f in film}) < 3:
+            problems.append(f"ui: the replay does not move: {film}")
+        # the slider: the first event, then Live
+        page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = '0'; s.dispatchEvent(new Event('input')); }")
+        mm_frames(page)
+        at0 = page.evaluate(MM_STATE_JS)
+        if at0["live"] or at0["idx"] > 1 or "Hello" in at0["screen"]:
+            problems.append(f"ui: the slider at 0 shows {at0['idx']} events, screen {at0['screen'][:60]!r}")
+        page.click("#mm_live")
+        mm_frames(page)
+        live = page.evaluate(MM_STATE_JS)
+        if not live["live"] or live["idx"] != n or "Hello, World!" not in live["screen"]:
+            problems.append(f"ui: Live: {live['idx']} of {n}, {live['screen'][:60]!r}")
+        # a click on the colour text memory's cell: its events
+        d = page.evaluate("MMAP.cellOf(0xb8000)")
+        x, y = mm_cell_xy(page, d)
+        page.mouse.click(x, y)
+        info = page.evaluate("""() => ({ head: document.querySelector('#mm_info p').textContent, rows: document.querySelectorAll('#mm_info li').length,
+          go: document.querySelectorAll('#mm_info .mm-go').length, links: document.querySelectorAll('#mm_info .srclink').length })""")
+        r["click"] = info
+        if "colour text (CGA) video memory (IBM PC memory map)" not in info["head"] or info["rows"] < 5 or not info["go"] or not info["links"]:
+            problems.append(f"ui: a click on 0xb8000's cell: {info}")
+        # go there: the newest event of the cell; the machine steps back to it
+        target = page.evaluate("""() => { const b = document.querySelector('#mm_info .mm-go'); const pos = Number(b.title.match(/instruction ([\\d,]+)/)[1].replace(/,/g, ''));
+          b.click(); return pos; }""")
+        ok = wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused' && stepper.steps <= %d" % target), 300, 0.2)
+        mm_frames(page)
+        back = page.evaluate("({ steps: stepper.steps, n: MEV.n, idx: MMAP.idx, live: MMAP.live, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
+        r["go there"] = {"target": target, **back}
+        if not ok or back["steps"] != target or back["idx"] != back["n"] or back["n"] >= n:
+            problems.append(f"ui: go there to {target:,}: {back}")
+        # keyboard: PageDown twice, Enter
+        page.focus("#mm_map")
+        page.keyboard.press("PageDown")
+        page.keyboard.press("PageDown")
+        page.keyboard.press("ArrowRight")
+        page.keyboard.press("Enter")
+        for k in ("End", "ArrowDown", "ArrowLeft", "Home", "ArrowUp", "PageUp", "x"):
+            page.keyboard.press(k)
+        page.keyboard.press("PageDown")
+        page.keyboard.press("PageDown")
+        page.keyboard.press("Enter")
+        kb = page.evaluate("({ cursor: document.getElementById('mm_cursor').textContent, head: (document.querySelector('#mm_info p') || {}).textContent || '', pick: MMAP.pick })")
+        r["keyboard"] = kb
+        if not kb["cursor"] or not kb["head"].startswith("0x") or kb["pick"] < 0:
+            problems.append(f"ui: keyboard: {kb}")
+        # the region list: a region's button shows its first cell's events;
+        # pointing at the map names the cell, leaving it clears that
+        page.click("#mm_regions li:nth-child(1) button")
+        reg = page.evaluate("({ pick: MMAP.pick, head: document.querySelector('#mm_info p').textContent })")
+        x, y = mm_cell_xy(page, page.evaluate("MMAP.cellOf(0xb8000)"))
+        page.mouse.move(x, y)
+        hov = page.get_attribute("#mm_map", "title")
+        page.mouse.move(x, y - 2000 if y > 2000 else 1)
+        page.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+        r["region list"] = {**reg, "hover": hov}
+        if reg["pick"] != 0 or not reg["head"].startswith("0x0-0x") or "colour text (CGA)" not in (hov or ""):
+            problems.append(f"ui: region list or pointing: {reg} {hov!r}")
+        # only first touch: whole regions lit once
+        page.check("#mm_first")
+        page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
+        mm_frames(page)
+        ft = page.evaluate("""() => { const g = MMAP.segs[MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MMAP.touched[d]) lit++;
+          return { cells: g.cells, lit, story: MMAP.story.length }; }""")
+        r["first touch"] = ft
+        if ft["lit"] != ft["cells"]:
+            problems.append(f"ui: only first touch lights {ft['lit']} of the text region's {ft['cells']} cells")
+        page.evaluate("document.getElementById('mm').scrollIntoView()")
+        page.screenshot(path=str(shots / "memmap-firsttouch-1280-dark.png"))
+        page.uncheck("#mm_first")
+        # closing: nothing recorded or drawn
+        page.click("#mm summary")
+        mm_frames(page)
+        time.sleep(0.3)
+        closed = page.evaluate("({ on: MEV.on, raf: !!MMAP.raf, track: MMAP.trackFrom, open: MMAP.open })")
+        r["closed"] = closed
+        if closed["on"] or closed["raf"] or closed["track"] != -1 or closed["open"]:
+            problems.append(f"ui: closed, the map still runs: {closed}")
+        if errs:
+            problems.append(f"ui: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+    for scheme in ("light", "dark"):
+        ctx, page, errs = mm_open(browser, base, name, scheme, phone=True)
+        try:
+            if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 600, 0.5):
+                problems.append(f"ui 390 {scheme}: no end")
+                continue
+            page.click("#mm_play")
+            time.sleep(1.5)
+            page.click("#mm_play")  # pause mid-replay
+            mm_frames(page)
+            page.evaluate("document.getElementById('mm').scrollIntoView()")
+            page.screenshot(path=str(shots / f"memmap-390-{scheme}.png"))
+            s = page.evaluate(MM_STATE_JS)
+            r[f"390 {scheme}"] = {"idx": s["idx"], "status": s["status"], "hscroll": s["hscroll"]}
+            if s["hscroll"]:
+                problems.append(f"ui 390 {scheme}: horizontal scroll")
+            if s["live"] or not s["status"].startswith("At "):
+                problems.append(f"ui 390 {scheme}: paused replay: {s['status']!r}")
+            if errs:
+                problems.append(f"ui 390 {scheme}: page errors {errs[:3]}")
+        finally:
+            ctx.close()
+
+
+def mm_same_case(browser, base, shots, problems, r):
+    """The map records the same events as the debug list: it only reads."""
+    out = {}
+    for q in ("memevents=1", "memmap=1"):
+        ctx, page, errs = mm_open(browser, base, "minified-linux", q=q)
+        try:
+            if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 600, 0.5):
+                problems.append(f"same: no end with {q}")
+                return
+            time.sleep(0.5)
+            steps = page.evaluate("stepper.steps")
+            out[q] = page.evaluate(MEV_DIGEST_JS, steps)
+        finally:
+            ctx.close()
+    r["same"] = out
+    if out["memevents=1"] != out["memmap=1"]:
+        problems.append(f"same: the map open recorded {out['memmap=1']}, the list {out['memevents=1']}")
+
+
+def mm_speed_case(browser, base, shots, debian, problems, r):
+    """Debian at full JIT speed to JITDET_CAP, the map closed and shown."""
+    if not debian:
+        return
+    name = debian[0]
+    for tag, q in (("closed", ""), ("shown", "&memmap=1")):
+        ctx, page, errs = mev_page(browser)
+        try:
+            page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips=10{q}", timeout=180000)
+            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+                problems.append(f"speed {tag}: not paused at the reset vector")
+                continue
+            show_tab(page, "memory")
+            page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, True])
+            machine_do(page, "click", "#dbg_continue")
+            if not wait_for(lambda: page.evaluate("window.__jd.done"), 400, 0.2):
+                problems.append(f"speed {tag}: did not reach {JITDET_CAP:,}")
+                continue
+            s = page.evaluate("""() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MEV.n,
+              frames: MMAP.frames, drawMs: Math.round(MMAP.drawMs), samples: MMAP.samples.length }; }""")
+            r[f"speed {tag}"] = s
+            if errs:
+                problems.append(f"speed {tag}: page errors {errs[:3]}")
+        finally:
+            ctx.close()
+    a, b = r.get("speed closed"), r.get("speed shown")
+    if a and b:
+        r["speed shown / closed"] = round(b["mips"] / a["mips"], 3)
+        if a["events"] > 10 or a["frames"]:
+            problems.append(f"speed: with the map closed {a['events']} events were recorded, {a['frames']} frames drawn")
+        if not b["events"] or not b["frames"] or not b["samples"]:
+            problems.append(f"speed: with the map shown: {b}")
+
+
+def suite_memmap(ctx):
+    problems, r = [], {}
+    for name in ("minified-linux", *debian_names(ctx)[:1]):
+        if name in ctx.entries:
+            mm_story_case(ctx.browser, ctx.base, ctx.shots, name, problems, r)
+    if "minified-linux" in ctx.entries:
+        mm_ui_case(ctx.browser, ctx.base, ctx.shots, problems, r)
+        mm_same_case(ctx.browser, ctx.base, ctx.shots, problems, r)
+    mm_speed_case(ctx.browser, ctx.base, ctx.shots, debian_names(ctx), problems, r)
+    return report("memmap", problems, r)
+
+
 # ---- srcedit: edit the kernel's source in the page (E2) --------------------
 # The Source panel's Edit turns the file shown into a text editor (a textarea
 # with line numbers); the edits live in an IndexedDB overlay over the shipped
@@ -22051,6 +22352,7 @@ SUITES = {
     "jitrev": (suite_jitrev, False),
     "genimport": (suite_genimport, True),
     "memevents": (suite_memevents, False),
+    "memmap": (suite_memmap, False),
     "srcedit": (suite_srcedit, False),
 }
 

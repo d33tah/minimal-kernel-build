@@ -35,6 +35,10 @@
 	--cov-run: #2e7d32;
 	--bm: #a87400;
 	--jarc: #77756e;
+	--mm-cpu: #2456a6;
+	--mm-dev: #d95f02;
+	--mm-emu: #138a63;
+	--mm-ram: #6f9fd8;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -59,6 +63,10 @@
 		--cov-run: #66bb6a;
 		--bm: #ffc93d;
 		--jarc: #8f8d86;
+		--mm-cpu: #8bb1f0;
+		--mm-dev: #ff9a4d;
+		--mm-emu: #4fd1a5;
+		--mm-ram: #4f7fb8;
 	}
 }
 :root[data-theme="dark"] {
@@ -83,6 +91,10 @@
 	--cov-run: #66bb6a;
 	--bm: #ffc93d;
 	--jarc: #8f8d86;
+	--mm-cpu: #8bb1f0;
+	--mm-dev: #ff9a4d;
+	--mm-emu: #4fd1a5;
+	--mm-ram: #4f7fb8;
 }
 
 * { box-sizing: border-box; }
@@ -278,6 +290,29 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #mem_eip { margin: 0.4rem 0 0; overflow-wrap: anywhere; }
 #mem_eip .symlink { padding: 0 0.15rem; }
 #hover_info { min-height: 1.5em; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+#mm { margin: 0.6rem 0; }
+#mm summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+#mm h4 { font-size: 0.85rem; margin: 0.5rem 0 0.2rem; }
+.mm-bar { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; align-items: center; margin: 0.4rem 0 0.2rem; font-size: 0.85rem; }
+#mm_time { flex: 1 1 12rem; min-width: 8rem; }
+.mm-view { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-start; }
+.mm-map { display: block; width: min(100%, 512px); height: auto; aspect-ratio: 1; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 3px; cursor: crosshair; }
+.mm-map:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mm-textfig { margin: 0; flex: 1 1 320px; max-width: 640px; min-width: 0; }
+.mm-text { display: block; width: 100%; height: auto; border-radius: 3px; }
+.mm-textfig figcaption { margin-top: 0.2rem; }
+.mm-sw { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 2px; vertical-align: -1px; }
+.mm-l0 { background: var(--mm-cpu); }
+.mm-l1 { background: var(--mm-dev); }
+.mm-l2 { background: var(--mm-emu); }
+.mm-l3 { background: var(--mm-ram); }
+.mm-k-ram { background: var(--page-free); }
+.mm-k-reserved { background: var(--r-hole); }
+.mm-k-mmio { background: var(--r-vga); }
+.mm-k-rom { background: var(--r-rom); }
+.mm-k-none { background: repeating-linear-gradient(45deg, var(--line) 0 2px, transparent 2px 4px); }
+.mm-story { font-size: 0.8rem; }
+.mm-go { font-size: 0.75rem; padding: 0 0.3rem; }
 #mev { margin: 0.6rem 0; }
 #mev summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
 #mev h4 { font-size: 0.85rem; margin: 0.5rem 0 0.2rem; }

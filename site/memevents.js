@@ -112,6 +112,7 @@ const MEV = {
 	facts: [],     // derived from obs: { pos, kind, text } (the debug list, quests)
 	check: null,
 	listTimer: null,
+	needs: new Set(), // who wants the events recorded: "list", "map", "url"
 
 	install(em, st) {
 		const cpu = em.v86.cpu;
@@ -133,10 +134,22 @@ const MEV = {
 		const every = Number(q.get("memcheck"));
 		if (every > 0)
 			this.checkStart(every);
-		this.setOn(this.on || q.get("memevents") === "1" || every > 0);
+		if (q.get("memevents") === "1")
+			this.needs.add("url");
+		this.setOn(this.needs.size > 0 || every > 0);
+	},
+
+	// The debug list or the memory map (memmap.js) is open or closed.
+	need(who, on) {
+		if (on)
+			this.needs.add(who);
+		else
+			this.needs.delete(who);
+		this.setOn(this.needs.size > 0 || !!this.check);
 	},
 
 	clear() {
+		this.gen = (this.gen || 0) + 1; // a new log (memmap.js starts again)
 		this.n = 0;
 		this.cols = null;
 		this.cap = 1 << 14;
@@ -711,7 +724,7 @@ const MEV = {
 		if (q.get("memevents") === "1" || Number(q.get("memcheck")) > 0)
 			box.open = true;
 		const sync = () => {
-			this.setOn(box.open || !!this.check);
+			this.need("list", box.open);
 			clearInterval(this.listTimer);
 			this.listTimer = box.open ? setInterval(() => this.render(), 500) : null;
 			this.render();

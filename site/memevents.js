@@ -327,7 +327,9 @@ const MEV = {
 	// ---- regions ------------------------------------------------------------
 
 	region(lo, hi, name, std, kind) {
-		const key = lo + ":" + hi + ":" + name;
+		// The standard is part of it: the local APIC at its power-up address
+		// named by a firmware table is not the IA32_APIC_BASE default.
+		const key = lo + ":" + hi + ":" + name + ":" + std;
 		let r = this.regionKey.get(key);
 		if (!r) {
 			r = { id: this.regions.length, lo, hi, name, std, kind, known: true };

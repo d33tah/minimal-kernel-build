@@ -21458,8 +21458,85 @@ def mev_speed_case(browser, base, shots, debian, problems, r):
             problems.append("speed: with the list open nothing was recorded")
 
 
+MEV_TABLES_JS = """() => { const m = MEV.cpu.mem8, out = {};
+  const w32 = (k, v) => { m[k] = v; m[k + 1] = v >>> 8; m[k + 2] = v >>> 16; m[k + 3] = v >>> 24; };
+  const str = (k, s) => [...s].forEach((c, j) => { m[k + j] = c.charCodeAt(0); });
+  const named = (a) => { const r = MEV.nameOf(MEV.regionOf(a)); return [r.name, r.std, r.known]; };
+  // A PCI class the class table does not have.
+  out.pci = pciClassName(0xfe, 0x00);
+  // An E820 answer with the carry flag set (an error), and one without the
+  // SMAP signature: no entry; then a good one: an entry.
+  const e820 = [MEV.e820.length];
+  for (const info of [0x300, 0x000, 0x100]) {
+    MEV.observe({ pos: stepper.steps, kind: 'e820', buf: 0, ebx: 0, info, bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0] });
+    e820.push(MEV.e820.length);
+  }
+  out.e820 = e820;
+  // Above RAM, before any standard names it.
+  out.none = named(0x40000000);
+  // Filters of query(): by initiator and by region.
+  const all = MEV.query().map((i) => MEV.event(i));
+  const vga = MEV.regionOf(0xb8000);
+  out.query = [MEV.query({ initiator: 'cpu' }).length, all.filter((e) => e.initiator === 'cpu').length,
+    MEV.query({ region: vga }).length, all.filter((e) => e.region === vga).length, all.length];
+  // ACPI tables (ACPI 6.x 5.2.5-5.2.12): an RSDP in the EBDA's first KiB, its
+  // RSDT with a MADT (a processor entry, then an I/O APIC) and an HPET table.
+  const ebda = (m[0x40e] | m[0x40f] << 8) << 4, R = ebda || 0xe0000, T = 0x70000, A = 0x70100, H = 0x70200;
+  str(R, 'RSD PTR '); w32(R + 16, T);
+  str(T, 'RSDT'); w32(T + 4, 44); w32(T + 36, A); w32(T + 40, H);
+  str(A, 'APIC'); w32(A + 4, 44 + 8 + 12); w32(A + 36, 0xfee00000);
+  m[A + 44] = 0; m[A + 45] = 8;
+  m[A + 52] = 1; m[A + 53] = 12; m[A + 54] = 5; w32(A + 56, 0xfec00000); w32(A + 60, 0);
+  str(H, 'HPET'); w32(H + 44, 0xfed00000);
+  MEV.acpi = null;
+  MEV.acpiTried = -1e15;
+  MEV.acpiTry(stepper.steps);
+  out.firmware = MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text);
+  out.hpet = named(0xfed00010);
+  out.ioapic = named(0xfec00010);
+  out.lapic = named(0xfee00010);
+  return out; }"""
+
+
+def mev_tables_case(browser, base, shots, problems, r):
+    """hello at its end: an unknown PCI class, E820 answers that are errors,
+    an address no standard names, query() by initiator and region, and ACPI
+    tables (RSDP, RSDT, MADT, HPET) written into RAM, which name the local
+    APIC, the I/O APIC and the HPET by ACPI (v86's SeaBIOS has no ACPI)."""
+    ctx, page, errs = mev_page(browser)
+    try:
+        if not mev_to_end(page, base, "hello", "memevents=1"):
+            problems.append("tables: hello did not end")
+            return
+        out = page.evaluate(MEV_TABLES_JS)
+        r["tables"] = out
+        if out["pci"] != "class fe:00 (PCI class table)":
+            problems.append(f"tables: unknown PCI class named {out['pci']!r}")
+        e = out["e820"]
+        if e[1:] != [e[0], e[0], e[0] + 1]:
+            problems.append(f"tables: E820 entries {e[0]}, after an error answer {e[1]}, one without SMAP {e[2]}, a good one {e[3]}")
+        if out["none"] != ["no standard the guest used names this address yet", "", False]:
+            problems.append(f"tables: 0x40000000 is named {out['none']}")
+        q = out["query"]
+        if q[0] != q[1] or q[2] != q[3] or not 0 < q[0] < q[4] or not q[2]:
+            problems.append(f"tables: query by initiator {q[0]} vs {q[1]}, by region {q[2]} vs {q[3]}, of {q[4]}")
+        want = "ACPI MADT and ACPI HPET table: local APIC 0xfee00000; I/O APIC 5 0xfec00000; HPET 0xfed00000"
+        if want not in out["firmware"]:
+            problems.append(f"tables: the firmware facts {out['firmware']}, want {want!r}")
+        # The local APIC at its power-up address is named by the table that
+        # says where it is, not by the IA32_APIC_BASE default made first.
+        if out["hpet"] != ["HPET", "ACPI HPET table", True] or out["ioapic"] != ["I/O APIC 5 (GSI 0 on)", "ACPI MADT", True] or \
+                out["lapic"] != ["local APIC", "ACPI MADT", True]:
+            problems.append(f"tables: regions {out['hpet']} {out['ioapic']} {out['lapic']}")
+        if errs:
+            problems.append(f"tables: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
 def suite_memevents(ctx):
     problems, r = [], {}
+    mev_tables_case(ctx.browser, ctx.base, ctx.shots, problems, r)
     for name, every in MEV_CHECK_RUNS:
         if name in ctx.entries:
             mev_check_case(ctx.browser, ctx.base, ctx.shots, name, every, problems, r)
@@ -22279,6 +22356,195 @@ def srcedit_nostore_run(browser, base, shots):
     return problems, r
 
 
+SRCEDIT_IDB_FAIL = {
+    # IndexedDB's open of the editor's database fails (onerror).
+    "open": """(() => { const open = IDBFactory.prototype.open;
+      IDBFactory.prototype.open = function (name, v) {
+        if (name !== 'mkb-srcedit') return open.call(this, name, v);
+        const r = { error: new DOMException('test: open refused', 'UnknownError') };
+        setTimeout(() => r.onerror && r.onerror(), 0);
+        return r; }; })()""",
+    # It opens, but reading the stored edits fails.
+    "getAll": """(() => { const getAll = IDBObjectStore.prototype.getAll;
+      IDBObjectStore.prototype.getAll = function (...a) {
+        if (this.name !== 'edits') return getAll.apply(this, a);
+        const r = { error: new DOMException('test: getAll refused', 'UnknownError') };
+        setTimeout(() => r.onerror && r.onerror(), 0);
+        return r; }; })()""",
+}
+
+
+def srcedit_paths_run(browser, base, tmp):
+    """hello, the paths the main run does not take. Uploaded patches refused
+    for each reason the reader and the overlay give (nothing changes); one
+    applied with a hunk three lines off and the last newline taken away;
+    one deleting the file open in the editor. srcOverlay patches of a
+    two-place edit, a deleted file with an empty new one, and a rewrite
+    past ED_DIFF_MAX (one hunk): git apply on the shipped file gives the
+    same text. A file the patch made, open in the editor, reverted: the
+    editor closes. Edit kept on while the panel moves to a file with no
+    text: Edit turns off. Ctrl+S stores at once. IndexedDB not opening, or
+    the stored edits not loading: the Source tab says why the edits go
+    with a reload."""
+    problems, r, errors = [], {}, []
+    entry = kernel_entries()["hello"]
+    path = SRCEDIT_FILES["hello"][0]
+    orig = srcedit_orig(entry, path)
+    lines = orig.splitlines(True)
+    n = len(lines)
+    if not orig.endswith("\n") or n < 20:
+        return [f"{path}: want a file of >= 20 lines ending in a newline ({n} lines)"], r
+    k = next(i for i in range(5, n - 5) if lines.count(lines[i]) == 1 and lines[i].strip())
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#source")
+    srcedit_ready(page, "hello")
+    clean = srcedit_overlay(page)
+
+    def upload(stem, body):
+        p = tmp / f"srcedit-paths-{stem}.patch"
+        p.write_text(body)
+        return srcedit_upload(page, False, p)
+
+    # 1. Refused, each with its reason; the overlay stays as it was.
+    hdr = f"--- a/{path}\n+++ b/{path}\n"
+    refusals = [
+        ("quoted", f'--- "a/{path} x"\n+++ "b/{path} x"\n@@ -1 +1 @@\n-a\n+b\n', "quoted file names are not supported"),
+        ("nohead", "@@ -1 +1 @@\n-a\n+b\n", "a hunk without a file header"),
+        ("cut", hdr + f"@@ -1,3 +1,3 @@\n {lines[0]}", f"{path}: the patch ends inside @@ -1,3 +1,3 @@"),
+        ("badline", hdr + f"@@ -1,2 +1,2 @@\n {lines[0]}*{lines[1]}", "starts with neither space, - nor +"),
+        ("noname", "--- /dev/null\n+++ /dev/null\n@@ -0,0 +1 @@\n+x\n", "a file without a name"),
+        ("exists", f"diff --git a/{path} b/{path}\nnew file mode 100644\n--- /dev/null\n+++ b/{path}\n@@ -0,0 +1 @@\n+x\n",
+         f"{path}: the patch makes it, but it is in the tree"),
+        ("missing", "--- a/no/such.c\n+++ b/no/such.c\n@@ -1 +1 @@\n-a\n+b\n", "no/such.c: not in this kernel's source"),
+        ("partdelete", f"diff --git a/{path} b/{path}\ndeleted file mode 100644\n--- a/{path}\n+++ /dev/null\n@@ -1 +0,0 @@\n-{lines[0]}",
+         f"{path}: the patch deletes it, but its lines are not the whole file"),
+    ]
+    for stem, body, why in refusals:
+        state, text = upload(stem, body)
+        if state != "refused" or why not in text or srcedit_overlay(page) != clean:
+            problems.append(f"upload {stem}: {state} {text!r}, want refused with {why!r} and nothing changed")
+    # 2. A hunk three lines below its text (found above, as patch does) and
+    # the last line's newline taken ("\ No newline at end of file").
+    moved = lines[k].rstrip("\n") + " /* moved hunk */\n"
+    body = hdr + f"@@ -{k + 4} +{k + 4} @@\n-{lines[k]}+{moved}" + \
+        f"@@ -{n} +{n} @@\n-{lines[-1]}+{lines[-1]}\\ No newline at end of file\n"
+    want = "".join(lines[:k]) + moved + "".join(lines[k + 1:])[:-1]
+    state, text = upload("offset", body)
+    got = page.evaluate("(p) => srcOverlay.read(p)", path)
+    if state != "applied" or got != want:
+        problems.append(f"upload offset: {state} {text!r}, text as wanted {got == want}")
+    page.evaluate("(p) => srcOverlay.revert(p)", path)
+
+    # 3. The API's patches, each through git apply on the shipped file.
+    two = lines[:]
+    two[2], two[n - 3] = "/* E2 two-a */\n", "/* E2 two-b */\n"
+    # Every line kept, 70 new ones after each: more than ED_DIFF_MAX (2000)
+    # differences, so one hunk of the whole middle (Myers would give one
+    # hunk per kept line).
+    big = "".join(x + "".join(f"/* E2 rewrite {i} {j} */\n" for j in range(70)) for i, x in enumerate(lines))
+    if 70 * (n - 1) <= 2000:
+        problems.append(f"{path}: {n} lines are too few for more than 2000 differences")
+    api = page.evaluate("""async ([p, two, big]) => { const out = {};
+      await srcOverlay.write(p, two); out.two = srcOverlay.patch(); await srcOverlay.revert(p);
+      await srcOverlay.write(p, null); await srcOverlay.write('e2/empty.h', ''); out.del = srcOverlay.patch();
+      out.delPaths = srcOverlay.paths(); await srcOverlay.revert(p); await srcOverlay.revert('e2/empty.h');
+      const t0 = performance.now(); await srcOverlay.write(p, big); out.big = srcOverlay.patch(); out.bigMs = performance.now() - t0;
+      await srcOverlay.revert(p); out.left = srcOverlay.paths(); return out; }""", [path, "".join(two), big])
+    r["rewrite patch ms"] = round(api["bigMs"])
+    for stem, want_after in (("two", {path: "".join(two)}), ("del", {"e2/empty.h": ""}), ("big", {path: big})):
+        p = tmp / f"srcedit-api-{stem}.patch"
+        p.write_text(api[stem])
+        ok, msg, after = srcedit_git_apply(tmp, {path: orig}, p)
+        if not ok or after != want_after:
+            problems.append(f"srcOverlay.patch() {stem}: git apply {msg or 'gives other files'} ({sorted(after)})")
+    if "deleted file mode 100644" not in api["del"] or "new file mode 100644" not in api["del"] or api["delPaths"] != ["boot/hello.c", "e2/empty.h"]:
+        problems.append(f"srcOverlay delete + empty new file: paths {api['delPaths']}, patch {api['del'][:160]!r}")
+    if api["big"].count("\n@@ ") != 1 or api["left"]:
+        problems.append(f"rewrite past ED_DIFF_MAX: {api['big'].count(chr(10) + '@@ ')} hunks (want 1), left {api['left']}")
+
+    # 4. The file open in the editor deleted by an upload; a new file the
+    # patch made, open in the editor, reverted.
+    ok, _ = srcedit_open(page, path, False)
+    state, text = upload("delete", f"diff --git a/{path} b/{path}\ndeleted file mode 100644\n--- a/{path}\n+++ /dev/null\n"
+                         f"@@ -1,{n} +0,0 @@\n" + "".join("-" + x for x in lines))
+    ov = srcedit_overlay(page)
+    if not ok or state != "applied" or ov["paths"] != [path] or ov["files"][path][0] is not None:
+        problems.append(f"upload deleting the file in the editor: {state} {text!r}, overlay {ov['paths']}")
+    page.evaluate("(p) => srcOverlay.revert(p)", path)
+    state, text = upload("new", "diff --git a/e2/new.h b/e2/new.h\nnew file mode 100644\n--- /dev/null\n+++ b/e2/new.h\n@@ -0,0 +1 @@\n+#define E2 1\n")
+    page.evaluate("(p) => openSourceFile(p)", "e2/new.h")
+    if not wait_for(lambda: (lambda s: s["editing"] and s["value"] == "#define E2 1\n")(srcedit_state(page)), 15):
+        problems.append(f"the uploaded new file in the editor: {state} {text!r}, {srcedit_state(page)['value'][:40]!r}")
+    page.evaluate("srcOverlay.revert('e2/new.h')")
+    if not wait_for(lambda: not srcedit_state(page)["editing"], 5) or srcedit_overlay(page) != clean:
+        problems.append(f"reverting the new file in the editor: editing {srcedit_state(page)['editing']}, {srcedit_overlay(page)['paths']}")
+
+    # 5. Edit on, the panel moves to a file with no text: Edit turns off and
+    # stays off on the next file.
+    ok, _ = srcedit_open(page, path, False)
+    page.evaluate("(p) => openSourceFile(p)", "no/such.c")
+    wait_for(lambda: page.get_attribute("#src_body", "data-file") == "no/such.c" and not srcedit_state(page)["editing"], 15)
+    st = srcedit_state(page)
+    page.evaluate("(p) => openSourceFile(p)", path)
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok" and page.get_attribute("#src_body", "data-file") == path, 30)
+    st2 = srcedit_state(page)
+    if not ok or st["editing"] or st["pressed"] != "false" or st2["editing"]:
+        problems.append(f"Edit on, then a file with no text: editing {st['editing']} (pressed {st['pressed']}), then {path}: {st2['editing']}")
+
+    # 6. Ctrl+S in the editor stores what was typed before the typing pause.
+    srcedit_open(page, path, False)
+    cs = page.evaluate("""(p) => { const ta = document.getElementById('ed_text'); ta.setRangeText('/* S */', 0, 0, 'end');
+      ta.dispatchEvent(new Event('input')); const pending = ED.timer !== 0 && !srcOverlay.paths().includes(p);
+      const ev = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true, bubbles: true }); ta.dispatchEvent(ev);
+      return [pending, ev.defaultPrevented, ED.timer, srcOverlay.paths().includes(p)]; }""", path)
+    if cs != [True, True, 0, True]:
+        problems.append(f"Ctrl+S: [typed not yet stored, default prevented, timer, stored] = {cs}")
+    page.evaluate("(p) => srcOverlay.revert(p)", path)
+    # Edit pressed (editing off) right after typing, before the pause: what
+    # was typed is stored, and the editor's status line is left alone.
+    srcedit_open(page, path, False)
+    off = page.evaluate("""async (p) => { const ta = document.getElementById('ed_text'); ta.setRangeText('/* off */', 0, 0, 'end');
+      ta.dispatchEvent(new Event('input')); const pending = ED.timer !== 0; document.getElementById('src_edit').click();
+      await srcOverlay.ready; await new Promise((res) => setTimeout(res, 100));
+      return [pending, ED.on, (await srcOverlay.read(p)).startsWith('/* off */')]; }""", path)
+    if off != [True, False, True]:
+        problems.append(f"Edit off right after typing: [save pending, editing, stored] = {off}")
+    # The Source tab showing a file's diff, that file reverted: the diff goes.
+    show_tab(page, "source")
+    wait_for(lambda: srcedit_state(page)["list"], 10)
+    srcedit_press(page, f'#ed_list li[data-path="{path}"] button.eddiffbtn', False)
+    shown = wait_for(lambda: srcedit_state(page)["diffShown"], 5)
+    srcedit_press(page, f'#ed_list li[data-path="{path}"] button.edrevert', False)
+    srcedit_press(page, f'#ed_list li[data-path="{path}"] button.edrevert', False)
+    wait_for(lambda: not srcedit_state(page)["list"], 10)
+    st = srcedit_state(page)
+    if not shown or st["diffShown"] or st["list"]:
+        problems.append(f"revert of the file whose diff the Source tab shows: diff shown before {shown}, after {st['diffShown']}, list {st['list']}")
+    if errors:
+        problems.append(f"page errors {errors[:3]}")
+    ctx.close()
+
+    # 7. IndexedDB refusing: the Source tab says the edits go with a reload, and why.
+    for what, why in (("open", "IndexedDB did not open (test: open refused)"),
+                      ("getAll", "the stored edits did not load (test: getAll refused)")):
+        ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+        ctx.add_init_script(SRCEDIT_IDB_FAIL[what])
+        page = ctx.new_page()
+        errs = []
+        page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+        page.goto(f"{base}/index.html?kernel=hello&paused=1#source")
+        srcedit_ready(page, "hello")
+        page.evaluate("async (p) => srcOverlay.write(p, '/* idb */\\n' + await srcOverlay.original(p))", path)
+        count = page.text_content("#ed_count")
+        r[f"idb {what}"] = count
+        if why not in count or "reload" not in count or errs:
+            problems.append(f"IndexedDB {what} fails: the Source tab says {count!r} (want {why!r}); page errors {errs[:2]}")
+        ctx.close()
+    return problems, r
+
+
 def suite_srcedit(ctx):
     failed = False
     runs = [("hello", "light", False), ("hello", "dark", True)]
@@ -22291,6 +22557,7 @@ def suite_srcedit(ctx):
             problems, r = srcedit_run(ctx.browser, ctx.base, ctx.shots, name, scheme, phone, pathlib.Path(td))
             failed |= report("srcedit", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                              seconds=round(time.monotonic() - t0))
+        failed |= report("srcedit", *srcedit_paths_run(ctx.browser, ctx.base, pathlib.Path(td)), kernel="hello", case="paths")
     failed |= report("srcedit", *srcedit_nostore_run(ctx.browser, ctx.base, ctx.shots), kernel="hello", storage="none")
     return failed
 

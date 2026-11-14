@@ -1,3 +1,487 @@
+diff --git a/src/browser/starter.js b/src/browser/starter.js
+index d65bd6c..d1e69c6 100644
+--- a/src/browser/starter.js
++++ b/src/browser/starter.js
+@@ -79,6 +79,10 @@ export function V86(options)
+         "io_port_write32": function(addr, value) { cpu.io.port_write32(addr, value); },
+ 
+         "mmap_read8": function(addr) { return cpu.mmap_read8(addr); },
++        // mkb M1: the CPU's access outside RAM (src/rust/mev.rs)
++        "mev_cpu": function(kind, addr, lo, hi, count, eip, eip_phys) {
++            if(cpu.mem_event_cpu) cpu.mem_event_cpu(kind, addr, lo, hi, count, eip, eip_phys);
++        },
+         "mmap_read32": function(addr) { return cpu.mmap_read32(addr); },
+         "mmap_write8": function(addr, value) { cpu.mmap_write8(addr, value); },
+         "mmap_write16": function(addr, value) { cpu.mmap_write16(addr, value); },
+@@ -1543,7 +1547,8 @@ V86.prototype.read_memory = function(offset, length)
+  */
+ V86.prototype.write_memory = function(blob, offset)
+ {
+-    this.v86.cpu.write_blob(blob, offset);
++    // mkb M1: an emulator event
++    this.v86.cpu.emu_write("embedding page", blob, offset);
+ };
+ 
+ /*
+diff --git a/src/cpu.js b/src/cpu.js
+index 61cec32..d65a39a 100644
+--- a/src/cpu.js
++++ b/src/cpu.js
+@@ -78,6 +78,11 @@ export function CPU(bus, wm, stop_idling)
+     this.mem8 = new Uint8Array(0);
+     this.mem32s = new Int32Array(this.mem8.buffer);
+ 
++    // mkb M1: memory events (mev_report)
++    this.mem_event = null;
++    this.mem_event_cpu = null;
++    this.mem_pending = [];
++
+     this.segment_is_null = view(Uint8Array, memory, 724, 8);
+     this.segment_offsets = view(Int32Array, memory, 736, 8);
+     this.segment_limits = view(Uint32Array, memory, 768, 8);
+@@ -292,6 +297,119 @@ CPU.prototype.mmap_write128 = function(addr, value0, value1, value2, value3)
+     write_func32(addr + 12, value3);
+ };
+ 
++// mkb M1: memory events. Every access to RAM that is not a CPU instruction's
++// goes through the functions below: a device's (DMA in both directions, the
++// descriptors and rings it reads and writes, the 8237's transfers) through
++// dma_*, the emulator's own (the BIOS images, the kernel loader, a
++// snapshot's restore, the embedding page's writes) through emu_*. The CPU's
++// accesses outside RAM come from v86.wasm (src/rust/mev.rs) as mev_cpu.
++// With the hooks set each access is reported:
++//   mem_event(initiator, write, addr, size, value, data, source)
++//     initiator MEV_DEVICE or MEV_EMULATOR; value the scalar's value, or 0
++//     with data (the bytes, a view: read it at once); source the device's
++//     PCI address (bus << 8 | device << 3 | function), MEV_ISA_DMA + the
++//     8237 channel, or the emulator's reason (a string)
++//   mem_event_cpu(kind, addr, lo, hi, count, eip, eip_phys) (mev.rs)
++// v86 emulates no MSI (virtio.js offers no MSI-X capability), so a device
++// writes to memory through these functions only. Without a hook the
++// emulator's writes are kept in mem_pending (the loader runs before the
++// embedding page can set one).
++export const MEV_DEVICE = 1;
++export const MEV_EMULATOR = 2;
++export const MEV_ISA_DMA = 0x10000;
++
++CPU.prototype.mev_report = function(initiator, write, addr, size, value, data, source)
++{
++    if(this.mem_event)
++    {
++        this.mem_event(initiator, write, addr, size, value, data, source);
++    }
++    else if(initiator === MEV_EMULATOR && this.mem_pending.length < 64)
++    {
++        this.mem_pending.push([source, addr, size]);
++    }
++};
++
++CPU.prototype.dma_read = function(source, addr, length)
++{
++    const data = this.mem8.subarray(addr, addr + length);
++    this.mev_report(MEV_DEVICE, 0, addr, length, 0, data, source);
++    return data;
++};
++
++CPU.prototype.dma_write = function(source, data, addr)
++{
++    if(data.length)
++    {
++        this.jit_dirty_cache(addr, addr + data.length);
++        this.mem8.set(data, addr);
++        this.mev_report(MEV_DEVICE, 1, addr, data.length, 0, this.mem8.subarray(addr, addr + data.length), source);
++    }
++};
++
++CPU.prototype.dma_zero = function(source, addr, length)
++{
++    this.zero_memory(addr, length);
++    this.jit_dirty_cache(addr, addr + length);
++    this.mev_report(MEV_DEVICE, 1, addr, length, 0, this.mem8.subarray(addr, addr + length), source);
++};
++
++// A device's scalar access. Outside RAM (a guest that points a device at
++// another device's memory) through the CPU's functions, not reported as
++// the CPU's.
++CPU.prototype.dma_scalar = function(source, write, addr, size, value)
++{
++    if(this.in_mapped_range(addr) || this.in_mapped_range(addr + size - 1))
++    {
++        this.mev_nest(1);
++        if(write)
++        {
++            if(size === 2) this.write16(addr, value);
++            else this.write32(addr, value);
++        }
++        else
++        {
++            value = size === 1 ? this.read8(addr) : size === 2 ? this.read16(addr) : this.read32s(addr);
++        }
++        this.mev_nest(-1);
++    }
++    else if(write)
++    {
++        this.jit_dirty_cache(addr, addr + size);
++        for(let i = 0; i < size; i++) this.mem8[addr + i] = value >> 8 * i;
++    }
++    else
++    {
++        value = 0;
++        for(let i = size - 1; i >= 0; i--) value = value << 8 | this.mem8[addr + i];
++        if(size < 4) value &= (1 << 8 * size) - 1;
++    }
++    this.mev_report(MEV_DEVICE, write, addr, size, value, null, source);
++    return value;
++};
++CPU.prototype.dma_read8 = function(source, addr) { return this.dma_scalar(source, 0, addr, 1, 0); };
++CPU.prototype.dma_read16 = function(source, addr) { return this.dma_scalar(source, 0, addr, 2, 0); };
++CPU.prototype.dma_read32s = function(source, addr) { return this.dma_scalar(source, 0, addr, 4, 0); };
++CPU.prototype.dma_write16 = function(source, addr, value) { this.dma_scalar(source, 1, addr, 2, value & 0xFFFF); };
++CPU.prototype.dma_write32 = function(source, addr, value) { this.dma_scalar(source, 1, addr, 4, value); };
++
++CPU.prototype.emu_write = function(reason, data, addr)
++{
++    if(data.length)
++    {
++        this.jit_dirty_cache(addr, addr + data.length);
++        this.mem8.set(data, addr);
++        this.mev_report(MEV_EMULATOR, 1, addr, data.length, 0, this.mem8.subarray(addr, addr + data.length), reason);
++    }
++};
++
++CPU.prototype.emu_zero = function(reason, addr, length)
++{
++    this.zero_memory(addr, length);
++    this.jit_dirty_cache(addr, addr + length);
++    this.mev_report(MEV_EMULATOR, 1, addr, length, 0, null, reason);
++};
++
+ /**
+  * @param {Array.<number>|Uint8Array} blob
+  * @param {number} offset
+@@ -412,6 +530,7 @@ CPU.prototype.wasm_patch = function()
+ 
+     this.allocate_memory = get_import("allocate_memory");
+     this.zero_memory = get_import("zero_memory");
++    this.mev_nest = get_import("mev_nest");
+     this.is_memory_zeroed = get_import("is_memory_zeroed");
+ 
+     this.svga_allocate_memory = get_import("svga_allocate_memory");
+@@ -919,6 +1038,8 @@ CPU.prototype.pack_memory = function()
+ 
+ CPU.prototype.unpack_memory = function(bitmap, packed_memory)
+ {
++    // mkb M1: one event for the whole restore
++    this.mev_report(MEV_EMULATOR, 1, 0, this.memory_size[0], 0, null, "snapshot restore");
+     this.zero_memory(0, this.memory_size[0]);
+ 
+     const page_count = this.memory_size[0] >> 12;
+@@ -964,7 +1085,7 @@ CPU.prototype.reboot_internal = function()
+ 
+ CPU.prototype.reset_memory = function()
+ {
+-    this.mem8.fill(0);
++    this.emu_zero("reset", 0, this.mem8.length);
+ };
+ 
+ CPU.prototype.create_memory = function(size, minimum_size)
+@@ -1025,7 +1146,8 @@ CPU.prototype.init = function(settings, device_bus)
+ 
+     if(settings.bzimage)
+     {
+-        const option_rom = load_kernel(this.mem8, settings.bzimage, settings.initrd, settings.cmdline || "");
++        const option_rom = load_kernel((reason, data, addr) => this.emu_write(reason, data, addr),
++            settings.bzimage, settings.initrd, settings.cmdline || "");
+ 
+         if(option_rom)
+         {
+@@ -1373,7 +1495,7 @@ CPU.prototype.load_multiboot_option_rom = function(buffer, initrd, cmdline)
+                 cmdline += "\x00";
+                 const encoder = new TextEncoder();
+                 const cmdline_utf8 = encoder.encode(cmdline);
+-                cpu.write_blob(cmdline_utf8, multiboot_data);
++                cpu.emu_write("multiboot loader", cmdline_utf8, multiboot_data);
+                 multiboot_data += cmdline_utf8.length;
+             }
+ 
+@@ -1447,7 +1569,7 @@ CPU.prototype.load_multiboot_option_rom = function(buffer, initrd, cmdline)
+                 }
+ 
+                 const blob = new Uint8Array(buffer, file_start, length);
+-                cpu.write_blob(blob, load_addr);
++                cpu.emu_write("multiboot loader", blob, load_addr);
+ 
+                 entrypoint = entry_addr | 0;
+                 top_of_load = Math.max(load_end_addr, bss_end_addr);
+@@ -1477,7 +1599,7 @@ CPU.prototype.load_multiboot_option_rom = function(buffer, initrd, cmdline)
+                             if(program.filesz) // offset might be outside of buffer if filesz is 0
+                             {
+                                 const blob = new Uint8Array(buffer, program.offset, program.filesz);
+-                                cpu.write_blob(blob, program.paddr);
++                                cpu.emu_write("multiboot loader", blob, program.paddr);
+                             }
+                             top_of_load = Math.max(top_of_load, program.paddr + program.memsz);
+                             dbg_log("prg load " + program.paddr + " to " + (program.paddr + program.memsz), LOG_CPU);
+@@ -1543,7 +1665,7 @@ CPU.prototype.load_multiboot_option_rom = function(buffer, initrd, cmdline)
+ 
+                 dbg_assert(ramdisk_top < cpu.memory_size[0]);
+ 
+-                cpu.write_blob(new Uint8Array(initrd), ramdisk_address);
++                cpu.emu_write("multiboot loader", new Uint8Array(initrd), ramdisk_address);
+             }
+ 
+             cpu.write32(multiboot_info_addr, info);
+@@ -1713,7 +1835,7 @@ CPU.prototype.load_bios = function()
+     var data = new Uint8Array(bios),
+         start = 0x100000 - bios.byteLength;
+ 
+-    this.write_blob(data, start);
++    this.emu_write("BIOS image", data, start);
+ 
+     if(vga_bios)
+     {
+@@ -1723,7 +1845,7 @@ CPU.prototype.load_bios = function()
+         var vga_bios8 = new Uint8Array(vga_bios);
+ 
+         // older versions of seabios
+-        this.write_blob(vga_bios8, 0xC0000);
++        this.emu_write("video BIOS image", vga_bios8, 0xC0000);
+ 
+         // newer versions of seabios (needs to match pci rom address, see vga.js)
+         this.io.mmap_register(0xFEB00000, 0x100000,
+@@ -1758,8 +1880,11 @@ CPU.prototype.load_bios = function()
+         }.bind(this),
+         function(addr, value)
+         {
++            // mkb M1: the CPU's write through the alias, to RAM: through
++            // its physical write (mev.rs marks the page, the JIT drops
++            // compiled code there)
+             addr &= 0xFFFFF;
+-            this.mem8[addr] = value;
++            this.write8(addr, value);
+         }.bind(this));
+ };
+ 
+diff --git a/src/dma.js b/src/dma.js
+index 1c924b7..0d3a3f9 100644
+--- a/src/dma.js
++++ b/src/dma.js
+@@ -294,7 +294,8 @@ DMA.prototype.do_read = function(buffer, start, len, channel, fn)
+ 
+         buffer.get(start, read_count, function(data)
+         {
+-            cpu.write_blob(data, addr);
++            // mkb M1: the 8237's transfer, source MEV_ISA_DMA + channel
++            cpu.dma_write(0x10000 + channel, data, addr);
+             fn(false);
+         });
+     }
+@@ -347,7 +348,7 @@ DMA.prototype.do_write = function(buffer, start, len, channel, fn)
+         }
+ 
+         buffer.set(start,
+-                this.cpu.mem8.subarray(addr, addr + read_bytes),
++                this.cpu.dma_read(0x10000 + channel, addr, read_bytes),
+                 () =>
+                 {
+                     if(want_more && autoinit)
+diff --git a/src/ide.js b/src/ide.js
+index 4858cd4..3398568 100644
+--- a/src/ide.js
++++ b/src/ide.js
+@@ -45,6 +45,9 @@ import { BusConnector } from "./bus.js";
+ const CDROM_SECTOR_SIZE = 2048;
+ const HD_SECTOR_SIZE = 512;
+ 
++// mkb M1: the controller's PCI address (device 0x1E), the source of its DMA
++const IDE_PCI_ID = 0x1E << 3;
++
+ const BUS_MASTER_BASE = 0xB400;
+ 
+ // Per-channel ATA register offsets, legend:
+@@ -320,7 +323,7 @@ export function IDEController(cpu, bus, ide_config)
+         const control_base1 = has_secondary ? this.secondary.control_base : 0;
+ 
+         this.name = "ide";
+-        this.pci_id = 0x1E << 3;
++        this.pci_id = IDE_PCI_ID;
+         this.pci_space = [
+             vendor_id & 0xFF, vendor_id >> 8, device_id & 0xFF, device_id >> 8, 0x05, 0x00, 0xA0, 0x02,
+             0x00, prog_if, subclass, class_code, 0x00, 0x00, 0x00, 0x00,
+@@ -1958,9 +1961,9 @@ IDEInterface.prototype.do_atapi_dma = function()
+     var data = this.data;
+ 
+     do {
+-        var addr = this.cpu.read32s(prdt_start);
+-        var count = this.cpu.read16(prdt_start + 4);
+-        var end = this.cpu.read8(prdt_start + 7) & 0x80;
++        var addr = this.cpu.dma_read32s(IDE_PCI_ID, prdt_start);
++        var count = this.cpu.dma_read16(IDE_PCI_ID, prdt_start + 4);
++        var end = this.cpu.dma_read8(IDE_PCI_ID, prdt_start + 7) & 0x80;
+ 
+         if(!count)
+         {
+@@ -1971,7 +1974,7 @@ IDEInterface.prototype.do_atapi_dma = function()
+         {
+             dbg_log(this.name + ": DMA read dest=" + h(addr) + " count=" + h(count) + " datalen=" + h(this.data_length), LOG_DISK);
+         }
+-        this.cpu.write_blob(data.subarray(offset, Math.min(offset + count, this.data_length)), addr);
++        this.cpu.dma_write(IDE_PCI_ID, data.subarray(offset, Math.min(offset + count, this.data_length)), addr);
+ 
+         offset += count;
+         prdt_start += 8;
+@@ -2364,9 +2367,9 @@ IDEInterface.prototype.do_ata_read_sectors_dma = function()
+         dbg_assert(orig_prdt_start === prdt_start);
+ 
+         do {
+-            var prd_addr = this.cpu.read32s(prdt_start);
+-            var prd_count = this.cpu.read16(prdt_start + 4);
+-            var end = this.cpu.read8(prdt_start + 7) & 0x80;
++            var prd_addr = this.cpu.dma_read32s(IDE_PCI_ID, prdt_start);
++            var prd_count = this.cpu.dma_read16(IDE_PCI_ID, prdt_start + 4);
++            var end = this.cpu.dma_read8(IDE_PCI_ID, prdt_start + 7) & 0x80;
+ 
+             if(!prd_count)
+             {
+@@ -2382,7 +2385,7 @@ IDEInterface.prototype.do_ata_read_sectors_dma = function()
+                 dbg_log(this.name + ": DMA read transfer dest=" + h(prd_addr) +
+                     " prd_count=" + h(prd_count), LOG_DISK);
+             }
+-            this.cpu.write_blob(data.subarray(offset, offset + prd_count), prd_addr);
++            this.cpu.dma_write(IDE_PCI_ID, data.subarray(offset, offset + prd_count), prd_addr);
+ 
+             offset += prd_count;
+             prdt_start += 8;
+@@ -2488,9 +2491,9 @@ IDEInterface.prototype.do_ata_write_sectors_dma = function()
+     const buffer = new Uint8Array(byte_count);
+ 
+     do {
+-        var prd_addr = this.cpu.read32s(prdt_start);
+-        var prd_count = this.cpu.read16(prdt_start + 4);
+-        var end = this.cpu.read8(prdt_start + 7) & 0x80;
++        var prd_addr = this.cpu.dma_read32s(IDE_PCI_ID, prdt_start);
++        var prd_count = this.cpu.dma_read16(IDE_PCI_ID, prdt_start + 4);
++        var end = this.cpu.dma_read8(IDE_PCI_ID, prdt_start + 7) & 0x80;
+ 
+         if(!prd_count)
+         {
+@@ -2503,7 +2506,7 @@ IDEInterface.prototype.do_ata_write_sectors_dma = function()
+             dbg_log(this.name + ": DMA write transfer dest=" + h(prd_addr) + " prd_count=" + h(prd_count), LOG_DISK);
+         }
+ 
+-        var slice = this.cpu.mem8.subarray(prd_addr, prd_addr + prd_count);
++        var slice = this.cpu.dma_read(IDE_PCI_ID, prd_addr, prd_count);
+         dbg_assert(slice.length === prd_count);
+ 
+         buffer.set(slice, offset);
+diff --git a/src/kernel.js b/src/kernel.js
+index 5362655..8b164db 100644
+--- a/src/kernel.js
++++ b/src/kernel.js
+@@ -39,7 +39,8 @@ const LINUX_BOOT_HDR_LOADFLAGS_KEEP_SEGMENTS = 1 << 6;
+ const LINUX_BOOT_HDR_LOADFLAGS_CAN_USE_HEAPS = 1 << 7;
+ 
+ 
+-export function load_kernel(mem8, bzimage, initrd, cmdline)
++// mkb M1: write(reason, data, addr) places the parts in RAM (cpu.emu_write)
++export function load_kernel(write, bzimage, initrd, cmdline)
+ {
+     dbg_log("Trying to load kernel of size " + bzimage.byteLength);
+ 
+@@ -140,10 +141,12 @@ export function load_kernel(mem8, bzimage, initrd, cmdline)
+     dbg_log("cmd_line_ptr=" + h(cmd_line_ptr));
+ 
+     bzimage32[LINUX_BOOT_HDR_CMD_LINE_PTR >> 2] = cmd_line_ptr;
++    const cmdline8 = new Uint8Array(cmdline.length);
+     for(let i = 0; i < cmdline.length; i++)
+     {
+-        mem8[cmd_line_ptr + i] = cmdline.charCodeAt(i);
++        cmdline8[i] = cmdline.charCodeAt(i);
+     }
++    write("kernel command line", cmdline8, cmd_line_ptr);
+ 
+     const prot_mode_kernel_start = (setup_sects + 1) * 512;
+     dbg_log("prot_mode_kernel_start=" + h(prot_mode_kernel_start));
+@@ -161,7 +164,7 @@ export function load_kernel(mem8, bzimage, initrd, cmdline)
+ 
+         dbg_assert(KERNEL_HIGH_ADDRESS + protected_mode_kernel.length < ramdisk_address);
+ 
+-        mem8.set(new Uint8Array(initrd), ramdisk_address);
++        write("initrd", new Uint8Array(initrd), ramdisk_address);
+     }
+ 
+     bzimage32[LINUX_BOOT_HDR_RAMDISK_IMAGE >> 2] = ramdisk_address;
+@@ -169,8 +172,8 @@ export function load_kernel(mem8, bzimage, initrd, cmdline)
+ 
+     dbg_assert(base_ptr + real_mode_kernel.length < 0xA0000);
+ 
+-    mem8.set(real_mode_kernel, base_ptr);
+-    mem8.set(protected_mode_kernel, KERNEL_HIGH_ADDRESS);
++    write("kernel real-mode part", real_mode_kernel, base_ptr);
++    write("kernel protected-mode part", protected_mode_kernel, KERNEL_HIGH_ADDRESS);
+ 
+     return {
+         name: "genroms/kernel.bin",
+diff --git a/src/rust/codegen.rs b/src/rust/codegen.rs
+index 2d5c2ff..0185562 100644
+--- a/src/rust/codegen.rs
++++ b/src/rust/codegen.rs
+@@ -35,6 +35,23 @@ pub fn gen_set_eip_to_after_current_instruction(ctx: &mut JitContext) {
+     ctx.builder.store_aligned_i32(0);
+ }
+ 
++// mkb M1: before a call out of compiled code, for mev.rs: how many
++// instructions of this call ran before the current one (the local counter
++// has the whole block already) and the current one's offset in its page
++pub fn gen_mev_position(ctx: &mut JitContext) {
++    ctx.builder
++        .const_i32((&raw const crate::mev::jit_insn_off) as i32);
++    ctx.builder.get_local(&ctx.instruction_counter);
++    ctx.builder.const_i32(ctx.mev_left as i32);
++    ctx.builder.sub_i32();
++    ctx.builder.store_aligned_i32(0);
++    ctx.builder
++        .const_i32((&raw const crate::mev::mev_eip_lo) as i32);
++    ctx.builder
++        .const_i32(ctx.start_of_current_instruction as i32 & 0xFFF);
++    ctx.builder.store_aligned_i32(0);
++}
++
+ pub fn gen_set_previous_eip_offset_from_eip_with_low_bits(
+     builder: &mut WasmBuilder,
+     low_bits: i32,
+@@ -700,6 +717,7 @@ fn gen_safe_read(
+     ctx.builder.get_local(&address_local);
+     ctx.builder
+         .const_i32(ctx.start_of_current_instruction as i32 & 0xFFF);
++    gen_mev_position(ctx);
+     match bits {
+         BitSize::BYTE => {
+             ctx.builder.call_fn2_ret("safe_read8_slow_jit");
+@@ -925,6 +943,7 @@ fn gen_safe_write(
+         ctx.start_of_current_instruction as i32 & 0xFFF
+             | (ctx.wasm_table_index.to_u16() as i32) << 16,
+     );
++    gen_mev_position(ctx);
+ 
+     match bits {
+         BitSize::BYTE => {
+@@ -1072,6 +1091,7 @@ pub fn gen_safe_read_write(
+         ctx.start_of_current_instruction as i32 & 0xFFF
+             | (ctx.wasm_table_index.to_u16() as i32) << 16,
+     );
++    gen_mev_position(ctx);
+ 
+     match bits {
+         BitSize::BYTE => {
+@@ -1164,6 +1184,7 @@ pub fn gen_safe_read_write(
+             ctx.start_of_current_instruction as i32 & 0xFFF
+                 | (ctx.wasm_table_index.to_u16() as i32) << 16,
+         );
++        gen_mev_position(ctx);
+ 
+         match bits {
+             BitSize::BYTE => {
 diff --git a/src/rust/control_flow.rs b/src/rust/control_flow.rs
 index 782a6a1..cc671e4 100644
 --- a/src/rust/control_flow.rs
@@ -45,10 +529,18 @@ index 782a6a1..cc671e4 100644
                  .splice(source..i, iter::once(replacement))
                  .collect();
 diff --git a/src/rust/cpu/cpu.rs b/src/rust/cpu/cpu.rs
-index 7b03975..b3ae3e5 100644
+index 7b03975..3d08d32 100644
 --- a/src/rust/cpu/cpu.rs
 +++ b/src/rust/cpu/cpu.rs
-@@ -23,7 +23,7 @@ use crate::profiler::stat;
+@@ -14,6 +14,7 @@ use crate::dbg::dbg_trace;
+ use crate::gen;
+ use crate::jit;
+ use crate::jit::is_near_end_of_page;
++use crate::mev;
+ use crate::opstats;
+ use crate::page::Page;
+ use crate::paging::OrPageFault;
+@@ -23,7 +24,7 @@ use crate::profiler::stat;
  use crate::softfloat;
  use crate::state_flags::CachedStateFlags;
  
@@ -57,7 +549,7 @@ index 7b03975..b3ae3e5 100644
  use std::ptr;
  
  mod wasm {
-@@ -299,6 +299,87 @@ pub static mut cpuid_level: u32 = 0x16;
+@@ -299,6 +300,90 @@ pub static mut cpuid_level: u32 = 0x16;
  
  pub static mut jit_block_boundary: bool = false;
  
@@ -130,12 +622,15 @@ index 7b03975..b3ae3e5 100644
 +            Ok(p) => p,
 +            Err(()) => break,
 +        };
++        // mkb M1: the instructions before this one since entry
++        mev::jit_insn_off = at.wrapping_sub(entry).wrapping_add(i);
 +        i += 1;
 +        *previous_ip = *instruction_pointer;
 +        let opcode = *memory::mem8.offset(phys_addr as isize) as i32;
 +        *instruction_pointer += 1;
 +        run_instruction(opcode | (*is_32 as i32) << 8);
 +    }
++    mev::jit_insn_off = 0;
 +    let extra = (*instruction_counter).wrapping_sub(entry);
 +    *instruction_counter = at.wrapping_add(i).wrapping_add(extra);
 +    budget_tail = i.wrapping_add(extra);
@@ -145,7 +640,36 @@ index 7b03975..b3ae3e5 100644
  const TSC_ENABLE_IMPRECISE_BROWSER_WORKAROUND: bool = true;
  
  #[cfg(debug_assertions)]
-@@ -3188,7 +3269,15 @@ pub unsafe fn cycle_internal() {
+@@ -534,6 +619,9 @@ pub unsafe fn iret(is_16: bool) {
+         if new_eip as u32 & 0xFFFF0000 != 0 {
+             panic!("#GP handler");
+         }
++        if !*protected_mode {
++            mev::iret_real(get_stack_pointer(0));
++        }
+ 
+         switch_cs_real_mode(new_cs);
+         *instruction_pointer = get_seg_cs() + new_eip;
+@@ -553,6 +641,7 @@ pub unsafe fn iret(is_16: bool) {
+         }
+ 
+         update_state_flags();
++        mev::iret_done();
+         handle_irqs();
+         return;
+     }
+@@ -2297,6 +2386,10 @@ pub unsafe fn do_page_walk(
+     }
+ 
+     let is_in_mapped_range = memory::in_mapped_range(high);
++    // mkb M1: checking mode, the CPU may write this page from now on
++    if for_writing && side_effects && !is_in_mapped_range {
++        mev::mark(high);
++    }
+     let has_code = if side_effects {
+         !is_in_mapped_range && jit::jit_page_has_code(Page::page_of(high))
+     }
+@@ -3188,19 +3281,35 @@ pub unsafe fn cycle_internal() {
              }
          }
          profiler::stat_increment(stat::RUN_FROM_CACHE);
@@ -161,7 +685,15 @@ index 7b03975..b3ae3e5 100644
          #[cfg(debug_assertions)]
          {
              in_jit = true;
-@@ -3201,6 +3290,11 @@ pub unsafe fn cycle_internal() {
+         }
++        mev::mev_in_jit = true;
+         wasm::call_indirect1(
+             wasm_table_index as i32 + WASM_TABLE_OFFSET as i32,
+             initial_state,
+         );
++        mev::mev_in_jit = false;
++        mev::jit_insn_off = 0;
+         #[cfg(debug_assertions)]
          {
              in_jit = false;
          }
@@ -173,7 +705,15 @@ index 7b03975..b3ae3e5 100644
          profiler::stat_increment_by(
              stat::RUN_FROM_CACHE_STEPS,
              (*instruction_counter - initial_instruction_counter) as u64,
-@@ -3313,6 +3407,15 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
+@@ -3265,6 +3374,7 @@ pub unsafe fn cycle_internal() {
+ 
+         let initial_instruction_counter = *instruction_counter;
+         jit_run_interpreted(phys_addr);
++        mev::jit_insn_off = 0;
+ 
+         jit::jit_increase_hotness_and_maybe_compile(
+             initial_eip,
+@@ -3313,6 +3423,17 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
              }
          }
  
@@ -186,10 +726,12 @@ index 7b03975..b3ae3e5 100644
 +            budget_cut = i > 0;
 +            break;
 +        }
++        // mkb M1: the instructions before this one in this run
++        mev::jit_insn_off = i;
          i += 1;
          let start_eip = *instruction_pointer;
          let opcode = *memory::mem8.offset(phys_addr as isize) as i32;
-@@ -3339,6 +3442,8 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
+@@ -3339,6 +3460,8 @@ unsafe fn jit_run_interpreted(mut phys_addr: u32) {
          debug_last_jump = LastJump::Interpreted { phys_addr };
      }
  
@@ -198,7 +740,7 @@ index 7b03975..b3ae3e5 100644
      *instruction_counter += i;
  }
  
-@@ -3378,6 +3483,10 @@ pub unsafe fn segment_prefix_op(seg: i32) {
+@@ -3378,6 +3501,10 @@ pub unsafe fn segment_prefix_op(seg: i32) {
  pub unsafe fn main_loop() -> f64 {
      profiler::stat_increment(stat::MAIN_LOOP);
  
@@ -209,7 +751,7 @@ index 7b03975..b3ae3e5 100644
      let start = js::microtick();
  
      if *in_hlt {
-@@ -3396,8 +3505,21 @@ pub unsafe fn main_loop() -> f64 {
+@@ -3396,8 +3523,21 @@ pub unsafe fn main_loop() -> f64 {
      }
  
      loop {
@@ -231,7 +773,7 @@ index 7b03975..b3ae3e5 100644
          let now = js::microtick();
          let t = js::run_hardware_timers(*acpi_enabled, now);
          handle_irqs();
-@@ -3418,6 +3540,7 @@ pub unsafe fn do_many_cycles_native() {
+@@ -3418,6 +3558,7 @@ pub unsafe fn do_many_cycles_native() {
      let initial_instruction_counter = *instruction_counter;
      while (*instruction_counter).wrapping_sub(initial_instruction_counter) < LOOP_COUNTER as u32
          && !*in_hlt
@@ -239,7 +781,7 @@ index 7b03975..b3ae3e5 100644
      {
          cycle_internal();
      }
-@@ -4355,9 +4478,24 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
+@@ -4355,9 +4496,24 @@ pub unsafe fn decr_ecx_asize(is_asize_32: bool) -> i32 {
  
  #[no_mangle]
  pub unsafe fn set_tsc(low: u32, high: u32) {
@@ -266,6 +808,243 @@ index 7b03975..b3ae3e5 100644
  }
  
  #[no_mangle]
+diff --git a/src/rust/cpu/instructions.rs b/src/rust/cpu/instructions.rs
+index 195f048..d9ee3bc 100644
+--- a/src/rust/cpu/instructions.rs
++++ b/src/rust/cpu/instructions.rs
+@@ -1430,6 +1430,8 @@ pub unsafe fn instr_CC() {
+ pub unsafe fn instr_CD(imm8: i32) {
+     // INT
+     call_interrupt_vector(imm8, true, None);
++    // mkb M1: INT 15h E820h, its answer is reported at the iret
++    crate::mev::int_sw(imm8, *protected_mode);
+ }
+ #[no_mangle]
+ pub unsafe fn instr_CE() {
+diff --git a/src/rust/cpu/memory.rs b/src/rust/cpu/memory.rs
+index 49950bb..3e0ee02 100644
+--- a/src/rust/cpu/memory.rs
++++ b/src/rust/cpu/memory.rs
+@@ -20,6 +20,7 @@ use crate::cpu::global_pointers::memory_size;
+ use crate::cpu::ioapic;
+ use crate::cpu::vga;
+ use crate::jit;
++use crate::mev;
+ use crate::page::Page;
+ 
+ use std::alloc;
+@@ -84,6 +85,18 @@ pub fn in_svga_lfb(addr: u32) -> bool {
+ #[no_mangle]
+ pub fn read8(addr: u32) -> i32 {
+     if in_mapped_range(addr) {
++        // mkb M1: the CPU read outside RAM
++        unsafe { mev::enter() };
++        let v = read8_mapped(addr);
++        unsafe { mev::leave(1 << 1, addr, v, 0) };
++        v
++    }
++    else {
++        read8_no_mmap_check(addr)
++    }
++}
++fn read8_mapped(addr: u32) -> i32 {
++    {
+         if in_svga_lfb(addr) {
+             unsafe { *vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) as i32 }
+         }
+@@ -97,16 +110,14 @@ pub fn read8(addr: u32) -> i32 {
+             unsafe { ext::mmap_read8(addr) }
+         }
+     }
+-    else {
+-        read8_no_mmap_check(addr)
+-    }
+ }
+ pub fn read8_no_mmap_check(addr: u32) -> i32 { unsafe { *mem8.offset(addr as isize) as i32 } }
+ 
+ #[no_mangle]
+ pub fn read16(addr: u32) -> i32 {
+     if in_mapped_range(addr) {
+-        if in_svga_lfb(addr) {
++        unsafe { mev::enter() };
++        let v = if in_svga_lfb(addr) {
+             unsafe {
+                 ptr::read_unaligned(vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) as *const u16)
+                     as i32
+@@ -114,7 +125,9 @@ pub fn read16(addr: u32) -> i32 {
+         }
+         else {
+             read8(addr) | read8(addr + 1) << 8
+-        }
++        };
++        unsafe { mev::leave(2 << 1, addr, v, 0) };
++        v
+     }
+     else {
+         read16_no_mmap_check(addr)
+@@ -127,6 +140,17 @@ pub fn read16_no_mmap_check(addr: u32) -> i32 {
+ #[no_mangle]
+ pub fn read32s(addr: u32) -> i32 {
+     if in_mapped_range(addr) {
++        unsafe { mev::enter() };
++        let v = read32s_mapped(addr);
++        unsafe { mev::leave(4 << 1, addr, v, 0) };
++        v
++    }
++    else {
++        read32_no_mmap_check(addr)
++    }
++}
++fn read32s_mapped(addr: u32) -> i32 {
++    {
+         if in_svga_lfb(addr) {
+             unsafe {
+                 ptr::read_unaligned(vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) as *const i32)
+@@ -142,9 +166,6 @@ pub fn read32s(addr: u32) -> i32 {
+             unsafe { ext::mmap_read32(addr) }
+         }
+     }
+-    else {
+-        read32_no_mmap_check(addr)
+-    }
+ }
+ pub fn read32_no_mmap_check(addr: u32) -> i32 {
+     unsafe { ptr::read_unaligned(mem8.offset(addr as isize) as *const i32) }
+@@ -152,12 +173,15 @@ pub fn read32_no_mmap_check(addr: u32) -> i32 {
+ 
+ pub unsafe fn read64s(addr: u32) -> i64 {
+     if in_mapped_range(addr) {
+-        if in_svga_lfb(addr) {
++        mev::enter();
++        let v = if in_svga_lfb(addr) {
+             ptr::read_unaligned(vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) as *const i64)
+         }
+         else {
+             read32s(addr) as i64 | (read32s(addr + 4) as i64) << 32
+-        }
++        };
++        mev::leave(8 << 1, addr, v as i32, (v >> 32) as i32);
++        v
+     }
+     else {
+         ptr::read_unaligned(mem8.offset(addr as isize) as *const i64)
+@@ -166,7 +190,8 @@ pub unsafe fn read64s(addr: u32) -> i64 {
+ 
+ pub unsafe fn read128(addr: u32) -> reg128 {
+     if in_mapped_range(addr) {
+-        if in_svga_lfb(addr) {
++        mev::enter();
++        let v = if in_svga_lfb(addr) {
+             ptr::read_unaligned(vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) as *const reg128)
+         }
+         else {
+@@ -178,7 +203,9 @@ pub unsafe fn read128(addr: u32) -> reg128 {
+                     read32s(addr + 12),
+                 ],
+             }
+-        }
++        };
++        mev::leave(16 << 1, addr, v.i32[0], v.i32[1]);
++        v
+     }
+     else {
+         ptr::read_unaligned(mem8.offset(addr as isize) as *const reg128)
+@@ -191,6 +218,7 @@ pub unsafe fn write8(addr: u32, value: i32) {
+         mmap_write8(addr, value & 0xFF);
+     }
+     else {
++        mev::mark(addr);
+         jit::jit_dirty_page(Page::page_of(addr));
+         write8_no_mmap_or_dirty_check(addr, value);
+     };
+@@ -206,6 +234,8 @@ pub unsafe fn write16(addr: u32, value: i32) {
+         mmap_write16(addr, value & 0xFFFF);
+     }
+     else {
++        mev::mark(addr);
++        mev::mark(addr + 1);
+         jit::jit_dirty_cache_small(addr, addr + 2);
+         write16_no_mmap_or_dirty_check(addr, value);
+     };
+@@ -220,6 +250,8 @@ pub unsafe fn write32(addr: u32, value: i32) {
+         mmap_write32(addr, value);
+     }
+     else {
++        mev::mark(addr);
++        mev::mark(addr + 3);
+         jit::jit_dirty_cache_small(addr, addr + 4);
+         write32_no_mmap_or_dirty_check(addr, value);
+     }
+@@ -260,10 +292,20 @@ pub unsafe fn memcpy_into_svga_lfb(src_addr: u32, dst_addr: u32, count: u32) {
+         mem8.offset(src_addr as isize),
+         vga_mem8.offset((dst_addr - VGA_LFB_ADDRESS) as isize),
+         count as usize,
+-    )
++    );
++    // mkb M1: rep movs into the SVGA framebuffer, one bulk event
++    if mev::mev_on && mev::mev_depth == 0 {
++        let h = mev::hash_bytes(mem8.offset(src_addr as isize), count as usize);
++        mev::report(mev::MEV_WRITE | mev::MEV_BULK, dst_addr, count as i32, h as i32);
++    }
+ }
+ 
+ pub unsafe fn mmap_write8(addr: u32, value: i32) {
++    mev::enter();
++    mmap_write8_inner(addr, value);
++    mev::leave(mev::MEV_WRITE | 1 << 1, addr, value, 0);
++}
++unsafe fn mmap_write8_inner(addr: u32, value: i32) {
+     if in_svga_lfb(addr) {
+         vga::mark_dirty(addr);
+         *vga_mem8.offset((addr - VGA_LFB_ADDRESS) as isize) = value as u8
+@@ -273,6 +315,11 @@ pub unsafe fn mmap_write8(addr: u32, value: i32) {
+     }
+ }
+ pub unsafe fn mmap_write16(addr: u32, value: i32) {
++    mev::enter();
++    mmap_write16_inner(addr, value);
++    mev::leave(mev::MEV_WRITE | 2 << 1, addr, value, 0);
++}
++unsafe fn mmap_write16_inner(addr: u32, value: i32) {
+     if in_svga_lfb(addr) {
+         vga::mark_dirty(addr);
+         ptr::write_unaligned(
+@@ -285,6 +332,11 @@ pub unsafe fn mmap_write16(addr: u32, value: i32) {
+     }
+ }
+ pub unsafe fn mmap_write32(addr: u32, value: i32) {
++    mev::enter();
++    mmap_write32_inner(addr, value);
++    mev::leave(mev::MEV_WRITE | 4 << 1, addr, value, 0);
++}
++unsafe fn mmap_write32_inner(addr: u32, value: i32) {
+     if in_svga_lfb(addr) {
+         vga::mark_dirty(addr);
+         ptr::write_unaligned(
+@@ -305,6 +357,11 @@ pub unsafe fn mmap_write32(addr: u32, value: i32) {
+     }
+ }
+ pub unsafe fn mmap_write64(addr: u32, value: u64) {
++    mev::enter();
++    mmap_write64_inner(addr, value);
++    mev::leave(mev::MEV_WRITE | 8 << 1, addr, value as i32, (value >> 32) as i32);
++}
++unsafe fn mmap_write64_inner(addr: u32, value: u64) {
+     if in_svga_lfb(addr) {
+         vga::mark_dirty(addr);
+         ptr::write_unaligned(
+@@ -317,6 +374,11 @@ pub unsafe fn mmap_write64(addr: u32, value: u64) {
+     }
+ }
+ pub unsafe fn mmap_write128(addr: u32, v0: u64, v1: u64) {
++    mev::enter();
++    mmap_write128_inner(addr, v0, v1);
++    mev::leave(mev::MEV_WRITE | 16 << 1, addr, v0 as i32, (v0 >> 32) as i32);
++}
++unsafe fn mmap_write128_inner(addr: u32, v0: u64, v1: u64) {
+     if in_svga_lfb(addr) {
+         vga::mark_dirty(addr);
+         ptr::write_unaligned(
 diff --git a/src/rust/dethash.rs b/src/rust/dethash.rs
 new file mode 100644
 index 0000000..1b1494b
@@ -281,7 +1060,7 @@ index 0000000..1b1494b
 +pub type HashMap<K, V> = std::collections::HashMap<K, V, BuildHasherDefault<DefaultHasher>>;
 +pub type HashSet<K> = std::collections::HashSet<K, BuildHasherDefault<DefaultHasher>>;
 diff --git a/src/rust/jit.rs b/src/rust/jit.rs
-index 574a78a..ebeb6d5 100644
+index 574a78a..99a51cf 100644
 --- a/src/rust/jit.rs
 +++ b/src/rust/jit.rs
 @@ -1,4 +1,5 @@
@@ -318,15 +1097,18 @@ index 574a78a..ebeb6d5 100644
          }
      }
  }
-@@ -346,6 +347,7 @@ pub struct JitContext<'a> {
+@@ -346,7 +347,10 @@ pub struct JitContext<'a> {
      pub current_instruction: Instruction,
      pub previous_instruction: Instruction,
      pub instruction_counter: WasmLocal,
 +    pub budget_room: WasmLocal,
      pub wasm_table_index: WasmTableIndex,
++    // mkb M1: instructions of the current block from the current one on
++    pub mev_left: u32,
  }
  impl<'a> JitContext<'a> {
-@@ -467,7 +469,7 @@ fn jit_find_basic_blocks(
+     pub fn reg(&self, i: u32) -> WasmLocal {
+@@ -467,7 +471,7 @@ fn jit_find_basic_blocks(
                      Some(PageInfo { entry_points, .. }) => {
                          HashSet::from_iter(entry_points.iter().map(|x| x.0))
                      },
@@ -335,7 +1117,7 @@ index 574a78a..ebeb6d5 100644
                  };
  
                  if entry_points
-@@ -508,10 +510,10 @@ fn jit_find_basic_blocks(
+@@ -508,10 +512,10 @@ fn jit_find_basic_blocks(
      }
  
      let mut to_visit_stack: Vec<i32> = Vec::new();
@@ -349,7 +1131,7 @@ index 574a78a..ebeb6d5 100644
  
      // 16-bit doesn't work correctly, most likely due to instruction pointer wrap-around
      let max_pages = if cpu.state_flags.is_32() { unsafe { MAX_PAGES } } else { 1 };
-@@ -855,7 +857,7 @@ fn jit_analyze_and_generate(
+@@ -855,7 +859,7 @@ fn jit_analyze_and_generate(
  
      let existing_entry_points = match ctx.pages.get(&page) {
          Some(PageInfo { entry_points, .. }) => HashSet::from_iter(entry_points.iter().map(|x| x.0)),
@@ -358,7 +1140,7 @@ index 574a78a..ebeb6d5 100644
      };
  
      if entry_points
-@@ -896,7 +898,7 @@ fn jit_analyze_and_generate(
+@@ -896,7 +900,7 @@ fn jit_analyze_and_generate(
          .collect();
      let basic_blocks = jit_find_basic_blocks(ctx, entry_points, cpu.clone());
  
@@ -367,7 +1149,7 @@ index 574a78a..ebeb6d5 100644
  
      for b in basic_blocks.iter() {
          // Remove this assertion once page-crossing jit is enabled
-@@ -1025,7 +1027,7 @@ fn jit_analyze_and_generate(
+@@ -1025,7 +1029,7 @@ fn jit_analyze_and_generate(
      );
      dbg_assert!(!entries.is_empty());
  
@@ -376,7 +1158,7 @@ index 574a78a..ebeb6d5 100644
      for &p in &pages {
          page_info.entry(p).or_insert_with(|| PageInfo {
              wasm_table_index,
-@@ -1035,7 +1037,7 @@ fn jit_analyze_and_generate(
+@@ -1035,7 +1039,7 @@ fn jit_analyze_and_generate(
          });
          ctx.entry_points
              .entry(p)
@@ -385,7 +1167,7 @@ index 574a78a..ebeb6d5 100644
      }
      for &(addr, state) in &entries {
          let code = page_info.get_mut(&Page::page_of(addr)).unwrap();
-@@ -1113,7 +1115,7 @@ pub fn codegen_finalize_finished(
+@@ -1113,7 +1117,7 @@ pub fn codegen_finalize_finished(
              .insert(wasm_table_index, pages.keys().copied().collect());
      }
  
@@ -394,7 +1176,7 @@ index 574a78a..ebeb6d5 100644
  
      for (page, mut info) in pages {
          dbg_assert!(info.state_flags == state_flags);
-@@ -1225,6 +1227,10 @@ fn jit_generate_module(
+@@ -1225,6 +1229,10 @@ fn jit_generate_module(
  
      builder.const_i32(0);
      let instruction_counter = builder.set_new_local();
@@ -405,15 +1187,17 @@ index 574a78a..ebeb6d5 100644
  
      let exit_label = builder.block_void();
      let exit_with_fault_label = builder.block_void();
-@@ -1255,6 +1261,7 @@ fn jit_generate_module(
+@@ -1255,7 +1263,9 @@ fn jit_generate_module(
          current_instruction: Instruction::Other,
          previous_instruction: Instruction::Other,
          instruction_counter,
 +        budget_room,
          wasm_table_index,
++        mev_left: 0,
      };
  
-@@ -1286,7 +1293,7 @@ fn jit_generate_module(
+     let entry_blocks = {
+@@ -1286,7 +1296,7 @@ fn jit_generate_module(
          result
      };
  
@@ -422,7 +1206,7 @@ index 574a78a..ebeb6d5 100644
      for (i, &addr) in entry_blocks.iter().enumerate() {
          dbg_assert!(i < 0x10000);
          index_for_addr.insert(addr, i as u16);
-@@ -1299,7 +1306,7 @@ fn jit_generate_module(
+@@ -1299,7 +1309,7 @@ fn jit_generate_module(
          }
      }
  
@@ -431,7 +1215,16 @@ index 574a78a..ebeb6d5 100644
  
      enum Work {
          WasmStructure(WasmStructure),
-@@ -1876,7 +1883,7 @@ fn jit_generate_module(
+@@ -1378,6 +1388,8 @@ fn jit_generate_module(
+                     };
+                     codegen::gen_debug_track_jit_exit(ctx.builder, block.last_instruction_addr);
+                     codegen::gen_move_registers_from_locals_to_memory(ctx);
++                    ctx.mev_left = 0;
++                    codegen::gen_mev_position(ctx);
+                     codegen::gen_fn0_const(ctx.builder, "handle_irqs");
+                     codegen::gen_update_instruction_counter(ctx);
+                     ctx.builder.return_();
+@@ -1876,7 +1888,7 @@ fn jit_generate_module(
                      codegen::gen_profiler_stat_increment(ctx.builder, stat::DISPATCHER_SMALL);
                      let nexts: HashSet<u32> = next_addr
                          .as_ref()
@@ -440,7 +1233,7 @@ index 574a78a..ebeb6d5 100644
                      for &addr in &entries {
                          if nexts.contains(&addr) {
                              continue;
-@@ -1918,7 +1925,7 @@ fn jit_generate_module(
+@@ -1918,7 +1930,7 @@ fn jit_generate_module(
                      }
                  }
  
@@ -449,7 +1242,7 @@ index 574a78a..ebeb6d5 100644
                  for &target in entries.iter() {
                      let index = if entries.len() == 1 {
                          None
-@@ -1962,7 +1969,7 @@ fn jit_generate_module(
+@@ -1962,7 +1974,7 @@ fn jit_generate_module(
  
                  let targets = next_addr.clone().unwrap();
                  let label = ctx.builder.block_void();
@@ -458,7 +1251,7 @@ index 574a78a..ebeb6d5 100644
                  for &target in targets.iter() {
                      let index = if targets.len() == 1 {
                          None
-@@ -2033,6 +2040,7 @@ fn jit_generate_module(
+@@ -2033,6 +2045,7 @@ fn jit_generate_module(
      }
      ctx.builder
          .free_local(ctx.instruction_counter.unsafe_clone());
@@ -466,7 +1259,7 @@ index 574a78a..ebeb6d5 100644
  
      ctx.builder.finish();
  
-@@ -2078,10 +2086,28 @@ fn jit_generate_basic_block(ctx: &mut JitContext, block: &BasicBlock) {
+@@ -2078,14 +2091,33 @@ fn jit_generate_basic_block(ctx: &mut JitContext, block: &BasicBlock) {
          ctx.builder.call_fn1("enter_basic_block");
      }
  
@@ -496,7 +1289,30 @@ index 574a78a..ebeb6d5 100644
  
      ctx.cpu.eip = start_addr;
      ctx.current_instruction = Instruction::Other;
-@@ -2167,7 +2193,7 @@ pub fn jit_increase_hotness_and_maybe_compile(
+     ctx.previous_instruction = Instruction::Other;
++    let mut mev_k = 0;
+ 
+     loop {
+         let mut instruction = 0;
+@@ -2113,7 +2145,17 @@ fn jit_generate_basic_block(ctx: &mut JitContext, block: &BasicBlock) {
+         ctx.start_of_current_instruction = ctx.cpu.eip;
+         let start_eip = ctx.cpu.eip;
+         let mut instruction_flags = 0;
++        // mkb M1: an instruction that calls out (into the interpreter's
++        // functions, port I/O, ...) stores its position first (mev.rs)
++        ctx.mev_left = block.number_of_instructions - mev_k;
++        let mev_calls = ctx.builder.calls;
+         jit_instructions::jit_instruction(ctx, &mut instruction_flags);
++        if ctx.builder.calls != mev_calls {
++            let from = ctx.builder.instruction_body_length();
++            codegen::gen_mev_position(ctx);
++            ctx.builder.move_tail(wasm_length_before, from);
++        }
++        mev_k += 1;
+         let end_eip = ctx.cpu.eip;
+ 
+         let instruction_length = end_eip - start_eip;
+@@ -2167,7 +2209,7 @@ pub fn jit_increase_hotness_and_maybe_compile(
      let (hotness, entry_points) = ctx.entry_points.entry(page).or_insert_with(|| {
          cpu::tlb_set_has_code(page, true);
          profiler::stat_increment(stat::RUN_INTERPRETED_NEW_PAGE);
@@ -505,7 +1321,7 @@ index 574a78a..ebeb6d5 100644
      });
  
      if !is_near_end_of_page(phys_address) {
-@@ -2379,8 +2405,30 @@ pub fn jit_dirty_cache_small(start_addr: u32, end_addr: u32) {
+@@ -2379,8 +2421,30 @@ pub fn jit_dirty_cache_small(start_addr: u32, end_addr: u32) {
  #[no_mangle]
  pub fn jit_clear_cache_js() { jit_clear_cache(&mut get_jit_state()) }
  
@@ -538,10 +1354,10 @@ index 574a78a..ebeb6d5 100644
      for &p in ctx.entry_points.keys() {
          pages_with_code.insert(p);
 diff --git a/src/rust/lib.rs b/src/rust/lib.rs
-index 0027145..350d436 100644
+index 0027145..4e7c92d 100644
 --- a/src/rust/lib.rs
 +++ b/src/rust/lib.rs
-@@ -13,6 +13,7 @@ mod analysis;
+@@ -13,11 +13,13 @@ mod analysis;
  mod codegen;
  mod config;
  mod control_flow;
@@ -549,8 +1365,216 @@ index 0027145..350d436 100644
  mod cpu_context;
  mod gen;
  mod jit;
+ mod jit_instructions;
+ mod leb;
++mod mev;
+ mod modrm;
+ mod opstats;
+ mod page;
+diff --git a/src/rust/mev.rs b/src/rust/mev.rs
+new file mode 100644
+index 0000000..477616f
+--- /dev/null
++++ b/src/rust/mev.rs
+@@ -0,0 +1,196 @@
++#![allow(non_upper_case_globals)]
++
++// mkb M1: memory events. The CPU's accesses to physical addresses outside RAM
++// (memory-mapped I/O: the legacy video window, APIC, I/O APIC, the SVGA
++// framebuffer, BIOS aliases, PCI BARs), from the interpreter and from
++// compiled code alike, are reported to the page through one import,
++// mev_cpu, while mev_on is set. Every other RAM access that is not a CPU
++// instruction's goes through the JS side's API (cpu.js dma_port, emu_write).
++//
++// Position: compiled code adds a whole block to instruction_counter when it
++// returns, and the interpreter adds a run's instructions after it, so while
++// either runs the counter holds the value at the start of the call or run.
++// jit_insn_off is the number of instructions completed in that call or run
++// before the current one: compiled code stores it before every call it makes
++// out of a block (a memory slow path, an instruction implemented by a
++// function, see jit.rs), the interpreter before every instruction.
++// mev_now() = counter + jit_insn_off is the count before the current
++// instruction, the same in compiled code, interpreted runs, a budget's
++// interpreted tail and the page's stepping.
++//
++// Checking mode (mev_track): a bitmap of the 4 KiB RAM pages the CPU may have
++// written since mev_track_begin(), which also empties the TLB: a CPU write
++// to RAM needs a TLB entry made for writing (do_page_walk marks the page
++// then) or is a physical write (memory::write8/16/32 mark it: the accessed
++// and dirty bits of page tables, the BIOS alias at 0xFFF00000). The page
++// hashes every RAM page (mev_hash_pages) at intervals: a page that changed
++// with no mark and no device or emulator event has no author.
++
++use crate::cpu::cpu::{full_clear_tlb, translate_address_read_no_side_effects};
++use crate::cpu::global_pointers::{
++    instruction_counter, instruction_pointer, memory_size, previous_ip, reg32, segment_offsets,
++};
++use crate::cpu::memory;
++use crate::cpu::misc_instr::{get_stack_pointer, getcf};
++use crate::regs::{EAX, EBX, ECX, ES, EDI};
++
++mod ext {
++    #[link(wasm_import_module = "env")]
++    extern "C" {
++        pub fn mev_cpu(kind: i32, addr: u32, lo: i32, hi: i32, count: u32, eip: i32, eip_phys: i32);
++    }
++}
++
++// kind: bit 0 write, bits 1-7 size in bytes (16 for 128-bit accesses, the
++// value is then the low 8 bytes; for a bulk copy the size is in lo and hi is
++// a hash of the bytes: bit 8), bits 9-15 what (0 an access, 1 an E820 answer)
++pub const MEV_WRITE: i32 = 1;
++pub const MEV_BULK: i32 = 1 << 8;
++pub const MEV_E820: i32 = 1 << 9;
++
++pub static mut mev_on: bool = false;
++// observe the BIOS's E820 answers (reported as MEV_E820 events)
++pub static mut mev_obs: bool = false;
++pub static mut mev_depth: u32 = 0;
++#[no_mangle]
++pub static mut jit_insn_off: u32 = 0;
++#[no_mangle]
++pub static mut mev_eip_lo: i32 = 0;
++pub static mut mev_in_jit: bool = false;
++
++pub static mut mev_track: bool = false;
++// 2 GiB of RAM at most (v86's limit): 2^31 / 4096 / 8 bytes
++pub static mut mev_dirty: [u8; 65536] = [0; 65536];
++pub static mut mev_hashes: Vec<u32> = Vec::new();
++
++// INT 15h E820h (ACPI's address map interface) in real mode: the stack
++// address of the interrupt's frame and the caller's ES:DI
++pub static mut mev_e820_frame: i32 = -1;
++pub static mut mev_e820_buf: i32 = 0;
++
++// flags: bit 0 report the CPU's accesses outside RAM, bit 1 the E820 answers
++#[no_mangle]
++pub unsafe fn mev_set(flags: u32) {
++    mev_on = flags & 1 != 0;
++    mev_obs = flags & 2 != 0;
++    mev_depth = 0;
++}
++
++// cpu.js dma_scalar: a device's access outside RAM through the CPU's
++// functions is not the CPU's
++#[no_mangle]
++pub unsafe fn mev_nest(d: i32) { mev_depth = mev_depth.wrapping_add(d as u32); }
++
++#[no_mangle]
++pub unsafe fn mev_now() -> u32 { (*instruction_counter).wrapping_add(jit_insn_off) }
++
++// The CPU's access outside RAM begins: nested ones (read16 made of two read8,
++// a device's handler that reads its own memory through the CPU's functions)
++// are not reported.
++#[inline(always)]
++pub unsafe fn enter() { mev_depth += 1; }
++
++#[inline(always)]
++pub unsafe fn leave(kind: i32, addr: u32, lo: i32, hi: i32) {
++    mev_depth -= 1;
++    if mev_on && mev_depth == 0 {
++        report(kind, addr, lo, hi);
++    }
++}
++
++#[inline(never)]
++pub unsafe fn report(kind: i32, addr: u32, lo: i32, hi: i32) {
++    let eip = if mev_in_jit { *instruction_pointer & !0xFFF | mev_eip_lo } else { *previous_ip };
++    let phys = match translate_address_read_no_side_effects(eip) {
++        Ok(p) => p as i32,
++        Err(()) => -1,
++    };
++    ext::mev_cpu(kind, addr, lo, hi, mev_now(), eip, phys);
++}
++
++// FNV-1a over 8-byte words, folded to 32 bits
++pub unsafe fn hash_bytes(p: *const u8, len: usize) -> u32 {
++    let mut h: u64 = 0xcbf29ce484222325;
++    let mut i = 0;
++    while i + 8 <= len {
++        h = (h ^ std::ptr::read_unaligned(p.add(i) as *const u64)).wrapping_mul(0x100000001b3);
++        i += 8;
++    }
++    while i < len {
++        h = (h ^ *p.add(i) as u64).wrapping_mul(0x100000001b3);
++        i += 1;
++    }
++    (h ^ h >> 32) as u32
++}
++
++#[inline(always)]
++pub unsafe fn mark(phys: u32) {
++    if mev_track {
++        let p = (phys >> 12) as usize;
++        if p < 65536 * 8 {
++            mev_dirty[p >> 3] |= 1 << (p & 7);
++        }
++    }
++}
++
++// Start an interval: no page marked, no TLB entry made before it.
++// Returns the bitmap's address in wasm memory.
++#[no_mangle]
++pub unsafe fn mev_track_begin() -> u32 {
++    (*(&raw mut mev_dirty)).fill(0);
++    mev_track = true;
++    full_clear_tlb();
++    (&raw const mev_dirty) as u32
++}
++
++#[no_mangle]
++pub unsafe fn mev_track_end() { mev_track = false; }
++
++// One hash per 4 KiB page of RAM; returns their address in wasm memory.
++#[no_mangle]
++pub unsafe fn mev_hash_pages() -> u32 {
++    let pages = (*memory_size >> 12) as usize;
++    #[allow(static_mut_refs)]
++    {
++        if mev_hashes.len() != pages {
++            mev_hashes = vec![0; pages];
++        }
++        for p in 0..pages {
++            mev_hashes[p] = hash_bytes(memory::mem8.add(p << 12), 4096);
++        }
++        mev_hashes.as_ptr() as u32
++    }
++}
++
++// instr_CD: a software interrupt in real mode
++pub unsafe fn int_sw(nr: i32, protected: bool) {
++    if mev_obs && !protected && nr == 0x15 && *reg32.offset(EAX as isize) == 0xE820 {
++        // the frame: FLAGS, CS, IP pushed below the caller's SP
++        mev_e820_frame = get_stack_pointer(0);
++        mev_e820_buf = *segment_offsets.offset(ES as isize) + (*reg32.offset(EDI as isize) & 0xFFFF);
++    }
++}
++
++// iret in real mode, before it pops the frame at sp
++pub unsafe fn iret_real(sp: i32) {
++    if mev_e820_frame == sp {
++        mev_e820_frame = -1;
++        // the answer: the entry at ES:DI, EBX the continuation, ECX the size
++        // written, CF set on an error (after the return)
++        let ebx = *reg32.offset(EBX as isize);
++        let ecx = *reg32.offset(ECX as isize);
++        let eax = *reg32.offset(EAX as isize);
++        mev_e820_pending = Some((mev_e820_buf, ebx, ecx & 0xFF | ((eax == 0x534D4150) as i32) << 8));
++    }
++}
++pub static mut mev_e820_pending: Option<(i32, i32, i32)> = None;
++
++// after the iret: report with the caller's flags in place
++pub unsafe fn iret_done() {
++    if let Some((buf, ebx, info)) = mev_e820_pending {
++        mev_e820_pending = None;
++        if mev_obs {
++            report(MEV_E820, buf as u32, ebx, info | (getcf() as i32) << 9);
++        }
++    }
++}
 diff --git a/src/rust/wasmgen/wasm_builder.rs b/src/rust/wasmgen/wasm_builder.rs
-index b4139dd..fb0ee4f 100644
+index b4139dd..171e7c6 100644
 --- a/src/rust/wasmgen/wasm_builder.rs
 +++ b/src/rust/wasmgen/wasm_builder.rs
 @@ -1,4 +1,4 @@
@@ -559,7 +1583,27 @@ index b4139dd..fb0ee4f 100644
  use std::mem::transmute;
  
  use crate::leb::{
-@@ -129,7 +129,7 @@ impl WasmBuilder {
+@@ -72,6 +72,11 @@ pub const WASM_MODULE_ARGUMENT_COUNT: u8 = 1;
+ pub struct WasmBuilder {
+     output: Vec<u8>,
+     instruction_body: Vec<u8>,
++    // mkb M1: calls emitted, except the memory slow paths (which store the
++    // position for mev.rs themselves) and the page-fault probes (which
++    // cannot cause an event): jit.rs stores the position before an
++    // instruction that made one
++    pub calls: u32,
+ 
+     idx_import_table_size: usize, // for rewriting once finished
+     idx_import_count: usize,      // for rewriting once finished
+@@ -119,6 +124,7 @@ impl WasmBuilder {
+         let mut b = WasmBuilder {
+             output: Vec::with_capacity(256),
+             instruction_body: Vec::with_capacity(256),
++            calls: 0,
+ 
+             idx_import_table_size: 0,
+             idx_import_count: 0,
+@@ -129,7 +135,7 @@ impl WasmBuilder {
  
              initial_static_size: 0,
  
@@ -568,3 +1612,146 @@ index b4139dd..fb0ee4f 100644
              label_stack: Vec::new(),
              next_label: Label::ZERO,
  
+@@ -934,6 +940,9 @@ impl WasmBuilder {
+     }
+ 
+     fn call_fn(&mut self, name: &str, function: FunctionType) {
++        if !name.ends_with("_slow_jit") && !name.ends_with("able_or_pagefault_jit") {
++            self.calls += 1;
++        }
+         let i = self.get_fn_idx(name, function);
+         self.instruction_body.push(op::OP_CALL);
+         write_leb_u32(&mut self.instruction_body, i as u32);
+@@ -976,6 +985,13 @@ impl WasmBuilder {
+     pub fn unreachable(&mut self) { self.instruction_body.push(op::OP_UNREACHABLE) }
+ 
+     pub fn instruction_body_length(&self) -> u32 { self.instruction_body.len() as u32 }
++
++    /// mkb M1: move the code emitted since `from` to `at` (wasm code has no
++    /// byte offsets: blocks and branches nest, locals are numbered)
++    pub fn move_tail(&mut self, at: u32, from: u32) {
++        let n = self.instruction_body.len() - from as usize;
++        self.instruction_body[at as usize..].rotate_right(n);
++    }
+ }
+ 
+ #[cfg(test)]
+diff --git a/src/virtio.js b/src/virtio.js
+index d351c3d..9c0fae3 100644
+--- a/src/virtio.js
++++ b/src/virtio.js
+@@ -1268,11 +1268,11 @@ VirtQueue.prototype.notify_me_after = function(num_skipped_requests)
+ VirtQueue.prototype.get_descriptor = function(table_address, i)
+ {
+     return {
+-        addr_low: this.cpu.read32s(table_address + i * VIRTQ_DESC_ENTRYSIZE),
+-        addr_high: this.cpu.read32s(table_address + i * VIRTQ_DESC_ENTRYSIZE + 4),
+-        len: this.cpu.read32s(table_address + i * VIRTQ_DESC_ENTRYSIZE + 8),
+-        flags: this.cpu.read16(table_address + i * VIRTQ_DESC_ENTRYSIZE + 12),
+-        next: this.cpu.read16(table_address + i * VIRTQ_DESC_ENTRYSIZE + 14),
++        addr_low: this.cpu.dma_read32s(this.virtio.pci_id, table_address + i * VIRTQ_DESC_ENTRYSIZE),
++        addr_high: this.cpu.dma_read32s(this.virtio.pci_id, table_address + i * VIRTQ_DESC_ENTRYSIZE + 4),
++        len: this.cpu.dma_read32s(this.virtio.pci_id, table_address + i * VIRTQ_DESC_ENTRYSIZE + 8),
++        flags: this.cpu.dma_read16(this.virtio.pci_id, table_address + i * VIRTQ_DESC_ENTRYSIZE + 12),
++        next: this.cpu.dma_read16(this.virtio.pci_id, table_address + i * VIRTQ_DESC_ENTRYSIZE + 14),
+     };
+ };
+ 
+@@ -1280,55 +1280,55 @@ VirtQueue.prototype.get_descriptor = function(table_address, i)
+ 
+ VirtQueue.prototype.avail_get_flags = function()
+ {
+-    return this.cpu.read16(this.avail_addr);
++    return this.cpu.dma_read16(this.virtio.pci_id, this.avail_addr);
+ };
+ 
+ VirtQueue.prototype.avail_get_idx = function()
+ {
+-    return this.cpu.read16(this.avail_addr + 2);
++    return this.cpu.dma_read16(this.virtio.pci_id, this.avail_addr + 2);
+ };
+ 
+ VirtQueue.prototype.avail_get_entry = function(i)
+ {
+-    return this.cpu.read16(this.avail_addr + 4 + VIRTQ_AVAIL_ENTRYSIZE * (i & this.mask));
++    return this.cpu.dma_read16(this.virtio.pci_id, this.avail_addr + 4 + VIRTQ_AVAIL_ENTRYSIZE * (i & this.mask));
+ };
+ 
+ VirtQueue.prototype.avail_get_used_event = function()
+ {
+-    return this.cpu.read16(this.avail_addr + 4 + VIRTQ_AVAIL_ENTRYSIZE * this.size);
++    return this.cpu.dma_read16(this.virtio.pci_id, this.avail_addr + 4 + VIRTQ_AVAIL_ENTRYSIZE * this.size);
+ };
+ 
+ // Used ring fields
+ 
+ VirtQueue.prototype.used_get_flags = function()
+ {
+-    return this.cpu.read16(this.used_addr);
++    return this.cpu.dma_read16(this.virtio.pci_id, this.used_addr);
+ };
+ 
+ VirtQueue.prototype.used_set_flags = function(value)
+ {
+-    this.cpu.write16(this.used_addr, value);
++    this.cpu.dma_write16(this.virtio.pci_id, this.used_addr, value);
+ };
+ 
+ VirtQueue.prototype.used_get_idx = function()
+ {
+-    return this.cpu.read16(this.used_addr + 2);
++    return this.cpu.dma_read16(this.virtio.pci_id, this.used_addr + 2);
+ };
+ 
+ VirtQueue.prototype.used_set_idx = function(value)
+ {
+-    this.cpu.write16(this.used_addr + 2, value);
++    this.cpu.dma_write16(this.virtio.pci_id, this.used_addr + 2, value);
+ };
+ 
+ VirtQueue.prototype.used_set_entry = function(i, desc_idx, length_written)
+ {
+-    this.cpu.write32(this.used_addr + 4 + VIRTQ_USED_ENTRYSIZE * i, desc_idx);
+-    this.cpu.write32(this.used_addr + 8 + VIRTQ_USED_ENTRYSIZE * i, length_written);
++    this.cpu.dma_write32(this.virtio.pci_id, this.used_addr + 4 + VIRTQ_USED_ENTRYSIZE * i, desc_idx);
++    this.cpu.dma_write32(this.virtio.pci_id, this.used_addr + 8 + VIRTQ_USED_ENTRYSIZE * i, length_written);
+ };
+ 
+ VirtQueue.prototype.used_set_avail_event = function(value)
+ {
+-    this.cpu.write16(this.used_addr + 4 + VIRTQ_USED_ENTRYSIZE * this.size, value);
++    this.cpu.dma_write16(this.virtio.pci_id, this.used_addr + 4 + VIRTQ_USED_ENTRYSIZE * this.size, value);
+ };
+ 
+ /**
+@@ -1463,7 +1463,7 @@ VirtQueueBufferChain.prototype.get_next_blob = function(dest_buffer)
+             this.read_buffer_offset = 0;
+         }
+ 
+-        dest_buffer.set(this.cpu.read_blob(read_address, read_length), dest_offset);
++        dest_buffer.set(this.cpu.dma_read(this.virtio.pci_id, read_address, read_length), dest_offset);
+ 
+         dest_offset += read_length;
+         remaining -= read_length;
+@@ -1506,7 +1506,7 @@ VirtQueueBufferChain.prototype.set_next_blob = function(src_buffer)
+         }
+ 
+         const src_end = src_offset + write_length;
+-        this.cpu.write_blob(src_buffer.subarray(src_offset, src_end), write_address);
++        this.cpu.dma_write(this.virtio.pci_id, src_buffer.subarray(src_offset, src_end), write_address);
+ 
+         src_offset += write_length;
+         remaining -= write_length;
+diff --git a/src/virtio_balloon.js b/src/virtio_balloon.js
+index 1308d43..dd19a6c 100644
+--- a/src/virtio_balloon.js
++++ b/src/virtio_balloon.js
+@@ -131,7 +131,7 @@ export function VirtioBalloon(cpu, bus)
+                             for(let i = 0; i < bufchain.write_buffers.length; ++i) {
+                                 let b = bufchain.write_buffers[i];
+                                 this.zeroed += b.len;
+-                                this.virtio.cpu.zero_memory(b.addr_low, b.len);
++                                this.virtio.cpu.dma_zero(this.virtio.pci_id, b.addr_low, b.len);
+                             }
+                         }
+                         this.virtio.queues[queue_id].push_reply(bufchain);

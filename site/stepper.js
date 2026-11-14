@@ -901,6 +901,13 @@ class Stepper {
 	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
 		if (typeof revMark === "function")
 			revMark(this, "step"); // R5: the run goes on stepped from here
+		const r = this.runOn(n, stopPhys, budgetMs, leave);
+		if (typeof MEV === "object")
+			MEV.tick(this); // memevents.js checking mode
+		return r;
+	}
+
+	runOn(n, stopPhys, budgetMs, leave) {
 		let i0 = 0;
 		if (this.steps < this.ahead) {
 			const r = this.rerun(n, stopPhys, budgetMs, leave);

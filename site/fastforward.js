@@ -166,6 +166,7 @@ function jitChunk(st, beforeEntry = false, until = Infinity) {
 		h = Math.imul(h ^ Math.floor(st.steps / 4294967296), 0x01000193);
 		st.jitChain = Math.imul(h ^ cpu.instruction_pointer[0], 0x01000193) >>> 0;
 	}
+	MEV.tick(st); // memevents.js checking mode
 	return ran;
 }
 

@@ -568,4 +568,5 @@ async function v86Restore(em, state) {
 	await em.restore_state(state);
 	v86RestoreFix(em.v86.cpu);
 	v86ResetHidden(em, "restore");
+	MEV.restored(); // memevents.js: the events from the stepper's count on are gone
 }

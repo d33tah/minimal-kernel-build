@@ -543,9 +543,10 @@ jobs:
         name: debian-initrd
         path: initrd-out/
 
-  # The page's v86.wasm: v86's source at the pinned commit with
-  # site/v86-det.patch, built in the pinned Docker image (gen-v86.sh, R4);
-  # the script fails unless the build has the recorded SHA-256.
+  # The page's v86.wasm and libv86.js: v86's source at the pinned commit with
+  # site/v86-det.patch, built in the pinned Docker image (gen-v86.sh, R4, M1);
+  # the script fails unless the builds have the recorded SHA-256 and the
+  # unpatched libv86.js is npm's.
   v86:
     runs-on: ubuntu-latest
     steps:
@@ -578,17 +579,17 @@ jobs:
       run: |
         start=$(date +%s)
         if site/gen-v86.sh; then
-          echo "v86.wasm build: $(( $(date +%s) - start )) s"
-          mkdir -p v86-cache && cp site/v86/v86.wasm v86-cache/
+          echo "v86.wasm and libv86.js build: $(( $(date +%s) - start )) s"
+          mkdir -p v86-cache && cp site/v86/v86.wasm site/v86/libv86.js v86-cache/
           echo built=1 >> "$GITHUB_OUTPUT"
-        elif [ -f v86-cache/v86.wasm ]; then
-          echo "::warning::gen-v86.sh could not build v86.wasm; using the cached build of the same script and patch"
-          mkdir -p site/v86 && cp v86-cache/v86.wasm site/v86/
+        elif [ -f v86-cache/v86.wasm ] && [ -f v86-cache/libv86.js ]; then
+          echo "::warning::gen-v86.sh could not build v86.wasm and libv86.js; using the cached build of the same script and patch"
+          mkdir -p site/v86 && cp v86-cache/v86.wasm v86-cache/libv86.js site/v86/
           site/gen-v86.sh --check
         else
           exit 1
         fi
-        ls -l site/v86/v86.wasm
+        ls -l site/v86/v86.wasm site/v86/libv86.js
 
     - uses: actions/cache/save@v4
       if: steps.build.outputs.built == '1' && steps.v86cache.outputs.cache-hit != 'true'
@@ -599,7 +600,9 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: v86-wasm
-        path: site/v86/v86.wasm
+        path: |
+          site/v86/v86.wasm
+          site/v86/libv86.js
 
   # clang/lld 22.1.0 for wasm32-wasip1 (gen-clang-wasm.sh): clang-wasm.yml
   # builds it when the script changes and caches it; this run checks it.
@@ -789,6 +792,7 @@ jobs:
         - exactstop
         - followeip
         - followfuzz
+        - memevents
     name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:
     - uses: actions/checkout@v4

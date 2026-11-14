@@ -278,6 +278,11 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #mem_eip { margin: 0.4rem 0 0; overflow-wrap: anywhere; }
 #mem_eip .symlink { padding: 0 0.15rem; }
 #hover_info { min-height: 1.5em; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+#mev { margin: 0.6rem 0; }
+#mev summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+#mev h4 { font-size: 0.85rem; margin: 0.5rem 0 0.2rem; }
+.mev-list li { margin: 0.1rem 0; padding-left: 1.5em; text-indent: -1.5em; }
+.mev-list { font-size: 0.75rem; max-height: 22rem; overflow-y: auto; margin: 0.2rem 0; padding-left: 0; list-style: none; overflow-wrap: anywhere; white-space: pre-wrap; }
 
 .symindex { display: flex; flex-wrap: wrap; gap: 0.2rem; margin: 0.35rem 0; max-height: 5.5rem; overflow-y: auto; font-size: 0.75rem; color: var(--muted); }
 .symindex button { font: 0.72rem ui-monospace, monospace; padding: 0 0.3rem; }

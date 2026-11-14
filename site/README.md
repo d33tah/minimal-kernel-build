@@ -1840,6 +1840,76 @@ wait on real time.
 The scripts (`v86ref.py`, `qtrace.py`) are not in the repository; the
 qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
 
+## Memory events (M1)
+
+Who touches which physical address, and when. `memevents.js` keeps a log of
+three kinds of events:
+
+- **cpu**: the CPU's accesses to physical addresses outside RAM
+  (memory-mapped I/O: the legacy video window, the local APIC and I/O APIC,
+  PCI BARs and expansion ROMs, the SVGA framebuffer, BIOS aliases). They
+  come from `v86.wasm` (`src/rust/mev.rs` in `v86-det.patch`), reported from
+  the interpreter and from compiled code alike, with the value read or
+  written, EIP and EIP's physical address (shown as function and
+  `file:line` where the kernel has symbols and DWARF).
+- **device**: every RAM access of a device: DMA in both directions, the
+  descriptors and rings a device reads and writes (IDE's PRD table,
+  virtio's queues) and the 8237's transfers. v86's devices reach RAM only
+  through `cpu.js`'s `dma_*` functions now (the patch's JS part: no device
+  touches `mem8` itself); bulk transfers carry the byte count and a hash.
+  v86 emulates no MSI.
+- **emulator**: RAM written by the emulator itself through `emu_*`: the
+  BIOS images, the kernel loader (real-mode part, protected-mode part,
+  command line, initrd), a snapshot's restore and the page's own writes
+  (`write_memory`, the fast Run to's breakpoints). The loader's writes are
+  the first events, at count 0.
+
+The position is the stepper's instruction count before the instruction
+that caused the event. Compiled code adds a whole block to v86's counter,
+so the patch has it store how many instructions of the current call ran
+before an instruction that calls out (a memory slow path, an instruction
+implemented by a function, port I/O); `mev_now()` is then exact in compiled
+code, interpreted runs, the budget's interpreted tail and stepping. A Step
+back to an event's position stops right before its instruction. The cost
+with the list closed: one store before such calls (no call, no event); the
+memory events code itself is off.
+
+Region names come only from standards the guest itself uses, and each says
+which: the IBM PC memory map (video memory windows, video BIOS, option
+ROMs, system BIOS, interrupt vector table, BIOS data area), the BIOS's INT
+15h E820h answers (observed at the real-mode `iret` of the guest's call),
+PCI configuration mechanism #1 on ports 0xCF8/0xCFC (vendor and device,
+the class code named after the PCI class table, BARs with their all-ones
+size probe, expansion ROMs), the ACPI MADT and HPET tables or the Intel
+MultiProcessor Specification's table when the firmware has them (v86's
+SeaBIOS has the MP table, no ACPI), and IA32_APIC_BASE's power-up value.
+An address no standard has named yet says so. What the guest told is kept
+as observations with their positions (`MEV.obs`, `MEV.facts`): the order
+in which the OS sized each BAR, every E820 entry.
+
+The log is columnar and a ring (up to 262,144 events, the oldest dropped
+first) in position order. `MEV.query({ from, to, page, initiator, write,
+region, limit })` gives the matching indices, `MEV.event(i)` one event.
+A Step back or a restored snapshot drops the events from the restored
+count on (and the observations, so region names are as they were then);
+running on records the same events again.
+
+The Memory tab's "Memory events" list (closed by default) records while it
+is open: the newest 100 events, the regions known now and the last
+observations. `?memevents=1` opens it at load.
+
+**Checking mode** (`?memcheck=N`): every N instructions every 4 KiB RAM page
+is hashed (`mev_hash_pages`, in wasm). A page that changed with no CPU
+write and no device or emulator event in that interval is a failure
+(`MEV.check.failures`: page, interval). The CPU's writes: `v86.wasm` marks
+the pages for which it makes a TLB entry for writing (every CPU write to
+RAM needs one, compiled code too) and its physical writes (page tables'
+accessed and dirty bits, the BIOS alias at 0xFFF00000), and empties the
+TLB at each interval. The test (`test_browser.py`, suite `memevents`) runs
+it to the end of hello, the minified Linux (-O0 and -Os) and Debian, and
+writes one byte behind the API's back, which must be the only failure.
+
+
 ## Debug info: help, sizes, times and tests
 
 Every element the debug features put on the page has an explanation a

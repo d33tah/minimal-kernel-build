@@ -18739,7 +18739,7 @@ def suite_jitrev(ctx):
 # r3replay). And the run is no longer tainted by "the JIT after a snapshot
 # restore": Restore at a pause under the JIT, the (initramfs) prompt comes at
 # the same count, and Replay from boot matches.
-JITSNAP_SHA256 = "c4e8e92eab6da3d11c7f62e17230307ac260818030fb83ac0160a22fa8395257"
+JITSNAP_SHA256 = "cdf710949be5d004f0a8da9b559a49ddebdd5fde94d172e2a2cdf365b1a7a6a1"
 # kernel name filter -> (A, B): save at the first slice end at or past A, run to B.
 JITSNAP_WINDOWS = [("debian", False, 1.0e9, 2.55e9), ("debian", True, 2.5e9, 3.3e9)]
 JITSNAP_DRV_JS = """() => { window.JS4 = {
@@ -21176,6 +21176,275 @@ def suite_genimport(ctx):
     return report("genimport", *genimport_case(ctx.browser, ctx.base, ctx.shots))
 
 
+# ---- memevents: who touched which physical address, when (M1) --------------
+# v86-det.patch reports the CPU's accesses outside RAM (interpreter and
+# compiled code, with the exact count) and routes every other RAM access
+# through one API in libv86's cpu.js (devices: dma_*, the emulator: emu_*);
+# memevents.js keeps them in a columnar ring with region names from the
+# standards the guest used (IBM PC map, E820, PCI configuration, ACPI or
+# MultiProcessor tables, IA32_APIC_BASE). The guarantee: in checking mode
+# every RAM page is hashed at intervals, and a page that changed with no CPU
+# write (v86.wasm marks the pages the CPU may write) and no device or
+# emulator event fails, on hello, the minified Linux (-O0, -Os) and Debian;
+# a write behind the API's back must be caught (page, interval). The events
+# repeat: two loads give the same log, a step back lands at an event's very
+# instruction (the JIT recorded it) and running on records the same events
+# again, and a replay from boot records them too. The cost: Debian at full
+# JIT speed with the list open against closed (reported).
+MEV_CHECK_RUNS = [("hello", 200000), ("minified-linux", 200000), ("minified-linux-os", 200000), ("debian-6.1-686", 100000000)]
+MEV_DIGEST_JS = """(to) => { const c = MEV.cols, m = MEV.cap - 1; let h = 0x811c9dc5, n = 0;
+  const mix = (v) => { h = Math.imul(h ^ (v >>> 0), 0x01000193); h = Math.imul(h ^ Math.floor(v / 4294967296), 0x01000193); };
+  for (const i of MEV.query(to === null ? {} : { to })) { const k = i & m; mix(c.pos[k]); mix(c.meta[k]); mix(c.addr[k]); mix(c.size[k]);
+    mix(c.val[k]); mix(c.valHi[k]); mix(c.eip[k]); mix(c.eipPhys[k]); mix(c.src[k]); for (const ch of MEV.nameOf(c.region[k]).name) mix(ch.charCodeAt(0)); n++; }
+  return { n, hash: (h >>> 0).toString(16), kept: MEV.n - MEV.first(), dropped: MEV.first() }; }"""
+MEV_SUMMARY_JS = """() => { const ev = MEV.query().map((i) => MEV.event(i)); const by = (f) => ev.filter(f);
+  const cpu = by((e) => e.initiator === 'cpu'), emu = by((e) => e.initiator === 'emulator');
+  return { n: ev.length, counts: MEV.counts.slice(), emulator: emu.map((e) => [e.pos, e.addr, e.bytes, e.source, e.regionName]),
+    cpuRegions: [...new Set(cpu.map((e) => e.regionName))], unnamed: cpu.filter((e) => !MEV.nameOf(e.region).known).length,
+    vga: cpu.filter((e) => e.write && e.addr >= 0xb8000 && e.addr < 0xc0000).length,
+    described: cpu.slice(-3).map((e) => MEV.describe(e)), facts: MEV.facts.map((f) => f.text), e820: MEV.e820.length,
+    firmware: MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text),
+    check: MEV.check && { checks: MEV.check.checks, changed: MEV.check.changed, failures: MEV.check.failures } }; }"""
+
+
+def mev_page(browser, scheme="light", phone=False):
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 900}}))
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    return ctx, page, errs
+
+
+def mev_to_end(page, base, name, q, timeout=600):
+    page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10&{q}", timeout=180000)
+    return wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), timeout, 0.5)
+
+
+def mev_check_case(browser, base, shots, name, every, problems, r):
+    """Checking mode to the end: no page changed without an author."""
+    ctx, page, errs = mev_page(browser)
+    try:
+        if not mev_to_end(page, base, name, f"memcheck={every}"):
+            problems.append(f"{name}: no end with ?memcheck")
+            return
+        time.sleep(0.5)
+        page.evaluate("() => { MEV.check.next = 0; MEV.tick(stepper); }")  # the stretch since the last check
+        s = page.evaluate(MEV_SUMMARY_JS)
+        r[name] = {k: s[k] for k in ("n", "counts", "check", "cpuRegions", "unnamed", "vga", "e820", "firmware", "described")}
+        c = s["check"] or {}
+        if c.get("failures"):
+            problems.append(f"{name}: pages changed with no CPU write and no event: {c['failures'][:5]}")
+        if not c.get("checks", 0) >= 3 or not c.get("changed"):
+            problems.append(f"{name}: the check ran {c.get('checks')} times, {c.get('changed')} pages changed")
+        reasons = [e[3] for e in s["emulator"]]
+        for want in ("BIOS image", "video BIOS image", "kernel real-mode part", "kernel protected-mode part", "kernel command line"):
+            if want not in reasons:
+                problems.append(f"{name}: no emulator event {want!r} (the loader): {s['emulator'][:6]}")
+        if any(e[0] != 0 for e in s["emulator"]):
+            problems.append(f"{name}: the loader's events are not at count 0: {s['emulator'][:6]}")
+        if s["unnamed"]:
+            problems.append(f"{name}: {s['unnamed']} CPU events at addresses no standard named: {s['cpuRegions']}")
+        if not s["vga"] or "colour text (CGA) video memory" not in s["cpuRegions"]:
+            problems.append(f"{name}: no CPU write to the colour text memory named by the IBM PC map: {s['cpuRegions']}")
+        if not any(" EIP " in d and ".c:" in d for d in s["described"]):
+            problems.append(f"{name}: a CPU event does not name its function and line: {s['described']}")
+        if name.startswith("debian"):
+            if s["e820"] < 3 or not any("usable RAM" in f for f in s["facts"]):
+                problems.append(f"{name}: {s['e820']} E820 answers observed: {s['facts'][:8]}")
+            if not any("mass storage controller, IDE (PCI class 01:01)" in f for f in s["facts"]):
+                problems.append(f"{name}: the IDE controller's class was not observed: {s['facts'][:8]}")
+            if not s["firmware"] or not any(x.startswith("I/O APIC") for x in s["cpuRegions"]):
+                problems.append(f"{name}: the I/O APIC is not named from a firmware table: {s['firmware']} {s['cpuRegions']}")
+        if errs:
+            problems.append(f"{name}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
+def mev_negative_case(browser, base, shots, problems, r):
+    """A write behind the API's back is caught; the API's writes are not."""
+    ctx, page, errs = mev_page(browser)
+    try:
+        if not mev_to_end(page, base, "hello", "memcheck=200000"):
+            problems.append("negative: hello did not end")
+            return
+        out = page.evaluate("""() => { const cpu = MEV.cpu; MEV.check.next = 0; MEV.tick(stepper); const before = MEV.check.failures.length;
+          cpu.mem8[0x7123] ^= 0x5a;                                   // behind the API's back
+          emulator.write_memory(new Uint8Array([1, 2, 3]), 0x9000);   // the embedding page: an emulator event
+          cpu.dma_write(0x1e << 3, new Uint8Array([4, 5, 6]), 0xa010); // a device (the IDE controller's PCI address)
+          cpu.dma_write32(0x1e << 3, 0xb000, 0x12345678);
+          const v = cpu.dma_read32s(0x1e << 3, 0xb000), b = cpu.dma_read16(0x10002, 0xb000), z = cpu.dma_read8(0x10002, 0xb003);
+          cpu.dma_write16(0x10002, 0xc000, 0xbeef); cpu.dma_zero(0x10002, 0xd000, 4096); const rd = Array.from(cpu.dma_read(0x10002, 0xc000, 2));
+          MEV.check.next = 0; MEV.tick(stepper);
+          const ev = MEV.query({ limit: 9 }).map((i) => MEV.event(i));
+          return { before, failures: MEV.check.failures.slice(before), v: v >>> 0, b, z, rd,
+            events: ev.map((e) => [e.initiator, e.write, e.addr, e.size, e.value === undefined ? null : e.value, e.bytes === undefined ? null : e.bytes, e.source]),
+            pages: [0xa, 0xb, 0xc, 0xd, 0x9].map((p) => MEV.query({ page: p }).length) }; }""")
+        r["negative"] = out
+        got = sorted({f["page"] for f in out["failures"]})
+        if got != [7]:
+            problems.append(f"negative: the unlogged write to page 7 should be the only failure, got pages {got}: {out['failures'][:4]}")
+        if out["v"] != 0x12345678 or out["b"] != 0x5678 or out["z"] != 0x12 or out["rd"] != [0xef, 0xbe]:
+            problems.append(f"negative: the device API read back {out['v']:#x} {out['b']:#x} {out['z']:#x} {out['rd']}")
+        srcs = [e[6] for e in out["events"]]
+        if "embedding page" not in srcs or "PCI 00:1e.0" not in srcs or "ISA DMA (8237) channel 2" not in srcs:
+            problems.append(f"negative: the events do not name their sources: {out['events']}")
+        if min(out["pages"]) < 1:
+            problems.append(f"negative: query by page found {out['pages']} events on pages 0xa, 0xb, 0xc, 0xd, 0x9")
+        if errs:
+            problems.append(f"negative: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
+
+def mev_repeat_case(browser, base, shots, problems, r):
+    """Two loads, a step back to an event recorded by the JIT, the run on,
+    and a replay from boot: the same events."""
+    name = "minified-linux"
+    digests = []
+    for i in range(2):
+        ctx, page, errs = mev_page(browser, "dark" if i else "light", phone=bool(i))
+        try:
+            if not mev_to_end(page, base, name, "memevents=1"):
+                problems.append(f"repeat {i}: no end")
+                return
+            time.sleep(0.5)
+            digests.append(page.evaluate(MEV_DIGEST_JS, None))
+            if i == 0:
+                continue
+            N = page.evaluate("stepper.steps")
+            entry = page.evaluate("REV.cps.length ? REV.cps[0].steps : null")
+            r["paused"] = {"steps": N, "history": entry}
+            picks = page.evaluate("""(from) => { const ev = MEV.query({ from, initiator: 'cpu', write: true }).map((i) => MEV.event(i))
+                .filter((e, k, a) => !k || a[k - 1].pos !== e.pos); // one per instruction (a rep movs writes many)
+              return [0.1, 0.5, 0.9].map((f) => ev[Math.floor(f * (ev.length - 1))]).filter(Boolean).map((e) => ({ pos: e.pos, eip: e.eip, addr: e.addr })); }""",
+                                  (entry or 0) + 1)
+            r["picks"] = picks
+            if len(picks) < 3:
+                problems.append(f"repeat: {len(picks)} CPU writes in the reverse history from {entry}")
+                return
+            cur = N
+            for e in reversed(picks):
+                page.evaluate("(n) => revStepBack(n)", cur - e["pos"])
+                wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+                at = page.evaluate("""() => ({ steps: stepper.steps, eip: stepper.cpu.instruction_pointer[0] >>> 0, last: MEV.n ? MEV.event(MEV.n - 1).pos : -1,
+                  status: document.getElementById('dbg_status').textContent.slice(0, 200) })""")
+                cur = at["steps"]
+                r.setdefault("back", []).append(at)
+                if at["steps"] != e["pos"] or at["eip"] != e["eip"]:
+                    problems.append(f"repeat: stepped back to {at['steps']:,} EIP {at['eip']:#x}, the event is at {e['pos']:,} EIP {e['eip']:#x}")
+                if at["last"] >= e["pos"]:
+                    problems.append(f"repeat: after the step back to {e['pos']:,} the log still has an event at {at['last']:,}")
+            page.evaluate(f"doStep({N} - stepper.steps)")
+            wait_for(lambda: page.evaluate(f"stepper.steps === {N} && !REV.busy && runState === 'paused'"), 300, 0.2)
+            again = page.evaluate(MEV_DIGEST_JS, None)
+            r["forward again"] = again
+            if again != digests[1]:
+                problems.append(f"repeat: forward to {N:,} again: {again} vs the run {digests[1]}")
+            orig = page.evaluate(MEV_DIGEST_JS, N)
+            run = page.evaluate("runNow()")
+            page.evaluate("(run) => { replayRun(run); }", run)
+            if not replay_wait(page, 600):
+                problems.append("repeat: the replay from boot did not finish")
+            else:
+                rep = page.evaluate(MEV_DIGEST_JS, N)
+                r["replay"] = {"run": orig, "replay": rep, "steps": page.evaluate("stepper.steps")}
+                if rep != orig:
+                    problems.append(f"repeat: the replay from boot recorded {rep}, the run {orig}")
+            page.screenshot(path=str(shots / "memevents-repeat-390-dark.png"))
+            if errs:
+                problems.append(f"repeat: page errors {errs[:3]}")
+        finally:
+            ctx.close()
+    r["loads"] = digests
+    if len(digests) == 2 and digests[0] != digests[1]:
+        problems.append(f"repeat: two loads recorded {digests[0]} and {digests[1]}")
+
+
+def mev_ui_case(browser, base, shots, problems, r):
+    """The debug list in the Memory tab: light and dark, 1280 and 390 px,
+    open from the keyboard; closed it records nothing."""
+    for scheme, phone in (("light", False), ("dark", True)):
+        w = 390 if phone else 1280
+        ctx, page, errs = mev_page(browser, scheme, phone)
+        try:
+            page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0&mips=10", timeout=180000)
+            wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 0.5)
+            show_tab(page, "memory")
+            closed = page.evaluate("({ on: MEV.on, n: MEV.n })")
+            page.focus("#mev summary")
+            page.keyboard.press("Enter")
+            wait_for(lambda: page.evaluate("document.getElementById('mev').open && MEV.on"), 10)
+            page.evaluate("(() => { const s = document.getElementById('mev'); s.scrollIntoView(); MEV.render(); })()")
+            time.sleep(0.6)
+            look = page.evaluate("""() => ({ open: document.getElementById('mev').open, on: MEV.on, items: document.querySelectorAll('#mev_list li').length,
+              regions: document.querySelectorAll('#mev_regions li').length, status: document.getElementById('mev_status').textContent,
+              first: (document.querySelector('#mev_list li') || {}).textContent || '', hscroll: document.documentElement.scrollWidth > innerWidth + 1 })""")
+            page.screenshot(path=str(shots / f"memevents-list-{w}-{scheme}.png"))
+            r[f"ui {w} {scheme}"] = {"closed": closed, **{k: look[k] for k in ("items", "regions", "status", "first", "hscroll")}}
+            if closed["on"] or closed["n"] > 5:
+                problems.append(f"ui {w}: closed, the page records: {closed}")
+            if not look["open"] or not look["on"] or look["items"] < 5 or look["regions"] < 8:
+                problems.append(f"ui {w}: opened from the keyboard: {look}")
+            if "Recording" not in look["status"] or "emulator 5" not in look["status"]:
+                problems.append(f"ui {w}: status {look['status']!r}")
+            if look["hscroll"]:
+                problems.append(f"ui {w}: horizontal scroll")
+            page.focus("#mev summary")
+            page.keyboard.press("Enter")
+            if not wait_for(lambda: not page.evaluate("MEV.on || document.getElementById('mev').open"), 10):
+                problems.append(f"ui {w}: closed again, still recording")
+            if errs:
+                problems.append(f"ui {w}: page errors {errs[:3]}")
+        finally:
+            ctx.close()
+
+
+def mev_speed_case(browser, base, shots, debian, problems, r):
+    """Debian at full JIT speed to JITDET_CAP, the list closed and open."""
+    if not debian:
+        return
+    name = debian[0]
+    for tag, q in (("closed", ""), ("open", "&memevents=1")):
+        ctx, page, errs = mev_page(browser)
+        try:
+            page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips=10{q}", timeout=180000)
+            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+                problems.append(f"speed {tag}: not paused at the reset vector")
+                continue
+            page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, True])
+            machine_do(page, "click", "#dbg_continue")
+            if not wait_for(lambda: page.evaluate("window.__jd.done"), 400, 0.2):
+                problems.append(f"speed {tag}: did not reach {JITDET_CAP:,}")
+                continue
+            s = page.evaluate("() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MEV.n }; }")
+            r[f"speed {tag}"] = s
+            if errs:
+                problems.append(f"speed {tag}: page errors {errs[:3]}")
+        finally:
+            ctx.close()
+    a, b = r.get("speed closed"), r.get("speed open")
+    if a and b:
+        r["speed open / closed"] = round(b["mips"] / a["mips"], 3)
+        if a["events"] > 10:
+            problems.append(f"speed: with the list closed {a['events']} events were recorded")
+        if not b["events"]:
+            problems.append("speed: with the list open nothing was recorded")
+
+
+def suite_memevents(ctx):
+    problems, r = [], {}
+    for name, every in MEV_CHECK_RUNS:
+        if name in ctx.entries:
+            mev_check_case(ctx.browser, ctx.base, ctx.shots, name, every, problems, r)
+    mev_negative_case(ctx.browser, ctx.base, ctx.shots, problems, r)
+    if "minified-linux" in ctx.entries:
+        mev_repeat_case(ctx.browser, ctx.base, ctx.shots, problems, r)
+    mev_ui_case(ctx.browser, ctx.base, ctx.shots, problems, r)
+    mev_speed_case(ctx.browser, ctx.base, ctx.shots, debian_names(ctx), problems, r)
+    return report("memevents", problems, r)
+
+
 SUITES = {
     "boot": (suite_boot, False),
     "symbols": (suite_symbols, True),
@@ -21232,6 +21501,7 @@ SUITES = {
     "jitsnap": (suite_jitsnap, False),
     "jitrev": (suite_jitrev, False),
     "genimport": (suite_genimport, True),
+    "memevents": (suite_memevents, False),
 }
 
 

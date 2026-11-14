@@ -1760,6 +1760,7 @@ async function boot() {
 			CLOCK.set(!!clockMips(), stepper);
 			jitDetInstall(stepper, em);
 		}
+		MEV.install(em, stepper); // memevents.js: before the BIOS's first instruction
 		inputBoot(em); // keys go in between slices, logged (J4)
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
@@ -4005,6 +4006,7 @@ function initTips() {
 
 async function init() {
 	const params = new URLSearchParams(location.search);
+	MEV.panel();
 	// ?mem=BYTES may name any multiple of 4 KiB, for probing the minimum.
 	let memParam = null;
 	const m = Number(params.get("mem"));

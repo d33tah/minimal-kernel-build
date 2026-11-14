@@ -164,6 +164,13 @@
   <ul class="legend" id="grid_legend"></ul>
   <p class="note mono" id="focus_info" aria-live="polite"></p>
   <p class="note" id="hover_info" aria-live="polite"></p>
+  <details id="mev" class="mev">
+    <summary>Memory events <span class="tip" tabindex="0" role="button" title="While this is open the page records who touches which physical address: the CPU outside RAM (memory-mapped I/O), devices in RAM (DMA) and the emulator itself (the loader, a snapshot restore). Region names come only from standards the guest used: the IBM PC memory map, the BIOS's E820 answers, PCI configuration, ACPI tables, IA32_APIC_BASE. Newest first.">?</span></summary>
+    <p class="note" id="mev_status" aria-live="polite"></p>
+    <ol class="mev-list mono" id="mev_list"></ol>
+    <h4>Regions and what the guest told</h4>
+    <ul class="mev-list mono" id="mev_regions"></ul>
+  </details>
 </section>
 
 <section class="panel" id="panel_page" role="tabpanel" aria-labelledby="tab_page" hidden>
@@ -537,6 +544,7 @@
 <script src="livedis.js"></script>
 <script src="fastforward.js"></script>
 <script src="cpustate.js"></script>
+<script src="memevents.js"></script>
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
 <script src="settings.js"></script>

@@ -1,23 +1,25 @@
 # Third-party files used by the page
 
-`fetch-v86.sh` downloads v86's `libv86.js`, its BIOSes and iced-x86 into
+`fetch-v86.sh` downloads v86's BIOSes and licence and iced-x86 into
 `site/v86/` and `site/iced/` at build time (never committed) and checks
 each against a SHA-256 recorded in the script. `gen-v86.sh` builds
-`v86.wasm` from v86's source with `v86-det.patch` and checks its SHA-256
-(the workflow's `v86` job builds it, the site job checks it again).
+`v86.wasm` and `libv86.js` from v86's source with `v86-det.patch` and checks
+their SHA-256 (the workflow's `v86` job builds them, the site job checks
+them again).
 lz4-wasm is committed in `site/lz4/`.
 
 | file | source | pin | licence |
 |---|---|---|---|
-| `libv86.js` | npm package [`v86`](https://www.npmjs.com/package/v86), `build/` | version 0.5.471 (published 2026-10-09) | BSD-2-Clause, copied to `v86/LICENSE.v86` |
-| `v86.wasm` | built by `gen-v86.sh` from [copy/v86](https://github.com/copy/v86) with `v86-det.patch` (this repository: hash maps with a fixed hasher, `set_tsc` from the clock, the export `jit_reset_hidden`, R4; the instruction budget `jit_set_budget` and the counters `jit_stats`, R5) in Docker: `ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852`, clang-18, lld-18 and their LLVM libraries at `1:18.1.3-1ubuntu1` and nodejs at `18.19.1+dfsg-6ubuntu5` (the versions of Ubuntu's apt snapshot `20261101T000000Z`; from the archive while it has them, else from that snapshot), Rust 1.90.0, `RUSTFLAGS=-C symbol-mangling-version=v0`; SHA-256 `c4e8e92eab6da3d11c7f62e17230307ac260818030fb83ac0160a22fa8395257` (two builds on one machine, one on another, and the workflow's `v86` job, which builds it on every run and uses its cached build of the same script and patch, SHA-256 checked, only when the build cannot download its toolchain) | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | BSD-2-Clause (v86), the patch under the same terms |
+| `libv86.js` | built by `gen-v86.sh` from [copy/v86](https://github.com/copy/v86) with `v86-det.patch` (its JS part, M1: the memory events API in `cpu.js`, `dma_*` for the devices in `ide.js`, `dma.js`, `virtio.js`, `virtio_balloon.js`, `emu_*` for the loader in `kernel.js`, the BIOS images, a snapshot's restore and `starter.js`'s `write_memory`, the `mev_cpu` import) with Closure Compiler [v20210601](https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/v20210601/) (the version v86's Makefile fetches; jar SHA-256 `64f161c65a3dba42c9a4f5a79db335ac0e757fcba486cd7928205ac4c258ef08`) on `openjdk-21-jre-headless` `21.0.3+9-1ubuntu1` in the same Docker image; SHA-256 recorded in `gen-v86.sh` (`LIBV86_SHA256`). Every build also compiles the unpatched JS the same way and checks that it is npm 0.5.471's `build/libv86.js` byte for byte (SHA-256 `1b41074f7a5604f528dac6842baf7afccd79d7370b97ea3241944c275b67bec1`) | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | BSD-2-Clause, `v86/LICENSE.v86` (from the npm package 0.5.471) |
+| `v86.wasm` | built by `gen-v86.sh` from [copy/v86](https://github.com/copy/v86) with `v86-det.patch` (this repository: hash maps with a fixed hasher, `set_tsc` from the clock, the export `jit_reset_hidden`, R4; the instruction budget `jit_set_budget` and the counters `jit_stats`, R5; memory events, M1: `src/rust/mev.rs`, the CPU's accesses outside RAM reported with their exact position from compiled code too, `mev_now`, the checking mode's page marks and hashes) in Docker: `ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852`, clang-18, lld-18 and their LLVM libraries at `1:18.1.3-1ubuntu1` and nodejs at `18.19.1+dfsg-6ubuntu5` (the versions of Ubuntu's apt snapshot `20261101T000000Z`; from the archive while it has them, else from that snapshot), Rust 1.90.0, `RUSTFLAGS=-C symbol-mangling-version=v0`; SHA-256 recorded in `gen-v86.sh` (`SHA256`; two builds on one machine, one on another, and the workflow's `v86` job, which builds it on every run and uses its cached build of the same script and patch, SHA-256 checked, only when the build cannot download its toolchain) | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | BSD-2-Clause (v86), the patch under the same terms |
 | `iced/iced_x86.js`, `iced/iced_x86_bg.wasm` | npm package [`iced-x86`](https://www.npmjs.com/package/iced-x86) (github.com/icedland/iced), loaded only when a listing needs live disassembly | version 1.21.0 (published 2024-01-20) | MIT, copied to `iced/LICENSE.iced` |
 | `lz4/lz4_wasm_bg.wasm` | npm package [`lz4-wasm`](https://www.npmjs.com/package/lz4-wasm) (lz4_flex's LZ4 block compressor built to WebAssembly, github.com/PSeitz/lz4_flex, `lz4-wasm/`; package gitHead `08ab363930b22745fdbf3c015224a1710d2c4369`), unmodified, written by `gen-lz4.py` (sha512 of the tarball and SHA-256 of each file pinned there; `gen-lz4.py --check` runs in CI). The package's JS glue is an ES module for bundlers and is not used: `lz4frame.js` (this repository) instantiates the module and writes the LZ4 frame format around its blocks. Compresses snapshots in `snapworker.js` | version 0.9.2 (published 2022-04-27) | MIT or Apache-2.0, copied to `lz4/LICENSE_MIT` and `lz4/LICENSE_APACHE` (the package's own files; `package.json` says MIT) |
 | `seabios.bin`, `vgabios.bin` | [copy/v86](https://github.com/copy/v86) `bios/` | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | SeaBIOS and its VGA BIOS: LGPL-3.0, copied to `v86/COPYING.LESSER` |
 
 To move the pin, change `V86_NPM_VERSION`, `V86_COMMIT` and the checksums in
-`fetch-v86.sh` and `V86_COMMIT`, the patch and `SHA256` in `gen-v86.sh`
-together (and `JITSNAP_SHA256` in `test_browser.py`), and the table above.
+`fetch-v86.sh` and `V86_COMMIT`, the patch, `NPM_LIBV86_SHA256`, `SHA256` and
+`LIBV86_SHA256` in `gen-v86.sh` together (and `JITSNAP_SHA256` in
+`test_browser.py`), and the table above.
 
 The page itself (`index.html`, `app.js`, `stepper.js`, `livedis.js`, `style.css`, ...) uses
 no other libraries. `stepper.js` adds two exports to `v86.wasm` in the

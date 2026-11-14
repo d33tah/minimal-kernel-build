@@ -266,7 +266,10 @@ def capture(a, tree, make):
                 p.unlink(missing_ok=True)
         env = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}")
         with open(tmp / "make.log", "w") as mlog:
-            r = subprocess.run(make + ["-j1"], cwd=tree, env=env, stdout=mlog, stderr=subprocess.STDOUT)
+            # stdin /dev/null: a CI step's stdin may be a pipe, which every
+            # tool would inherit and look like reading.
+            r = subprocess.run(make + ["-j1"], cwd=tree, env=env, stdin=subprocess.DEVNULL, stdout=mlog,
+                               stderr=subprocess.STDOUT)
         if r.returncode:
             sys.stdout.write((tmp / "make.log").read_text()[-4000:])
             sys.exit(f"{a.name}: the build under the wrappers failed ({r.returncode})")
@@ -353,8 +356,10 @@ def make_kit(a, tree, runs):
                     nvar += 1
                 st["stdin"] = prod["step"]["var"]
                 st["uses"].append(prod["step"])
-            elif tool in BUILTINS:
-                st["glue"] = True  # reads a shell builtin's output (echo ... | sed | xargs)
+            elif tool in BUILTINS and not r["inputs"]:
+                # Reads a shell builtin's output (echo ... | sed | xargs); a
+                # cat or sed of files does not read the pipe it was given.
+                st["glue"] = True
         fo = file_out(r)
         if fo:
             st["stdout"] = {"file": fo}
@@ -378,6 +383,9 @@ def make_kit(a, tree, runs):
         for j, s in (st["run"].get("subst") or {}).items():
             st["argv"][j + 1] = {"var": s["var"], "pre": s["pre"], "post": s["post"]}
             st["uses"].append(s["from"])
+    # Every file a wrapped run wrote: none of them may become a file of
+    # the kit (it would stay CI's bytes after an edit).
+    written = {p for st in steps for p, _ in st["outputs"]}
     steps = [s for s in steps if not s.get("glue")]
 
     # The steps that lead to the products; a use (stdin, variable) of an
@@ -450,6 +458,8 @@ def make_kit(a, tree, runs):
         if p not in made and p not in objects and p not in files:
             if not (tree / p).is_file():
                 sys.exit(f"{a.name}: {p} is read but not a file")
+            if p in written:
+                sys.exit(f"{a.name}: {p} is read, and a run of the build wrote it that is not a step of the kit")
             files[p] = None
     for st in steps:
         for p in st["inputs"]:

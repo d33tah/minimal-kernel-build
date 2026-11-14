@@ -2304,7 +2304,12 @@ before it leaves for another site by itself, and the untaken return of a
 function that runs only after a reload), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
 fails when a total is below `site/jscov-baseline.json` or a file's lines
-are below its `fileLines`.
+are below its `fileLines` (80). `site/jscov-uncovered.tsv` says, per block,
+why each line that never runs in the tests does not (V3: 355 blocks, every
+uncovered line of run 43588908776); the job summary names the uncovered
+lines it does not explain and the listed lines that ran (`report.js
+--uncovered`; `--require-listed` would fail on the first, CI only reports
+them, so a new uncovered block shows up there first).
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;

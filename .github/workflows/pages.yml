@@ -1069,7 +1069,8 @@ jobs:
     - name: Merge and report, check the baseline
       run: |
         site/stamp.py site "$GITHUB_SHA"
-        node site/jscov/report.js --src site --out jscov-report --baseline site/jscov-baseline.json --summary "$GITHUB_STEP_SUMMARY" jscov-raw
+        node site/jscov/report.js --src site --out jscov-report --baseline site/jscov-baseline.json \
+          --uncovered site/jscov-uncovered.tsv --summary "$GITHUB_STEP_SUMMARY" jscov-raw
 
     - uses: actions/upload-artifact@v4
       if: always()

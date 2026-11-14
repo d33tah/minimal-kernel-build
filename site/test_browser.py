@@ -36,6 +36,7 @@ import re
 import shutil
 import subprocess
 import socketserver
+import struct
 import sys
 import tarfile
 import tempfile
@@ -16622,6 +16623,110 @@ def dwf_gdb(elf):
     return parts
 
 
+# Broken inputs: the errors the Worker answers (open; else each unit,
+# the types, each unit's locals), as the import shows them.
+DWF_BAD_JS = """async ([b64, offset]) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const w = new Worker('dwarfworker.js' + location.search);
+    const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
+        w.postMessage(m); });
+    try {
+        const o = await ask({ type: 'open', file: new File([bytes], 'bad.elf'), offset }, 'open');
+        if (o.type === 'error' || !o.ok) return ['open: ' + (o.message || o.why)];
+        const errs = [];
+        for (let i = 0; i < o.units; i++) {
+            const u = await ask({ type: 'unit', i }, 'unit');
+            if (u.type === 'error') errs.push('unit ' + i + ': ' + u.message);
+        }
+        const t = await ask({ type: 'types' }, 'types');
+        if (t.type === 'error') return [...errs, 'types: ' + t.message];
+        for (let i = 0; i < o.units; i++) {
+            const l = await ask({ type: 'locals', i }, 'locals');
+            if (l.type === 'error') errs.push('locals ' + i + ': ' + l.message);
+        }
+        return errs;
+    } finally { w.terminate(); }
+}"""
+
+
+def dwf_sections(b):
+    """{name: (file offset, size)} of an ELF32 file's sections."""
+    shoff, = struct.unpack_from("<I", b, 0x20)
+    shentsize, shnum, shstrndx = struct.unpack_from("<HHH", b, 0x2e)
+    hdr = [struct.unpack_from("<IIIIII", b, shoff + k * shentsize) for k in range(shnum)]
+    strs = hdr[shstrndx][4]
+    return {b[strs + h[0]:b.index(0, strs + h[0])].decode(): (h[4], h[5]) for h in hdr}
+
+
+def dwf_uleb(b, p):
+    r = s = 0
+    while True:
+        x = b[p]
+        p += 1
+        r |= (x & 0x7f) << s
+        s += 7
+        if not x & 0x80:
+            return r, p
+
+
+def dwf_broken(tmp, good):
+    """Broken copies of the clang -gdwarf-5 build and other files that are
+    not an i386 DWARF vmlinux: [(name, bytes, the errors the import must give)]."""
+    b = good.read_bytes()
+    sec = dwf_sections(b)
+    out = [("not an ELF", b"MZ" + bytes(60), ["open: not an ELF file"])]
+    info = sec[".debug_info"][0]
+
+    def patched(*edits):
+        x = bytearray(b)
+        for off, data in edits:
+            x[off:off + len(data)] = data
+        return bytes(x)
+    out.append(("version 6", patched((info + 4, b"\x06\x00")), ["open: DWARF version 6 at .debug_info+0"]))
+    out.append(("64-bit DWARF", patched((info, b"\xff\xff\xff\xff")), ["open: 64-bit DWARF is not supported"]))
+    # The abbreviations: the compile unit's first attribute gets form 0x7f;
+    # abbreviation 2 (the first DIE after the unit's) is renumbered 0x7e.
+    ab = sec[".debug_abbrev"][0]
+    code, p = dwf_uleb(b, ab)
+    _, p = dwf_uleb(b, p)
+    _, form_at = dwf_uleb(b, p + 1)
+    out.append(("unknown form", patched((form_at, b"\x7f")), ["open: unknown DWARF form 0x7f"]))
+    p = ab
+    while True:
+        code, q = dwf_uleb(b, p)
+        if code == 2:
+            break
+        _, q = dwf_uleb(b, q)
+        q += 1
+        while True:
+            at, q = dwf_uleb(b, q)
+            form, q = dwf_uleb(b, q)
+            if form == 0x21:
+                _, q = dwf_uleb(b, q)
+            if not at and not form:
+                break
+        p = q
+    m = re.search(r"^0x([0-9a-f]+):\s+DW_TAG_\w+ \[2\]",
+                  subprocess.run(["llvm-dwarfdump", "-v", "--debug-info", str(good)], capture_output=True, text=True).stdout, re.M)
+    out.append(("abbreviation", patched((p, b"\x7e")), [f"{w}: bad abbreviation code at .debug_info+{int(m.group(1), 16):x}" for w in ("unit 0", "types")]))
+    # Every list of .debug_rnglists / .debug_loclists starts with kind 0x0f.
+    for name, what in ((".debug_rnglists", "DW_RLE"), (".debug_loclists", "DW_LLE")):
+        o, _ = sec[name]
+        n, = struct.unpack_from("<I", b, o + 8)
+        offs = [struct.unpack_from("<I", b, o + 12 + 4 * k)[0] for k in range(n)]
+        out.append((what, patched(*[(o + 12 + x, b"\x0f") for x in offs]),
+                    ["unit 0: unknown DW_RLE 0xf", "types: unknown DW_RLE 0xf"] if what == "DW_RLE" else ["types: unknown DW_LLE 0xf"]))
+    # A 64-bit object, and the fixture without -g.
+    for name, flags, want in (("x86-64", ["-m64"], ["open: not a 32-bit little-endian ELF (only i386 kernels boot here)"]),
+                              ("no -g", ["-m32", "-g0"], ["open: this vmlinux has no DWARF (.debug_info): build it with CONFIG_DEBUG_INFO for file:line"])):
+        try:
+            subprocess.run(["clang", *flags, "-O2", "-ffreestanding", "-c", "m.c", "-o", "x.o"], cwd=tmp, check=True, capture_output=True)
+            out.append((name, (tmp / "x.o").read_bytes(), want))
+        except (OSError, subprocess.CalledProcessError) as e:
+            out.append((name, None, f"clang: {e}"))
+    return out
+
+
 def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     from test_dwarf import symbolize, gdb_scopes
     problems, r = [], {}
@@ -16649,6 +16754,12 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
             p = dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes)
             r[name] = "ok" if not p else f"{len(p)} problems"
             problems += p
+            if name == "clang-dwarf5":
+                for what, data, want in dwf_broken(tmp, elf):
+                    have = page.evaluate(DWF_BAD_JS, [base64.b64encode(data).decode(), CFI_OFFSET]) if data else None
+                    r["broken: " + what] = have
+                    if have != want:
+                        problems.append(f"broken input, {what}: the import says {have!r}, want {want!r}")
     page.close()
     if errors:
         problems.append(f"page errors: {errors[:3]}")

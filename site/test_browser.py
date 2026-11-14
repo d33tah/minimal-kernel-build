@@ -2145,7 +2145,9 @@ def cpu_state_case(browser, base, shots, name):
 # Hand-made PAE tables in the top 64 KiB of RAM (saved and put back by the
 # caller): PDPT, PD and PT 4 KiB apart. Linear 0x40000000-0x7fffffff (PDPTE
 # 1) -> the PD; its PDE 0 -> the PT, whose PTE 5 maps 0x40005000 -> 0x123000;
-# its PDE 1 is a 2 MiB page 0x40200000 -> 0x200000. PDPTE 2 is not present.
+# its PDE 1 is a 2 MiB page 0x40200000 -> 0x200000; its PDE 2 is not
+# present; its PDE 3 names a page table past the end of RAM (0xfffff000). The
+# PT's PTE 6 is not present. PDPTE 2 is not present.
 PAE_JS = """(on) => {
     const c = stepper.cpu, m = c.mem8, dv = new DataView(m.buffer, m.byteOffset, m.length);
     const S = (m.length - 0x10000) & ~0xfff;
@@ -2161,11 +2163,100 @@ PAE_JS = """(on) => {
     q(S + 1 * 8, (S + 0x1000) | 1);
     q(S + 0x1000, (S + 0x2000) | 3);
     q(S + 0x1000 + 8, 0x200000 | 0x83);
+    q(S + 0x1000 + 3 * 8, 0xfffff000 | 1);
     q(S + 0x2000 + 5 * 8, 0x123000 | 3);
     c.cr[3] = S;
     c.cr[4] = c.cr[4] | 0x20;
     return S;
 }"""
+
+
+# Saves (on) or puts back (off) the top 64 KiB of RAM and CR0, CR3, CR4,
+# IDTR; returns S, the first of those bytes.
+HAND_SAVE_JS = """(on) => {
+    const c = stepper.cpu, m = c.mem8, S = (m.length - 0x10000) & ~0xfff;
+    if (!on) {
+        const v = window.__handSaved;
+        m.set(v.bytes, S);
+        [c.cr[0], c.cr[3], c.cr[4], c.idtr_offset[0], c.idtr_size[0]] = v.regs;
+        return null;
+    }
+    window.__handSaved = { bytes: m.slice(S, S + 0x10000), regs: [c.cr[0], c.cr[3], c.cr[4], c.idtr_offset[0], c.idtr_size[0]] };
+    return S;
+}"""
+
+
+def hand_tables(page, sk, xlate, problems, r):
+    """Hand-made tables in the top 64 KiB of RAM: a 2-level page directory
+    whose PDEs make runs (contiguous 4 MiB pages, contiguous page tables, a
+    gap), the page-directory view's lines for them; paging off (CR0.PG
+    clear): translate says so and maps linear to physical, the view says
+    paging is off; an IDT with a gate to code no symbol covers, one not
+    present, an empty one, a present one of type 0 and a trap gate of DPL
+    3, each line as written here."""
+    S = page.evaluate(HAND_SAVE_JS, True)
+    try:
+        pd = page.evaluate("""(S) => { const c = stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
+            new Uint8Array(c.mem8.buffer, c.mem8.byteOffset + S, 0x10000).fill(0);
+            const e = (i, v) => dv.setUint32(S + i * 4, v >>> 0, true);
+            e(0, 0x000083); e(1, 0x400083); e(2, 0x800083);
+            e(4, (S + 0x1000) | 3); e(5, (S + 0x2000) | 3); e(6, (S + 0x4000) | 3);
+            e(8, 0xc00083);
+            c.cr[3] = S; c.cr[4] = (c.cr[4] & ~0x20) | 0x10;
+            document.getElementById('pd_view').click();
+            return document.getElementById('xlate_out').textContent; }""", S)
+        big = xlate("0x00812345")
+        page.evaluate("() => { const c = stepper.cpu; c.cr[0] = c.cr[0] & ~0x80000000; }")
+        off = xlate("0x1234")
+        page.click("#pd_view")
+        off_pd = page.inner_text("#xlate_out")
+    finally:
+        page.evaluate(HAND_SAVE_JS, False)
+    want = [f"0x00000000-0x00bfffff 3 PDEs, 4 MiB pages from 0x00000000 flags 0x83",
+            f"0x01000000-0x017fffff 2 PDEs, page tables from 0x{S + 0x1000:08x} flags 0x03",
+            f"0x01800000-0x01bfffff page tables from 0x{S + 0x4000:08x} flags 0x03",
+            f"0x02000000-0x023fffff 4 MiB pages from 0x00c00000 flags 0x83"]
+    r["hand_pd"] = pd.splitlines()
+    if pd.splitlines() != want:
+        problems.append(f"hand-made page directory: {pd.splitlines()}, want {want}")
+    if not big.endswith("physical 0x00812345 (4 MiB page)"):
+        problems.append(f"hand-made page directory: 0x00812345 in PDE 2's 4 MiB page: {big!r}")
+    r["paging_off"] = [off.splitlines(), off_pd]
+    if off.splitlines()[:3] != ["linear 0x00001234", "paging off (CR0.PG = 0): linear = physical", "physical 0x00001234"] \
+            or off_pd != "Paging is off.":
+        problems.append(f"paging off: translate {off!r}, page directory {off_pd!r}")
+    # The IDT: its first five gates written over the kernel's own (put back
+    # after); gate 0 to mapped RAM that no symbol of symbols.json covers.
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    mapped = page.evaluate("""() => { const out = [];
+        for (let pa = 0x100000; pa < stepper.cpu.mem8.length; pa += 0x1000)
+            if (pageWalk(stepper.cpu, pa + 0xc0000000).phys === pa) out.push(pa + 0x100);
+        return out; }""")
+    free = next((a for a in mapped if not any(x["paddr"] <= a < x["paddr"] + max(x["size"], 1) for x in syms)), -1)
+    if free < 0:
+        problems.append(f"no mapped RAM without a symbol for an IDT gate: {free:#x}")
+        return
+    lin = free + 0xC0000000
+    # start_kernel's second instruction (disasm.json): the IDT view names code at instruction starts only.
+    insns = json.loads((SITE / kernel_entries()["minified-linux"]["disasm"]).read_text())["insns"]
+    second = next(a for a, *_ in insns if a > sk["paddr"]) - sk["paddr"]
+    gates = [(lin, 0x60, 0x8E), (0x12345678, 0x60, 0x0E), (0, 0, 0), (sk["vaddr"] + second, 0x60, 0x80), (sk["vaddr"], 0x60, 0xEF)]
+    idt = page.evaluate("""(gates) => { const c = stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
+        const at = pageWalk(c, c.idtr_offset[0]).phys, saved = c.mem8.slice(at, at + gates.length * 8), size = c.idtr_size[0];
+        try {
+            gates.forEach(([off, sel, acc], i) => {
+                dv.setUint32(at + i * 8, ((off & 0xffff) | sel << 16) >>> 0, true);
+                dv.setUint32(at + i * 8 + 4, ((off & 0xffff0000) | acc << 8) >>> 0, true); });
+            c.idtr_size[0] = gates.length * 8 - 1;
+            document.getElementById('view_idt').click();
+            return document.getElementById('cpu_table').textContent;
+        } finally { c.mem8.set(saved, at); c.idtr_size[0] = size; } }""", gates)
+    want = [f"0x00 32-bit interrupt gate 0x0060:0x{lin:08x} DPL 0 ", "0x01 not present",
+            f"0x03 type 0 0x0060:0x{sk['vaddr'] + second:08x} DPL 0 start_kernel+{second:02x}",
+            f"0x04 32-bit trap gate 0x0060:0x{sk['vaddr']:08x} DPL 3 start_kernel"]
+    r["hand_idt"] = idt.splitlines()
+    if idt.split("\n") != want:
+        problems.append(f"hand-made IDT: {idt.splitlines()}, want {want}")
 
 
 def cpu_state_tools(page, sk, problems, r):
@@ -2175,8 +2266,8 @@ def cpu_state_tools(page, sk, problems, r):
     hole in it translates to a page fault; PAE (no shipped kernel turns it
     on) on hand-made tables: a 4 KiB and a 2 MiB page and a missing PDPTE;
     the GDT and IDT views say "not mapped" for a table at an unmapped
-    address; MMX and SSE registers show once they hold a value, and a
-    changed row is marked."""
+    address; hand_tables; MMX and SSE registers show once they hold a
+    value, and a changed row is marked."""
     def xlate(text):
         page.fill("#xlate_in", text)
         page.click("#xlate_go")
@@ -2219,7 +2310,7 @@ def cpu_state_tools(page, sk, problems, r):
     # PAE.
     page.evaluate(PAE_JS, True)
     try:
-        pae = {a: xlate(a) for a in ("0x40005abc", "0x40212345", "0x80000000")}
+        pae = {a: xlate(a) for a in ("0x40005abc", "0x40212345", "0x80000000", "0x40006000", "0x40400000", "0x40600000")}
         page.click("#pd_view")
         pae["pd"] = page.inner_text("#xlate_out")
     finally:
@@ -2231,11 +2322,19 @@ def cpu_state_tools(page, sk, problems, r):
         problems.append(f"PAE: 0x40212345 in a 2 MiB page at 0x200000: {pae['0x40212345']!r}")
     if not pae["0x80000000"].endswith("not mapped (page fault)"):
         problems.append(f"PAE: 0x80000000 (PDPTE 2 not present): {pae['0x80000000']!r}")
+    # A missing PTE and PDE: the walk stops at that level, its entry 0; a
+    # page table past the end of RAM: its PTE "beyond RAM".
+    for a, level, value in (("0x40006000", "PTE", "= 0x00000000 "), ("0x40400000", "PDE", "= 0x00000000 "),
+                            ("0x40600000", "PTE", "at 0xfffff000 = beyond RAM")):
+        ls = pae[a].splitlines()
+        if ls[-1] != "not mapped (page fault)" or not ls[-2].startswith(level + " ") or value not in ls[-2] + " ":
+            problems.append(f"PAE: {a} should stop at its {level} ({value.strip()}): {ls}")
     pdl = pae["pd"].splitlines()
     if len(pdl) != 4 or "→ PD" not in pdl[1] or not pdl[2].endswith("not present"):
         problems.append(f"PAE page directory: the four PDPTEs, 1 present, 2 not: {pdl}")
     if xlate(hex(sk["vaddr"])).find(want) < 0:
         problems.append("translate after the PAE test: start_kernel no longer maps (CR3/CR4 not restored?)")
+    hand_tables(page, sk, xlate, problems, r)
     # GDT and IDT at an unmapped linear address.
     if hole is not None:
         saved = page.evaluate(f"""() => {{ const c = stepper.cpu, s = [c.gdtr_offset[0], c.idtr_offset[0]];

@@ -893,9 +893,12 @@ as a colour emoji (also checked once in Firefox and WebKit):
   kernel's cached_irq_mask, PIT channel 0 reloads 4773 (HZ=250). The
   runto suite also checks the tools on the paused machine: translate by
   name, the page-directory run holding start_kernel and a hole in it, PAE
-  (no shipped kernel enables it) on hand-made tables in RAM, the GDT and
-  IDT views of a table at an unmapped address, MMX and SSE rows once a
-  register holds a value.
+  (no shipped kernel enables it) on hand-made tables in RAM (a 4 KiB and
+  a 2 MiB page, a missing PDPTE, PDE and PTE, a page table past the end
+  of RAM), a hand-made 2-level page directory whose entries make runs,
+  paging off, the GDT and IDT views of a table at an unmapped address, an
+  IDT with a gate to code no symbol covers, a gate not present and a
+  trap gate of DPL 3, MMX and SSE rows once a register holds a value.
 
 - **Calls** (formerly Graph). The call structure of the boot, reconstructed from the
   symbol transitions the stepper records (stepping, slow motion, Run to,

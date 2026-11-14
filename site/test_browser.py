@@ -7711,6 +7711,31 @@ def jump_claims_live(claims, where):
     return [f"{where}: {len(ts)} {kind} {why}, e.g. {ts[0][:220]!r}" for (kind, why), ts in bad.items()]
 
 
+def text_page_without_symbol(page, name, where, r):
+    """A page of a text section that no sized code symbol covers (Debian's
+    .altinstr_aux): the live decode starts at the page (or the section)
+    and says its first lines may be misaligned."""
+    S = json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())
+    rx = re.compile(r"^\.(init\.|head\.|exit\.)?text|^\.text")
+    pages = lambda a, n: range(a // 4096, (a + n - 1) // 4096 + 1)
+    code = {p for s in S["symbols"] if s.get("size", 0) > 0 and rx.search(s.get("section", "")) for p in pages(s["paddr"], s["size"])}
+    secs = [s for s in S.get("sections", []) if s.get("class") == "text"]
+    cand = sorted({p for s in secs for p in pages(s["paddr"], s["size"])} - code)
+    if not cand:
+        return []
+    p = cand[0]
+    start = max(p * 4096, min(s["paddr"] for s in secs if s["paddr"] < p * 4096 + 4096 and s["paddr"] + s["size"] > p * 4096))
+    page.evaluate(f"jumpTo({p * 4096})")
+    wait_for(lambda: page.get_attribute("#listing", "data-page") == str(p) and page.get_attribute("#listing", "data-source") == "live" and
+             int(page.get_attribute("#listing", "data-insns") or 0) > 0, 30)
+    first = page.evaluate("(() => { const e = document.querySelector('#listing .ins'); return e ? +e.dataset.addr : -1; })()")
+    info = page.inner_text("#dump_info")
+    r[where + " text page without a symbol"] = [hex(p * 4096), hex(first), info[:160]]
+    if first != start or "the first lines outside a symbol may be misaligned" not in info:
+        return [f"{where}: the text page {p * 4096:#x} without a symbol: first instruction {first:#x} (want {start:#x}), info {info[:200]!r}"]
+    return []
+
+
 def jumps_live_case(browser, base, shots):
     """J2: with no disasm.json (the Debian sample, an imported vmlinux)
     static paths come only from the instructions decoded live (a page, or
@@ -7794,6 +7819,8 @@ def jumps_live_case(browser, base, shots):
             page.keyboard.press("Escape")
         page.screenshot(path=str(shots / f"jumps-live-{name}{'-import' if imp else ''}-page.png"))
         problems += stub_arrays_live(page, where, r, shots, name + ("-import" if imp else ""))
+        if not imp:
+            problems += text_page_without_symbol(page, name, where, r)
         if errors:
             problems.append(f"{where}: page errors: {errors[:3]}")
         page.close()

@@ -13558,15 +13558,12 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
             else:
                 problems.append(f"{tag}: the B key opened no dialog the second time")
         # The function's label line above its first instruction: a bookmark
-        # of the function, by a right click. At 390 px, here, after the
-        # listing line's bookmark and its popover, a long press on the
-        # minified Linux's start_kernel label opened no dialog (CI run
-        # 43509415990, and locally; on a fresh page it does): not checked
-        # at 390 until that is understood.
+        # of the function, by a right click or a long press. At 390 px a long
+        # press on the minified Linux's start_kernel label opened no dialog
+        # (CI run 43509415990): Chromium gave its touch events to the whole
+        # listing (#listing), not to the label under the finger.
         lbl = f'#listing .lbl[data-addr="{target}"]'
-        if phone:
-            pass
-        elif not page.locator(lbl).count():
+        if not page.locator(lbl).count():
             problems.append(f"{tag}: the Page listing has no label line of {fn}")
         else:
             bm_press(page, lbl, phone, cdp)

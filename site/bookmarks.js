@@ -193,6 +193,18 @@ function bmDraftAt(t, x, y) {
 	return null;
 }
 
+// The element a press is on: Chromium may give a touch to an ancestor
+// (a long press on a function's label line in the Page tab reached #listing
+// as its target, CI run 43509415990), so the element under the point when
+// the target itself is nothing to bookmark.
+function bmPressTarget(ev) {
+	const t = ev.target;
+	if (bmDraftAt(t, ev.clientX, ev.clientY))
+		return t;
+	const under = document.elementFromPoint(ev.clientX, ev.clientY);
+	return under && t && t.contains && t.contains(under) ? under : t;
+}
+
 // What the tab's ☆ (and the B key with nothing under the pointer) adds.
 function bmDraftHere(where) {
 	if (where === "src" && srcPanel && !$("src_panel").hidden)
@@ -826,7 +838,7 @@ function initBookmarks() {
 		}
 		if (ev.shiftKey || !$("bm_dialog").hidden)
 			return;
-		const d = bmDraftAt(ev.target, ev.clientX, ev.clientY);
+		const d = bmDraftAt(bmPressTarget(ev), ev.clientX, ev.clientY);
 		if (d) {
 			ev.preventDefault();
 			bmAsk(d);
@@ -845,7 +857,7 @@ function initBookmarks() {
 		BM.longAt = -Infinity;
 		if (ev.pointerType === "mouse" || !$("bm_dialog").hidden)
 			return;
-		const x = ev.clientX, y = ev.clientY, el = ev.target;
+		const x = ev.clientX, y = ev.clientY, el = bmPressTarget(ev);
 		if (!bmDraftAt(el, x, y))
 			return;
 		press = { x, y, timer: setTimeout(() => {

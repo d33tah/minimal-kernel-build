@@ -1023,13 +1023,13 @@ def import_edges(browser, base, shots):
     if r["forgotten"] != [True, True, "", True, True]:
         problems.append(f"Forget on a bzImage from disk: [booted, no symbols, status, Forget hidden, booted again] {r['forgotten']}")
     page.screenshot(path=str(shots / "import-edges-1280.png"))
-    # Its Page tab: code decoded live without names for the memory operands (no symbols, no DWARF).
-    show_tab(page, "memory")
-    open_page(page, 0x100)
-    wait_for(lambda: page.locator("#listing .ins").count() > 0, 10)
-    r["no_names"] = [page.locator("#listing .ins").count(), page.locator("#listing .opn").count()]
-    if not r["no_names"][0] or r["no_names"][1]:
-        problems.append(f"bzImage from disk without symbols: instructions, operand names in its listing {r['no_names']}")
+    # The Debugger at its halt (32-bit code): decoded live, no names for the memory operands (no symbols, no DWARF).
+    show_tab(page, "debugger")
+    wait_for(lambda: page.locator("#context .ins").count() > 0, 10)
+    r["no_names"] = [page.locator("#context .ins").count(), page.get_attribute("#context", "data-ops-named"),
+                     page.locator("#context .opn").count()]
+    if not r["no_names"][0] or r["no_names"][1:] != ["0", 0]:
+        problems.append(f"bzImage from disk without symbols: instructions at EIP, operands named {r['no_names']}")
     page.close()
     shutil.rmtree(tmp, ignore_errors=True)
     if errors:
@@ -1728,11 +1728,12 @@ def tasks_late_types(browser, base, shots, name, r):
     they are in."""
     problems = []
     held = []
-    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    # (No service worker: its fetches would not pass the page's routes.)
+    page = browser.new_context(viewport={"width": 1100, "height": 1000}, service_workers="block").new_page()
     page.route(re.compile(r"/dwarf/types\.json(\?|$)"), lambda route: held.append(route))
     page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
     if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 1):
-        page.close()
+        page.context.close()
         return [f"{name} with the variables held back: no end of the run"]
     T = json.loads((SITE / kernel_entries()[name]["dwarf"] / "types.json").read_text())
     it = next(v for v in T["vars"] if v[0] == "init_task")
@@ -1755,7 +1756,7 @@ def tasks_late_types(browser, base, shots, name, r):
     show_tab(page, "calls")
     problems += [p + " (variables held back)" for p in task_names_check(page, name, late, rl)]
     r["late_types_tasks"] = [rl.get("task_names"), rl.get("tasks_checked")]
-    page.close()
+    page.context.close()
     return problems
 
 
@@ -2469,7 +2470,10 @@ def hand_tables(page, sk, xlate, problems, r):
             c.cr[3] = S; c.cr[4] = (c.cr[4] & ~0x20) | 0x10;
             document.getElementById('pd_view').click();
             return document.getElementById('xlate_out').textContent; }""", S)
-        big = xlate("0x00812345")
+        # (Enter in the field translates too.)
+        page.fill("#xlate_in", "0x00812345")
+        page.press("#xlate_in", "Enter")
+        big = page.inner_text("#xlate_out")
         page.evaluate("() => { const c = stepper.cpu; c.cr[0] = c.cr[0] & ~0x80000000; }")
         off = xlate("0x1234")
         page.click("#pd_view")
@@ -6567,7 +6571,8 @@ def covtree_edges(browser, base, shots, entry, F, lf_full, problems, r, errors):
             route.fulfill(status=404, body="")
         else:
             held.append(route)
-    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    # (No service worker: its fetches would not pass the page's routes.)
+    page = browser.new_context(viewport={"width": 1280, "height": 1000}, service_workers="block").new_page()
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.route(re.compile(r"/dwarf/[0-9a-f]+\.bin(\?|$)"), shard)
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
@@ -6597,7 +6602,7 @@ def covtree_edges(browser, base, shots, entry, F, lf_full, problems, r, errors):
         problems.append(f"shard {bad} 404: status {r['failed_status']!r}, root {root}")
     page.evaluate("document.getElementById('panel_source').scrollIntoView()")
     page.screenshot(path=str(shots / "covtree-shard-404-1280.png"))
-    page.close()
+    page.context.close()
 
 
 # Multi-line C statements: the line rows name only the first line of

@@ -2263,7 +2263,8 @@ offset that is not hex), System.maps without section markers placed by
 each automatic rule and by hand (every symbol's physical address and
 size, a weak one too, and the sections from the symbols' extent), an ELF
 with an offset by hand, and a bzImage dropped together with its
-System.map, then Forget. The initrd case loads a 512-byte newc cpio built in the test with the
+System.map, then Forget (with neither symbols nor DWARF the Debugger
+names no memory operands). The initrd case loads a 512-byte newc cpio built in the test with the
 minified Linux and checks RAM was raised, its bytes are at 64 MiB in
 guest RAM, the note about our kernels, the initrd region in the map and
 grid, the RAM error at 32 MB and "no initrd". The header-check case

@@ -987,6 +987,10 @@ def header_check_case(browser, base, shots):
     wait_for(lambda: gate_on_screen(page), 60)
     show_tab(page, "machine")
     mem_opts = page.evaluate("[...document.getElementById('memory').options].map((o) => Number(o.value))")
+    # The file dialog cancelled (no file): hello stays.
+    page.set_input_files("#file", [])
+    if page.evaluate("image.name") != "hello":
+        problems.append(f"no file picked: the kernel is now {page.evaluate('image.name')!r}")
     (tmp / "not-a-bzimage.bin").write_bytes(bytes(8192))
     patched("old-low.bin", o206=("<H", 0x201), o211=("<B", hello[0x211] & 0xfe))
     patched("big.bin", big)
@@ -6252,10 +6256,11 @@ def suite_debugger(ctx):
 
 def fetch_fail_case(browser, base, shots):
     """A kernel or its initrd the server does not have (404) is named with
-    the HTTP status, and an error nothing else catches shows in the status
-    line with the kernel and RAM (hello at 1280 light, service worker off
+    the HTTP status, and an error nothing else catches (a rejection, an
+    exception) shows in the status line with the kernel and RAM (hello at 1280 light, service worker off
     so the server's answer reaches the page); a kernel picked in the
-    Machine tab that the server does not have names its file too."""
+    Machine tab that the server does not have names its file too, and a
+    kernel's own initrd goes when another kernel is picked."""
     problems, r = [], {}
     ctx = browser.new_context(viewport={"width": 1280, "height": 900})
     ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
@@ -6278,6 +6283,20 @@ def fetch_fail_case(browser, base, shots):
             r["initrd 404"] = page.text_content("#status")
             if kernel_entries()[initrds[0]]["initrd"] + ": HTTP 404" not in r["initrd 404"]:
                 problems.append(f"{initrds[0]}'s initrd answered 404: status {r['initrd 404']!r}")
+            # Its initrd (a small stand-in) goes with it when another
+            # kernel is picked.
+            ctx.unroute("**/" + kernel_entries()[initrds[0]]["initrd"] + "*")
+            ctx.route("**/" + kernel_entries()[initrds[0]]["initrd"] + "*", lambda route: route.fulfill(status=200, body=bytes(512)))
+            page.goto(f"{base}/index.html?kernel={initrds[0]}&paused=1")
+            had = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                           and page.evaluate("!!initrd && initrd.entry") == initrds[0], 60)
+            show_tab(page, "machine")
+            page.select_option("#kernel", "hello-os")  # (hello's bzImage answers 404 here)
+            wait_for(lambda: page.evaluate("image && image.name") == "hello-os" and "Running hello-os" in (page.text_content("#status") or ""), 60)
+            r["initrd after the switch"] = [had, page.evaluate("initrd"), page.inner_text("#initrd_status")]
+            if r["initrd after the switch"] != [True, None, ""]:
+                problems.append(f"{initrds[0]} then hello-os picked: [had its initrd, initrd, note] {r['initrd after the switch']}")
+            ctx.unroute("**/" + kernel_entries()[initrds[0]]["initrd"] + "*")
         ctx.unroute("**/kernels/hello/bzImage*")
         page.goto(f"{base}/index.html?kernel=hello&paused=1")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
@@ -6286,6 +6305,11 @@ def fetch_fail_case(browser, base, shots):
         r["uncaught"] = page.text_content("#status")
         if not re.match(r"Emulator error: Error: nobody catches this \(hello, 2,048 KiB RAM\)", r["uncaught"] or ""):
             problems.append(f"an uncaught rejection: status {r['uncaught']!r}")
+        page.evaluate("setTimeout(() => { throw new Error('nobody catches this throw'); }, 0)")
+        wait_for(lambda: "nobody catches this throw" in (page.text_content("#status") or ""), 10)
+        r["uncaught throw"] = page.text_content("#status")
+        if r["uncaught throw"] != "Emulator error: Uncaught Error: nobody catches this throw (hello, 2,048 KiB RAM)":
+            problems.append(f"an uncaught exception: status {r['uncaught throw']!r}")
         # A kernel picked in the Machine tab that the server does not have.
         ctx.route("**/kernels/hello-os/bzImage*", lambda route: route.fulfill(status=404, body="no"))
         show_tab(page, "machine")
@@ -6323,6 +6347,7 @@ def fetch_fail_lists(ctx, base, problems, r):
         page.goto(f"{base}/index.html?kernel=hello")
         wait_for(lambda: (page.text_content("#status") or "").startswith(want), 30)
         show_tab(page, "machine")
+        page.select_option("#memory", str(4 << 20))  # no kernel: no header to check
         page.click("#boot")  # no kernel: nothing to boot
         time.sleep(0.5)
         st = page.text_content("#status") or ""
@@ -17342,7 +17367,7 @@ def dwarf_lto_case(browser, base, shots):
         return problems + [f"the fixture did not open: {got}"], r
     fn = {f["name"]: f for f in got["funcs"]}
     # entry: gdb's "info functions" line (b.c, "3:\tint entry(int);").
-    m = re.search(r"File [^\n]*/b\.c:\n(\d+):\tint entry\(int\);", gdb)
+    m = re.search(r"File (?:[^\n]*/)?b\.c:\n(\d+):\tint entry\(int\);", gdb)
     want = f"b.c:{m.group(1)}" if m else None
     e = fn.get("entry")
     if not m or not e or e["at"] != want or e["proto"] != "int entry(int n)":
@@ -17357,11 +17382,15 @@ def dwarf_lto_case(browser, base, shots):
         problems.append(f"helper: the page says {h}, llvm-dwarfdump {want}, inlined at {call:#x}")
     if f"Symbol helper is a function at address {call:#x}" not in gdb:
         problems.append(f"gdb does not put helper's inlined call at {call:#x}: {gdb[:400]!r}")
-    # counter: gdb's "info variables" (a.c, "1:\tint counter;"), ptype, nm.
-    m = re.search(r"File [^\n]*/a\.c:\n(\d+):\tint counter;", gdb)
+    # counter: declared where llvm-dwarfdump's DIE in a.c's unit says (gdb
+    # 15.1 of Ubuntu 24.04 files it under b.c in "info variables", gdb 16
+    # under a.c), gdb's ptype, llvm-nm's address.
+    d = next((d for d in dies if d["tag"] == "DW_TAG_variable" and d.get("DW_AT_name") == '"counter"' and
+              "DW_AT_decl_line" in d), {})
+    want = f"{pathlib.Path(d['DW_AT_decl_file'].strip(chr(34))).name}:{d['DW_AT_decl_line']}" if d else None
     v = next((v for v in got["vars"] if v["name"] == "counter"), None)
-    if not m or not v or v["at"] != f"a.c:{m.group(1)}" or v["type"] != "int" or "type = int" not in gdb or v["va"] != nm.get("counter"):
-        problems.append(f"counter: the page says {v}, gdb a.c:{m and m.group(1)} int, nm {nm.get('counter')}")
+    if not want or not v or v["at"] != want or v["type"] != "int" or "type = int" not in gdb or v["va"] != nm.get("counter"):
+        problems.append(f"counter: the page says {v}, llvm-dwarfdump {want}, gdb's ptype {'type = int' in gdb}, nm {nm.get('counter')}")
     # entry's static local: its DIE in the code's unit is in entry's
     # concrete DIE, which has no name (nameAt through its abstract origin).
     # Where: gdb's info scope of entry; declared: llvm-dwarfdump's DIE.

@@ -17,13 +17,8 @@ const V86_INITRD_ADDR = 64 << 20;
 
 // The workflow stamps the script tags with ?v=<commit>; data fetched by the
 // page gets the same stamp, so a cached older deploy is never mixed in.
-const VERSION = (() => {
-	try {
-		return new URL(document.currentScript.src).searchParams.get("v");
-	} catch (e) {
-		return null;
-	}
-})();
+// (index.html loads app.js as a plain script: currentScript is its tag.)
+const VERSION = new URL(document.currentScript.src).searchParams.get("v");
 const withV = (url) => (VERSION ? url + (url.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(VERSION) : url);
 
 const $ = (id) => document.getElementById(id);
@@ -1205,16 +1200,13 @@ function inspect() {
 	renderPage(p, readPage(p), scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null, "since the last scan");
 }
 
-function selectPage(p, show = true) {
+function selectPage(p) {
 	navJump(() => {
 		selectedPage = p;
 		drawGrid();
 		inspect();
 		setLive();
-		if (show)
-			showTab("page");
-		else
-			writeHash();
+		showTab("page");
 	});
 }
 
@@ -3064,12 +3056,9 @@ function renderClock() {
 
 // The guest's date and random numbers (clock.js GUEST): from the start
 // date and the seed on the virtual clock, the browser's on real time.
+// (Only renderClock calls it, once there is a stepper.)
 function renderGuestInputs() {
 	const el = $("guest_in_text");
-	if (!stepper) {
-		el.textContent = "";
-		return;
-	}
 	const iso = (ms) => new Date(ms).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
 	el.textContent = GUEST.why + (CLOCK.virtual ?
 		"RTC " + iso(GUEST.dateNow()) + " (from " + iso(GUEST.rtcStart) + ") \u00b7 RDRAND seed " + GUEST.seed :

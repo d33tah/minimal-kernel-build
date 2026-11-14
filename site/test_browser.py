@@ -1728,12 +1728,13 @@ def tasks_late_types(browser, base, shots, name, r):
     they are in."""
     problems = []
     held = []
-    # (No service worker: its fetches would not pass the page's routes.)
-    page = browser.new_context(viewport={"width": 1100, "height": 1000}, service_workers="block").new_page()
+    # A browser without service workers (their fetches would not pass the page's routes).
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.add_init_script("delete Navigator.prototype.serviceWorker")
     page.route(re.compile(r"/dwarf/types\.json(\?|$)"), lambda route: held.append(route))
     page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
     if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 1):
-        page.context.close()
+        page.close()
         return [f"{name} with the variables held back: no end of the run"]
     T = json.loads((SITE / kernel_entries()[name]["dwarf"] / "types.json").read_text())
     it = next(v for v in T["vars"] if v[0] == "init_task")
@@ -1756,7 +1757,7 @@ def tasks_late_types(browser, base, shots, name, r):
     show_tab(page, "calls")
     problems += [p + " (variables held back)" for p in task_names_check(page, name, late, rl)]
     r["late_types_tasks"] = [rl.get("task_names"), rl.get("tasks_checked")]
-    page.context.close()
+    page.close()
     return problems
 
 
@@ -6571,8 +6572,9 @@ def covtree_edges(browser, base, shots, entry, F, lf_full, problems, r, errors):
             route.fulfill(status=404, body="")
         else:
             held.append(route)
-    # (No service worker: its fetches would not pass the page's routes.)
-    page = browser.new_context(viewport={"width": 1280, "height": 1000}, service_workers="block").new_page()
+    # A browser without service workers (their fetches would not pass the page's routes).
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.add_init_script("delete Navigator.prototype.serviceWorker")
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.route(re.compile(r"/dwarf/[0-9a-f]+\.bin(\?|$)"), shard)
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
@@ -6602,7 +6604,7 @@ def covtree_edges(browser, base, shots, entry, F, lf_full, problems, r, errors):
         problems.append(f"shard {bad} 404: status {r['failed_status']!r}, root {root}")
     page.evaluate("document.getElementById('panel_source').scrollIntoView()")
     page.screenshot(path=str(shots / "covtree-shard-404-1280.png"))
-    page.context.close()
+    page.close()
 
 
 # Multi-line C statements: the line rows name only the first line of

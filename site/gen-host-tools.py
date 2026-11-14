@@ -29,9 +29,13 @@ Their wasm memory may grow to 1 GiB (MAX_MEMORY).
 SHA-256), since wasi-libc does not install it.
 
 nasm: the release tarball pinned by SHA-256, configured for
-wasm32-wasip1 and stripped; the result is pinned too (two builds in
-different directories gave the same bytes) and checked after the build
-and by --check. Its licence (BSD-2-Clause) goes to OUT/LICENSE.nasm.
+wasm32-wasip1 and stripped; the result is pinned too and checked after
+the build and by --check. The pin is the build in debian:trixie (the
+kernels job's container; the same bytes from CI and from d-claude). A
+Debian 13 host outside that container made other bytes (962,038 B
+against 1,448,940 B, other data and a target_features section), so the
+pin holds for that environment only. Its licence (BSD-2-Clause) goes to
+OUT/LICENSE.nasm.
 """
 
 import argparse
@@ -60,7 +64,7 @@ NASM_VERSION = "2.16.03"
 NASM_URL = f"https://www.nasm.us/pub/nasm/releasebuilds/{NASM_VERSION}/nasm-{NASM_VERSION}.tar.xz"
 NASM_TAR_SHA256 = "1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148"
 NASM_SUMS = {
-    "nasm.wasm": "9f6346a0c130eb74ba1a8458d62aaf1515aa0cb7ba62530685684bb56b17818b",
+    "nasm.wasm": "8d3f3afd8df4de90c78d9acdd9652152747a0a36ee1d8de2ac3c77443510a4b3",
     "LICENSE.nasm": "1563996c52e220e15ef2418e67d39488255aa8c28c89e617074d3afe3ee329e0",
 }
 

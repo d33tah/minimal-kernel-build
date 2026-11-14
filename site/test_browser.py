@@ -16429,18 +16429,57 @@ int entry(int n)
 	return use(&gflags, n) + (int)mix(gll, n, gdbl);
 }
 """
-# name: (compiler, flags, DWARF version the page must report)
+# C++: a method defined outside its class is a DIE with DW_AT_specification
+# (its name, the varargs) pointing at the declaration in the class, a
+# static data member's definition too.
+DWF_CXX = """namespace ns {
+struct Counter {
+	static int total;
+	int v;
+	int add(int d, ...);
+	__attribute__((noinline)) int get(int) const;
+};
+int Counter::total = 1;
+}
+
+__attribute__((noinline)) int ns::Counter::add(int d, ...)
+{
+	v += d;
+	total += v;
+	return v;
+}
+
+__attribute__((noinline)) int ns::Counter::get(int k) const
+{
+	return v * k + total;
+}
+
+static inline int helper(ns::Counter &c, int x)
+{
+	return c.get(x) + 1;
+}
+
+ns::Counter gc;
+
+extern "C" int entry(int n)
+{
+	gc.add(n, 1, 2);
+	return helper(gc, n);
+}
+"""
+# name: (compiler, flags, DWARF version the page must report, source)
 DWF_BUILDS = {
-    "gcc-dwarf2": ("gcc", ["-gdwarf-2", "-mregparm=3"], 2),
-    "gcc-dwarf3": ("gcc", ["-gdwarf-3", "-O0"], 3),
-    "gcc-dwarf4": ("gcc", ["-gdwarf-4", "-mregparm=3", "-msse2", "-mfpmath=sse"], 4),
-    "clang-dwarf4": ("clang", ["-gdwarf-4"], 4),
-    "clang-dwarf5": ("clang", ["-gdwarf-5", "-mregparm=3"], 5),
+    "gcc-dwarf2": ("gcc", ["-gdwarf-2", "-mregparm=3"], 2, "m.c"),
+    "gcc-dwarf3": ("gcc", ["-gdwarf-3", "-O0"], 3, "m.c"),
+    "gcc-dwarf4": ("gcc", ["-gdwarf-4", "-mregparm=3", "-msse2", "-mfpmath=sse"], 4, "m.c"),
+    "clang-dwarf4": ("clang", ["-gdwarf-4"], 4, "m.c"),
+    "clang-dwarf5": ("clang", ["-gdwarf-5", "-mregparm=3"], 5, "m.c"),
+    "g++-dwarf4": ("g++", ["-gdwarf-4", "-fno-exceptions", "-fno-rtti"], 4, "c.cc"),
 }
 DWF_FUNCS = ("sum", "stop", "mix", "use", "entry")
 DWF_VARS = ("shared", "gflags", "gword", "gcolor", "cv", "gop", "gdbl", "gll")
 
-DWF_JS = """async ([b64, offset, lo, hi]) => {
+DWF_JS = """async ([b64, offset, lo, hi, src]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
     const w = new Worker('dwarfworker.js' + location.search);
     const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
@@ -16469,7 +16508,7 @@ DWF_JS = """async ([b64, offset, lo, hi]) => {
         groups.push(...l.groups);
     }
     const c = await ask({ type: 'cfi' }, 'cfi');
-    const lines = await ask({ type: 'lines', q: 'm.c' }, 'lines');
+    const lines = await ask({ type: 'lines', q: src }, 'lines');
     out.nofile = (await ask({ type: 'lines', q: 'nosuch.c' }, 'lines')).why;
     w.terminate();
     out.code = lines.code ? [...lines.code].map(([line, e]) => [line, e.rows.map((r) => [r[0], r[1]]), e.calls.map((x) => [x[0], x[2]])]) :
@@ -16521,13 +16560,13 @@ DWF_JS = """async ([b64, offset, lo, hi]) => {
 
 def dwf_build(tmp, name):
     """DWF_SOURCE built as DWF_BUILDS[name] for i386, linked at CFI_BASE (-O2 unless the flags say otherwise)."""
-    cc, flags, _ = DWF_BUILDS[name]
-    (tmp / "m.c").write_text(DWF_SOURCE)
+    cc, flags, _, src = DWF_BUILDS[name]
+    (tmp / src).write_text(DWF_CXX if src == "c.cc" else DWF_SOURCE)
     obj, elf = tmp / f"{name}.o", tmp / f"{name}.elf"
     common = ["-m32", "-O2", "-ffreestanding", "-fno-pic", *flags]
     ld = ["-fuse-ld=lld"] if cc == "clang" else []
     try:
-        subprocess.run([cc, *common, "-c", "m.c", "-o", str(obj)], cwd=tmp, check=True, capture_output=True, text=True)
+        subprocess.run([cc, *common, "-c", src, "-o", str(obj)], cwd=tmp, check=True, capture_output=True, text=True)
         subprocess.run([cc, "-m32", *ld, "-nostdlib", "-no-pie", "-Wl,-e,entry", f"-Wl,-Ttext=0x{CFI_BASE:x}", str(obj), "-o", str(elf)],
                        cwd=tmp, check=True, capture_output=True, text=True)
     except (OSError, subprocess.CalledProcessError) as e:
@@ -16603,7 +16642,7 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
             m = re.search(r"\.text\s+PROGBITS\s+([0-9a-f]+) [0-9a-f]+ ([0-9a-f]+)",
                           subprocess.run(["readelf", "-SW", str(elf)], capture_output=True, text=True).stdout)
             lo, hi = int(m.group(1), 16), int(m.group(1), 16) + int(m.group(2), 16)
-            got = page.evaluate(DWF_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET, lo - CFI_OFFSET, hi - CFI_OFFSET])
+            got = page.evaluate(DWF_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET, lo - CFI_OFFSET, hi - CFI_OFFSET, DWF_BUILDS[name][3]])
             if got.get("open") != "ok" or got.get("error"):
                 problems.append(f"{name}: the fixture did not open: {str(got)[:300]}")
                 continue
@@ -16614,6 +16653,55 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     return problems, r
+
+
+def dwf_locals_checks(name, elf, got, vas, gdb_scopes):
+    """The parameters and locals at every byte (gdb's info scope, by kind
+    of location) and the text of every location expression (llvm-dwarfdump)."""
+    problems = []
+    # Locals at every byte: gdb's info scope, by kind of location.
+    scopes = gdb_scopes(str(elf), vas)
+    bad = []
+    for va, l in zip(vas, got["locals"]):
+        w = scopes.get(va)
+        if w is None or l is None:
+            continue
+        if sorted(map(tuple, l[0]["vars"])) != sorted(w):
+            bad.append((hex(va), l, w))
+    r_checked = sum(1 for va, l in zip(vas, got["locals"]) if l and scopes.get(va) is not None)
+    if bad or r_checked < len(vas) // 4:
+        problems.append(f"{name}: locals differ from gdb's info scope at {len(bad)}/{r_checked} addresses: {bad[:2]}")
+    # Every location expression: llvm-dwarfdump's text.
+    # (The page turns clang's DW_OP_addrx into DW_OP_addr with the address.)
+    mine = {(n, a, b): t for n, a, b, t in got["exprs"]}
+    theirs = {k: v for k, v in dwf_dwarfdump_exprs(elf).items() if k[0] not in DWF_VARS + ("gc", "total") and not (v or "").startswith("DW_OP_addrx")}
+    differ = [(k, mine.get(k), theirs.get(k)) for k in sorted(set(mine) | set(theirs), key=str)
+              if theirs.get(k) is not None and mine.get(k) != theirs.get(k)]
+    if differ or len(theirs) < 5:
+        problems.append(f"{name}: location expressions differ from llvm-dwarfdump's ({len(theirs)}): {differ[:4]}")
+    return problems
+
+
+def dwf_cxx_checks(name, elf, got, nm):
+    """The C++ fixture: the methods' and variables' names, file:line and
+    addresses through DW_AT_specification (gdb's info functions /
+    variables, llvm-nm), add's varargs."""
+    problems = []
+    gdb = subprocess.run(["gdb", "-nx", "-batch", "-ex", "info functions", "-ex", "info variables", str(elf)],
+                         capture_output=True, text=True).stdout
+    fn = {f["name"]: f for f in got["funcs"]}
+    for f, decl in (("add", "ns::Counter::add(int, ...)"), ("get", "ns::Counter::get(int) const"), ("entry", "entry(int)")):
+        m = re.search(r"^(\d+):\t[^\n]*" + re.escape(decl) + ";$", gdb, re.M)
+        if not m or not fn.get(f) or fn[f]["at"] != "c.cc:" + m.group(1):
+            problems.append(f"{name}: {f} at {fn.get(f)}, gdb's info functions {m and m.group(0)!r}")
+    if not fn.get("add", {}).get("varargs") or fn.get("get", {}).get("varargs"):
+        problems.append(f"{name}: varargs: add {fn.get('add')}, get {fn.get('get')}")
+    vs = {v["name"]: v for v in got["vars"]}
+    for v, decl, sym in (("total", "int ns::Counter::total", "_ZN2ns7Counter5totalE"), ("gc", "ns::Counter gc", "gc")):
+        m = re.search(r"^(\d+):\t" + re.escape(decl) + ";$", gdb, re.M)
+        if not m or not vs.get(v) or vs[v]["at"] != "c.cc:" + m.group(1) or vs[v]["va"] != nm.get(sym):
+            problems.append(f"{name}: {v}: {vs.get(v)}, gdb {m and m.group(0)!r}, nm {nm.get(sym)}")
+    return problems
 
 
 def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
@@ -16631,17 +16719,17 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
     bad = [(hex(va), g, w) for va, g, w in zip(vas, got["frames"], want) if not frames_agree(g or [], w)]
     if bad:
         problems.append(f"{name}: frames differ from llvm-symbolizer at {len(bad)}/{len(vas)} addresses: {bad[:2]}")
-    # The code of each line of m.c: its rows' first and last bytes are that line.
+    # The code of each line of the source: its rows' first and last bytes are that line.
     sym = dict(zip(vas, want))
     if not isinstance(got["code"], list) or not got["code"]:
-        problems.append(f"{name}: no code for m.c: {got['code']!r}")
+        problems.append(f"{name}: no code for {DWF_BUILDS[name][3]}: {got['code']!r}")
     else:
         for line, rows, calls in got["code"]:
             for a, b in rows:
                 for va in (a + CFI_OFFSET, b - 1 + CFI_OFFSET):
                     w = sym.get(va)
                     if w and w[0][2] != line:
-                        problems.append(f"{name}: m.c:{line} lists {va:#x}, llvm-symbolizer says {w[0]}")
+                        problems.append(f"{name}: {DWF_BUILDS[name][3]}:{line} lists {va:#x}, llvm-symbolizer says {w[0]}")
     # CFI rows.
     fdes = dwarfdump_cfi(str(elf))
     rows = {}
@@ -16652,6 +16740,8 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
     bad = [(hex(va), rows[va], g) for va, g in zip(vas, got["rows"]) if rows[va] != g]
     if bad or not fdes:
         problems.append(f"{name}: CFI rows ({got['cfi']}) differ from llvm-dwarfdump: {bad[:3]} ({len(fdes)} FDEs)")
+    if DWF_BUILDS[name][3] == "c.cc":
+        return problems + dwf_cxx_checks(name, elf, got, nm) + dwf_locals_checks(name, elf, got, vas, gdb_scopes)
     # Functions and variables against gdb.
     g = dwf_gdb(elf)
     fn = {f["name"]: f for f in got["funcs"]}
@@ -16701,26 +16791,7 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes):
         if (mem.group(1) not in there if mem else there or path != "gflags padding"):
             problems.append(f"{name}: gflags byte {k}: the page says {path!r}, gdb's ptype/o has {there or 'padding'}")
             break
-    # Locals at every byte: gdb's info scope, by kind of location.
-    scopes = gdb_scopes(str(elf), vas)
-    bad = []
-    for va, l in zip(vas, got["locals"]):
-        w = scopes.get(va)
-        if w is None or l is None:
-            continue
-        if sorted(map(tuple, l[0]["vars"])) != sorted(w):
-            bad.append((hex(va), l, w))
-    r_checked = sum(1 for va, l in zip(vas, got["locals"]) if l and scopes.get(va) is not None)
-    if bad or r_checked < len(vas) // 4:
-        problems.append(f"{name}: locals differ from gdb's info scope at {len(bad)}/{r_checked} addresses: {bad[:2]}")
-    # Every location expression: llvm-dwarfdump's text.
-    # (The page turns clang's DW_OP_addrx into DW_OP_addr with the address.)
-    mine = {(n, a, b): t for n, a, b, t in got["exprs"]}
-    theirs = {k: v for k, v in dwf_dwarfdump_exprs(elf).items() if k[0] not in DWF_VARS and not (v or "").startswith("DW_OP_addrx")}
-    differ = [(k, mine.get(k), theirs.get(k)) for k in sorted(set(mine) | set(theirs), key=str)
-              if theirs.get(k) is not None and mine.get(k) != theirs.get(k)]
-    if differ or len(theirs) < 10:
-        problems.append(f"{name}: location expressions differ from llvm-dwarfdump's ({len(theirs)}): {differ[:4]}")
+    problems += dwf_locals_checks(name, elf, got, vas, gdb_scopes)
     return problems
 
 

@@ -946,10 +946,12 @@ class DwarfReader {
 				v.file = v.file || f;
 				v.line = v.line || l;
 			}
-			if (!v.name && v.origin >= 0)
-				v.name = this.nameAt(v.origin);
-			if (v.type < 0 && v.origin >= 0)
-				v.type = this.typeAt(v.origin);
+			// (A C++ static data member: its declaration is a DW_TAG_member.)
+			const decl = v.origin >= 0 ? v.origin : v.spec;
+			if (!v.name && decl >= 0)
+				v.name = this.nameAt(decl);
+			if (v.type < 0 && decl >= 0)
+				v.type = this.typeAt(decl);
 			v.scope = v.fn >= 0 ? this.nameAt(v.fn) : null;
 		}
 		return out;
@@ -1559,12 +1561,14 @@ class DwarfFuncs {
 			const name = first((r) => r.name);
 			if (!name)
 				return null;
-			const at = first((r) => r.file ? r : null) || rec;
+			// File and line each from the first DIE that has it (GCC leaves
+			// DW_AT_decl_file out of a definition in its declaration's file).
+			const file = first((r) => r.file), line = first((r) => r.line || null) || 0;
 			const pr = chain.slice().reverse().find((r) => r.params.length) || chain[chain.length - 1];
 			const params = pr.params.map((p, k) => [p[0] || first((r) => r.params[k] && r.params[k][0]) || "", p[1] !== null ? p[1] :
 				first((r) => r.params[k] && r.params[k][1])]);
 			const ret = first((r) => r.ret);
-			return { name, file: at.file, line: at.line, ext: chain.some((r) => r.ext), varargs: chain.some((r) => r.varargs),
+			return { name, file, line, ext: chain.some((r) => r.ext), varargs: chain.some((r) => r.varargs),
 				noret: chain.some((r) => r.noret), proto: chain.some((r) => r.proto), inl: first((r) => r.inl), ret, params };
 		};
 		const entry = (f) => {

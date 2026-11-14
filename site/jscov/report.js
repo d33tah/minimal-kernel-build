@@ -4,10 +4,14 @@
 // own scripts: an HTML report (MCR's V8 UI), summary.json (totals and per
 // file: lines, functions, branches, plus every function that never ran)
 // and summary.md (for the job summary). With --baseline, exit 1 when a
-// total is below the committed floor.
+// total is below the committed floor. With --uncovered (site/jscov-uncovered.tsv:
+// file, line ranges, why those lines do not run in the tests), the
+// uncovered lines the list does not name ("unlisted") and the listed lines
+// that ran or are no code ("stale") are reported per file; with
+// --require-listed, unlisted lines fail the run too.
 //
 // Usage: node site/jscov/report.js --src site --out jscov-report [--baseline site/jscov-baseline.json]
-//        [--summary $GITHUB_STEP_SUMMARY] RAW_DIR...
+//        [--uncovered site/jscov-uncovered.tsv [--require-listed]] [--summary $GITHUB_STEP_SUMMARY] RAW_DIR...
 // Needs: npm ci in site/jscov (monocart-coverage-reports, pinned by package-lock.json).
 
 "use strict";
@@ -23,8 +27,10 @@ function args(argv) {
 	const a = { raw: [] };
 	for (let i = 0; i < argv.length; i++) {
 		const k = argv[i];
-		if (k === "--src" || k === "--out" || k === "--baseline" || k === "--summary")
+		if (k === "--src" || k === "--out" || k === "--baseline" || k === "--summary" || k === "--uncovered")
 			a[k.slice(2)] = argv[++i];
+		else if (k === "--require-listed")
+			a.requireListed = true;
 		else if (k.startsWith("--"))
 			throw new Error("unknown option " + k);
 		else
@@ -68,6 +74,33 @@ function lineOf(source, offset) {
 	return n;
 }
 
+// "a-b,c" -> [a..b, c]
+function lineSet(text) {
+	const out = new Set();
+	for (const part of text.split(",").map((x) => x.trim()).filter(Boolean)) {
+		const [lo, hi] = part.split("-").map(Number);
+		for (let n = lo; n <= (hi || lo); n++)
+			out.add(n);
+	}
+	return out;
+}
+
+// site/jscov-uncovered.tsv: "file<TAB>ranges<TAB>reason" lines, # comments.
+function readListed(file) {
+	const out = {};
+	fs.readFileSync(file, "utf8").split("\n").forEach((line, k) => {
+		if (!line.trim() || line.startsWith("#"))
+			return;
+		const [name, lines, why] = line.split("\t");
+		if (!name || !lines || !why || !why.trim())
+			throw new Error(`${file}:${k + 1}: want file<TAB>line ranges<TAB>reason`);
+		const set = out[name] = out[name] || new Set();
+		for (const n of lineSet(lines))
+			set.add(n);
+	});
+	return out;
+}
+
 function ranges(nums) {
 	const out = [];
 	for (const n of nums.sort((x, y) => x - y)) {
@@ -107,10 +140,11 @@ async function main() {
 			// A take without the top-level function (coverage started after
 			// it ran): a root range of count 0, so the code it did not report
 			// counts as not run, not as covered by default. A service worker
-			// (Playwright resumes it before the collector's coverage starts,
-			// most runs) is the exception: its handlers exist only once its
-			// top level ran, so a record with a function that ran means the
-			// top level ran (sw.js's top level has no branch to miss).
+			// (coverage that started late: the collector without
+			// jscov.HOLD_SW_JS, or another client's session) is the
+			// exception: its handlers exist only once its top level ran, so
+			// a record with a function that ran means the top level ran
+			// (sw.js's top level has no branch to miss).
 			const ranAny = r.kind === "service_worker" && r.functions.some((f) => f.ranges[0].count > 0);
 			const functions = r.functions.some((f) => f.ranges[0].startOffset === 0 && f.ranges[0].endOffset === n) ? r.functions
 				: [{ functionName: "", isBlockCoverage: true, ranges: [{ startOffset: 0, endOffset: n, count: ranAny ? 1 : 0 }] }, ...r.functions];
@@ -182,6 +216,24 @@ async function main() {
 					failed.push(`${n} lines ${f.lines.pct}% < the per-file floor ${base.fileLines}%`);
 		summary.baseline = base;
 	}
+	if (a.uncovered) {
+		const listed = readListed(a.uncovered);
+		let unlisted = 0, stale = 0;
+		for (const n of Object.keys(listed))
+			if (!(n in summary.files))
+				throw new Error(`${a.uncovered}: ${n} is no script of the site`);
+		for (const [n, f] of Object.entries(summary.files)) {
+			const unc = lineSet(f.uncoveredLines), l = listed[n] || new Set();
+			f.unlisted = ranges([...unc].filter((x) => !l.has(x)));
+			f.stale = ranges([...l].filter((x) => !unc.has(x)));
+			unlisted += lineSet(f.unlisted).size;
+			stale += lineSet(f.stale).size;
+		}
+		summary.unlisted = unlisted;
+		summary.stale = stale;
+		if (a.requireListed && unlisted)
+			failed.push(`${unlisted} uncovered lines not in ${path.basename(a.uncovered)}`);
+	}
 	summary.failed = failed;
 	fs.writeFileSync(path.join(out, "summary.json"), JSON.stringify(summary, null, 1) + "\n");
 
@@ -200,11 +252,21 @@ async function main() {
 		row("**total**", t),
 		...Object.keys(summary.files).sort().map((n) => row(n, summary.files[n])),
 		"",
+		...(a.uncovered ? [
+			`Uncovered lines ${path.basename(a.uncovered)} does not explain: ${summary.unlisted}; listed lines that ran ` +
+				`or are no code: ${summary.stale}.`,
+			"",
+			...Object.keys(summary.files).sort().filter((n) => summary.files[n].unlisted || summary.files[n].stale)
+				.map((n) => `- ${n}: ${summary.files[n].unlisted ? "unlisted " + summary.files[n].unlisted : ""}` +
+					`${summary.files[n].unlisted && summary.files[n].stale ? "; " : ""}${summary.files[n].stale ? "stale " + summary.files[n].stale : ""}`),
+			"",
+		] : []),
 	].join("\n");
 	fs.writeFileSync(path.join(out, "summary.md"), md);
 	if (a.summary)
 		fs.appendFileSync(a.summary, md);
-	console.log(`total: ${METRICS.map((m) => `${m} ${t[m].pct}% (${t[m].covered}/${t[m].total})`).join(", ")}; ${t.sourceLines} source lines`);
+	console.log(`total: ${METRICS.map((m) => `${m} ${t[m].pct}% (${t[m].covered}/${t[m].total})`).join(", ")}; ${t.sourceLines} source lines` +
+		(a.uncovered ? `; ${summary.unlisted} uncovered lines unlisted, ${summary.stale} listed lines stale` : ""));
 	if (failed.length) {
 		console.error("FAIL: below the baseline: " + failed.join("; "));
 		process.exit(1);

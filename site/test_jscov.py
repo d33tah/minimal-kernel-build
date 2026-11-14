@@ -254,6 +254,32 @@ def main():
             lines = cov.get("lines", {})
             if not lines.get("total") or lines.get("covered", 0) >= lines.get("total", 0):
                 problems.append(f"cov.js: lines {lines}, want some uncovered")
+            # The list of uncovered lines with reasons (--uncovered): never's
+            # lines listed, the rest of cov.js's uncovered lines unlisted, a
+            # listed line that ran stale; --require-listed fails on unlisted.
+            src = FILES["cov.js"].split("\n")
+            never = [src.index("function never(x) {") + 2]
+            ran_line = src.index("function ran(x) {") + 2
+            listed = tmp / "uncovered.tsv"
+            listed.write_text(f"# self-test\ncov.js\t{never[0]},{ran_line}\tnever is never called\n")
+            cov_unc = set()
+            for a, _, b in (x.partition("-") for x in cov.get("uncoveredLines", "").split(",") if x):
+                cov_unc.update(range(int(a), int(b or a) + 1))
+            for req in (False, True):
+                r2 = subprocess.run(["node", str(SITE / "jscov" / "report.js"), "--src", str(fix), "--out", str(tmp / "report2"),
+                                     "--uncovered", str(listed)] + (["--require-listed"] if req else []) + [str(raw)],
+                                    capture_output=True, text=True)
+                s2 = json.loads((tmp / "report2" / "summary.json").read_text())
+                f2 = s2["files"]["cov.js"]
+                want_unlisted = sorted(cov_unc - set(never))
+                got_unlisted = []
+                for a, _, b in (x.partition("-") for x in f2.get("unlisted", "").split(",") if x):
+                    got_unlisted.extend(range(int(a), int(b or a) + 1))
+                if got_unlisted != want_unlisted or f2.get("stale") != str(ran_line):
+                    problems.append(f"--uncovered: cov.js unlisted {got_unlisted} stale {f2.get('stale')!r}, want "
+                                    f"{want_unlisted} and {ran_line}")
+                if bool(r2.returncode) != (req and bool(want_unlisted)):
+                    problems.append(f"--uncovered{' --require-listed' if req else ''}: exit {r2.returncode}")
             print(json.dumps({n: {m: s["files"][n][m] for m in ("lines", "functions", "branches")} for n in s["files"]}, indent=1))
     if problems:
         print("FAIL\n  " + "\n  ".join(problems), file=sys.stderr)

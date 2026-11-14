@@ -33,7 +33,7 @@ app.js	2071	52fbcd10	jitExactStop entered with an end already set by the slice t
 app.js	2106	890e28b8	the exact stop's stepper loop finding the run paused or replaced between its slices: a race
 app.js	2113	7f4f045e	pause() without a ready machine: the Pause control is disabled then; a race with Boot
 app.js	2168	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
-app.js	2229-2233	b19cf933	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor in 43611610762, whose exactstop coverage job did not finish
+app.js	2229-2233	b19cf933	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
 app.js	2265	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
 app.js	2330	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
 app.js	2364	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
@@ -68,7 +68,7 @@ bookmarks.js	316	c9b0b481	a page bookmark beyond the grid (made with more RAM th
 bookmarks.js	355	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
 bookmarks.js	365-367	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
 bookmarks.js	440-442	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
-bookmarks.js	444	bcdef68a	a pending jump while the machine is not ready: ticks every 300 ms, and the switch's boot in the tests is ready sooner
+bookmarks.js	444	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
 bookmarks.js	447	b368dd8a	a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps land after the switch is ready
 bookmarks.js	552	33ddae1b	bmNote without #bm_status: the element is in index.html
 bookmarks.js	560	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
@@ -325,7 +325,7 @@ srcedit.js	851	5601638c	the DWARF arriving while Edit is on and the editor waits
 stepper.js	74	63341348	v86.wasm with no or several functions matching a step export's pattern: the shipped v86.wasm is pinned and built by the workflow, so each pattern matches once
 stepper.js	79	25f3f9cf	v86.wasm without an export section: as line 74
 stepper.js	311	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
-stepper.js	380-381	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 (the exactstop coverage job), not in 43611610762, whose exactstop coverage job did not finish
+stepper.js	380-381	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
 stepper.js	445	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)
 stepper.js	451-453	7071adb2	frames stop when the JS heap is 80% full (performance.memory): no shipped kernel's run comes near it
 stepper.js	486	ca2b0f3b	closeStack's loop over a stack outside the lanes: only with ?unwind=0 (no ESP unwinding), which no suite uses
@@ -337,7 +337,7 @@ stepper.js	841	d1cd5d87	sometimes: restoreStops for a snapshot taken before pani
 stepper.js	857	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
 stepper.js	869	16d2bb25	branch() dropping task switches recorded after the branch point: the reverse suite branches (a key typed after stepping back) on stretches with no task switch
 stepper.js	934-936	ec4eac36	wasm memory grown during record() (typed arrays detached): v86 allocates the guest RAM up front and its memory does not grow while stepping the shipped kernels
-stepper.js	941-943	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor in 43611610762, whose exactstop coverage job did not finish
+stepper.js	941-943	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor 43611610762
 stepper.js	981-983	21db661f	sometimes: the wasm memory replaced between two steps (typed arrays detached; as 934-936, after the fetch): the quests suite's Step after go there with the live memory map open ran it on d-claude (the map's write tracking allocates in v86.wasm); other runs do not grow the memory while stepping
 stepper.js	986	c540c46d	an instruction fetch fault with no pending jump record: not reached while the shipped kernels are stepped
 stepper.js	1013-1015	21db661f	as 927-929, after mkb_run

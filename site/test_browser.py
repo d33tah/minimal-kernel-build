@@ -21717,6 +21717,17 @@ def srcedit_run(browser, base, shots, name, scheme, phone, tmp):
     st = srcedit_state(page)
     if st["active"] != "src_edit" or not st["open"] or not st["editing"]:
         problems.append(f"{tag}: Escape in the editor: focus {st['active']!r}, panel open {st['open']}, editing {st['editing']}")
+    # Enter on Edit stops editing (the built text and its coverage again), Enter again edits.
+    page.keyboard.press("Enter")
+    wait_for(lambda: not srcedit_state(page)["editing"], 5)
+    st = srcedit_state(page)
+    if st["editing"] or not st["bodyShown"] or st["pressed"] != "false":
+        problems.append(f"{tag}: Enter on Edit did not stop editing: editing {st['editing']}, listing {st['bodyShown']}")
+    page.focus("#src_edit")
+    page.keyboard.press("Enter")
+    wait_for(lambda: srcedit_state(page)["taShown"], 10)
+    if srcedit_state(page)["value"] != want:
+        problems.append(f"{tag}: editing again does not show the edited text")
 
     # 4. The panel's Diff: this file's diff instead of the text, and back.
     srcedit_press(page, "#ed_diffbtn", phone)
@@ -21848,6 +21859,16 @@ def srcedit_run(browser, base, shots, name, scheme, phone, tmp):
         page.fill("#ed_text", orig)
         if not wait_for(lambda: srcedit_overlay(page)["paths"] == [], 10):
             problems.append(f"{tag}: the shipped text typed back is still an edit: {srcedit_overlay(page)['paths']}")
+    if header:
+        # The Source tab's file name: the panel's editor moves to that file.
+        show_tab(page, "source")
+        srcedit_press(page, f'#ed_list li[data-path="{header}"] button.edopen', phone)
+        wait_for(lambda: (lambda s: s["editing"] and s["value"] == change[header])(srcedit_state(page)), 15)
+        st = srcedit_state(page)
+        if not st["editing"] or st["value"] != change[header]:
+            problems.append(f"{tag}: the list's {header} did not open in the editor: editing {st['editing']}, {st['value'][:60]!r}")
+        page.evaluate("(p) => openSourceFile(p)", path)
+        wait_for(lambda: srcedit_state(page)["value"] == change[path], 15)
 
     # 10. Revert (press twice) one file, then Revert all.
     if path in srcedit_overlay(page)["paths"]:
@@ -21917,6 +21938,40 @@ def srcedit_nostore_run(browser, base, shots):
     show_tab(page, "source")
     if "reload" not in page.text_content("#ed_count") + page.text_content("#ed_status"):
         problems.append(f"no IndexedDB: the Source tab does not say the edits go with a reload: {page.text_content('#ed_count')!r}")
+    # A revert's first press expires: the label comes back, nothing reverted.
+    page.click("#ed_revert_all")
+    armed = page.text_content("#ed_revert_all")
+    time.sleep(5.5)
+    if "again" not in armed or page.text_content("#ed_revert_all") != "Revert all" or srcedit_overlay(page)["paths"] != [path]:
+        problems.append(f"no IndexedDB: the armed Revert all ({armed!r}) did not expire: {page.text_content('#ed_revert_all')!r}")
+    # The API: write (a line taken out: a deletion-only diff), patch, revert.
+    api = page.evaluate("""async ([p, t]) => { await srcOverlay.write(p, t); const patch = srcOverlay.patch();
+      await srcOverlay.revert(p); return [patch, srcOverlay.paths(), await srcOverlay.read(p) === await srcOverlay.original(p)]; }""",
+                        [path, orig.split("\n", 1)[1]])
+    first = orig.split("\n", 1)[0]
+    added = [x for x in api[0].split("\n") if x.startswith("+") and not x.startswith("+++")]
+    if f"-{first}\n" not in api[0] or added or api[1] != [] or not api[2]:
+        problems.append(f"no IndexedDB: srcOverlay write/patch/revert: {api[0][:200]!r} {api[1]} {api[2]}")
+    # Edit opened at a picked line: the caret is on it.
+    page.click("#src_edit")
+    wait_for(lambda: not srcedit_state(page)["editing"], 5)
+    page.evaluate("(p) => openSourceLine(p, 12)", path)
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
+    page.click("#src_edit")
+    wait_for(lambda: "line 12," in srcedit_state(page)["state"], 10)
+    if "line 12," not in srcedit_state(page)["state"]:
+        problems.append(f"no IndexedDB: opened at line 12, the editor says {srcedit_state(page)['state']!r}")
+    # Upload through its button (the file chooser).
+    junk = shots / "srcedit-junk.patch"
+    junk.write_text("not a patch\n")
+    page.evaluate("delete document.getElementById('ed_status').dataset.state")
+    with page.expect_file_chooser() as fc:
+        page.click("#ed_upload_btn")
+    fc.value.set_files(str(junk))
+    wait_for(lambda: page.evaluate("document.getElementById('ed_status').dataset.state") == "refused", 10)
+    if page.evaluate("document.getElementById('ed_status').dataset.state") != "refused":
+        problems.append(f"no IndexedDB: Upload a patch: {page.text_content('#ed_status')!r}")
+    junk.unlink()
     if errors:
         problems.append(f"no IndexedDB: page errors {errors[:3]}")
     ctx.close()

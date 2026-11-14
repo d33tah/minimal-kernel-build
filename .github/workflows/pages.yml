@@ -128,6 +128,13 @@ jobs:
         mkdir -p out/import-test
         cp "$o/minified/vmlinux" out/import-test/vmlinux
         llvm-nm -n "$o/minified/vmlinux" > out/import-test/System.map
+        # The ELFs gen-symbols.py and gen-disasm.py read, for the page's
+        # generators (gen-worker job; not deployed).
+        mkdir -p gen-elfs
+        cp hello/boot/high/kernel.elf gen-elfs/hello.plain.elf
+        cp "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" gen-elfs/hello-os.plain.elf
+        cp "$o/minified/vmlinux" gen-elfs/minified-linux.plain.elf
+        cp minified/vmlinux gen-elfs/minified-linux-os.plain.elf
         ls -l out/*/
 
     # Third sample kernel: Debian bookworm's linux-image-6.1.0-50-686
@@ -342,6 +349,11 @@ jobs:
       with:
         name: debug-elfs
         path: debug-elfs/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: gen-elfs
+        path: gen-elfs/
 
     - uses: actions/upload-artifact@v4
       with:
@@ -925,11 +937,102 @@ jobs:
         name: jscov-raw-clang-worker
         path: jscov-raw/
 
+  # The generators in the page's Worker (plan E1: genworker.js, kgen.js,
+  # llvm-nm and llvm-objdump of clang.wasm): from the ELFs CI's generators
+  # read, every shipped kernel's symbols.json, disasm.json, dwarf/ and src/
+  # made again in Chromium, Firefox and WebKit must equal the site's files
+  # (site/test_gen_worker.py: gzip compared unpacked). Then the import of a
+  # vmlinux that uses them, end to end in Chromium (test_browser.py
+  # genimport). Chromium's runs count for jscov.
+  gen-worker:
+    needs: [site, clang-wasm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: site
+        path: site
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: debug-elfs
+        path: gen-elfs
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: gen-elfs
+        path: gen-elfs
+
+    - uses: actions/cache@v4
+      with:
+        path: debian-dbg
+        key: browser-debian-686-dbg-6.1.176-1-4625e3cd446f
+
+    - name: Debian vmlinux
+      run: |
+        f=debian-dbg/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb
+        p=pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb
+        sum=4625e3cd446ff2ade7776492bfdecd60b2fb6a72b8b99a97e04f0e472dfeeb84
+        mkdir -p debian-dbg
+        if ! echo "$sum  $f" | sha256sum -c --quiet; then
+          curl -sSfL --retry 3 -o "$f" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$p" ||
+            curl -sSfL --retry 3 -o "$f" "https://deb.debian.org/debian/$p"
+        fi
+        echo "$sum  $f" | sha256sum -c
+        dpkg-deb --fsys-tarfile "$f" | tar -x -O ./usr/lib/debug/boot/vmlinux-6.1.0-50-686 > gen-elfs/debian-6.1-686.elf
+        ls -l gen-elfs
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-firefox-webkit-${{ runner.os }}-v1
+
+    - name: Install Playwright, Chromium, Firefox and WebKit
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium firefox webkit
+
+    - name: Generators in the page's Worker, compared with CI's files
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: |
+        site/gen-clang-wasm.sh --check
+        "$RUNNER_TEMP/venv/bin/python" site/test_gen_worker.py --elfs gen-elfs \
+          --browsers chromium,firefox,webkit --json gen-worker.json
+
+    - name: An imported vmlinux gets the files (test_browser.py genimport)
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+        MKB_DEBUG_ELF_DIR: ${{ github.workspace }}/gen-elfs
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites genimport'
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: gen-worker-results
+        path: |
+          gen-worker.json
+          site/test-screenshots/
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-raw-gen-worker
+        path: jscov-raw/
+
   # e2e coverage of the site's JavaScript (the coverage browser-test jobs
   # and pwa-install): merged, reported, and held to the committed floor
   # site/jscov-baseline.json. Runs when a test job failed too.
   jscov:
-    needs: [browser-test, pwa-install, clang-worker]
+    needs: [browser-test, pwa-install, clang-worker, gen-worker]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:

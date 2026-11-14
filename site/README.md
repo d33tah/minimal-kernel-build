@@ -150,6 +150,31 @@ as a colour emoji (also checked once in Firefox and WebKit):
   of RAM both work (the entry uses 128 MB). The packages its files come
   from are listed in `kernels/debian-6.1-686-initrd/packages.txt` and
   THIRD_PARTY.md.
+- **Generators in the browser** (plan E1). An imported vmlinux (offset
+  auto) gets the files CI makes for the kernels in the list, made in the
+  page: `genimport.js` hands the File to `genworker.js` (a Worker), which
+  runs `kgen.js`, the generators CI runs too (`gen-dwarf.js` and
+  `gen-src.js` are its command lines; `gen-symbols.py` and `gen-disasm.py`
+  are ported line for line), with `llvm-nm -nS` and `llvm-objdump -d` of
+  the page's `clang/clang.wasm` (E0a) on `wasi.js`: `symbols.json`
+  (`--trim` above 20,000 symbols, as CI does for Debian), `disasm.json`
+  (code up to 8 MiB; Debian has none, as shipped), `dwarf/` (line shards,
+  `files.json`, `types.json`, locals, function facts, CFI shards) and, when
+  the source tree is picked, `src/`. The kernel then switches to them
+  as if shipped (`kfetch()` serves them to `dbginfo.js` and `source.js`),
+  and IndexedDB keeps them for the bzImage, so a reload has them all.
+  Measured on d-claude (i7-6700): the minified Linux -O0 in 1.8-2.9 s,
+  Debian's 313 MB -dbg vmlinux in 55-77 s (DWARF 48 s Chromium, 67 s
+  Firefox, 63 s WebKit; peak browser RSS 3.0-4.8 GB). `test_gen_worker.py`
+  (gen-worker job): from the ELFs CI's generators read, every shipped
+  kernel's files made in Chromium, Firefox and WebKit equal the site's
+  byte for byte, with gzip as the one stated normalisation (`.gz` compared
+  unpacked, the gzipped byte counts in the two index.json set to 0: zlib
+  in Node and CompressionStream write other bytes for the same data, and
+  so do Node 20 and 22). Suite genimport: the import, the coverage tree
+  of a counted boot, the picked tree as `src/`, the reload, an offset by
+  hand (nothing made) and a missing clang.wasm (the reason; DWARF read as
+  needed).
 - **Imported symbols.** "Symbols" next to "From disk" takes a
   `System.map` (`nm -n` text: hex address, type letter, name) or an
   unstripped `vmlinux` (ELF32: section headers, `.symtab`/`.strtab` and
@@ -167,8 +192,9 @@ as a colour emoji (also checked once in Firefox and WebKit):
   loads the 32-bit kernel; this is the detected offset shown, as a
   System.map has no bytes to match), else vaddr - 0xC0000000 for addresses
   above the i386 PAGE_OFFSET, else identity; a hex offset can be typed.
-  There is no disasm.json or shipped C source for imported symbols: the
-  listing is disassembled live from guest memory (below). An ELF is read
+  Until the data files below are made, there is no disasm.json or shipped
+  C source for imported symbols: the listing is disassembled live from
+  guest memory (below). An ELF is read
   in File slices (headers, `.symtab`, `.strtab`), never whole; its DWARF,
   if any, gives file:line (Debug info below). A System.map or a vmlinux
   without `.debug_info` says that it has no line information. The map is remembered in localStorage
@@ -669,7 +695,8 @@ as a colour emoji (also checked once in Firefox and WebKit):
   3,030,508 instructions (2,941,867 in functions), `files.json` 2,159,580
   bytes (649,441 gzipped), fetched when the tab opens; minified Linux: 188
   files, 439 functions, 4,465 lines, 17,449 instructions, 23,810 bytes. An
-  imported vmlinux has no tree (it would need every unit's line table).
+  imported vmlinux has the tree once its data files are made in the
+  browser (Generators in the browser, below).
 - **C source.** "C source" prints the C line above the instructions it
   compiled to in the Page listing and the Debugger's code window, like
   `objdump -S` (dim `file.c:123`, printed again when the code returns to
@@ -1836,7 +1863,8 @@ Things a first-time user runs into, and what the page says:
   ("(v86's JIT ran here: not recorded)") and the Source tab says its
   counts are incomplete when the JIT ran kernel code.
 - An imported vmlinux has no coverage tree (the tab says why; lcov is
-  disabled) and no C text until its source folder or .tar is picked.
+  disabled) until its data files are made in the browser, and no C text
+  until its source folder or .tar is picked.
 
 Download sizes per kernel and feature (CI run 42270272424; bytes on disk,
 "gzip" is `gzip -6` of the file, about what Pages sends; `.json.gz` and

@@ -23,7 +23,14 @@ class ClangWorker {
 		this.worker = new Worker(url);
 		this.pending = new Map();
 		this.next = 0;
+		this.onprogress = null;
 		this.worker.onmessage = (e) => {
+			// A long request (genworker.js) says how far it is.
+			if (e.data.progress !== undefined) {
+				if (this.onprogress)
+					this.onprogress(e.data);
+				return;
+			}
 			const p = this.pending.get(e.data.id);
 			this.pending.delete(e.data.id);
 			if (e.data.error)

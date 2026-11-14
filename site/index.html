@@ -117,10 +117,10 @@
     <label><span>From disk<span class="tip" tabindex="0" role="button" title="Load any bzImage from your disk instead of the list">?</span></span>
       <input type="file" id="file">
     </label>
-    <label><span>Symbols<span class="tip" tabindex="0" role="button" title="Import symbols for the current kernel: a System.map (the text llvm-nm -n or nm -n prints: hex address, type letter, name) or an unstripped vmlinux (ELF32: .symtab and section headers are read in the browser). They replace the kernel's symbols.json everywhere (memory grid, Page symbol index, Debugger, Calls, panic detection) and the kernel reboots. A System.map has no sizes: each symbol runs to the next one, capped at the end of its section (_etext, _edata, __bss_stop, ...). Physical address = virtual - offset: auto takes PT_LOAD from an ELF, and for a System.map puts _text at 0x100000 where v86 loads the 32-bit kernel (else vaddr - 0xC0000000, the i386 PAGE_OFFSET, or identity); or type a hex offset. An unstripped vmlinux with DWARF gives file:line; for the text of the lines pick its source folder or .tar under C source. Code is disassembled live in the browser. The map is remembered in this browser for this bzImage (by SHA-256). You can also drop a bzImage and a System.map on the page together.">?</span></span>
+    <label><span>Symbols<span class="tip" tabindex="0" role="button" title="Import symbols for the current kernel: a System.map (the text llvm-nm -n or nm -n prints: hex address, type letter, name) or an unstripped vmlinux (ELF32: .symtab and section headers are read in the browser). They replace the kernel's symbols.json everywhere (memory grid, Page symbol index, Debugger, Calls, panic detection) and the kernel reboots. A System.map has no sizes: each symbol runs to the next one, capped at the end of its section (_etext, _edata, __bss_stop, ...). Physical address = virtual - offset: auto takes PT_LOAD from an ELF, and for a System.map puts _text at 0x100000 where v86 loads the 32-bit kernel (else vaddr - 0xC0000000, the i386 PAGE_OFFSET, or identity); or type a hex offset. An unstripped vmlinux with DWARF gives file:line; for the text of the lines pick its source folder or .tar under C source. A vmlinux (offset auto) then gets the data files CI makes for the kernels in the list, made in this browser by the same generators with llvm-nm and llvm-objdump of the page's clang.wasm (fetched once, 77 MB): symbols.json, disasm.json (code up to 8 MiB), the DWARF shards with the coverage tree's file list, variables, locals, function facts and call frame information, and the C source index once its tree is picked. Until they are made, code is disassembled live and each compile unit's DWARF is read when first needed. The map and the files made are remembered in this browser for this bzImage (by SHA-256). You can also drop a bzImage and a System.map on the page together.">?</span></span>
       <input type="file" id="symfile">
     </label>
-    <span id="src_pick" class="srcpick" hidden><span>C source<span class="tip" tabindex="0" role="button" title="The text of the C lines for an imported vmlinux (or a kernel without shipped source): pick the source tree it was built from, as a folder or an uncompressed .tar (ustar or GNU; a .tar.gz or .tar.xz would have to be decompressed whole in the browser, so unpack it first). The DWARF paths are relative to the tree; a folder or .tar holding it one level down (linux-6.1.176/...) works too. Only the files of the lines shown are read, when they are shown. Nothing is uploaded or remembered: pick it again after a reload.">?</span></span>
+    <span id="src_pick" class="srcpick" hidden><span>C source<span class="tip" tabindex="0" role="button" title="The text of the C lines for an imported vmlinux (or a kernel without shipped source): pick the source tree it was built from, as a folder or an uncompressed .tar (ustar or GNU; a .tar.gz or .tar.xz would have to be decompressed whole in the browser, so unpack it first). The DWARF paths are relative to the tree; a folder or .tar holding it one level down (linux-6.1.176/...) works too. Only the files of the lines shown are read, when they are shown, until the files made for an imported vmlinux are there: then the files its DWARF names are read once and kept in this browser for this bzImage (gzipped, as the kernels in the list ship them). Nothing is uploaded.">?</span></span>
       <span class="row"><input type="file" id="src_tar" accept=".tar,application/x-tar" aria-label="kernel source .tar">
       <button id="src_dir_btn" type="button">folder…</button></span>
       <input type="file" id="src_dir" webkitdirectory hidden>
@@ -138,6 +138,7 @@
     <span id="kinfo" class="note mono"></span>
     <span id="build_info" class="note mono"></span>
     <span id="sym_status" class="note" role="status"></span>
+    <span id="gen_status" class="note" role="status"></span>
     <span id="src_status" class="note" role="status"></span>
     <span id="initrd_status" class="note"></span>
     <button id="initrd_clear" type="button" hidden>no initrd</button>
@@ -544,6 +545,7 @@
 <script src="reverse.js"></script>
 <script src="bookmarks.js"></script>
 <script src="clang.js"></script>
+<script src="genimport.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>
 </body>

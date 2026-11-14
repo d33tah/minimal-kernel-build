@@ -299,6 +299,7 @@ async function imageKey() {
 // Make imported symbols the current kernel's: everything that reads
 // `symbols` uses them after the reboot. No disasm.json or shipped C source; the
 // DWARF is the imported vmlinux's (dbgImport), or none for a System.map.
+// genimport.js replaces them with the files it makes from a vmlinux.
 function applySymbols(map) {
 	symbols = { name: map.name, sections: map.sections, symbols: map.symbols };
 	symbols.imported = { file: map.name, source: map.source, offset: map.offset, how: map.offsetHow };
@@ -316,7 +317,7 @@ function showImported() {
 	const im = symbols && symbols.imported;
 	el.dataset.state = im ? "imported" : "";
 	el.textContent = im ? im.file + (im.file === im.source ? "" : " (" + im.source + ")") + ": " + symbols.symbols.length + " symbols, offset " +
-		hex(im.offset) + ", " + im.how + ". No disasm.json for imported symbols: code is disassembled live. " +
+		hex(im.offset) + ", " + im.how + ". " + (disasm ? "" : "No disasm.json for these symbols: code is disassembled live. ") +
 		(dbgHas() ? DBG.info : "No file:line: " + DBG.why) + "." : "";
 	el.dataset.dwarf = im ? DBG.mode || "" : "";
 	$("sym_forget").hidden = !im;
@@ -343,6 +344,10 @@ async function importSymbols(file) {
 	}
 	if (map.source === "ELF")
 		dbgImport(file, map.offset, key);
+	// The files CI makes for a shipped kernel, made here (genimport.js):
+	// they place code by the ELF's PT_LOAD, so not with an offset by hand.
+	if (map.source === "ELF" && /^(auto)?$/.test($("sym_offset").value.trim().toLowerCase()))
+		genImport(file, key);
 	if (image)
 		await boot();
 	return true;
@@ -359,6 +364,8 @@ async function restoreImported() {
 			if (map.source === "ELF")
 				await dbgRestore(key);
 			$("sym_status").textContent += " (remembered for this bzImage)";
+			if (map.source === "ELF")
+				await genRestore(key);
 			return true;
 		}
 	} catch (e) {

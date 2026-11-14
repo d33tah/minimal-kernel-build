@@ -163,7 +163,10 @@ function memfsWrite(f, data, off) {
 }
 
 // Run module's _start once over fs. opts: args (argv, argv[0] picks the
-// llvm tool), env (object), cwd (absolute; also PWD), stdin (bytes).
+// llvm tool), env (object), cwd (absolute; also PWD), stdin (bytes),
+// stdout (optional: called with each write's bytes, valid during the call
+// only, instead of collecting them: llvm-objdump of a distro kernel
+// writes ~150 MB).
 // Returns { code, stdout, stderr, mem, instantiateMs }; a trap other
 // than proc_exit throws.
 function wasiRun(module, fs, opts) {
@@ -449,8 +452,12 @@ function wasiRun(module, fs, opts) {
 				if (f.stream === 0)
 					return E.BADF;
 				for (const [p, len] of iovecs(iovs, n)) {
-					out[f.stream - 1].push(u8.slice(p, p + len));
-					outLen[f.stream - 1] += len;
+					if (f.stream === 1 && opts.stdout)
+						opts.stdout(u8.subarray(p, p + len));
+					else {
+						out[f.stream - 1].push(u8.slice(p, p + len));
+						outLen[f.stream - 1] += len;
+					}
 					total += len;
 				}
 			} else {

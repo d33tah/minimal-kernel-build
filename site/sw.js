@@ -22,7 +22,7 @@ const PRECACHE_PLAIN = ["index.html", "manifest.webmanifest", "icons/icon-192.pn
 const PRECACHE_STAMPED = [
 	"style.css", "clock.js", "v86/libv86.js", "jumps.js", "stepper.js", "graph.js", "dwarf.js", "unwind.js", "asmnames.js",
 	"dbginfo.js", "source.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "vars.js",
-	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
+	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "genimport.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
 ];
 const PRECACHE_KERNELS = [
 	"kernels/hello/bzImage", "kernels/hello/symbols.json", "kernels/hello/disasm.json",

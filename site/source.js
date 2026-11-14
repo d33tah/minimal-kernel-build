@@ -9,7 +9,9 @@
 //            line of it is shown
 //   picked   a source folder or .tar the user picked (an imported vmlinux,
 //            or a kernel without shipped source): read from the File the
-//            first time a line of it is shown
+//            first time a line of it is shown; for a vmlinux whose files
+//            genimport.js made, it makes src/ from the pick and the kernel
+//            reads that as shipped
 // srcFile() answers synchronously from what is loaded and starts the load
 // of the rest; dbgChanged() re-renders when it arrives.
 
@@ -30,7 +32,7 @@ async function srcUseShipped(entry) {
 	const mine = SRC;
 	SRC.base = entry.src.replace(/\/?$/, "/");
 	try {
-		const r = await fetch(withV(SRC.base + "index.json"));
+		const r = await kfetch(SRC.base + "index.json");
 		if (!r.ok)
 			throw new Error("HTTP " + r.status);
 		const ix = await r.json();
@@ -74,7 +76,7 @@ function srcFile(path) {
 			return { state: "loading" };
 		if (!SRC.have.has(path))
 			return { state: "none", why: path + ": " + (SRC.missing[path] || "not shipped") };
-		load = () => fetch(withV(SRC.base + path.split("/").map(encodeURIComponent).join("/") + ".gz"))
+		load = () => kfetch(SRC.base + path.split("/").map(encodeURIComponent).join("/") + ".gz")
 			.then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)));
 	} else if (SRC.mode === "picked") {
 		if (!SRC.entries)
@@ -128,6 +130,7 @@ function srcPickFolder(files) {
 	SRC.entries = new Map([...files].map((f) => [f.webkitRelativePath || f.name, f]));
 	SRC.info = SRC.name + " (" + SRC.entries.size.toLocaleString("en") + " files)";
 	srcChanged();
+	genSrcPicked();
 }
 
 // An uncompressed .tar: only the 512-byte headers are read (ustar, GNU long
@@ -197,6 +200,7 @@ async function srcPickTar(file) {
 	SRC.entries = entries;
 	SRC.info = file.name + " (" + entries.size.toLocaleString("en") + " files)";
 	srcChanged();
+	genSrcPicked();
 }
 
 // The picker shows where there is DWARF but no shipped source (an imported

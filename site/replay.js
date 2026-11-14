@@ -403,7 +403,7 @@ function replayFinish() {
 		diff.unshift("kernel");
 	rp.ok = diff.length === 0 && rp.late.length === 0;
 	rp.why = rp.ok ? "" : diff.map((k) => names[k] || k).join(", ") + (rp.late.length ? (diff.length ? "; " : "") + rp.late.length + " input" +
-		(rp.late.length === 1 ? "" : "s") + " not at their recorded moment" : "");
+		(rp.late.length === 1 ? " not at its recorded moment" : "s not at their recorded moments") : "");
 	const n = runKeys(rp.run);
 	const text = rp.ok ?
 		"Replay matched: " + n + " scancode" + (n === 1 ? "" : "s") + " at the recorded counts, and at instruction " + got.at.toLocaleString("en") +

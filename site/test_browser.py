@@ -17546,6 +17546,86 @@ def replay_refused(browser, base, shots, problems, r):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def replay_tampered(browser, base, shots, problems, r):
+    """Runs edited after the download (hello at 1280 light, to its end on
+    the virtual clock): one without its end, one on the real-time clock and
+    one with a log entry that is not readable are refused with the reason;
+    one recorded for another build of hello, with another RAM hash at its
+    end and its last log entry a microsecond later replays and says it
+    differs in exactly those (kernel, RAM, one input not at its moment);
+    one recorded with 3 MiB of RAM (not in the RAM menu) adds that size to
+    the menu, boots with it and differs in RAM."""
+    tag = "replay tampered (hello 1280 light)"
+    ctx = replay_context(browser, "light", False)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    try:
+        page.goto(f"{base}/index.html?kernel=hello&mips=10", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
+            problems.append(f"{tag}: hello did not end in 120 s")
+            return
+        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        show_tab(page, "snapshots")
+        with page.expect_download() as dl:
+            page.click("#run_dl")
+        run = json.loads(pathlib.Path(dl.value.path()).read_text())
+        if not run.get("log") or not run.get("kernelKey"):
+            problems.append(f"{tag}: hello's run has no log entry or no kernel key (test setup): {str(run)[:200]}")
+            return
+
+        def replay(name, body):
+            f = tmp / name
+            f.write_text(json.dumps(body))
+            show_tab(page, "snapshots")
+            page.evaluate("document.getElementById('run_status').textContent = ''")
+            page.set_input_files("#run_file", str(f))
+
+        refused = {"noend.json": ({**run, "end": None}, "Cannot replay: the run has no log or no end."),
+                   "realtime.json": ({**run, "clock": "real"},
+                                     "Cannot replay: the run was on the real-time clock: its inputs were not recorded."),
+                   "unreadable.json": ({**run, "log": [{**run["log"][0], "t": "soon"}] + run["log"][1:]},
+                                       "Cannot replay: the log's entry 1 is not readable or out of order.")}
+        r["tampered refused"] = {}
+        for name, (body, want) in refused.items():
+            replay(name, body)
+            wait_for(lambda: page.text_content("#run_status"), 10)
+            st = page.text_content("#run_status")
+            r["tampered refused"][name] = st[:120]
+            if st != want or page.get_attribute("#run_status", "data-replay") != "error":
+                problems.append(f"{tag}: {name}: {st!r} ({page.get_attribute('#run_status', 'data-replay')}), want {want!r}")
+
+        log = [dict(e) for e in run["log"]]
+        log[-1]["t"] += 0.001
+        replay("edited.json", {**run, "kernelKey": "sha256:" + "0" * 64, "end": {**run["end"], "ram": "0" * 16}, "log": log})
+        if not replay_wait(page, 300):
+            problems.append(f"{tag}: the edited run's replay did not finish: {page.text_content('#run_status')[:200]!r}")
+        c = replay_state(page)
+        want = f"Replay differs from the recording (kernel, RAM; 1 input not at its recorded moment) at instruction {run['end']['at']:,}."
+        r["tampered differs"] = [c["status"], c["verdict"], c["replay"]]
+        if c["status"] != want or c["verdict"] != "differ" or (c["replay"] or {}).get("late") != 1:
+            problems.append(f"{tag}: the edited run: {c['status']!r} ({c['verdict']}, {c['replay']}), want {want!r}")
+        replay_shots(page, shots, "replay-tampered-1280-light")
+
+        replay("ram3m.json", {**run, "ram": 3 << 20})
+        if not replay_wait(page, 300):
+            problems.append(f"{tag}: the 3 MiB run's replay did not finish: {page.text_content('#run_status')[:200]!r}")
+        c = replay_state(page)
+        mem = [page.input_value("#memory"), page.evaluate("emuRam"), page.evaluate("[...document.getElementById('memory').options].map((o) => o.text)")]
+        r["tampered 3 MiB"] = [c["status"], c["verdict"], mem[:2]]
+        if mem[0] != str(3 << 20) or mem[1] != 3 << 20 or "3,072 KiB" not in mem[2]:
+            problems.append(f"{tag}: a run with 3 MiB of RAM: the menu {mem[2]}, chosen {mem[0]}, the machine's RAM {mem[1]}")
+        if c["verdict"] != "differ" or not c["status"].startswith("Replay differs from the recording (") or "RAM" not in c["status"]:
+            problems.append(f"{tag}: a run recorded on 2 MiB replayed on 3 MiB: {c['status']!r} ({c['verdict']})")
+        replay_fit(page, tag, problems)
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def replay_case(browser, base, shots, entries, initrd):
     problems, r = [], {}
     tmp = pathlib.Path(tempfile.mkdtemp())
@@ -17556,6 +17636,7 @@ def replay_case(browser, base, shots, entries, initrd):
             problems.append(f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}")
             return None
     guard(replay_prompt_edge, browser, base, shots, problems, r)
+    guard(replay_tampered, browser, base, shots, problems, r)
     if "minified-linux" in entries:
         guard(replay_refused, browser, base, shots, problems, r)
         guard(replay_stepped, browser, base, shots, "minified-linux", problems, r)

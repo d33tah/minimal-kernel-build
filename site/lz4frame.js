@@ -143,9 +143,8 @@ function lz4FrameUnpack(src, size) {
 			const input = new Uint8Array(4 + len);
 			new DataView(input.buffer).setUint32(0, want, true);
 			input.set(src.subarray(i, i + len), 4);
+			// lz4-wasm fails a block that does not decode to exactly want bytes.
 			const b = lz4Call("decompress", input);
-			if (b.length !== want)
-				throw new Error("LZ4 block gave " + b.length + " bytes, " + want + " expected");
 			out.set(b, o);
 			o += b.length;
 		}

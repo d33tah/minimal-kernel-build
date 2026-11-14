@@ -12828,6 +12828,241 @@ SNAP_INJECT_JS = """async (recs) => {
   return s.id; }"""
 
 
+def lz4_xxh32_short(b):
+    """xxh32 (seed 0) of fewer than 16 bytes (github.com/Cyan4973/xxHash,
+    doc/xxhash_spec.md): the LZ4 frame descriptor's checksum."""
+    p1, p2, p3, p4, p5, m = 0x9E3779B1, 0x85EBCA77, 0xC2B2AE3D, 0x27D4EB2F, 0x165667B1, 0xffffffff
+    rotl = lambda x, r: ((x << r) | (x >> (32 - r))) & m
+    h, i = (p5 + len(b)) & m, 0
+    while i + 4 <= len(b):
+        h = rotl((h + struct.unpack_from("<I", b, i)[0] * p3) & m, 17) * p4 & m
+        i += 4
+    for c in b[i:]:
+        h = rotl((h + c * p5) & m, 11) * p1 & m
+    h ^= h >> 15
+    h = h * p2 & m
+    h ^= h >> 13
+    h = h * p3 & m
+    return h ^ (h >> 16)
+
+
+def lz4_frame(blocks, flg=0x68, bd=0x70, size=0, hc=None):
+    """An LZ4 frame (doc/lz4_Frame_format.md) of blocks [(bytes, stored)],
+    its descriptor's checksum computed here unless hc is given."""
+    desc = bytes([flg, bd]) + (struct.pack("<Q", size) if flg & 8 else b"")
+    out = struct.pack("<I", 0x184D2204) + desc + bytes([(lz4_xxh32_short(desc) >> 8) & 0xff if hc is None else hc])
+    for data, stored in blocks:
+        out += struct.pack("<I", len(data) | (0x80000000 if stored else 0)) + data
+    return out + bytes(4)
+
+
+# Records written into the snapshot store beside those the page saved: a
+# copy of snapshot #1 or #2 (from) with other bytes (b64), codec, size or
+# delta base (delta: null makes it a full one).
+SNAP_CORRUPT_JS = """async (recs) => {
+  const by = Object.fromEntries(snapshots.map((s) => [s.seq, s]));
+  for (const x of recs) {
+    const t = by[x.from || 1];
+    const data = x.b64 ? new Blob([Uint8Array.from(atob(x.b64), (c) => c.charCodeAt(0))]) : t.data;
+    const rec = { ...snapRecord(t), id: x.id, seq: 100 + x.n, time: t.time + x.n, name: x.name, data, size: data.size,
+      codec: x.codec || t.codec, raw: x.size === undefined ? t.raw : x.size, delta: x.delta === undefined ? t.delta : x.delta };
+    await snapTx('readwrite', (st) => st.put(rec));
+  }
+  return snapshots.map((s) => ({ seq: s.seq, id: s.id, raw: s.raw, codec: s.codec, delta: s.delta })); }"""
+SNAP_MACHINE_JS = """async () => { const c = emulator.v86.cpu;
+  const d = await crypto.subtle.digest('SHA-256', c.mem8.slice(0, emuRam));
+  return { ram: Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, '0')).join(''), icount: c.instruction_counter[0] >>> 0,
+    eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0) }; }"""
+
+
+def snapdiff_corrupt(browser, base, shots):
+    """Stored snapshots whose bytes are not what their record says (a disk
+    or another build wrote them; written here into IndexedDB beside two
+    the page saved, a full one and a delta of it, then read on a reload):
+    Restore of each says what is wrong with it, in the LZ4 frame (no
+    frame, flags this page does not write, a header checksum, a block that
+    does not decode, a block of another size, a frame shorter than the
+    record, one whose content size its block does not decode to), in
+    v86's state (another magic, another version) or in the
+    chain of deltas (a delta of a "full" one that is itself a delta, one of
+    another base), and leaves the machine as it was; the diff of the
+    "full" delta and Delete of a base whose delta cannot be rebuilt say so
+    too, and keep it. A name confirmed unchanged is no rename. A diff
+    with a snapshot of a smaller RAM lists the pages above its end that
+    hold bytes. After the site's data is cleared (the page's database
+    connection is closed under it) Delete, Rename and Save each say that
+    IndexedDB failed, and the snapshot stays in memory."""
+    problems, r, errors = [], {}, []
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+
+    def start(url):
+        page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        return ok
+
+    url = f"{base}/index.html?kernel=hello&paused=1#snapshots"
+    try:
+        if not start(url):
+            return ["corrupt: hello did not start paused"], r
+        snap_save(page, 1, False)
+        show_tab(page, "debugger")
+        page.fill("#dbg_n", str(SNAPDIFF_STEPS["hello"]))
+        page.click("#dbg_stepn")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+                 page.evaluate("stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
+        st = snap_save(page, 2, False)
+        a_id, b_id = st["rows"][0]["id"], st["rows"][1]["id"]
+        saved = page.evaluate("snapshots.map((s) => ({ id: s.id, raw: s.raw, codec: s.codec, base: s.delta && s.delta.base }))")
+        if [x["codec"] for x in saved] != ["lz4", "lz4"] or saved[1]["base"] != a_id:
+            return [f"corrupt: two saves are not a full LZ4 snapshot and a delta of it (test setup): {saved}"], r
+        b64 = lambda b: base64.b64encode(b).decode()
+        stored100 = bytes(range(100))
+        aaaa = bytes([0x1A, 0x41, 0x01, 0x00, 0x50]) + b"A" * 5
+        v86_v5 = struct.pack("<IiII", 0x86768676, 5, 64, 0) + bytes(48)
+        # tag: (record, the reason Restore gives or None for no Restore)
+        cases = {
+            "nolz4": ({"b64": b64(b"this is not an LZ4 frame"), "size": 1000}, "not an LZ4 frame"),
+            "flags": ({"b64": b64(lz4_frame([(stored100, True)], flg=0x48, size=100)), "size": 100},
+                      "LZ4 frame with FLG 48: only version 01, independent blocks, no dictionary are read"),
+            "checksum": ({"b64": b64(lz4_frame([(stored100, True)], size=100, hc=(((lz4_xxh32_short(bytes([0x68, 0x70]) +
+                          struct.pack("<Q", 100)) >> 8) + 1) & 0xff))), "size": 100}, "LZ4 frame header checksum mismatch"),
+            # A literal 'A', then a match 65,535 bytes back: before the output's start.
+            "block": ({"b64": b64(lz4_frame([(bytes([0x10, 0x41, 0xff, 0xff]), False)], size=100)), "size": 100},
+                      "LZ4 block: the offset to copy is not contained in the decompressed buffer"),
+            # Twenty 'A's: a literal, a match one byte back, five literals.
+            "aaaa": ({"b64": b64(lz4_frame([(aaaa, False)], size=20)), "size": 20}, "not a v86 state (magic 41414141)"),
+            "size": ({"b64": b64(lz4_frame([(aaaa, False)], size=21)), "size": 21},
+                     "LZ4 block: the expected decompressed size differs, actual 20, expected 21"),
+            "short": ({"b64": b64(lz4_frame([(stored100, True)], size=200)), "size": 200}, "LZ4 frame holds 100 bytes, 200 expected"),
+            "magic": ({"b64": b64(stored100), "codec": "raw", "size": 100},
+                      f"not a v86 state (magic {struct.unpack_from('<I', stored100)[0]:x})"),
+            "version": ({"b64": b64(v86_v5), "codec": "raw", "size": len(v86_v5)}, "v86 state version 5, this page reads version 6"),
+            # #2 (a delta) recorded as a full snapshot, and a delta of it.
+            "fakefull": ({"from": 2, "delta": None}, None),
+            "ofdelta": ({"from": 2, "delta": {"base": a_id + "fakefull", "pages": 1}},
+                        "the snapshot this delta was taken against is missing"),
+            # #1 again under another id, and #2 recorded as a delta of that copy.
+            "copy": ({"delta": None}, None),
+            "otherbase": ({"from": 2, "delta": {"base": a_id + "copy", "pages": 1}},
+                          f"snapshot {a_id}otherbase is not a delta of {a_id}copy"),
+        }
+        recs = [{**rec, "id": a_id + tag, "n": n, "name": "corrupt " + tag} for n, (tag, (rec, _)) in enumerate(cases.items())]
+        page.evaluate(SNAP_CORRUPT_JS, recs)
+        start(url)
+        show_tab(page, "snapshots")
+        snap_wait_rows(page, 2 + len(cases))
+        wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+        page.evaluate(SNAP_JS)
+        before = page.evaluate(SNAP_MACHINE_JS)
+        r["restore"] = {}
+        for tag, (_, why) in cases.items():
+            if why is None:
+                continue
+            page.evaluate("document.getElementById('snap_status').textContent = ''")
+            snap_click(page, f"#snapshots tr[data-id='{a_id}{tag}'] button.restore", False)
+            wait_for(lambda: "failed" in page.text_content("#snap_status") or
+                     page.get_attribute("#snap_status", "data-restored") == a_id + tag, 30)
+            s = page.text_content("#snap_status")
+            after = page.evaluate(SNAP_MACHINE_JS)
+            r["restore"][tag] = s[:150]
+            if s != f"restore_state failed: Error: {why}":
+                problems.append(f"Restore of “corrupt {tag}”: {s!r}, want 'restore_state failed: Error: {why}'")
+            if after != before:
+                problems.append(f"Restore of “corrupt {tag}” failed but the machine changed: "
+                                f"{ {k: (str(before[k])[:40], str(after[k])[:40]) for k in before if before[k] != after[k]} }")
+        page.screenshot(path=str(shots / "snapdiff-corrupt-1280-light.png"), full_page=True)
+
+        # The diff of the "full" one that is a delta.
+        page.select_option("#snap_a", a_id + "fakefull")
+        page.select_option("#snap_b", "now")
+        page.click("#snap_diff")
+        wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") in ("done", "error"), 30)
+        d = page.evaluate(SNAP_DIFF_JS) or {}
+        s = page.text_content("#snap_diff_status")
+        r["diff fakefull"] = [d.get("state"), s[:120]]
+        if d.get("state") != "error" or s != "Diff failed: a delta snapshot read without its base":
+            problems.append(f"diff of a delta recorded as full: state {d.get('state')!r}, {s!r}")
+
+        # Delete of a base whose delta cannot be rebuilt without it: kept.
+        snap_click(page, f"#snapshots tr[data-id='{a_id}copy'] button.snapdel", False)
+        wait_for(lambda: page.text_content("#snap_status").startswith("Not deleted"), 30)
+        s = page.text_content("#snap_status")
+        ids = [x["id"] for x in snap_rows(page)["rows"]]
+        r["delete base"] = [s[:200], a_id + "copy" in ids]
+        if s != f"Not deleted: “corrupt copy” is the base of a delta that could not be rebuilt (snapshot {a_id}otherbase " \
+                f"is not a delta of {a_id}copy)." or a_id + "copy" not in ids:
+            problems.append(f"Delete of a base whose delta cannot be rebuilt: {s!r}, still listed: {a_id + 'copy' in ids}")
+
+        # A name confirmed as it was: no rename, no store.
+        name0 = snap_rows(page)["rows"][0]["name"]
+        page.evaluate("document.getElementById('snap_status').textContent = 'mark'")
+        page.click(f"#snapshots tr[data-id='{a_id}'] button.snapname")
+        page.press("#snapshots input.snapedit", "Enter")
+        wait_for(lambda: not page.is_visible("#snapshots input.snapedit"), 10)
+        r["same name"] = [snap_rows(page)["rows"][0]["name"] == name0, page.text_content("#snap_status")]
+        if r["same name"] != [True, "mark"]:
+            problems.append(f"a name confirmed unchanged: same name {r['same name'][0]}, status {r['same name'][1]!r} (want no 'Renamed.')")
+
+        # A diff with a snapshot of 2 MiB on a 4 MiB machine at hello's end:
+        # the pages above 2 MiB that hold bytes, each with how many.
+        ram_a = page.evaluate("emuRam")
+        page.goto(f"{base}/index.html?kernel=hello&mem={2 * ram_a}#snapshots")
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
+            problems.append(f"hello at {2 * ram_a} bytes of RAM did not end")
+        else:
+            show_tab(page, "snapshots")
+            wait_for(lambda: len(snap_rows(page)["rows"]) >= 2 and all(x["kernel"] for x in snap_rows(page)["rows"]), 30)
+            page.select_option("#snap_a", a_id)
+            page.select_option("#snap_b", "now")
+            page.click("#snap_diff")
+            wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") in ("done", "error"), 30)
+            d = page.evaluate(SNAP_DIFF_JS) or {}
+            want = page.evaluate(f"""(() => {{ const m = emulator.read_memory(0, emuRam), out = [];
+                for (let p = {ram_a} / 4096; p < emuRam / 4096; p++) {{ let c = 0;
+                  for (let i = p * 4096; i < p * 4096 + 4096; i++) c += m[i] !== 0;
+                  if (c) out.push([p, c]); }}
+                return out; }})()""")
+            got = [x for x in d.get("pages", []) if x[0] >= ram_a // 4096]
+            r["diff 2 MiB vs 4 MiB"] = [d.get("state"), len(got), got[:3]]
+            if d.get("state") != "done" or not want or got != want:
+                problems.append(f"diff of a {ram_a}-byte snapshot with a {2 * ram_a}-byte machine: state {d.get('state')}, "
+                                f"pages above {ram_a:#x} {got[:4]} ({len(got)}), RAM has {want[:4]} ({len(want)})")
+            page.screenshot(path=str(shots / "snapdiff-corrupt-ramsizes.png"), full_page=True)
+
+        # The site's data cleared while the page is open.
+        cdp = ctx.new_cdp_session(page)
+        cdp.send("Storage.clearDataForOrigin", {"origin": base, "storageTypes": "indexeddb"})
+        closing = "The database connection is closing."
+        snap_click(page, f"#snapshots tr[data-id='{a_id}version'] button.snapdel", False)
+        wait_for(lambda: "IndexedDB failed" in page.text_content("#snap_status"), 15)
+        s_del = page.text_content("#snap_status")
+        page.click(f"#snapshots tr[data-id='{a_id}'] button.snapname")
+        page.fill("#snapshots input.snapedit", "renamed after clearing")
+        page.press("#snapshots input.snapedit", "Enter")
+        wait_for(lambda: page.text_content("#snap_status").startswith("Renamed."), 15)
+        s_ren = page.text_content("#snap_status")
+        n = len(snap_rows(page)["rows"])
+        st = snap_save(page, n + 1, False)
+        s_save = st["status"]
+        where = {x["id"]: x["where"] for x in st["rows"]}
+        r["cleared"] = [s_del[:120], s_ren[:160], s_save[-160:], where.get(a_id), list(where.values())[-1]]
+        if not s_del.startswith("Deleting from IndexedDB failed: ") or closing not in s_del:
+            problems.append(f"Delete after the site's data was cleared: {s_del!r}")
+        if not s_ren.startswith("Renamed. Not stored (") or closing not in s_ren or where.get(a_id) != "memory":
+            problems.append(f"Rename after the site's data was cleared: {s_ren!r}, the snapshot is {where.get(a_id)!r} (want memory)")
+        if "Not stored (" not in s_save or closing not in s_save or list(where.values())[-1] != "memory":
+            problems.append(f"Save after the site's data was cleared: {s_save!r}, the new one is {list(where.values())[-1]!r}")
+        page.screenshot(path=str(shots / "snapdiff-corrupt-cleared.png"), full_page=True)
+        if errors:
+            problems.append(f"corrupt: page errors {errors[:3]}")
+    finally:
+        ctx.close()
+    return problems, r
+
+
 def snapdiff_edges(browser, base, shots):
     """What the table does with records it cannot use as they are, and the
     small controls around it: a store a newer deploy opened at a higher
@@ -13057,6 +13292,8 @@ def snapdiff_case(browser, base, shots, linux):
     out.append(report("snapdiff S1 gzip", problems, r))
     problems, r = snapdiff_guard(snapdiff_edges, browser, base, shots)
     out.append(report("snapdiff edges", problems, r))
+    problems, r = snapdiff_guard(snapdiff_corrupt, browser, base, shots)
+    out.append(report("snapdiff corrupt", problems, r))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_bigsave, browser, base, shots, phone)
         out.append(report("snapdiff big save", problems, r, width=390 if phone else 1280))

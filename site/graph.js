@@ -1168,12 +1168,15 @@ function drawGraph() {
 function graphTick() {
 	if (!G.stepper || tab !== "calls")
 		return;
-	if (G.stepper.graphVersion !== G.version || G.dirty) {
+	// The count too: code that loops inside one function makes no symbol
+	// transition, and its open call, the now line and "follow" go on.
+	const version = G.stepper.graphVersion + "," + G.stepper.steps;
+	if (version !== G.version || G.dirty) {
 		// The call tree is DOM: rebuild it at most every 2 s while running.
 		if (G.view === "tree" && !G.dirty && realNow() - (G.treeAt || 0) < 2000)
 			return;
 		G.treeAt = realNow();
-		G.version = G.stepper.graphVersion;
+		G.version = version;
 		G.dirty = false;
 		drawGraph();
 		if (G.selected >= 0)

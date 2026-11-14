@@ -1310,7 +1310,9 @@ def distro_panic_case(browser, base, cache):
 
 def follow_case(browser, base, shots):
     """Slow motion, transposed timeline on a phone: "follow" keeps the
-    running frame's column on screen; the cmdline default is shown."""
+    running frame's column on screen; after a drag, ticking "follow" again
+    slides the window with the run, and the call tree is rebuilt every 2 s;
+    the cmdline default is shown."""
     problems, r = [], {}
     page = browser.new_page(viewport={"width": 390, "height": 900})
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=100000#calls")
@@ -1336,6 +1338,43 @@ def follow_case(browser, base, shots):
     if not rows or max(rows) < 2 or scrolled <= 0:
         problems.append(f"following never had to scroll: rows {rows}, scrolled {scrolled}px")
     page.screenshot(path=str(shots / "follow-transposed-390.png"))
+    page.close()
+    # At 1k/s: a drag stops following (the window stays behind the run);
+    # ticking "follow" again slides the window along with the run, its span kept.
+    page = browser.new_page(viewport={"width": 1100, "height": 900})
+    page.goto(f"{base}/index.html?kernel=minified-linux#calls")
+    if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 60):
+        return problems + ["1k/s: no kernel entry"], r
+    time.sleep(2)
+    show_canvas(page)
+    box = page.locator("#graph_canvas").bounding_box()
+    cx, cy = box["x"] + box["width"] / 2, box["y"] + 150
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    page.mouse.move(cx + 100, cy, steps=4)
+    page.mouse.up()
+    time.sleep(1)
+    left = page.evaluate("[G.follow, document.getElementById('graph_follow').checked, G.x0, G.x1, G.stepper.steps, runState]")
+    page.check("#graph_follow")
+    time.sleep(1)
+    back = page.evaluate("[G.follow, G.x0, G.x1, G.stepper.steps, runState]")
+    r["follow again"] = [left, back]
+    if left[0] or left[1] or not left[4] > left[3] or left[5] != "stepped":
+        problems.append(f"after a drag: [follow, ticked, x0, x1, steps, run state] {left}, want not following with the run past the window")
+    elif not back[0] or not back[2] > left[3] or back[3] - back[2] > 300 or \
+            abs((back[2] - back[1]) - (left[3] - left[2])) > 1e-6 * (left[3] - left[2]):
+        problems.append(f"follow ticked again: [follow, x0, x1, steps] {back[:4]}, want the window's end moved from {left[3]:.0f} "
+                        f"to within 300 instructions of the run, its span {left[3] - left[2]:.0f} kept")
+    # The call tree while stepping: rebuilt at most every 2 s.
+    page.click("#gview_tree")
+    t0 = time.monotonic()
+    incl = []
+    for at in (0.4, 1.5, 2.8):
+        time.sleep(max(0, t0 + at - time.monotonic()))
+        incl.append(int(page.get_attribute("#graph_tree", "data-root-incl") or -1))
+    r["tree while stepping"] = incl
+    if not 0 < incl[0] == incl[1] < incl[2]:
+        problems.append(f"the call tree's root count at 0.4, 1.5 and 2.8 s while stepping at 1k/s: {incl}, want a rebuild only after 2 s")
     page.close()
     # A bzImage from disk starts with the default command line too.
     page = browser.new_page(viewport={"width": 1100, "height": 900})

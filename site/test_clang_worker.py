@@ -243,9 +243,8 @@ AUTO_HTML = """<!doctype html>
 
 def serve(fdir, auto, tdir=None):
     """site/ plus /__clang_fixtures/NAME from fdir, /__tool_fixtures/PATH
-    from tdir (any origin may read it: with --base the live page fetches
-    them from here; Playwright's route would pass a 245 MB vmlinux through
-    its driver, which broke it), /__clang_auto.html (runs RUN_JS with
+    from tdir (served here: Playwright's route would pass Debian's 245 MB
+    vmlinux through its driver, which broke it), /__clang_auto.html (runs RUN_JS with
     auto["args"] by itself) and POST /__clang_result (sets auto["result"],
     auto["done"])."""
     class Handler(tb.QuietHandler):
@@ -255,14 +254,12 @@ def serve(fdir, auto, tdir=None):
                 p = (tdir / path[len("/__tool_fixtures/"):]).resolve()
                 if tdir.resolve() not in p.parents or not p.is_file():
                     self.send_response(404)
-                    self.send_header("Access-Control-Allow-Origin", "*")
                     self.end_headers()
                     return
                 self.send_response(200)
                 self.send_header("Content-Type", "application/wasm" if p.suffix == ".wasm" else
                                  "application/json" if p.suffix == ".json" else "application/octet-stream")
                 self.send_header("Content-Length", str(p.stat().st_size))
-                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 with p.open("rb") as f:
                     shutil.copyfileobj(f, self.wfile, 1 << 20)
@@ -493,6 +490,17 @@ def main():
     tnames = sorted(p.name for p in tdir.glob("*.json")) if tdir else []
     if tdir and not tnames:
         sys.exit(f"no fixtures in {tdir}")
+    if tdir and args.base:
+        # The deployed page (https) may not fetch from this machine's
+        # http server (mixed content, local network access), so Playwright's
+        # route serves the fixtures, and a route cannot carry Debian's
+        # 245 MB vmlinux (the driver's connection broke): runs with an
+        # input above 64 MiB are left out here (the clang-worker job runs
+        # them on the deployed files).
+        big = [n for n in tnames if any((tdir / "blobs" / h).stat().st_size > 64 << 20
+                                        for _, h in json.loads((tdir / n).read_text())["files"])]
+        tnames = [n for n in tnames if n not in big]
+        print(f"--base: {len(big)} tool fixtures with an input above 64 MiB left out: {big}")
     if tdir and args.no_automation:
         sys.exit("--tool-fixtures: not with --no-automation")
     # Per tool, the run with the least input is also run with that input
@@ -503,9 +511,8 @@ def main():
         size = sum((tdir / "blobs" / h).stat().st_size for _, h in f["files"])
         if f["files"] and (f["tool"] not in cut or size < cut[f["tool"]][1]):
             cut[f["tool"]] = (n, size)
-    httpd = serve(fdir, auto, tdir) if tdir or not args.base else None
-    tbase = f"http://127.0.0.1:{httpd.server_address[1]}" if httpd else None
-    base = args.base.rstrip("/") if args.base else tbase
+    httpd = None if args.base else serve(fdir, auto, tdir)
+    base = args.base.rstrip("/") if args.base else f"http://127.0.0.1:{httpd.server_address[1]}"
     if args.no_automation and (args.base or args.browsers != "firefox"):
         sys.exit("--no-automation: Firefox only, on the local site")
     jscov.install("clang-worker")
@@ -546,6 +553,16 @@ def main():
                     route.fulfill(path=str(fdir / n), content_type="application/wasm" if n.endswith(".wasm") else "application/json")
                 page.route("**/__clang_fixtures/*", fixture)
 
+                def tool_fixture(route):
+                    n = route.request.url.split("/__tool_fixtures/")[1].split("?")[0]
+                    p = (tdir / n).resolve()
+                    if tdir.resolve() not in p.parents or not p.is_file():
+                        return route.fulfill(status=404)
+                    route.fulfill(path=str(p), content_type="application/wasm" if n.endswith(".wasm") else
+                                  "application/json" if n.endswith(".json") else "application/octet-stream")
+                if tdir and args.base:
+                    page.route("**/__tool_fixtures/**", tool_fixture)
+
                 page.goto(f"{base}/index.html?kernel=hello")
                 page.wait_for_function("typeof ClangWorker === 'function'")
                 rss = PeakRss()
@@ -574,7 +591,7 @@ def main():
             if tdir and not args.no_automation:
                 try:
                     page.on("console", lambda m: m.text.startswith("tool fixture ") and print("   ", m.text, flush=True))
-                    tres = page.evaluate(RUN_TOOLS_JS, {"names": tnames, "base": f"{tbase}/__tool_fixtures/",
+                    tres = page.evaluate(RUN_TOOLS_JS, {"names": tnames, "base": f"{base}/__tool_fixtures/",
                                                             "cut": [n for n, _ in cut.values()]})
                 except Exception as e:  # noqa: BLE001 (any page failure is a test failure)
                     problems.append(f"{bname}: tools: {e}")

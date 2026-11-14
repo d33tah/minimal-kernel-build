@@ -3870,6 +3870,33 @@ def debian_covtree(page, entry, bins, problems, r, shots):
         problems.append(f"Debian coverage tree fetched {len(bins)} of {len(shards)} shards")
     page.evaluate("document.getElementById('panel_source').scrollIntoView()")
     page.screenshot(path=str(shots / "covtree-debian-1100.png"))
+    # A filter matching more rows than the tree draws (1,500): those and a
+    # note with the rest. Rows: the root, every directory above a matching
+    # file, the matching files (a path or a function name containing the
+    # filter, case-insensitive), and under a file with a matching function
+    # its functions that match or all of them if its path matches (only
+    # the root open before, as on a fresh page).
+    q = "init"
+    files = [f[0] for f in F["files"]]
+    fns = [[] for _ in files]
+    for fn in F["funcs"]:
+        if fn[1] >= 0:
+            fns[fn[1]].append(fn[0].lower())
+    dirs, total = set(), 1
+    for p, names in zip(files, fns):
+        hit = [n for n in names if q in n]
+        if q in p.lower() or hit:
+            parts = p.lstrip("/").split("/")
+            dirs |= {"/".join(parts[:i + 1]) for i in range(len(parts) - 1)}
+            total += 1 + (len(names) if hit and q in p.lower() else len(hit))
+    total += len(dirs)
+    page.evaluate("() => { COV.open.clear(); COV.open.add(''); }")
+    page.fill("#cov_filter", q)
+    shown = int(page.get_attribute("#cov_tree", "data-rows") or 0)
+    note = page.inner_text("#cov_tree > p.note") if page.locator("#cov_tree > p.note").count() else ""
+    r["covtree_many"] = [shown, note, total]
+    if total <= 1500 or shown != 1500 or note != f"{total - 1500:,} more rows: narrow the filter or close some directories.":
+        problems.append(f"Debian coverage tree filtered by {q!r}: {shown} rows and {note!r}, files.json gives {total} rows")
     page.fill("#cov_filter", "")
 
 
@@ -5982,6 +6009,15 @@ def covtree_case(browser, base, shots):
     r["most_not_run"] = top[:3]
     if len(top) < 2 or any(a[1] < b[1] for a, b in zip(top, top[1:])):
         problems.append(f"sort by lines not run: top directories {top}")
+    # The other orders: lines run (share), lines with code, instructions run (share), most first.
+    share = lambda run, total: -1 if run in (None, "") or not int(total) else int(run) / int(total)
+    for sort, key in (("run", lambda d: share(d["linesRun"], d["lines"])), ("lines", lambda d: int(d["lines"])),
+                      ("ins", lambda d: share(d["insRun"], d["ins"]))):
+        page.select_option("#cov_sort", sort)
+        top = page.eval_on_selector_all('#cov_tree .covrow[data-kind="dir"][data-depth="1"]', "es => es.map(e => ({...e.dataset}))")
+        r["sort_" + sort] = [x["path"] for x in top[:3]]
+        if len(top) < 2 or any(key(a) < key(b) for a, b in zip(top, top[1:])):
+            problems.append(f"sort by {sort}: top directories {[(x['path'], key(x)) for x in top]}")
     page.select_option("#cov_sort", "path")
     # The filter keeps matching functions and their file.
     page.fill("#cov_filter", "start_kernel")
@@ -6033,9 +6069,73 @@ def covtree_case(browser, base, shots):
     if sk and (len(inside) != sk["ins"] or inside.count(False) != sk["insRun"]):
         problems.append(f"start_kernel: listing {len(inside)} instructions, {inside.count(False)} not tinted; tree {sk}")
     page.close()
+    covtree_edges(browser, base, shots, entry, F, lf, problems, r, errors)
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
+
+
+def covtree_edges(browser, base, shots, entry, F, lf_full, problems, r, errors):
+    """The Source tab paused at the reset vector: no execution coverage,
+    totals only. After a counted minified boot with the line shards held
+    back and the one with start_kernel answering HTTP 404: while they are
+    read the tree says so and the lcov export waits ("reading N of M
+    shards"); once they are in, the export downloads, without the lines
+    of the failed shard (LF below the full export's, every file still
+    listed), and the tree says the lines run are unknown and why."""
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    show_tab(page, "source")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 30)
+    r["paused_status"] = page.inner_text("#cov_status")
+    root = next((x for x in cov_rows(page) if x["kind"] == "root"), None)
+    if r["paused_status"] != "No execution coverage: nothing has been stepped yet. Totals only." or \
+            page.get_attribute("#cov_tree", "data-coverage") != "none" or not root or root["linesRun"] is not None:
+        problems.append(f"paused at the reset vector: {r['paused_status']!r}, coverage {page.get_attribute('#cov_tree', 'data-coverage')}, root {root}")
+    page.close()
+
+    syms = {x["name"]: x for x in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
+    bits = json.loads((SITE / entry["dwarf"] / "index.json").read_text())["shardBits"]
+    bad = f"{syms['start_kernel']['paddr'] >> bits:x}.bin"
+    held = []
+    def shard(route):
+        if route.request.url.split("?")[0].endswith("/dwarf/" + bad):
+            route.fulfill(status=404, body="")
+        else:
+            held.append(route)
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.route(re.compile(r"/dwarf/[0-9a-f]+\.bin(\?|$)"), shard)
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120):
+        problems.append("held shards: the counted boot did not end")
+    show_tab(page, "source")
+    wait_for(lambda: page.inner_text("#cov_status").startswith("Reading the line tables"), 30)
+    r["held_status"] = page.inner_text("#cov_status")
+    page.click("#cov_export")
+    r["held_export"] = page.inner_text("#cov_export_status")
+    m = re.fullmatch(r"lcov: reading (\d+) of (\d+) shards…", r["held_export"])
+    if not m or int(m.group(2)) != len(json.loads((SITE / entry["dwarf"] / "index.json").read_text())["shards"]) or \
+            int(m.group(1)) != len(held):
+        problems.append(f"lcov export with {len(held)} shards held back: {r['held_export']!r}")
+    with page.expect_download(timeout=60000) as dl:
+        while held:
+            held.pop().continue_()
+    lcov = pathlib.Path(dl.value.path()).read_text()
+    got = [sum(int(l[3:]) for l in lcov.splitlines() if l.startswith("LF:")), lcov.count("SF:")]
+    wait_for(lambda: page.inner_text("#cov_status").startswith("Lines run unknown"), 10)
+    r["failed_status"] = page.inner_text("#cov_status")
+    r["failed_lcov"] = [got, page.inner_text("#cov_export_status")]
+    if not 0 < got[0] < lf_full or got[1] != len(F["files"]) or page.inner_text("#cov_export_status") != f"lcov: {len(F['files'])} files":
+        problems.append(f"lcov export without shard {bad}: LF {got[0]} (full {lf_full}), {got[1]} files, {page.inner_text('#cov_export_status')!r}")
+    root = next((x for x in cov_rows(page) if x["kind"] == "root"), None)
+    if r["failed_status"] != "Lines run unknown: debug info did not load: HTTP 404" or not root or root["linesRun"] is not None:
+        problems.append(f"shard {bad} 404: status {r['failed_status']!r}, root {root}")
+    page.evaluate("document.getElementById('panel_source').scrollIntoView()")
+    page.screenshot(path=str(shots / "covtree-shard-404-1280.png"))
+    page.close()
 
 
 # Multi-line C statements: the line rows name only the first line of

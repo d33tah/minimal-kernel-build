@@ -82,7 +82,9 @@ int main(void)
 	fd = open("d/a.txt", O_RDWR);
 	check("truncate_grow", ftruncate(fd, 20) == 0 && fstat(fd, &st) == 0 && st.st_size == 20);
 	check("truncate_zeros", pread(fd, buf, 8, 12) == 8 && !memcmp(buf, "\0\0\0\0\0\0\0\0", 8));
+	pwrite(fd, "abcdefgh", 8, 12);
 	check("truncate_shrink", ftruncate(fd, 5) == 0 && fstat(fd, &st) == 0 && st.st_size == 5);
+	check("gap_after_shrink", pwrite(fd, "Z", 1, 10) == 1 && pread(fd, buf, 5, 5) == 5 && !memcmp(buf, "\0\0\0\0\0", 5));
 	check("set_times", futimens(fd, NULL) == 0);
 	check("pwrite", pwrite(fd, "HE", 2, 0) == 2 && pread(fd, buf, 5, 0) == 5 && !memcmp(buf, "HEllo", 5));
 	check("fsync", fsync(fd) == 0);

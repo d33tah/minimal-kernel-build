@@ -2025,7 +2025,7 @@ clocks, files that grow, shrink and have holes, append, seek, directories
 and readdir, rename, unlink, rmdir, and the errors: EEXIST, ENOENT,
 EISDIR, ENOTDIR, ENOTEMPTY, ENOTSUP for links and sleeping); the kbuild
 host tools of step E0d will be such programs. Node's WASI fails 5 of its
-52 checks (it has symlinks and sleeps), so the probe tells layers apart. It prints the times and the peak RSS
+53 checks (it has symlinks and sleeps), so the probe tells layers apart. It prints the times and the peak RSS
 of the browser; `--json` keeps them, `--firefox-profile` profiles
 Firefox (Gecko profiler) and prints where the Worker's thread spent its
 samples, `--no-automation` starts Firefox (or `--firefox-binary`) without

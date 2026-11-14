@@ -233,7 +233,7 @@ class DwarfReader {
 		case 0x26: case 0x2a: v = u16le(b, p); p += 2; break;
 		case 0x27: case 0x2b: v = b[p] | b[p + 1] << 8 | b[p + 2] << 16; p += 3; break;
 		case 0x28: case 0x2c: v = u32le(b, p); p += 4; break;
-		case 0x16: { const f = uleb(); c.p = p; return this.form(c, f, 0, want); }
+		case 0x16: { const f = uleb(); c.p = p; c.form = f; return this.form(c, f, 0, want); } // indirect: c.form is the real one
 		default: throw new Error("unknown DWARF form 0x" + form.toString(16));
 		}
 		c.p = p;
@@ -359,15 +359,17 @@ class DwarfReader {
 		return out.filter(([s, e]) => e > s);
 	}
 
-	// Attributes of the DIE at c.p as { attr: [form, value] } (all of them);
-	// a block (exprloc, blockN) is [form, offset in c.b, length].
+	// Attributes of the DIE at c.p as { attr: [form, value] } (all of them;
+	// DW_FORM_indirect's with the form the DIE gives); a block (exprloc,
+	// blockN) is [form, offset in c.b, length].
 	readDie(c, ab) {
 		const a = {};
 		const s = ab.specs;
 		for (let k = 0; k < s.length; k += 3) {
 			c.blen = -1;
+			c.form = s[k + 1];
 			const v = this.form(c, s[k + 1], s[k + 2], true);
-			a[s[k]] = c.blen >= 0 ? [s[k + 1], v, c.blen] : [s[k + 1], v];
+			a[s[k]] = c.blen >= 0 ? [c.form, v, c.blen] : [c.form, v];
 		}
 		return a;
 	}

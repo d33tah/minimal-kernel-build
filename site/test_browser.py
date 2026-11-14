@@ -16768,7 +16768,7 @@ DWF_JS = """async ([b64, offset, lo, hi, src]) => {
     const pick = (q) => { const p = dwVarsPick(T, T.vars.filter((v) => v[0] === 'calls'), q, 'calls'); return p.v ? [p.v[0], p.v[1] + offset, p.v[6]] : p.why; };
     out.picks = [pick('mix'), pick('use')];
     out.flags = T.types.filter((t) => t[0] === DWT.struct && t[1] === 'flags' && t[3]).map((t) => t[3])[0] || null;
-    out.enums = T.types.filter((t) => t[0] === DWT.enum && t[1] === 'color').map((t) => t[3])[0] || null;
+    out.enums = Object.fromEntries(T.types.filter((t) => t[0] === DWT.enum).map((t) => [t[1], t[3]]));
     // The variables at each address: name and kind of location there, as
     // gen-dwarf.js --locals classifies them for test_dwarf.py's gdb_scopes.
     const pieces = (e) => { for (let p = 0; p >= 0 && p < e.length; p = dwOpEnd(e, p)) if (e[p] === 0x93 || e[p] === 0x9d) return true; return false; };
@@ -16795,8 +16795,8 @@ DWF_JS = """async ([b64, offset, lo, hi, src]) => {
                 if (typeof v[3] === 'string')
                     out.exprs.push([v[0], 0, 0, dwExprText(hex(v[3]))]);
                 else if (Array.isArray(v[3]))
-                    for (const [a, n, e] of v[3])
-                        out.exprs.push([v[0], a + offset, a + n + offset, dwExprText(hex(e))]);
+                    for (const [a, n, e] of v[3]) // a default location (DW_LLE_default_location): -1, -1
+                        out.exprs.push([v[0], n ? a + offset : -1, n ? a + n + offset : -1, dwExprText(hex(e))]);
             }
     return out;
 }"""
@@ -16834,6 +16834,9 @@ def dwf_dwarfdump_exprs(elf):
             continue
         text = loc.group(1).replace("DW_OP_GNU_entry_value", "DW_OP_entry_value")
         entries = re.findall(r"\[(0x[0-9a-f]+), (0x[0-9a-f]+)\): (.*)", text)
+        default = re.search(r"<default>: (.*)", text)
+        if default:
+            out[(m.group(1), -1, -1)] = default.group(1).strip().rstrip(")")
         if entries:
             for a, b, e in entries:
                 e = e.strip()
@@ -17282,6 +17285,370 @@ def pa_of(elf, name):
     return None
 
 
+# DWARF no compiler here writes, assembled by hand (llvm-mc): a DWARF 4
+# unit with a name in DW_FORM_indirect, a .debug_str name, .debug_loc and
+# .debug_ranges lists that start with a base address selection, a
+# location in DW_FORM_block4 (DW_OP_addr + DW_OP_plus_uconst), an
+# enumerator whose value is a block, a line program with
+# DW_LNS_fixed_advance_pc, DW_LNS_set_isa and an opcode the header
+# declares (opcode_base 14); a DWARF 5 unit without a line program, its
+# variable's type in the first unit (DW_FORM_ref_addr), a .debug_loclists
+# list with DW_LLE_start_length and DW_LLE_default_location, a DIE with a
+# DW_FORM_data16 value. Against llvm-symbolizer, gdb and llvm-dwarfdump.
+DWF_HAND_S = """	.text
+	.globl f
+	.type f,@function
+f:
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	ret
+	.size f, .-f
+	.globl g
+	.type g,@function
+g:
+	nop
+	nop
+	nop
+	ret
+	.size g, .-g
+	.data
+	.globl gv
+	.p2align 2
+gv:
+	.long 1, 2, 3
+
+	.section .debug_abbrev,"",@progbits
+	.uleb128 1
+	.uleb128 0x11
+	.byte 1
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x1b
+	.uleb128 0x08
+	.uleb128 0x10
+	.uleb128 0x17
+	.uleb128 0x11
+	.uleb128 0x01
+	.uleb128 0x55
+	.uleb128 0x17
+	.byte 0, 0
+	.uleb128 2
+	.uleb128 0x2e
+	.byte 1
+	.uleb128 0x03
+	.uleb128 0x16
+	.uleb128 0x11
+	.uleb128 0x01
+	.uleb128 0x12
+	.uleb128 0x06
+	.uleb128 0x3a
+	.uleb128 0x0b
+	.uleb128 0x3b
+	.uleb128 0x0b
+	.uleb128 0x27
+	.uleb128 0x19
+	.uleb128 0x49
+	.uleb128 0x13
+	.byte 0, 0
+	.uleb128 3
+	.uleb128 0x34
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x0e
+	.uleb128 0x49
+	.uleb128 0x13
+	.uleb128 0x02
+	.uleb128 0x17
+	.byte 0, 0
+	.uleb128 4
+	.uleb128 0x24
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x0b
+	.uleb128 0x0b
+	.uleb128 0x3e
+	.uleb128 0x0b
+	.byte 0, 0
+	.uleb128 5
+	.uleb128 0x34
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x49
+	.uleb128 0x13
+	.uleb128 0x3f
+	.uleb128 0x19
+	.uleb128 0x02
+	.uleb128 0x04
+	.byte 0, 0
+	.uleb128 6
+	.uleb128 0x04
+	.byte 1
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x0b
+	.uleb128 0x0b
+	.uleb128 0x49
+	.uleb128 0x13
+	.byte 0, 0
+	.uleb128 7
+	.uleb128 0x28
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x1c
+	.uleb128 0x0a
+	.byte 0, 0
+	.uleb128 8
+	.uleb128 0x11
+	.byte 1
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x11
+	.uleb128 0x01
+	.uleb128 0x12
+	.uleb128 0x06
+	.byte 0, 0
+	.uleb128 9
+	.uleb128 0x2e
+	.byte 1
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x11
+	.uleb128 0x01
+	.uleb128 0x12
+	.uleb128 0x06
+	.byte 0, 0
+	.uleb128 10
+	.uleb128 0x34
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x49
+	.uleb128 0x10
+	.uleb128 0x02
+	.uleb128 0x17
+	.byte 0, 0
+	.uleb128 11
+	.uleb128 0x36
+	.byte 0
+	.uleb128 0x1c
+	.uleb128 0x1e
+	.uleb128 0x0b
+	.uleb128 0x0b
+	.byte 0, 0
+	.byte 0
+
+	.section .debug_info,"",@progbits
+.Lcu1:
+	.long .Lcu1_end - .Lcu1 - 4
+	.short 4
+	.long 0
+	.byte 4
+	.uleb128 1
+	.asciz "h.c"
+	.asciz "/hand"
+	.long .Lline
+	.long 0
+	.long .Lranges
+	.uleb128 2
+	.uleb128 0x08
+	.asciz "f"
+	.long f
+	.long 8
+	.byte 1
+	.byte 5
+	.long .Lint - .Lcu1
+	.uleb128 3
+	.long .Lstr_lv
+	.long .Lint - .Lcu1
+	.long .Lloc
+	.byte 0
+.Lint:
+	.uleb128 4
+	.asciz "int"
+	.byte 4
+	.byte 5
+	.uleb128 5
+	.asciz "second"
+	.long .Lint - .Lcu1
+	.long 7
+	.byte 0x03
+	.long gv
+	.byte 0x23, 4
+.Lenum:
+	.uleb128 6
+	.asciz "mode"
+	.byte 2
+	.long .Lint - .Lcu1
+	.uleb128 7
+	.asciz "M_LOW"
+	.byte 2, 0x34, 0x12
+	.byte 0
+	.uleb128 5
+	.asciz "gmode"
+	.long .Lenum - .Lcu1
+	.long 5
+	.byte 0x03
+	.long gv
+	.byte 0
+.Lcu1_end:
+.Lcu2:
+	.long .Lcu2_end - .Lcu2 - 4
+	.short 5
+	.byte 1
+	.byte 4
+	.long 0
+	.uleb128 8
+	.asciz "k.c"
+	.long g
+	.long 4
+	.uleb128 9
+	.asciz "g"
+	.long g
+	.long 4
+	.uleb128 10
+	.asciz "w"
+	.long .Lint
+	.long .Lloclist
+	.uleb128 11
+	.quad 0x1122334455667788, 0x99aabbccddeeff00
+	.byte 16
+	.byte 0
+	.byte 0
+.Lcu2_end:
+
+	.section .debug_str,"MS",@progbits,1
+.Lstr_lv:
+	.asciz "lv"
+
+	.section .debug_loc,"",@progbits
+.Lloc:
+	.long 0xffffffff, f
+	.long 0, 2
+	.short 1
+	.byte 0x50
+	.long 2, 6
+	.short 2
+	.byte 0x74, 8
+	.long 0, 0
+
+	.section .debug_ranges,"",@progbits
+.Lranges:
+	.long 0xffffffff, f
+	.long 0, 8
+	.long 0, 0
+
+	.section .debug_loclists,"",@progbits
+	.long .Lll_end - .Lll_start
+.Lll_start:
+	.short 5
+	.byte 4, 0
+	.long 0
+.Lloclist:
+	.byte 8
+	.long g
+	.uleb128 2
+	.uleb128 1
+	.byte 0x51
+	.byte 5
+	.uleb128 2
+	.byte 0x74, 4
+	.byte 0
+.Lll_end:
+
+	.section .debug_line,"",@progbits
+.Lline:
+	.long .Lline_end - .Lline - 4
+	.short 4
+	.long .Lprog - .Lhdr
+.Lhdr:
+	.byte 1, 1, 1, -5 & 255, 14, 14
+	.byte 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1
+	.byte 0
+	.asciz "h.c"
+	.byte 0, 0, 0
+	.byte 0
+.Lprog:
+	.byte 0, 5, 2
+	.long f
+	.byte 3, 9
+	.byte 1
+	.byte 9
+	.short 2
+	.byte 12, 0
+	.byte 13, 5
+	.byte 3, 1
+	.byte 1
+	.byte 9
+	.short 6
+	.byte 0, 1, 1
+.Lline_end:
+"""
+
+
+def dwf_hand_checks(page, tmp, symbolize, gdb_scopes):
+    problems, r = [], {}
+    (tmp / "h.s").write_text(DWF_HAND_S)
+    elf = tmp / "h.elf"
+    try:
+        subprocess.run(["llvm-mc", "-triple=i386-linux-gnu", "-filetype=obj", "h.s", "-o", "h.o"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run(["ld.lld", "-m", "elf_i386", "-e", "f", f"-Ttext=0x{CFI_BASE:x}", "h.o", "-o", str(elf)], cwd=tmp, check=True, capture_output=True)
+    except (OSError, subprocess.CalledProcessError) as e:
+        return [f"hand-written DWARF: did not build: {getattr(e, 'stderr', '') or e}"[:300]], r
+    nm = {l.split()[2]: int(l.split()[0], 16) for l in
+          subprocess.run(["llvm-nm", str(elf)], capture_output=True, text=True).stdout.splitlines() if len(l.split()) == 3}
+    lo, hi = nm["f"], nm["g"] + 4
+    got = page.evaluate(DWF_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET, lo - CFI_OFFSET, hi - CFI_OFFSET, "h.c"])
+    if got.get("open") != "ok" or got.get("error"):
+        return [f"hand-written DWARF: did not open: {str(got)[:300]}"], r
+    r["versions"] = got["versions"]
+    if got["versions"] != [4, 5]:
+        problems.append(f"hand-written DWARF: versions {got['versions']}")
+    vas = list(range(lo, hi))
+    want = symbolize(str(elf), vas, [])
+    bad = [(hex(va), g, w) for va, g, w in zip(vas, got["frames"], want) if not frames_agree(g or [], w)]
+    if bad:
+        problems.append(f"hand-written DWARF: frames differ from llvm-symbolizer: {bad[:3]}")
+    sym = dict(zip(vas, want))
+    code = {line: rows for line, rows, _ in got["code"]} if isinstance(got["code"], list) else {}
+    r["code"] = code
+    if sorted(code) != [10, 11] or any(sym[va][0][2] != line for line, rows in code.items() for a, b in rows
+                                       for va in (a + CFI_OFFSET, b - 1 + CFI_OFFSET)):
+        problems.append(f"hand-written DWARF: the code of h.c: {got['code']}, llvm-symbolizer {want}")
+    gdb = subprocess.run(["gdb", "-nx", "-batch", "-ex", "ptype f", "-ex", "print &second", "-ex", "whatis gmode", "-ex", "print/d (int)M_LOW",
+                          str(elf)], capture_output=True, text=True).stdout
+    fn = {f["name"]: f for f in got["funcs"]}
+    vs = {v["name"]: v for v in got["vars"]}
+    m = re.search(r"\(int \*\) (0x[0-9a-f]+)", gdb)
+    have = [fn.get("f", {}).get("type"), fn.get("f", {}).get("at"), vs.get("second", {}).get("va"), vs.get("gmode", {}).get("type"),
+            got["enums"].get("mode")]
+    r["facts"] = have
+    if have != ["int (void)", "h.c:5", m and int(m.group(1), 16), "enum mode", [["M_LOW", int(re.findall(r"= (\d+)", gdb)[-1])]]] or \
+            "type = int (void)" not in gdb or "type = enum mode" not in gdb:
+        problems.append(f"hand-written DWARF: f, second, gmode, M_LOW: {have}, gdb {gdb!r}")
+    mine = {(n, a, b): t for n, a, b, t in got["exprs"]}
+    theirs = {k: v for k, v in dwf_dwarfdump_exprs(elf).items() if k[0] in ("lv", "w")}
+    r["exprs"] = sorted(mine.items(), key=str)
+    if mine != theirs or len(theirs) != 4:
+        problems.append(f"hand-written DWARF: locations {mine}, llvm-dwarfdump {theirs}")
+    # gdb's info scope in f (it cannot read w's default location in g).
+    scopes = gdb_scopes(str(elf), range(nm["f"], nm["g"]))
+    bad = [(hex(va), l, scopes.get(va)) for va, l in zip(vas, got["locals"]) if va < nm["g"] and
+           (not l or sorted(map(tuple, l[0]["vars"])) != sorted(scopes.get(va) or []))]
+    w = [l[0]["vars"] if l else None for va, l in zip(vas, got["locals"]) if va >= nm["g"]]
+    r["w"] = w
+    if bad or w != [[["w", "reg:ECX"]]] * 2 + [[["w", "expr"]]] * 2:
+        problems.append(f"hand-written DWARF: locals: {bad[:3]}, w in g {w}")
+    return problems, r
+
+
 def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     from test_dwarf import symbolize, gdb_scopes
     problems, r, seen = [], {}, {}
@@ -17316,6 +17683,10 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
                     r["broken: " + what] = have
                     if have != want:
                         problems.append(f"broken input, {what}: the import says {have!r}, want {want!r}")
+        hd = pathlib.Path(tmp) / "hand"
+        hd.mkdir()
+        p, r["hand"] = dwf_hand_checks(page, hd, symbolize, gdb_scopes)
+        problems += p
         page.close()
         ui = pathlib.Path(tmp) / "ui"
         ui.mkdir()
@@ -17467,7 +17838,7 @@ def dwf_checks(name, elf, got, lo, hi, nm, symbolize, gdb_scopes, seen):
     if norm(lay) != norm(have) or len(lay) != 5:
         problems.append(f"{name}: struct flags {have}, gdb's ptype/o {lay}")
     enums = re.findall(r"= (-?\d+)", g.get("enum", ""))
-    if [e[1] if e[1] < 2 ** 31 else e[1] - 2 ** 32 for e in got["enums"] or []] != [int(x) for x in enums]:
+    if [e[1] if e[1] < 2 ** 31 else e[1] - 2 ** 32 for e in got["enums"].get("color", [])] != [int(x) for x in enums]:
         problems.append(f"{name}: enum color {got['enums']}, gdb {enums}")
     # The member at every byte of gflags (dwWhere) is one gdb's ptype/o
     # puts there (bit fields share bytes), else padding.

@@ -7368,6 +7368,39 @@ def jumps_case(browser, base, shots, name):
     badge = page.locator(f'#listing .jc[data-pa="{tgt}"][data-dir="in"]')
     badge.click()
     wait_for(lambda: page.is_visible("#jump_pop"), 5)
+    # The badge again closes the list, and so does the list's Close button.
+    badge.click()
+    again = wait_for(lambda: page.is_hidden("#jump_pop"), 5)
+    badge.click()
+    wait_for(lambda: page.is_visible("#jump_pop"), 5)
+    page.click("#jump_pop button.jclose")
+    closed = wait_for(lambda: page.is_hidden("#jump_pop"), 5)
+    r["badge again, Close"] = [again, closed]
+    if not again or not closed:
+        problems.append(f"{name}: a second click on the badge closed the list: {again}; its Close button: {closed}")
+    # Paths out of a return: none observed yet ("→?"), or the ones observed.
+    outs = page.evaluate("""() => [...document.querySelectorAll('#listing .jc[data-dir="out"]')].map((b) => {
+        const t = document.querySelector('#listing .ins[data-addr="' + b.dataset.pa + '"]');
+        return [Number(b.dataset.pa), b.textContent, t ? t.textContent : '']; })""")
+    for want_seen in (False, True):
+        pick = next((o for o in outs if re.search(r"\bret", o[2]) and (o[1].endswith("?") != want_seen)), None)
+        if not pick:
+            if want_seen or name != "hello":  # hello's page has one return, and it ran
+                problems.append(f"{name}: no return {'observed' if want_seen else 'with nothing observed'} in the listing ({len(outs)} out badges)")
+            continue
+        page.click(f'#listing .jc[data-dir="out"][data-pa="{pick[0]}"]')
+        wait_for(lambda: page.is_visible("#jump_pop"), 5)
+        notes = page.eval_on_selector_all("#jump_pop p.note", "ps => ps.map((p) => p.textContent)")
+        n = page.locator("#jump_pop li").count()
+        note = "A return: the targets listed are the ones observed while stepping." if want_seen else \
+            "A return: where it goes is known only at run time, and no transfer from here has been observed yet."
+        r[f"return {'seen' if want_seen else 'unseen'}"] = [hex(pick[0]), pick[1], n, notes[:1]]
+        if note not in notes or (n == 0) == want_seen:
+            problems.append(f"{name}: the paths out of the return at {pick[0]:#x} ({pick[1]!r}): {n} rows, notes {notes}, want {note!r}")
+        page.keyboard.press("Escape")
+        wait_for(lambda: page.is_hidden("#jump_pop"), 5)
+    badge.click()
+    wait_for(lambda: page.is_visible("#jump_pop"), 5)
     page.click(f'#jump_pop li[data-at="{src}"] button.jgo')
     hit = f'#listing .ins.jhit[data-addr="{src}"]'
     if not wait_for(lambda: page.locator(hit).count() == 1, 10):

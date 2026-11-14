@@ -2294,7 +2294,7 @@ page's JIT runs) the "(initramfs) " prompt pauses it once and the panic
 line stops it, neither exact. A panic line without its end line under
 the page's JIT: the stepper takes over to the kernel's own panic, or on
 a spin stops after the panic budget (`?panicbudget=`) and says so; Step
-100,000,000 on the spin stops after 5 s; counting gives up past its time
+10^15 on the spin stops after 5 s; counting gives up past its time
 limit, or stops when count is switched off, and the JIT runs the boot to
 its end; a v86.wasm the page cannot patch boots without the debugger,
 which says why; with

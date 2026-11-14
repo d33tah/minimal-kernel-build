@@ -1493,9 +1493,9 @@ def panic_text_no_end(browser, base, spin, problems, r, errors):
 def panic_text_real_time(browser, base, problems, r, errors):
     """The real-time clock at full speed (v86's own loop, which the page
     cannot stop inside): the minified Linux paused at start_kernel is made
-    to spin there (jmp $, as panic() ends); Step 100,000,000 gives up after
-    5 s; it runs on the page's JIT (virtual clock) and the clock is switched
-    to real time while it runs; then Debian's "(initramfs) " prompt at a
+    to spin there (jmp $, as panic() ends); Step 10^15 gives up after 5 s;
+    it runs on the page's JIT (virtual clock) and the clock is switched to
+    real time while it runs; then Debian's "(initramfs) " prompt at a
     row's start pauses the machine once, Continue runs on, and an end of
     panic text stops it (both checked 4 times a second, where the run has
     got to: not exact). The command line comes from ?cmdline=."""
@@ -1521,13 +1521,14 @@ def panic_text_real_time(browser, base, problems, r, errors):
         page.close()
         return
     page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
-    # Step 100,000,000 on the spin: Step gives up after 5 s, still there.
-    page.fill("#dbg_n", "100000000")
+    # Step 10^15 on the spin (no machine steps that many in 5 s, CI's ran
+    # 100,000,000 in less): Step gives up after 5 s, still there.
+    page.fill("#dbg_n", "1000000000000000")
     page.click("#dbg_stepn")
     wait_for(lambda: page.inner_text("#dbg_status").startswith("Stepped "), 30)
     r["step_limit"] = [page.inner_text("#dbg_status"), page.get_attribute("#regs", "data-phys")]
     if not re.fullmatch(r"Stepped [\d,]+ instructions \(5 s limit\)\.", r["step_limit"][0]) or r["step_limit"][1] != str(sk["paddr"]):
-        problems.append(f"Step 100,000,000 on a jmp $: {r['step_limit']}, want the 5 s limit at {sk['paddr']}")
+        problems.append(f"Step 10^15 on a jmp $: {r['step_limit']}, want the 5 s limit at {sk['paddr']}")
     machine_do(page, "click", "#dbg_continue")
     jit = wait_for(lambda: page.evaluate("runState === 'jit' && !!jitLoopId && CLOCK.virtual"), 10)
     machine_do(page, "select_option", "#clock_mips", "real")
@@ -14045,6 +14046,12 @@ PWA_V = ("aaaaaaaaaaaa", "bbbbbbbbbbbb")
 PWA_PRECACHED_KERNELS = ("hello", "minified-linux")
 
 PWA_CACHES_JS = "async () => (await caches.keys()).sort()"
+# The page's registration: each worker's state and script.
+PWA_REG_STATE_JS = """() => Object.fromEntries(['installing', 'waiting', 'active'].map((k) => [k,
+    PWA.reg && PWA.reg[k] ? [PWA.reg[k].state, PWA.reg[k].scriptURL] : null]))"""
+# The deploy version.json names now, as the page's fetch gets it (a query the cache never saw).
+PWA_VERSION_NOW_JS = """() => fetch('version.json?now=' + Date.now(), { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : null)).then((j) => (j && j.sha ? j.sha.slice(0, 12) : null), () => null)"""
 PWA_SW_VERSION_JS = """async () => {
     const w = navigator.serviceWorker.controller;
     if (!w) return null;
@@ -14081,8 +14088,9 @@ def pwa_deploy(root, v, marker=None):
 def pwa_server(root):
     """CachingHandler on root; state["down"] makes it answer nothing (offline),
     state["hold"] = (path, threading.Event()) holds the answer for that file
-    until the event is set (at most 60 s)."""
-    state = {"down": False, "hold": None}
+    until the event is set (at most 60 s); state["log"] lists the sw.js
+    requests as (path, If-Modified-Since, mtime of the file then)."""
+    state = {"down": False, "hold": None, "log": []}
 
     class Handler(CachingHandler):
         extensions_map = {**CachingHandler.extensions_map, ".webmanifest": "application/manifest+json"}
@@ -14091,9 +14099,19 @@ def pwa_server(root):
             if state["down"]:
                 self.close_connection = True
                 return
+            # A deploy is a full answer at once: http.server compares
+            # If-Modified-Since in whole seconds, so on a fast machine a
+            # deploy within the second of the last one answered 304 to the
+            # worker's update check (CI run 43566350950, case edges: deploy
+            # B's sw.js never seen).
+            del self.headers["If-Modified-Since"]
             hold = state["hold"]
             if hold and self.path.split("?")[0] == "/" + hold[0]:
                 hold[1].wait(60)
+            if self.path.split("?")[0].endswith("/sw.js"):
+                f = root / "sw.js"
+                state["log"].append([round(time.time(), 2), self.headers.get("If-Modified-Since"),
+                                     round(f.stat().st_mtime, 2) if f.exists() else None])
             super().do_GET()
 
         do_HEAD = do_GET
@@ -14323,6 +14341,15 @@ def pwa_case(browser, base, shots, timeout):
             # pressed while it installs, whatever the machine's speed.
             state["hold"] = ("kernels/minified-linux-os/disasm.json", threading.Event())
         c.set_offline(False)
+        # The page checks version.json on the online event, but the
+        # emulated network can reach the service worker a moment later
+        # (CI run 43566350950: the worker's fetch failed, it answered the
+        # cached version.json, no notice): once the worker gets the new
+        # version.json, the page's check runs again as on that event.
+        newer = (PWA_V[1] if not live else "f" * 12)
+        reach = wait_for(lambda: page.evaluate(PWA_VERSION_NOW_JS) == newer, 30)
+        if reach and not (page.locator("#pwa_update").count() and page.is_visible("#pwa_update")):
+            page.evaluate("window.dispatchEvent(new Event('online'))")
         shown = wait_for(lambda: page.locator("#pwa_update").count() and page.is_visible("#pwa_update"), 30)
         r["update_note"] = page.text_content("#pwa_update") if page.locator("#pwa_update").count() else None
         if not shown or "new version" not in (r["update_note"] or "").lower():
@@ -14550,7 +14577,7 @@ def pwa_edges(browser, shots, timeout):
     with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
         root = pathlib.Path(t)
         pwa_deploy(root, PWA_V[0], "A")
-        httpd, _ = pwa_server(root)
+        httpd, state = pwa_server(root)
         base = f"http://127.0.0.1:{httpd.server_address[1]}"
         c = browser.new_context(viewport={"width": 1280, "height": 900})
         try:
@@ -14565,7 +14592,8 @@ def pwa_edges(browser, shots, timeout):
             # worker first: installed and waiting when the new tab opens.
             old.evaluate("PWA.reg.update()")
             if not wait_for(lambda: old.evaluate("!!PWA.reg.waiting"), 60):
-                problems.append("another tab: deploy B's worker did not install and wait")
+                problems.append("another tab: deploy B's worker did not install and wait: " + json.dumps({
+                    "workers": old.evaluate(PWA_REG_STATE_JS), "sw.js requests": state["log"]}))
             new = c.new_page()
             new.on("pageerror", lambda e: errors.append(str(e)[:200]))
             new.goto(f"{base}/index.html?kernel=hello")

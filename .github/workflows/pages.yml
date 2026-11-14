@@ -657,6 +657,9 @@ jobs:
         site/check-legend.py
         # The source editor's diff, patch writer and patch reader against git.
         node site/test_srcedit.mjs
+        # site/jscov-uncovered.tsv still on the code it explains (rows that
+        # moved with lines added above them: `node site/jscov/relist.js`).
+        node site/jscov/relist.js --check
         # The vendored LZ4 module (snapshots) is the pinned upstream file.
         site/gen-lz4.py --check
         # Which commit is deployed: shown in the page header.
@@ -1068,12 +1071,17 @@ jobs:
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_jscov.py'
 
     # The tests ran the deployed files: sw.js and index.html stamped with
-    # the commit (the site job), so the same stamp here.
-    - name: Merge and report, check the baseline
+    # the commit (the site job), so the same stamp here. Fails below the
+    # baseline and when site/jscov-uncovered.tsv is not true for this
+    # commit (an uncovered line it does not list, a listed line that ran);
+    # the job output says which lines and how to update the list, and the
+    # jscov-report artifact has the list made true for this run
+    # (uncovered-candidates.tsv, TODO rows for new blocks).
+    - name: Merge and report, check the baseline and the uncovered list
       run: |
         site/stamp.py site "$GITHUB_SHA"
         node site/jscov/report.js --src site --out jscov-report --baseline site/jscov-baseline.json \
-          --uncovered site/jscov-uncovered.tsv --summary "$GITHUB_STEP_SUMMARY" jscov-raw
+          --uncovered site/jscov-uncovered.tsv --require-listed --summary "$GITHUB_STEP_SUMMARY" jscov-raw
 
     - uses: actions/upload-artifact@v4
       if: always()

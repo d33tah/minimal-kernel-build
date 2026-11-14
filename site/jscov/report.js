@@ -4,11 +4,15 @@
 // own scripts: an HTML report (MCR's V8 UI), summary.json (totals and per
 // file: lines, functions, branches, plus every function that never ran)
 // and summary.md (for the job summary). With --baseline, exit 1 when a
-// total is below the committed floor. With --uncovered (site/jscov-uncovered.tsv:
-// file, line ranges, why those lines do not run in the tests), the
-// uncovered lines the list does not name ("unlisted") and the listed lines
-// that ran or are no code ("stale") are reported per file; with
-// --require-listed, unlisted lines fail the run too.
+// total is below the committed floor. With --uncovered (site/jscov-uncovered.tsv,
+// format in listed.js: file, line ranges, code hash, why those lines do not
+// run in the tests), the uncovered lines the list does not name
+// ("unlisted"), the listed lines that ran or are no code ("stale"), rows
+// whose code moved or changed and rows still marked TODO are reported per
+// file, and uncovered-candidates.tsv in the output directory is the list
+// as it would be true for this run (moved rows renumbered, lines that ran
+// taken out, a TODO row per new uncovered block). With --require-listed,
+// any of those fails the run.
 //
 // Usage: node site/jscov/report.js --src site --out jscov-report [--baseline site/jscov-baseline.json]
 //        [--uncovered site/jscov-uncovered.tsv [--require-listed]] [--summary $GITHUB_STEP_SUMMARY] RAW_DIR...
@@ -20,6 +24,7 @@ const fs = require("fs");
 const path = require("path");
 const { CoverageReport } = require("monocart-coverage-reports");
 const { mergeV8Coverage } = require("monocart-coverage-reports/util");
+const L = require("./listed.js");
 
 const METRICS = ["lines", "functions", "branches"];
 
@@ -74,43 +79,25 @@ function lineOf(source, offset) {
 	return n;
 }
 
-// "a-b,c" -> [a..b, c]
-function lineSet(text) {
-	const out = new Set();
-	for (const part of text.split(",").map((x) => x.trim()).filter(Boolean)) {
-		const [lo, hi] = part.split("-").map(Number);
-		for (let n = lo; n <= (hi || lo); n++)
-			out.add(n);
-	}
-	return out;
-}
+const { lineSet, ranges } = L;
 
-// site/jscov-uncovered.tsv: "file<TAB>ranges<TAB>reason" lines, # comments.
-function readListed(file) {
-	const out = {};
-	fs.readFileSync(file, "utf8").split("\n").forEach((line, k) => {
-		if (!line.trim() || line.startsWith("#"))
-			return;
-		const [name, lines, why] = line.split("\t");
-		if (!name || !lines || !why || !why.trim())
-			throw new Error(`${file}:${k + 1}: want file<TAB>line ranges<TAB>reason`);
-		const set = out[name] = out[name] || new Set();
-		for (const n of lineSet(lines))
-			set.add(n);
-	});
-	return out;
-}
-
-function ranges(nums) {
+// Uncovered code lines -> blocks: lines with no covered code line between
+// them are one block (blank lines and comments do not split it).
+function blocks(unc, codeLines) {
+	const covered = [...codeLines].filter((n) => !unc.has(n)).sort((x, y) => x - y);
 	const out = [];
-	for (const n of nums.sort((x, y) => x - y)) {
-		const last = out[out.length - 1];
-		if (last && last[1] === n - 1)
-			last[1] = n;
-		else
-			out.push([n, n]);
+	let cur = null, k = 0;
+	for (const n of [...unc].sort((x, y) => x - y)) {
+		let split = !cur;
+		while (k < covered.length && covered[k] < n) {
+			split = true;
+			k++;
+		}
+		if (split)
+			out.push(cur = []);
+		cur.push(n);
 	}
-	return out.map(([a, b]) => (a === b ? String(a) : `${a}-${b}`)).join(",");
+	return out;
 }
 
 async function main() {
@@ -178,6 +165,7 @@ async function main() {
 	await mcr.generate();
 
 	const summary = { files: {}, total: {}, scripts: names.length, ran: Object.keys(byFile).length, records, foreign };
+	const codeLines = {};
 	const sum = Object.fromEntries(METRICS.map((m) => [m, { covered: 0, total: 0 }]));
 	for (const f of results.files) {
 		const name = path.basename(f.sourcePath);
@@ -193,6 +181,7 @@ async function main() {
 			.map((r) => ({ name: r.name || "(anonymous)", line: lineOf(source, r.start) }));
 		// Line numbers of the code lines that never ran, as "a-b" ranges.
 		s.uncoveredLines = ranges(Object.entries(f.data && f.data.lines || {}).filter(([, c]) => !c).map(([l]) => +l));
+		codeLines[name] = new Set(Object.keys(f.data && f.data.lines || {}).map(Number));
 		s.sourceLines = source.split("\n").length - (source.endsWith("\n") ? 1 : 0);
 		summary.files[name] = s;
 	}
@@ -216,23 +205,80 @@ async function main() {
 					failed.push(`${n} lines ${f.lines.pct}% < the per-file floor ${base.fileLines}%`);
 		summary.baseline = base;
 	}
+	let listMsg = [];
 	if (a.uncovered) {
-		const listed = readListed(a.uncovered);
+		const list = path.basename(a.uncovered);
+		const { header, rows } = L.readListed(a.uncovered);
+		const { moved, lost } = L.relocate(rows, sources);
+		const todo = rows.filter(L.isTodo);
+		const listed = {}, sometimes = {};
+		for (const r of rows.filter((r) => !lost.includes(r)))
+			for (const x of r.lines) {
+				(listed[r.file] = listed[r.file] || new Set()).add(x);
+				if (L.isSometimes(r))
+					(sometimes[r.file] = sometimes[r.file] || new Set()).add(x);
+			}
 		let unlisted = 0, stale = 0;
-		for (const n of Object.keys(listed))
-			if (!(n in summary.files))
-				throw new Error(`${a.uncovered}: ${n} is no script of the site`);
+		const candidates = [];
 		for (const [n, f] of Object.entries(summary.files)) {
-			const unc = lineSet(f.uncoveredLines), l = listed[n] || new Set();
-			f.unlisted = ranges([...unc].filter((x) => !l.has(x)));
-			f.stale = ranges([...l].filter((x) => !unc.has(x)));
-			unlisted += lineSet(f.unlisted).size;
+			const unc = lineSet(f.uncoveredLines), l = listed[n] || new Set(), sm = sometimes[n] || new Set();
+			const un = [...unc].filter((x) => !l.has(x));
+			f.unlisted = ranges(un);
+			f.stale = ranges([...l].filter((x) => !unc.has(x) && !sm.has(x)));
+			unlisted += un.length;
 			stale += lineSet(f.stale).size;
+			const src = L.splitLines(sources[n]);
+			for (const b of blocks(new Set(un), codeLines[n]))
+				candidates.push({ file: n, lines: new Set(b), code: L.codeOf(src, b),
+					reason: "TODO: add a test that runs these lines, or write why they cannot run in CI (" +
+						src[b[0] - 1].trim().replace(/\t/g, " ").slice(0, 70) + ")" });
 		}
-		summary.unlisted = unlisted;
-		summary.stale = stale;
-		if (a.requireListed && unlisted)
-			failed.push(`${unlisted} uncovered lines not in ${path.basename(a.uncovered)}`);
+		// The list made true for this run: rows cut to the lines that are
+		// still uncovered (with their hash again), rows whose lines all ran
+		// dropped, rows whose code is gone kept as they are.
+		for (const r of rows) {
+			if (lost.includes(r) || L.isSometimes(r)) {
+				candidates.push(r);
+				continue;
+			}
+			const unc = lineSet(summary.files[r.file].uncoveredLines);
+			const keep = [...r.lines].filter((x) => unc.has(x));
+			if (keep.length)
+				candidates.push({ ...r, lines: new Set(keep), code: L.codeOf(L.splitLines(sources[r.file]), keep) });
+		}
+		const first = (r) => Math.min(...r.lines);
+		candidates.sort((x, y) => (x.file < y.file ? -1 : x.file > y.file ? 1 : first(x) - first(y)));
+		L.writeListed(path.join(out, "uncovered-candidates.tsv"), header, candidates);
+		Object.assign(summary, { unlisted, stale, moved: moved.length, changed: lost.length, todo: todo.length });
+		const where = (r) => `${r.file}:${ranges(r.lines)}`;
+		const files = (k) => Object.keys(summary.files).sort().filter((n) => summary.files[n][k])
+			.map((n) => `${n}:${summary.files[n][k]}`);
+		const problems = [
+			unlisted && `${unlisted} uncovered lines are not in ${list}: ${files("unlisted").join(" ")}`,
+			stale && `${stale} listed lines ran (or are no code): ${files("stale").join(" ")}`,
+			moved.length && `${moved.length} rows moved with the code above them: ` +
+				moved.map((m) => `${m.row.file}:${m.from}->${ranges(m.row.lines)}`).join(" "),
+			lost.length && `${lost.length} rows whose code changed or is gone (${list} lines ${lost.map((r) => r.at).join(", ")}): ` +
+				lost.map(where).join(" "),
+			todo.length && `${todo.length} rows still say TODO: ${todo.map(where).join(" ")}`,
+		].filter(Boolean);
+		if (problems.length) {
+			const run = process.env.GITHUB_RUN_ID ? ` ${process.env.GITHUB_RUN_ID}` : "";
+			listMsg = [
+				`${list} is not true for this commit:`,
+				...problems.map((p) => "- " + p),
+				"",
+				"How to make it true (site/README.md, e2e coverage):",
+				"- only moved rows: `node site/jscov/relist.js`, commit the list with the code;",
+				`- otherwise \`gh run download${run} -n jscov-report\`: its uncovered-candidates.tsv is the list made true for ` +
+					"this run (moved rows renumbered, lines that ran taken out, a TODO row per new uncovered block). For each TODO " +
+					"row add a test that runs the lines (preferred) or replace TODO by why they cannot run in CI, check rows " +
+					"whose code changed, then copy it over site/jscov-uncovered.tsv and commit;",
+				"- lines that run only in some runs (timing): a reason starting with \"sometimes:\".",
+			];
+			if (a.requireListed)
+				failed.push(`${list} is not true for this commit (see above)`);
+		}
 	}
 	summary.failed = failed;
 	fs.writeFileSync(path.join(out, "summary.json"), JSON.stringify(summary, null, 1) + "\n");
@@ -245,7 +291,7 @@ async function main() {
 		`${t.lines.covered} of ${t.lines.total} code lines ran (${t.sourceLines} lines of source in ${names.length} scripts; ` +
 			`${summary.ran} scripts ran). Baseline: ${a.baseline ? METRICS.map((m) => `${m} ${summary.baseline[m]}%`).join(", ") +
 				(typeof summary.baseline.fileLines === "number" ? `, every file's lines ${summary.baseline.fileLines}%` : "") : "none"}.`,
-		failed.length ? `\n**Below the baseline:** ${failed.join("; ")}` : "",
+		failed.length ? `\n**FAIL:** ${failed.join("; ")}` : "",
 		"",
 		"| file | lines | functions | branches |",
 		"| --- | --- | --- | --- |",
@@ -254,11 +300,9 @@ async function main() {
 		"",
 		...(a.uncovered ? [
 			`Uncovered lines ${path.basename(a.uncovered)} does not explain: ${summary.unlisted}; listed lines that ran ` +
-				`or are no code: ${summary.stale}.`,
+				`or are no code: ${summary.stale}; rows moved ${summary.moved}, changed ${summary.changed}, TODO ${summary.todo}.`,
 			"",
-			...Object.keys(summary.files).sort().filter((n) => summary.files[n].unlisted || summary.files[n].stale)
-				.map((n) => `- ${n}: ${summary.files[n].unlisted ? "unlisted " + summary.files[n].unlisted : ""}` +
-					`${summary.files[n].unlisted && summary.files[n].stale ? "; " : ""}${summary.files[n].stale ? "stale " + summary.files[n].stale : ""}`),
+			...(listMsg.length ? [`**${listMsg[0]}**`, "", ...listMsg.slice(1)] : []),
 			"",
 		] : []),
 	].join("\n");
@@ -266,9 +310,12 @@ async function main() {
 	if (a.summary)
 		fs.appendFileSync(a.summary, md);
 	console.log(`total: ${METRICS.map((m) => `${m} ${t[m].pct}% (${t[m].covered}/${t[m].total})`).join(", ")}; ${t.sourceLines} source lines` +
-		(a.uncovered ? `; ${summary.unlisted} uncovered lines unlisted, ${summary.stale} listed lines stale` : ""));
+		(a.uncovered ? `; ${summary.unlisted} uncovered lines unlisted, ${summary.stale} listed lines stale, rows moved ` +
+			`${summary.moved}, changed ${summary.changed}, TODO ${summary.todo}` : ""));
+	if (listMsg.length)
+		console.log((a.requireListed ? "FAIL: " : "") + listMsg.join("\n"));
 	if (failed.length) {
-		console.error("FAIL: below the baseline: " + failed.join("; "));
+		console.error("FAIL: " + failed.join("; "));
 		process.exit(1);
 	}
 }

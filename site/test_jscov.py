@@ -19,6 +19,7 @@ uncovered (the plan's V1 self-test), with the branch and line counts.
 Usage: site/test_jscov.py   (needs playwright + chromium and npm ci in site/jscov)
 """
 
+import hashlib
 import json
 import os
 import pathlib
@@ -154,6 +155,117 @@ def where(page):
         return None
 
 
+def code_of(lines, nums):
+    """listed.js's codeOf: SHA-256 of the line before the block and the block's lines, trimmed."""
+    nums = sorted(nums)
+    text = [lines[nums[0] - 2].strip() if nums[0] > 1 else ""] + [lines[n - 1].strip() for n in nums]
+    return hashlib.sha256("\n".join(text).encode()).hexdigest()[:8]
+
+
+def line_set(text):
+    out = set()
+    for a, _, b in (x.partition("-") for x in text.split(",") if x):
+        out.update(range(int(a), int(b or a) + 1))
+    return out
+
+
+def check_list(tmp, fix, raw, summary):
+    """The list of uncovered lines with reasons on the fixture's coverage:
+    report.js --uncovered --require-listed fails on an unlisted line, a
+    listed line that ran, a row whose code moved or changed and a TODO
+    row, passes on its own uncovered-candidates.tsv once the TODOs have
+    reasons, and lets a "sometimes:" row run; relist.js renumbers rows
+    after lines are added above them and refuses a row whose code changed."""
+    problems = []
+    report_js, relist_js = str(SITE / "jscov" / "report.js"), str(SITE / "jscov" / "relist.js")
+    src = FILES["cov.js"].split("\n")
+    unc = {n: line_set(f.get("uncoveredLines", "")) for n, f in summary["files"].items()}
+    unc = {n: u for n, u in unc.items() if u}
+    ran_line = src.index("function ran(x) {") + 2
+    listed = tmp / "uncovered.tsv"
+
+    def rows_of(text):
+        return [line.split("\t") for line in text.split("\n") if line and not line.startswith("#")]
+
+    def run(name, rows, want_exit, **want):
+        listed.write_text("# self-test\n" + "".join("\t".join(map(str, r)) + "\n" for r in rows))
+        out = tmp / ("list-" + name)
+        r = subprocess.run(["node", report_js, "--src", str(fix), "--out", str(out), "--uncovered", str(listed),
+                            "--require-listed", str(raw)], capture_output=True, text=True)
+        s = json.loads((out / "summary.json").read_text())
+        got = {k: s.get(k) for k in want}
+        if r.returncode != want_exit or got != want:
+            problems.append(f"list case {name}: exit {r.returncode}, {got}; want exit {want_exit}, {want}\n{r.stdout}{r.stderr}")
+        return r, s, rows_of((out / "uncovered-candidates.tsv").read_text())
+
+    # An empty list: every uncovered line unlisted, the job output names
+    # them and the way out; the candidates are one TODO row per block.
+    r, s, cand = run("empty", [], 1, unlisted=sum(map(len, unc.values())), stale=0)
+    if f"cov.js:{s['files']['cov.js'].get('unlisted')}" not in r.stdout or "uncovered-candidates.tsv" not in r.stdout:
+        problems.append(f"list case empty: the message does not name cov.js's lines and the candidates file:\n{r.stdout}")
+    got = {}
+    for c in cand:
+        got.setdefault(c[0], set()).update(line_set(c[1]))
+    if any(not c[3].startswith("TODO") for c in cand) or got != unc:
+        problems.append(f"list case empty: candidates {cand}, want TODO rows covering {unc}")
+    # The candidates with reasons written: true for this run.
+    good = [c[:3] + ["never called in the fixture"] for c in cand]
+    if any(c[2] != code_of(FILES[c[0]].split("\n"), line_set(c[1])) for c in good):
+        problems.append(f"list case empty: candidate codes {[c[2] for c in good]} are not listed.js's codeOf")
+    run("good", good, 0, unlisted=0, stale=0, moved=0, changed=0, todo=0)
+    # A listed line that ran: stale, named in the output.
+    r, _, _ = run("stale", good + [["cov.js", ran_line, code_of(src, [ran_line]), "wrong"]], 1, unlisted=0, stale=1)
+    if f"cov.js:{ran_line}" not in r.stdout:
+        problems.append(f"list case stale: the output does not name cov.js:{ran_line}:\n{r.stdout}")
+    # ... unless it is one that runs only sometimes.
+    run("sometimes", good + [["cov.js", ran_line, code_of(src, [ran_line]), "sometimes: a timing"]], 0, unlisted=0, stale=0)
+    # A row three lines off with its code: moved; the candidates put it back.
+    first = line_set(good[0][1])
+    off = [good[0][:1] + [",".join(str(n + 3) for n in sorted(first))] + good[0][2:]] + good[1:]
+    _, _, cand = run("moved", off, 1, unlisted=0, stale=0, moved=1, changed=0)
+    if [c[:3] for c in cand] != [c[:3] for c in good]:
+        problems.append(f"list case moved: candidates {cand}, want {good}")
+    # A row whose code is not in the file; a TODO row.
+    run("changed", [good[0][:2] + ["00000000"] + good[0][3:]] + good[1:], 1, changed=1)
+    run("todo", [good[0][:3] + ["TODO: later"]] + good[1:], 1, todo=1)
+
+    # relist.js on a copy of the fixture: two lines added at the top move
+    # every row by two; a listed line edited makes its row "changed".
+    rl = tmp / "relist"
+    rl.mkdir()
+    lst = rl / "jscov-uncovered.tsv"
+    lst.write_text("# self-test\n" + "".join("\t".join(r) + "\n" for r in good))
+    for n in {c[0] for c in good}:
+        (rl / n).write_text(FILES[n])
+
+    def relist(*a):
+        return subprocess.run(["node", relist_js, *a, str(lst)], capture_output=True, text=True)
+    if relist("--check").returncode:
+        problems.append("relist --check: fails on a list that matches")
+    (rl / "cov.js").write_text("// one\n// two\n" + FILES["cov.js"])
+    r = relist("--check")
+    if r.returncode != 1 or "moved" not in r.stdout or "relist.js" not in r.stdout:
+        problems.append(f"relist --check after two lines added: exit {r.returncode}\n{r.stdout}")
+    r = relist()
+    want = [[c[0], ",".join(str(n + 2 * (c[0] == "cov.js")) for n in sorted(line_set(c[1]))), c[2], c[3]] for c in good]
+    got = rows_of(lst.read_text())
+    if r.returncode or [[g[0], ",".join(str(n) for n in sorted(line_set(g[1])))] + g[2:] for g in got] != want:
+        problems.append(f"relist: exit {r.returncode}, rows {got}, want {want}\n{r.stdout}")
+    if relist("--check").returncode:
+        problems.append("relist --check: fails after relist rewrote the list")
+    moved_src = ("// one\n// two\n" + FILES["cov.js"]).split("\n")
+    n = min(line_set(got[0][1]))
+    moved_src[n - 1] += " // edited"
+    (rl / "cov.js").write_text("\n".join(moved_src))
+    r = relist()
+    if r.returncode != 1 or "CHANGED" not in r.stdout:
+        problems.append(f"relist after a listed line was edited: exit {r.returncode}\n{r.stdout}")
+    r = subprocess.run(["node", relist_js, "--rehash", f"cov.js:{got[0][1]}", str(lst)], capture_output=True, text=True)
+    if r.stdout.split("\t")[:3] != ["cov.js", got[0][1], code_of(moved_src, line_set(got[0][1]))]:
+        problems.append(f"relist --rehash: {r.stdout!r}")
+    return problems
+
+
 def main():
     problems = []
     with tempfile.TemporaryDirectory(prefix="jscov-selftest-", dir=os.environ.get("MKB_TMP")) as tmp:
@@ -254,32 +366,7 @@ def main():
             lines = cov.get("lines", {})
             if not lines.get("total") or lines.get("covered", 0) >= lines.get("total", 0):
                 problems.append(f"cov.js: lines {lines}, want some uncovered")
-            # The list of uncovered lines with reasons (--uncovered): never's
-            # lines listed, the rest of cov.js's uncovered lines unlisted, a
-            # listed line that ran stale; --require-listed fails on unlisted.
-            src = FILES["cov.js"].split("\n")
-            never = [src.index("function never(x) {") + 2]
-            ran_line = src.index("function ran(x) {") + 2
-            listed = tmp / "uncovered.tsv"
-            listed.write_text(f"# self-test\ncov.js\t{never[0]},{ran_line}\tnever is never called\n")
-            cov_unc = set()
-            for a, _, b in (x.partition("-") for x in cov.get("uncoveredLines", "").split(",") if x):
-                cov_unc.update(range(int(a), int(b or a) + 1))
-            for req in (False, True):
-                r2 = subprocess.run(["node", str(SITE / "jscov" / "report.js"), "--src", str(fix), "--out", str(tmp / "report2"),
-                                     "--uncovered", str(listed)] + (["--require-listed"] if req else []) + [str(raw)],
-                                    capture_output=True, text=True)
-                s2 = json.loads((tmp / "report2" / "summary.json").read_text())
-                f2 = s2["files"]["cov.js"]
-                want_unlisted = sorted(cov_unc - set(never))
-                got_unlisted = []
-                for a, _, b in (x.partition("-") for x in f2.get("unlisted", "").split(",") if x):
-                    got_unlisted.extend(range(int(a), int(b or a) + 1))
-                if got_unlisted != want_unlisted or f2.get("stale") != str(ran_line):
-                    problems.append(f"--uncovered: cov.js unlisted {got_unlisted} stale {f2.get('stale')!r}, want "
-                                    f"{want_unlisted} and {ran_line}")
-                if bool(r2.returncode) != (req and bool(want_unlisted)):
-                    problems.append(f"--uncovered{' --require-listed' if req else ''}: exit {r2.returncode}")
+            problems += check_list(tmp, fix, raw, s)
             print(json.dumps({n: {m: s["files"][n][m] for m in ("lines", "functions", "branches")} for n in s["files"]}, indent=1))
     if problems:
         print("FAIL\n  " + "\n  ".join(problems), file=sys.stderr)

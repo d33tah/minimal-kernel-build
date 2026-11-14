@@ -2403,12 +2403,52 @@ before it leaves for another site by itself, and the untaken return of a
 function that runs only after a reload), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
 fails when a total is below `site/jscov-baseline.json` or a file's lines
-are below its `fileLines` (80). `site/jscov-uncovered.tsv` says, per block,
-why each line that never runs in the tests does not (V3: 355 blocks, every
-uncovered line of run 43588908776); the job summary names the uncovered
-lines it does not explain and the listed lines that ran (`report.js
---uncovered`; `--require-listed` would fail on the first, CI only reports
-them, so a new uncovered block shows up there first).
+are below its `fileLines` (80).
+
+### The list of lines the tests do not run
+
+`site/jscov-uncovered.tsv` says, per block, why each line that never runs
+in the tests does not. It must be true at every commit: the jscov job
+(`report.js --uncovered site/jscov-uncovered.tsv --require-listed`) fails
+on an uncovered line the list does not name, on a listed line that ran,
+on a row whose code moved or changed, and on a row whose reason is still
+`TODO`. The job output and the job summary name each such line as
+`file:lines` and say how to fix it. A row is
+
+    file<TAB>line ranges<TAB>code<TAB>reason
+
+where `code` is the first 8 hex digits of the SHA-256 of the line before
+the block and the block's lines, each trimmed (`site/jscov/listed.js`).
+With it a row knows its code without a coverage run:
+`node site/jscov/relist.js` renumbers the rows after lines were added or
+removed above them, and `relist.js --check` (the site job runs it) fails
+when a row moved, when its code changed or is gone, or when it says TODO.
+
+How to keep it green when you change a site script (every track):
+
+- Before each commit that changes a `site/*.js` file, run
+  `node site/jscov/relist.js` and commit the list with the code. That is
+  all when the change only moved listed blocks.
+- New code: give it a test that runs it (the e2e suites, with a real
+  assertion of its effect). Code that the tests cannot run needs a row
+  with the reason, written by hand.
+- After the push, if the jscov job fails: `gh run download RUN -n
+  jscov-report`. Its `uncovered-candidates.tsv` is the list made true
+  for that run: moved rows renumbered, lines that ran taken out of their
+  rows (rows whose lines all ran dropped), and one `TODO` row per new
+  uncovered block. Add tests for the TODO blocks where you can (then
+  drop the row), write the reason for the others, look at rows the job
+  called changed (`relist.js --rehash FILE:LINES` prints a row's lines and
+  code), copy the file over `site/jscov-uncovered.tsv` and push.
+- A line that runs in some runs and not in others (timing, a race the
+  test does not pin) gets a reason that starts with `sometimes:` and
+  names the test; it is not reported when it runs. Prefer a test that
+  runs it every time.
+- Locally, without CI: the coverage suites as above
+  (`MKB_JSCOV=/tmp/jscov python3 site/test_browser.py --suites NAME`),
+  then `node site/jscov/report.js --src site --out /tmp/jscov-report
+  --uncovered site/jscov-uncovered.tsv /tmp/jscov`; only the files that
+  suite runs are meaningful in that report.
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;

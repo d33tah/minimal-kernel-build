@@ -570,7 +570,10 @@ function snapSwitch(s) {
 	if (![...$("memory").options].some((o) => o.value === String(s.ram)))
 		$("memory").add(new Option(kib(s.ram), String(s.ram)));
 	$("snap_status").textContent = "Switching to " + k.name + " with " + kib(s.ram) + "...";
-	loadKernel(k, String(s.ram)).catch((e) => setStatus(String(e)));
+	loadKernel(k, String(s.ram)).catch((e) => {
+		setStatus(String(e));
+		$("snap_status").textContent = "Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".";
+	});
 }
 
 // ---- the table ------------------------------------------------------------

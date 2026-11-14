@@ -423,7 +423,12 @@ function bmSwitch(b) {
 	BM.pending = { b, until: realNow() + 120000 };
 	$("kernel").value = k.name;
 	bmNote("Switching to " + k.name + " for “" + b.name + "”...");
-	loadKernel(k).catch((e) => setStatus(String(e)));
+	loadKernel(k).catch((e) => {
+		setStatus(String(e));
+		if (BM.pending && BM.pending.b === b)
+			BM.pending = null;
+		bmNote("Switching to " + k.name + " for “" + b.name + "” failed: " + ((e && e.message) || e) + ".");
+	});
 }
 
 // A pending jump (a link, a switch) once its kernel runs and is known.

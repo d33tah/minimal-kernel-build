@@ -16538,6 +16538,149 @@ def bookmarks_edges(browser, base, shots):
     return problems, r
 
 
+def bookmarks_unreachable(browser, base, shots):
+    """hello to its end on the virtual clock at 1280 light: the Memory
+    tab's ☆ offers the page EIP is on; a position bookmark (with its run),
+    a snapshot and the run's file; the bookmark's 🔗 copies its link (the
+    clipboard holds it) or, when the browser refuses, says to copy it from
+    the context menu; the link opened again finds the bookmark already
+    there. Then on hello-os paused at the reset vector (the Page tab's ☆
+    offers a line of EIP's page, the Calls tab's with no function picked
+    says there is nothing to bookmark) with hello's bzImage answering 404:
+    the snapshot's Switch and Replay, Replay a file of hello's run, the
+    bookmark's jump and its Replay each say the fetch failed (the Switch
+    and the jump also where they were started, and the jump is dropped),
+    and hello-os keeps running."""
+    problems, r, errors = [], {}, []
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900}, accept_downloads=True)
+    # No service worker: hello's bzImage from its cache would not fail.
+    ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    tag = "unreachable"
+    try:
+        page.goto(f"{base}/index.html?kernel=hello&mips=10", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
+            return [f"{tag}: hello did not end in 120 s"], r
+        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        show_tab(page, "memory")
+        page.click("#bm_add_mem")
+        eip_page = page.evaluate("stepper.nextPhys() >> 12")
+        d = page.evaluate(BM_DIALOG_JS) or {}
+        r["memory star"] = [d.get("kind"), d.get("what"), eip_page]
+        if d.get("kind") != "page" or f"page {eip_page:#x}" not in d.get("what", ""):
+            problems.append(f"{tag}: the Memory tab's ☆ offers {d}, want page {eip_page:#x} (EIP's)")
+        page.keyboard.press("Escape")
+        st = snap_save(page, 1, False)
+        snap_id = st["rows"][0]["id"]
+        with page.expect_download() as dl:
+            page.click("#run_dl")
+        run_file = tmp / "hello-run.json"
+        run_file.write_bytes(pathlib.Path(dl.value.path()).read_bytes())
+        bm_open_list(page, False)
+        page.click("#bm_here")
+        b = bm_dialog_save(page, problems, tag, "pos", name="hello's end")
+        if not b or not b["t"].get("run"):
+            return problems + [f"{tag}: the position bookmark has no run: {b}"], r
+        # The 🔗: refused by the browser, then allowed.
+        bm_open_list(page, False)
+        row = f"#bm_list .bmrow[data-id='{b['id']}']"
+        link = page.get_attribute(f"{row} a.bmlink", "href")
+        page.evaluate("() => { navigator.clipboard.writeText = () => Promise.reject(new DOMException('denied by the test', 'NotAllowedError')); }")
+        page.click(f"{row} a.bmlink")
+        wait_for(lambda: bm_status(page).startswith("Copy"), 5)
+        refused = bm_status(page)
+        page.reload()
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper"), 120)
+        ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=base)
+        bm_open_list(page, False)
+        page.click(f"{row} a.bmlink")
+        wait_for(lambda: bm_status(page).startswith("Copied"), 5)
+        copied = bm_status(page)
+        clip = page.evaluate("navigator.clipboard.readText()")
+        r["link"] = [refused, copied, clip == link, page.url]
+        if refused != "Copy the link from its context menu.":
+            problems.append(f"{tag}: the 🔗 when the clipboard refuses: {refused!r}")
+        if copied != "Copied the link to “hello's end”." or clip != link or "#bm=" in page.url:
+            problems.append(f"{tag}: the 🔗: {copied!r}, the clipboard {clip[:80]!r} (want {link[:80]!r}), the page went to {page.url}")
+        # The link again: the bookmark is there already.
+        page.goto(link)
+        wait_for(lambda: bm_status(page).startswith("Opened"), 60)
+        n = len(bm_state(page)["list"])
+        r["link again"] = [bm_status(page), n]
+        if bm_status(page) != "Opened “hello's end” from a link." or n != 1:
+            problems.append(f"{tag}: the link of a bookmark already listed: {bm_status(page)!r}, {n} bookmarks (want 1)")
+
+        # hello's bzImage gone: everything that would load hello says so.
+        if "hello-os" not in kernel_entries():
+            return problems, r
+        ctx.route("**/kernels/hello/bzImage*", lambda route: route.fulfill(status=404, body="gone"))
+        page.goto(f"{base}/index.html?kernel=hello-os&paused=1#snapshots")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        # Paused at the reset vector: the Page tab's ☆ offers the line at
+        # EIP; the Calls tab's, with no function picked, has nothing to add.
+        show_tab(page, "page")
+        page.click("#bm_add_page")
+        d = page.evaluate(BM_DIALOG_JS) or {}
+        page.keyboard.press("Escape")
+        eip = page.evaluate("stepper.nextPhys()")
+        show_tab(page, "calls")
+        page.click("#bm_add_calls")
+        r["page and calls stars"] = [d.get("kind"), d.get("what"), eip, bm_status(page), page.evaluate(BM_DIALOG_JS)]
+        m = re.fullmatch(r"instruction: (0x[0-9a-f]+)", d.get("what", ""))
+        if d.get("kind") != "code" or not m or int(m.group(1), 16) >> 12 != eip >> 12:
+            problems.append(f"{tag}: the Page tab's ☆ paused at the reset vector offers {d}, want a line of EIP's page {eip >> 12:#x}")
+        if bm_status(page) != "Nothing to bookmark here: pick a line, a page, a box or a frame first." or page.evaluate(BM_DIALOG_JS):
+            problems.append(f"{tag}: the Calls tab's ☆ with no function picked: {bm_status(page)!r}, dialog {page.evaluate(BM_DIALOG_JS)}")
+        show_tab(page, "snapshots")
+        snap_wait_rows(page, 1)
+        wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+        failed = "Error: kernels/hello/bzImage: HTTP 404"
+        still = lambda: page.evaluate("image.name") == "hello-os" and page.get_attribute("#dbg_state", "data-state") == "paused"
+
+        def after(what, click, where, want):
+            page.evaluate(f"document.getElementById('{where}').textContent = ''")
+            click()
+            ok = wait_for(lambda: want in page.text_content(f"#{where}"), 15)
+            got = page.text_content(f"#{where}")
+            r[what] = got[:120]
+            if not ok or not still():
+                problems.append(f"{tag}: {what} with hello's bzImage at 404: {got!r} (want {want!r}), "
+                                f"still on hello-os: {still()}")
+        after("snapshot switch", lambda: snap_click(page, f"#snapshots tr[data-id='{snap_id}'] button.snapswitch", False), "status", failed)
+        # The Snapshots tab says so too (FAILS on 0e4bd70a3: "Switching to hello with 2,048 KiB..." stayed).
+        want = "Switching to hello failed: kernels/hello/bzImage: HTTP 404."
+        wait_for(lambda: page.text_content("#snap_status") == want, 5)
+        r["snapshot switch note"] = page.text_content("#snap_status")
+        if page.text_content("#snap_status") != want:
+            problems.append(f"{tag}: the Snapshots tab after the failed switch: {page.text_content('#snap_status')!r}, want {want!r}")
+        show_tab(page, "snapshots")
+        after("snapshot replay", lambda: snap_click(page, f"#snapshots tr[data-id='{snap_id}'] button.snapreplay", False),
+              "run_status", "Replay failed: " + failed)
+        show_tab(page, "snapshots")
+        after("replay a file", lambda: page.set_input_files("#run_file", str(run_file)), "run_status", "Replay failed: " + failed)
+        bm_open_list(page, False)
+        after("bookmark jump", lambda: page.click(f"{row} .bmgo"), "status", failed)
+        # The list says so (FAILS on 0e4bd70a3: "Switching to hello for ..." stayed) and the
+        # jump is dropped: hello loaded later does not go there.
+        want = "Switching to hello for “hello's end” failed: kernels/hello/bzImage: HTTP 404."
+        wait_for(lambda: bm_status(page) == want, 5)
+        r["bookmark jump note"] = [bm_status(page), page.evaluate("BM.pending")]
+        if r["bookmark jump note"] != [want, None]:
+            problems.append(f"{tag}: the bookmark's failed jump to hello: note {bm_status(page)!r} (want {want!r}), "
+                            f"pending {page.evaluate('BM.pending')}")
+        bm_open_list(page, False)
+        after("bookmark replay", lambda: page.click(f"{row} .bmreplay"), "run_status", "Replay failed: " + failed)
+        page.screenshot(path=str(shots / "bookmarks-unreachable-1280-light.png"))
+        if errors:
+            problems.append(f"{tag}: page errors {errors[:3]}")
+    finally:
+        ctx.close()
+        shutil.rmtree(tmp, ignore_errors=True)
+    return problems, r
+
+
 def bookmarks_case(browser, base, shots, linux):
     out = []
     names = kernel_entries()
@@ -16557,6 +16700,7 @@ def bookmarks_case(browser, base, shots, linux):
         out.append(report("bookmarks", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                           seconds=round(time.monotonic() - t0)))
     out.append(report("bookmarks edges", *bookmarks_edges(browser, base, shots)))
+    out.append(report("bookmarks unreachable", *snapdiff_guard(bookmarks_unreachable, browser, base, shots)))
     for name, scheme, phone in [("hello", "light", False)] + ([("minified-linux", "dark", True)] if linux else []):
         problems, r = snapdiff_guard(onecount_run, browser, base, shots, name, scheme, phone)
         out.append(report("bookmarks one count", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))

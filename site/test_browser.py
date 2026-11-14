@@ -16694,8 +16694,13 @@ def bookmarks_unreachable(browser, base, shots):
         r["link again"] = [bm_status(page), n]
         if bm_status(page) != "Opened “hello's end” from a link." or n != 1:
             problems.append(f"{tag}: the link of a bookmark already listed: {bm_status(page)!r}, {n} bookmarks (want 1)")
-        # Import… opens the file dialog.
-        bm_open_list(page, False)
+        # Import… opens the file dialog. The link's jump lands after its
+        # status line and closes the menu (CI run 43600287802: the menu was
+        # closed when Import… was clicked): open the list once it landed.
+        wait_for(lambda: "#page/" in page.url, 10)
+        time.sleep(0.5)
+        if not wait_for(lambda: bm_open_list(page, False) and page.is_visible("#bm_import"), 10):
+            problems.append(f"{tag}: the bookmarks list with Import… did not open after the link's jump")
         (tmp / "junk.json").write_text("no bookmarks here")
         with page.expect_file_chooser() as fc:
             page.click("#bm_import")

@@ -17102,6 +17102,144 @@ def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
     return problems, r
 
 
+def dwf_fail_checks(browser, base, elf):
+    """What the page says when its debug info cannot be had: shipped
+    files that fail to load (HTTP 404), an index.json still on its way or
+    without some of its parts, a bzImage from disk (no debug info), the
+    DWARF reader Worker that does not load, an import without IndexedDB
+    (private mode). And the outermost function's rows (dbgFunction) of the
+    shipped hello."""
+    problems, r = [], {}
+    hello = {s["name"]: s for s in json.loads((SITE / "kernels" / "hello" / "symbols.json").read_text())["symbols"]}
+    pa = hello["hello_main"]["paddr"]
+    url = f"{base}/index.html?kernel=hello&paused=1#machine"
+
+    def opened(route=None, init=None):
+        # No service worker: its cache would answer before the routes.
+        ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
+        if init:
+            ctx.add_init_script(init)
+        page = ctx.new_page()
+        if route:
+            page.route(*route)
+        page.goto(url)
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        return ctx, page
+
+    def ask(page, fn, *args):
+        return page.evaluate(DBG_WAIT_JS, [fn, list(args)])
+
+    def expect(what, got, want):
+        r[what] = got
+        if got != want:
+            problems.append(f"{what}: {got!r}, want {want!r}")
+    nf = lambda route: route.fulfill(status=404, body="")
+    # Every shipped file but index.json and types.json: HTTP 404.
+    ctx, page = opened(("**/kernels/hello/dwarf/*", lambda rt: rt.continue_() if rt.request.url.split("?")[0].endswith(("index.json", "types.json")) else nf(rt)))
+    expect("404: frames", ask(page, "dbgFrames", pa), {"state": "none", "why": "debug info did not load: HTTP 404"})
+    expect("404: locals", ask(page, "dbgLocals", pa), {"state": "none", "why": "the parameters and locals did not load: HTTP 404"})
+    expect("404: function facts", ask(page, "dbgFnFacts", "hello_main"), {"state": "none", "why": "the function facts did not load: HTTP 404"})
+    expect("404: files", ask(page, "dbgFiles"), {"state": "none", "why": "the file list did not load: HTTP 404"})
+    expect("404: CFI", ask(page, "dbgCfiRow", pa), {"why": "the call frame information did not load: HTTP 404"})
+    ctx.close()
+    ctx, page = opened(("**/kernels/hello/dwarf/types.json*", nf))
+    expect("404: variables", ask(page, "dbgTypes"), {"state": "none", "why": "the variables did not load: HTTP 404"})
+    ctx.close()
+    # index.json held back, then without some parts (an index of an older gen-dwarf.js).
+    held = []
+    index = json.loads((SITE / "kernels" / "hello" / "dwarf" / "index.json").read_text())
+    for drop in (("locals", "funcs", "files", "cfi"), ("types",)):
+        held.clear()
+        ctx, page = opened(("**/kernels/hello/dwarf/index.json*", lambda rt: held.append(rt)))
+        if drop[0] == "locals":
+            expect("index on its way: files, CFI", page.evaluate("(pa) => [dbgFiles(), dbgCfiRow(pa)]", pa),
+                   [{"state": "loading", "why": "reading the debug info index…"}, "loading"])
+        wait_for(lambda: held, 10)
+        held[0].fulfill(status=200, content_type="application/json", body=json.dumps({k: v for k, v in index.items() if k not in drop}))
+        if drop[0] == "locals":
+            expect("no locals in the index", ask(page, "dbgLocals", pa),
+                   {"state": "none", "why": "this kernel's debug info has no parameters and locals (locals-*.json.gz)"})
+            expect("no function facts in the index", ask(page, "dbgFnFacts", "hello_main"),
+                   {"state": "none", "why": "this kernel's debug info has no function facts (funcs-*.json.gz)"})
+            expect("no files in the index", ask(page, "dbgFiles"), {"state": "none", "why": "this kernel's debug info has no file list (files.json)"})
+            expect("no CFI in the index", ask(page, "dbgCfiRow", pa), {"why": "this kernel's debug info has no call frame information"})
+        else:
+            expect("no variables in the index", ask(page, "dbgTypes"), {"state": "none", "why": "this kernel's debug info has no variables (types.json)"})
+        ctx.close()
+    # The outermost function around an address of the shipped hello.
+    ctx, page = opened()
+    fn = ask(page, "dbgFunction", pa + 4)
+    want_hi = pa + hello["hello_main"]["size"]
+    r["function"] = [fn.get("state"), fn.get("lo"), fn.get("hi"), len(fn.get("rows", []))]
+    if fn.get("state") != "ok" or fn["lo"] != pa or fn["hi"] != want_hi or fn["rows"][0][0] != pa or fn["rows"][-1][1] != want_hi:
+        problems.append(f"dbgFunction(hello_main+4): {str(fn)[:300]}, want [{pa:#x}, {want_hi:#x})")
+    expect("function: assembly", ask(page, "dbgFunction", hello["startup_32"]["paddr"]),
+           {"state": "none", "why": "no DWARF function here (assembly or code without debug info)"})
+    expect("function: no code", ask(page, "dbgFunction", 0x5000), {"state": "none", "why": "no DWARF here: not code of this kernel's vmlinux"})
+    # A bzImage from disk has no debug info.
+    page.evaluate("startPaused = true")
+    page.set_input_files("#file", str(SITE / "kernels" / "hello" / "bzImage"))
+    wait_for(lambda: page.evaluate("DBG.mode === null && DBG.why.startsWith('no debug info for a bzImage')"), 30)
+    why = "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line"
+    expect("from disk: locals", ask(page, "dbgLocals", pa), {"state": "none", "why": why})
+    expect("from disk: function facts", ask(page, "dbgFnFacts", "hello_main"), {"state": "none", "why": why})
+    expect("from disk: CFI", ask(page, "dbgCfiRow", pa), {"why": why})
+    expect("from disk: code of a line", ask(page, "dbgFileCode", "hello.c"), {"state": "none", "why": why})
+    expect("no address: title", page.evaluate("dbgTitle(-1)"), "")
+    ctx.close()
+    # The Worker's script does not load: for the file:line reader, then
+    # (the first one loaded) for the variables' second Worker.
+    for first_ok in (False, True):
+        asked = []
+
+        def worker(rt):
+            asked.append(rt.request.url)
+            rt.continue_() if first_ok and len(asked) == 1 else nf(rt)
+        ctx, page = opened(("**/dwarfworker.js*", worker))
+        page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+        page.set_input_files("#symfile", str(elf))
+        if not first_ok:
+            wait_for(lambda: "the DWARF reader failed" in page.inner_text("#sym_status"), 30)
+            st = page.inner_text("#sym_status")
+            r["no Worker: status"] = st
+            if "No file:line: the DWARF reader failed: " not in st:
+                problems.append(f"no Worker: the status is {st!r}")
+        else:
+            wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 30)
+            ty = ask(page, "dbgTypes")
+            r["no second Worker: variables"] = [ty, len(asked)]
+            if ty.get("state") != "none" or not ty.get("why", "").startswith("the variables did not load: ") or len(asked) != 2:
+                problems.append(f"no second Worker: the variables: {ty} ({len(asked)} requests)")
+        ctx.close()
+    # No IndexedDB (private mode): the import works, nothing is remembered.
+    ctx, page = opened(init="Object.defineProperty(window, 'indexedDB', { value: undefined });")
+    page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+    page.set_input_files("#symfile", str(elf))
+    wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 30)
+    g = ask(page, "dbgFrames", pa_of(elf, "use"))
+    r["no IndexedDB: frames"] = g.get("state")
+    if g.get("state") != "ok":
+        problems.append(f"no IndexedDB: the frames of the import: {g}")
+    page.goto("about:blank")
+    page.goto(url)
+    wait_for(lambda: "No file:line" in page.inner_text("#sym_status"), 60)
+    st = page.inner_text("#sym_status")
+    r["no IndexedDB: after a reload"] = st
+    if "No file:line: import the unstripped vmlinux again to see its DWARF (file:line)" not in st:
+        problems.append(f"no IndexedDB: after a reload the status is {st!r}")
+    ctx.close()
+    return problems, r
+
+
+def pa_of(elf, name):
+    """Physical address (va - CFI_OFFSET) of an ELF symbol."""
+    for l in subprocess.run(["llvm-nm", str(elf)], capture_output=True, text=True).stdout.splitlines():
+        f = l.split()
+        if len(f) == 3 and f[2] == name:
+            return int(f[0], 16) - CFI_OFFSET
+    return None
+
+
 def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     from test_dwarf import symbolize, gdb_scopes
     problems, r = [], {}
@@ -17140,6 +17278,9 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
         ui.mkdir()
         p, r["import"] = dwf_ui_checks(browser, base, shots, ui, symbolize, gdb_scopes)
         problems += p
+        if (ui / "ui.elf").exists():
+            p, r["failures"] = dwf_fail_checks(browser, base, ui / "ui.elf")
+            problems += p
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     return problems, r

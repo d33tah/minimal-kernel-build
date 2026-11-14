@@ -66,11 +66,17 @@ function kitConcat(parts) {
 // against its SHA-256.
 function kitSource(base) {
 	const at = (p) => new URL(p, new URL(base, location.href)).href;
+	// A server error is tried again (after 0.5, 1 and 2 s): GitHub Pages
+	// answered 503 to one of a build's parallel blob fetches.
 	const fetchOk = async (url) => {
-		const r = await fetch(url);
-		if (!r.ok)
-			throw new Error(url + ": HTTP " + r.status);
-		return r;
+		for (let wait = 500; ; wait *= 2) {
+			const r = await fetch(url);
+			if (r.ok)
+				return r;
+			if (r.status < 500 || wait > 2000)
+				throw new Error(url + ": HTTP " + r.status);
+			await new Promise((ok) => setTimeout(ok, wait));
+		}
 	};
 	return {
 		async kit(name) {

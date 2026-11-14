@@ -2390,7 +2390,9 @@ cat-size run in JavaScript (`kitSed`: the GNU sed subset the kits use,
 checked against GNU sed on `testdata/sed-cases.json`); clang.wasm cannot
 start a process, so a `.S` compile runs the jobs `clang -###` lists
 (`clang -cc1 -E`, then `clang -cc1as`) itself. Every blob is checked
-against its SHA-256 and every step's output against CI's.
+against its SHA-256 and every step's output against CI's. A fetch that
+gets a server error is tried again after 0.5, 1 and 2 s (GitHub Pages
+answered 503 to one of the 32 parallel blob fetches in E3's live check).
 
 The kits do not make generated files again: kbuild's headers
 (`autoconf.h`, `asm-offsets.h`, `bounds.h`, the syscall tables) and

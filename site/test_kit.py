@@ -23,8 +23,9 @@ alive on the screen; the edited hello: Hello, Kit!!!), and every
 browser's bytes must be the first browser's.
 
 Also: kitSed in the page on site/testdata/sed-cases.json against GNU sed's
-output; the errors (a missing kit, another format, a blob with other
-bytes, a failing step or compile, a module the kit lacks, an edit of a
+output; a blob that answers 503 twice and then its bytes (fetched again)
+and one that always answers 503; the errors (a missing kit, another
+format, a blob with other bytes, a failing step or compile, a module the kit lacks, an edit of a
 file the kit lacks) and the steps clang.wasm cannot run alone (a .S
 compile: clang -### and its jobs) on synthetic kits.
 
@@ -89,7 +90,7 @@ RUN_JS = """async ({ name, keep, edit }) => {
   return res;
 }"""
 
-ERRORS_JS = """async ({ sed, sedErrors, tampered, raw }) => {
+ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
   const res = {};
   const err = async (f) => { try { await f(); return 'resolved'; } catch (e) { return e.message; } };
   const src = kitSource('kits/');
@@ -97,6 +98,8 @@ ERRORS_JS = """async ({ sed, sedErrors, tampered, raw }) => {
   res.format = await err(() => src.kit('__format2'));
   res.tampered = await err(() => src.get(tampered));
   res.raw = (await src.get(raw)).length;
+  try { res.flaky = (await src.get(flaky)).length; } catch (e) { res.flaky = e.message; }
+  res.down = await err(() => src.get('always-503'));
   res.sed = sed.map(([, args, input]) => { try { return kitLatin1(kitSed(args, kitBytes(input))); } catch (e) { return 'error: ' + e.message; } });
   res.sedErrors = sedErrors.map(([args]) => { try { kitSed(args, kitBytes('a\\n')); return 'resolved'; } catch (e) { return e.message; } });
 
@@ -150,12 +153,17 @@ def check_errors(bname, res, sed_want, problems):
         "asmBad": "x.o: clang exited with 1", "asmMissing": "no such file", "stepFails": "exited with 1",
         "noModule": "no module kallsyms", "badModule": "HTTP 404", "notInKit": "b.c is not a file of the kit",
         "badCompile": "compile is false", "noFile": "nothing.txt: no such file",
+        "down": "always-503.gz: HTTP 503",
     }
     for k, w in want.items():
         if w not in str(res.get(k)):
             problems.append(f"{bname}: {k}: {res.get(k)!r}, wanted {w!r}")
     if res.get("raw") != sed_want["raw"]:
         problems.append(f"{bname}: a blob served unpacked: {res.get('raw')} bytes, wanted {sed_want['raw']}")
+    # GitHub Pages answered 503 to one of the parallel blob fetches in the
+    # live check of E3: the page tries again.
+    if res.get("flaky") != sed_want["flaky"]:
+        problems.append(f"{bname}: a blob answered 503 twice, then its bytes: {res.get('flaky')!r}, wanted {sed_want['flaky']} bytes")
     bad = [(c[0], got, w) for c, got, w in zip(sed_want["cases"], res["sed"], sed_want["out"]) if got != w]
     if bad:
         problems.append(f"{bname}: kitSed differs from GNU sed: {bad}")
@@ -275,15 +283,17 @@ def main():
     out = pathlib.Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     # Blobs the error checks serve otherwise: hello's first file with other
-    # bytes, its second unpacked.
+    # bytes, its second unpacked, its third after two 503 answers.
     hk = kits.get("hello") or json.loads(get("kits/hello.json"))
-    tampered, raw = hk["files"][0][1], hk["files"][1][1]
+    tampered, raw, flaky = hk["files"][0][1], hk["files"][1][1], hk["files"][2][1]
     raw_bytes = gzip.decompress(get(f"kits/blobs/{raw}.gz"))
+    flaky_gz = get(f"kits/blobs/{flaky}.gz")
     sed = json.loads((SITE / "testdata" / "sed-cases.json").read_text())
     cases = sed["cases"]
     sed_out = [subprocess.run(["sed"] + a, input=i.encode("latin-1"), stdout=subprocess.PIPE, check=True).stdout.decode("latin-1")
                for _, a, i in cases]
-    sed_want = {"cases": cases, "out": sed_out, "errors": sed["errors"], "raw": len(raw_bytes)}
+    sed_want = {"cases": cases, "out": sed_out, "errors": sed["errors"], "raw": len(raw_bytes),
+                "flaky": len(gzip.decompress(flaky_gz))}
     httpd = None
     if not base:
         if pathlib.Path(args.kits).resolve() != (SITE / "kits").resolve():
@@ -304,13 +314,17 @@ def main():
             page.route("**/kits/__format2.json", lambda route: route.fulfill(json={"format": 2}))
             page.route(f"**/kits/blobs/{tampered}.gz", lambda route: route.fulfill(body=gzip.compress(b"other bytes")))
             page.route(f"**/kits/blobs/{raw}.gz", lambda route: route.fulfill(body=raw_bytes))
+            answers = iter([503, 503])
+            page.route(f"**/kits/blobs/{flaky}.gz",
+                       lambda route: route.fulfill(status=next(answers, 200), body=flaky_gz))
+            page.route("**/kits/blobs/always-503.gz", lambda route: route.fulfill(status=503, body="busy"))
             page.goto(f"{base}/index.html?kernel=hello")
             page.wait_for_function("typeof ClangWorker === 'function' && typeof kitBuild === 'function'")
             rss = PeakRss()
             t0 = time.monotonic()
             results[bname] = {}
             try:
-                errs = page.evaluate(ERRORS_JS, {"sed": cases, "sedErrors": sed["errors"], "tampered": tampered, "raw": raw})
+                errs = page.evaluate(ERRORS_JS, {"sed": cases, "sedErrors": sed["errors"], "tampered": tampered, "raw": raw, "flaky": flaky})
                 print(f"{bname}: {page.evaluate('navigator.userAgent')}", flush=True)
                 check_errors(bname, errs, sed_want, problems)
                 results[bname]["errors"] = errs
@@ -318,6 +332,7 @@ def main():
                 problems.append(f"{bname} errors: {e}")
             page.unroute(f"**/kits/blobs/{tampered}.gz")
             page.unroute(f"**/kits/blobs/{raw}.gz")
+            page.unroute(f"**/kits/blobs/{flaky}.gz")
             for n in names:
                 try:
                     res = page.evaluate(RUN_JS, {"name": n, "keep": [kits[n]["shipped"]["path"]], "edit": EDIT if n == "hello" else None})

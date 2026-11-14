@@ -22,6 +22,7 @@ Usage:
   site/test_clang_worker.py --fixtures DIR [--browsers chromium,firefox,webkit]
   site/test_clang_worker.py --fixtures DIR --base https://d33.pl/minimal-kernel-build
   site/test_clang_worker.py --fixtures DIR --browsers firefox --firefox-profile OUT.json
+  site/test_clang_worker.py --fixtures DIR --browsers firefox --no-automation
 
 --firefox-profile: Firefox runs with the Gecko profiler from startup
 (MOZ_PROFILER_STARTUP, every thread, JS frames) and writes the profile at
@@ -36,8 +37,9 @@ import collections
 import json
 import os
 import pathlib
-import re
+import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -112,7 +114,8 @@ RUN_JS = """async ({ names, repeat }) => {
       job.tools = [];
       for (const a of tools) {
         r = await cc.run(a, { cwd: d });
-        job.tools.push({ args: a.join(' '), code: r.code, bytes: r.stdoutBytes.length, out: (r.stdout + r.stderr).slice(0, 2000) });
+        job.tools.push({ args: a.join(' '), code: r.code, bytes: r.stdoutBytes.length, out: (r.stdout + r.stderr).slice(0, 2000),
+                         codeSymbols: (r.stdout.match(/^[0-9a-f]+ [Tt] \\w/gm) || []).length });
       }
       const outs = (await cc.read(['r.o', 'lib.a'].map((x) => d + '/e0c/' + x))).files;
       job.toolFiles = outs.map(([p, b]) => [p.slice(d.length + 1), b ? b.length : null]);
@@ -126,6 +129,68 @@ RUN_JS = """async ({ names, repeat }) => {
   try { await pending; res.terminated = 'resolved'; } catch (e) { res.terminated = e.message; }
   return res;
 }"""
+
+
+AUTO_HTML = """<!doctype html>
+<meta charset="utf-8">
+<title>clang.wasm without automation</title>
+<script>const withV = (u) => u;</script>
+<script src="clang.js"></script>
+<script>
+(async () => {
+  let res;
+  try { res = await (%s)(%s); } catch (e) { res = { error: String(e), jobs: [] }; }
+  await fetch("__clang_result", { method: "POST", body: JSON.stringify(res) });
+  window.close();  // the last window: Firefox quits (and writes a profile)
+})();
+</script>
+"""
+
+
+def serve(fdir, auto):
+    """site/ plus /__clang_fixtures/NAME from fdir, /__clang_auto.html (runs
+    RUN_JS with auto["args"] by itself) and POST /__clang_result (sets
+    auto["result"], auto["done"])."""
+    class Handler(tb.QuietHandler):
+        def do_GET(self):
+            path = self.path.split("?")[0]
+            if path.startswith("/__clang_fixtures/"):
+                body, ctype = (fdir / path.rsplit("/", 1)[1]).read_bytes(), "application/json"
+            elif path == "/__clang_auto.html":
+                body, ctype = (AUTO_HTML % (RUN_JS, json.dumps(auto["args"]))).encode(), "text/html"
+            else:
+                return super().do_GET()
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self):
+            auto["result"] = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            self.send_response(204)
+            self.end_headers()
+            auto["done"].set()
+    return tb.serve(handler_class=Handler)
+
+
+def run_direct(executable, base, env, prefs, timeout, auto):
+    """Firefox started by itself (no Playwright and its Juggler agent),
+    headless with a fresh profile, on the auto page; the result comes back
+    as a POST, then the page closes its window and Firefox quits."""
+    auto["done"].clear()
+    with tempfile.TemporaryDirectory() as prof:
+        prefs = dict(prefs, **{"dom.allow_scripts_to_close_windows": True})
+        (pathlib.Path(prof) / "user.js").write_text("".join(f"user_pref({json.dumps(k)}, {json.dumps(v)});\n" for k, v in prefs.items()))
+        proc = subprocess.Popen([executable, "-headless", "-no-remote", "-profile", prof, f"{base}/__clang_auto.html"],
+                                env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        ok = auto["done"].wait(timeout)
+        try:
+            proc.wait(60)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+    return auto["result"] if ok else {"error": f"no result in {timeout:.0f} s", "jobs": []}
 
 
 def tree_rss(root):
@@ -257,7 +322,7 @@ def check(res, fixtures, problems, tag):
             codes = [t["code"] for t in job["tools"]]
             if codes[:4] != [0, 0, 0, 0] or codes[4] == 0 or "no such file" not in job["tools"][4]["out"]:
                 problems.append(f"{tag} {job['name']}: tools: {job['tools']}")
-            if not re.search(r"^[0-9a-f]+ [Tt] \w", job["tools"][3]["out"], re.M):
+            if not job["tools"][3]["codeSymbols"]:
                 problems.append(f"{tag} {job['name']}: llvm-nm lists no code symbol: {job['tools'][3]}")
             if job["tools"][1]["bytes"] == 0:
                 problems.append(f"{tag} {job['name']}: llvm-objcopy -O binary wrote nothing to stdout")
@@ -276,6 +341,9 @@ def main():
     ap.add_argument("--firefox-profile", help="Gecko profile of the Firefox run, written here")
     ap.add_argument("--firefox-pref", action="append", default=[], help="NAME=true|false|NUMBER for Firefox (e.g. javascript.options.wasm_baselinejit=false)")
     ap.add_argument("--timeout", type=float, default=900)
+    ap.add_argument("--no-automation", action="store_true",
+                    help="Firefox only: start it without Playwright, on a page that runs the same checks by itself")
+    ap.add_argument("--firefox-binary", help="with --no-automation: this Firefox instead of Playwright's")
     args = ap.parse_args()
 
     fdir = pathlib.Path(args.fixtures)
@@ -287,8 +355,11 @@ def main():
     # Small ones first: the edit and tool checks run on the first.
     names.sort(key=lambda n: (fdir / n).stat().st_size)
     fixtures = {n: json.loads((fdir / n).read_text()) for n in names}
-    httpd = None if args.base else tb.serve()
+    auto = {"args": {"names": names, "repeat": args.repeat}, "done": threading.Event(), "result": None}
+    httpd = None if args.base else serve(fdir, auto)
     base = args.base.rstrip("/") if args.base else f"http://127.0.0.1:{httpd.server_address[1]}"
+    if args.no_automation and (args.base or args.browsers != "firefox"):
+        sys.exit("--no-automation: Firefox only, on the local site")
     jscov.install("clang-worker")
     problems, results = [], {}
     with sync_playwright() as p:
@@ -303,24 +374,31 @@ def main():
                                  MOZ_PROFILER_STARTUP_ENTRIES="16777216", MOZ_PROFILER_STARTUP_INTERVAL="1",
                                  MOZ_PROFILER_STARTUP_FEATURES="js,stackwalk,cpu",
                                  MOZ_PROFILER_STARTUP_FILTERS="GeckoMain,DOM Worker,Helper")
-            browser = bt.launch(**kw) if bname == "chromium" else RAW_LAUNCH(bt, **kw)
-            ctx = browser.new_context(service_workers="block")
-            page = ctx.new_page()
-            page.set_default_timeout(args.timeout * 1000)
+            if args.no_automation:
+                rss = PeakRss()
+                t0 = time.monotonic()
+                res = run_direct(args.firefox_binary or bt.executable_path, base, kw.get("env"), kw.get("firefox_user_prefs", {}), args.timeout, auto)
+                if res.get("error"):
+                    problems.append(f"{bname}: {res['error']}")
+            else:
+                browser = bt.launch(**kw) if bname == "chromium" else RAW_LAUNCH(bt, **kw)
+                ctx = browser.new_context(service_workers="block")
+                page = ctx.new_page()
+                page.set_default_timeout(args.timeout * 1000)
 
-            def fixture(route):
-                n = route.request.url.split("/__clang_fixtures/")[1]
-                route.fulfill(path=str(fdir / n), content_type="application/json")
-            page.route("**/__clang_fixtures/*", fixture)
-            page.goto(f"{base}/index.html?kernel=hello")
-            page.wait_for_function("typeof ClangWorker === 'function'")
-            rss = PeakRss()
-            t0 = time.monotonic()
-            try:
-                res = page.evaluate(RUN_JS, {"names": names, "repeat": args.repeat})
-            except Exception as e:  # noqa: BLE001 (any page failure is a test failure)
-                problems.append(f"{bname}: {e}")
-                res = None
+                def fixture(route):
+                    n = route.request.url.split("/__clang_fixtures/")[1]
+                    route.fulfill(path=str(fdir / n), content_type="application/json")
+                page.route("**/__clang_fixtures/*", fixture)
+                page.goto(f"{base}/index.html?kernel=hello")
+                page.wait_for_function("typeof ClangWorker === 'function'")
+                rss = PeakRss()
+                t0 = time.monotonic()
+                try:
+                    res = page.evaluate(RUN_JS, auto["args"])
+                except Exception as e:  # noqa: BLE001 (any page failure is a test failure)
+                    problems.append(f"{bname}: {e}")
+                    res = None
             wall = time.monotonic() - t0
             res = res or {"jobs": []}
             res["wall_s"], res["peak_rss"] = round(wall, 1), rss.done()
@@ -335,8 +413,9 @@ def main():
                 print(f"  {'SAME' if ok else 'DIFFERENT'} {job['name']}: {job['files']} files {job['bytes']} B "
                       f"(write {job['writeMs']:.0f} ms); runs {runs}; instance {job['runs'][0]['instantiateMs']:.0f} ms; "
                       f"wasm memory {job['runs'][0]['mem'] >> 20} MiB", flush=True)
-            ctx.close()
-            browser.close()
+            if not args.no_automation:
+                ctx.close()
+                browser.close()
             if bname == "firefox" and args.firefox_profile:
                 for _ in range(60):
                     if pathlib.Path(args.firefox_profile).exists():

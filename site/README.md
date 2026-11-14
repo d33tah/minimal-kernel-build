@@ -2018,7 +2018,17 @@ llvm-objcopy -O binary to stdout, llvm-ar and llvm-nm, and the API's
 failures (a run before load, a 404 module, a Worker that does not start,
 terminate with a request pending). It prints the times and the peak RSS
 of the browser; `--json` keeps them, `--firefox-profile` profiles
-Firefox (Gecko profiler) and prints the hottest functions of the Worker.
+Firefox (Gecko profiler) and prints where the Worker's thread spent its
+samples, `--no-automation` starts Firefox (or `--firefox-binary`) without
+Playwright on a page that runs the same checks by itself and posts the
+result. Measured (PROGRESS of plan step E0c): Debian's
+`kernel/sched/core.c` takes 5.0-7.8 s in Chromium, Firefox and WebKit,
+and 98% of Firefox's samples are in clang's own wasm code (wasi.js 0.1%).
+The Firefox of Playwright 1.60 (Firefox 150, its own build) took 24 s:
+it has no optimizing wasm compiler (with the baseline compiler off it
+answers "no WebAssembly compiler available"), with or without Playwright
+attached; Mozilla's Firefox 150 and 160 and Playwright's newer Firefox
+159 do not have that problem.
 
 CI builds the kernels with the native clang/lld 22.1.0 of
 `gen-clang-native.sh`: the same source and pins as `clang.wasm`, the same

@@ -168,47 +168,66 @@ class PeakRss:
         return self.peak
 
 
-def profile_summary(path, top=25):
-    """Functions with the most samples on the DOM Worker threads of a Gecko
-    profile (the format MOZ_PROFILER_SHUTDOWN writes)."""
+def profile_summary(path, top=20):
+    """Where the Worker's time went in a Gecko profile (the format
+    MOZ_PROFILER_SHUTDOWN writes): samples of the thread that ran
+    clangworker.js, idle ones (waiting for a message) left out, by leaf
+    (clang's own wasm code, wasi.js, other JS, native code; Gecko's native
+    frames are not symbolicated here) and the functions with the most
+    samples; and the busy samples of the JS helper threads (wasm tier-up
+    compiles run there)."""
     prof = json.loads(pathlib.Path(path).read_text())
-    selfc, totalc, n = collections.Counter(), collections.Counter(), 0
 
     def threads(p):
-        for t in p.get("threads", []):
-            yield t
+        yield from p.get("threads", [])
         for sub in p.get("processes", []):
             yield from threads(sub)
 
+    kinds, names, helpers, idle, n = collections.Counter(), collections.Counter(), collections.Counter(), 0, 0
     for t in threads(prof):
-        if "Worker" not in t.get("name", ""):
-            continue
         strings = t["stringTable"]
-        st, ft, fr = t["stackTable"], t["frameTable"], t["samples"]
-        sp, sf = st["schema"]["prefix"], st["schema"]["frame"]
-        fl = ft["schema"]["location"]
-        ss = fr["schema"]["stack"]
-        for s in fr["data"]:
-            k = s[ss]
+        st, ft, sm = t["stackTable"], t["frameTable"], t["samples"]
+        sp, sf, fl, ss = st["schema"]["prefix"], st["schema"]["frame"], ft["schema"]["location"], sm["schema"]["stack"]
+
+        def stack(k):
+            out = []
+            while k is not None:
+                out.append(strings[ft["data"][st["data"][k][sf]][fl]])
+                k = st["data"][k][sp]
+            return out
+        mine = "Worker" in t.get("name", "") and any("clangworker.js" in x for x in strings)
+        for smp in sm["data"]:
+            k = smp[ss]
             if k is None:
                 continue
+            frames = stack(k)
+            if any("WaitForWorkerEvents" in f or "Wait" in f.split(" ")[0] and "Event" in f for f in frames[:6]):
+                if mine:
+                    idle += 1
+                continue
+            if not mine:
+                if "Helper" in t.get("name", ""):
+                    helpers[t["name"]] += 1
+                continue
             n += 1
-            seen, leaf = set(), True
-            while k is not None:
-                name = strings[ft["data"][st["data"][k][sf]][fl]]
-                if leaf:
-                    selfc[name] += 1
-                    leaf = False
-                if name not in seen:
-                    totalc[name] += 1
-                    seen.add(name)
-                k = st["data"][k][sp]
-    print(f"firefox profile {path}: {n} samples on Worker threads")
-    for title, c in (("self", selfc), ("total", totalc)):
-        print(f"  top by {title}:")
-        for name, k in c.most_common(top):
-            print(f"    {100 * k / max(n, 1):5.1f}%  {name[:150]}")
-    return {"samples": n, "self": selfc.most_common(top), "total": totalc.most_common(top)}
+            leaf = frames[0]
+            js = next((f for f in frames if "wasi.js" in f or "clangworker.js" in f), None)
+            kinds["clang (wasm)" if leaf.startswith("wasm-function") else
+                  "wasi.js" if "wasi.js" in leaf else
+                  "other JS" if ".js" in leaf else
+                  "native under wasi.js" if js and "wasi.js" in js and frames.index(js) < next((i for i, f in enumerate(frames) if f.startswith("wasm-function")), 1 << 30) else
+                  "native"] += 1
+            for f in set(frames):
+                if not f.startswith("0x") and not f.startswith("wasm-function"):
+                    names[f] += 1
+    print(f"firefox profile {path}: {n} busy samples of the clangworker.js thread ({idle} idle); "
+          f"busy JS helper samples: {dict(helpers)}")
+    for k, c in kinds.most_common():
+        print(f"    {100 * c / max(n, 1):5.1f}%  {k}")
+    print("  named frames on the stack (total):")
+    for name, c in names.most_common(top):
+        print(f"    {100 * c / max(n, 1):5.1f}%  {name[:150]}")
+    return {"busy": n, "idle": idle, "helpers": dict(helpers), "leaf": kinds.most_common(), "names": names.most_common(top)}
 
 
 def check(res, fixtures, problems, tag):
@@ -255,6 +274,7 @@ def main():
     ap.add_argument("--base", help="test this deployed site instead of serving site/")
     ap.add_argument("--json", help="write the results here")
     ap.add_argument("--firefox-profile", help="Gecko profile of the Firefox run, written here")
+    ap.add_argument("--firefox-pref", action="append", default=[], help="NAME=true|false|NUMBER for Firefox (e.g. javascript.options.wasm_baselinejit=false)")
     ap.add_argument("--timeout", type=float, default=900)
     args = ap.parse_args()
 
@@ -275,12 +295,14 @@ def main():
         for bname in args.browsers.split(","):
             bt = getattr(p, bname)
             kw = {}
+            if bname == "firefox" and args.firefox_pref:
+                kw["firefox_user_prefs"] = {k: json.loads(v) for k, v in (x.split("=", 1) for x in args.firefox_pref)}
             if bname == "firefox" and args.firefox_profile:
                 prof = str(pathlib.Path(args.firefox_profile).resolve())
                 kw["env"] = dict(os.environ, MOZ_PROFILER_STARTUP="1", MOZ_PROFILER_SHUTDOWN=prof,
                                  MOZ_PROFILER_STARTUP_ENTRIES="16777216", MOZ_PROFILER_STARTUP_INTERVAL="1",
                                  MOZ_PROFILER_STARTUP_FEATURES="js,stackwalk,cpu",
-                                 MOZ_PROFILER_STARTUP_FILTERS="GeckoMain,DOM Worker")
+                                 MOZ_PROFILER_STARTUP_FILTERS="GeckoMain,DOM Worker,Helper")
             browser = bt.launch(**kw) if bname == "chromium" else RAW_LAUNCH(bt, **kw)
             ctx = browser.new_context(service_workers="block")
             page = ctx.new_page()

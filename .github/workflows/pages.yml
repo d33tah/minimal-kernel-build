@@ -27,7 +27,7 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm nasm qemu-system-x86 expect python3 curl nodejs gdb
+        apt-get install -y build-essential llvm nasm qemu-system-x86 expect python3 curl nodejs gdb git
 
     - uses: actions/checkout@v4
 

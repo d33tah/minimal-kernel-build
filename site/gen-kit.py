@@ -459,7 +459,7 @@ def make_kit(a, tree, runs):
             add(p)
     tracked = set()
     if a.sources_from:
-        tracked = set(subprocess.run(["git", "-C", a.sources_from, "ls-files"], stdout=subprocess.PIPE,
+        tracked = set(subprocess.run(["git", "-c", "safe.directory=*", "-C", a.sources_from, "ls-files"], stdout=subprocess.PIPE,
                                      check=True, text=True).stdout.splitlines())
     blobs = pathlib.Path(a.out) / "blobs"
     blobs.mkdir(parents=True, exist_ok=True)

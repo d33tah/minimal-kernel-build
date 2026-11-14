@@ -443,9 +443,9 @@ function dwExprText(b) {
 		else if (op === 0x23)
 			out.push("DW_OP_plus_uconst 0x" + uleb().toString(16));
 		else if (op === 0x91)
-			out.push("DW_OP_fbreg " + sleb());
+			out.push("DW_OP_fbreg " + sgn(sleb()));
 		else if (op === 0x11)
-			out.push("DW_OP_consts " + sleb());
+			out.push("DW_OP_consts " + sgn(sleb()));
 		else if (op === 0x10) {
 			let r = 0n, sh = 0n, x;
 			do { x = b[p++]; r |= BigInt(x & 0x7f) << sh; sh += 7n; } while (x & 0x80);

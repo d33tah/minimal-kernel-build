@@ -1823,14 +1823,27 @@ function dwTypeName(T, id, inner = "") {
 		return dwTypeName(T, t[1], to === DWT.array || to === DWT.func ? "(*" + inner + ")" : "*" + inner);
 	}
 	case DWT.const: case DWT.volatile: case DWT.restrict: case DWT.atomic: {
-		const q = ["const", "volatile", "restrict", "_Atomic"][t[0] - DWT.const];
-		const to = t[1] >= 0 ? T.types[t[1]] : null;
-		if (to && to[0] === DWT.ptr)
-			return dwTypeName(T, t[1], q + sp(inner));
+		// A run of qualifiers, in gdb's order (const volatile).
+		const quals = (x) => {
+			const qs = new Set();
+			for (let n = 0; x >= 0 && T.types[x][0] >= DWT.const && T.types[x][0] <= DWT.atomic && n < 8; n++) {
+				qs.add(T.types[x][0]);
+				x = T.types[x][1];
+			}
+			return [qs, x];
+		};
+		const [qs, below] = quals(id);
+		const to = below >= 0 ? T.types[below] : null;
 		// A qualified array is an array of qualified elements (GCC says both).
-		if (to && to[0] === DWT.array && to[1] >= 0 && T.types[to[1]][0] === t[0])
-			return dwTypeName(T, t[1], inner);
-		return q + " " + dwTypeName(T, t[1], inner);
+		if (to && to[0] === DWT.array)
+			for (const q of quals(to[1])[0])
+				qs.delete(q);
+		const q = [...qs].sort((a, b) => a - b).map((k) => ["const", "volatile", "restrict", "_Atomic"][k - DWT.const]).join(" ");
+		if (!q)
+			return dwTypeName(T, below, inner);
+		if (to && to[0] === DWT.ptr)
+			return dwTypeName(T, below, q + sp(inner));
+		return q + " " + dwTypeName(T, below, inner);
 	}
 	case DWT.array: return dwTypeName(T, t[1], inner + t[2].map((n) => "[" + (n >= 0 ? n : "") + "]").join(""));
 	case DWT.func: {

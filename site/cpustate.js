@@ -413,10 +413,12 @@ function pageDirText(st) {
 let cpuPrev = {};
 function renderCpuState() {
 	const host = $("cpu_state");
-	if (!host)
-		return;
+	// Without a debugger (a v86.wasm the page cannot patch): no sections,
+	// made again for the next machine with one.
 	if (!stepper) {
 		host.textContent = "";
+		delete host.dataset.built;
+		cpuPrev = {};
 		return;
 	}
 	if (!host.dataset.built) {

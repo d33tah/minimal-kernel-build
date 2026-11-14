@@ -2878,6 +2878,7 @@ function renderRegs() {
 	const el = $("regs");
 	if (!stepper) {
 		el.textContent = "";
+		renderCpuState();
 		return;
 	}
 	const r = stepper.regs();

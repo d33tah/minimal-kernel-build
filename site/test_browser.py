@@ -1081,13 +1081,36 @@ def header_check_case(browser, base, shots):
     # hello still boots, without the debugger, which says why.
     page.set_input_files("#file", str(SITE / kernel_entries()["hello"]["path"]))
     wait_for(lambda: page.evaluate("image && image.name") == "bzImage", 10)
-    page.evaluate("() => { patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
+    # The machine state of the stepped machine before, open in the Debugger.
+    show_tab(page, "debugger")
+    page.evaluate("document.querySelectorAll('#cpu_state details').forEach((d) => d.open = true)")
+    wait_for(lambda: page.locator("#cpu_segments [data-reg='CS']").count() > 0, 10)
+    page.evaluate("() => { window.__patch = patchV86Wasm; patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
     show_tab(page, "machine")
     page.click("#boot")
     booted = wait_for(lambda: gate_on_screen(page), 60)
     r["unpatched v86.wasm"] = [booted, page.inner_text("#dbg_status"), page.evaluate("stepper === null")]
     if r["unpatched v86.wasm"] != [True, "No debugger: Error: test: not the v86.wasm this page patches", True]:
         problems.append(f"v86.wasm not patched: [booted, debugger status, no stepper] {r['unpatched v86.wasm']}")
+    # Without a debugger the Debugger shows no machine state (not the previous machine's).
+    show_tab(page, "debugger")
+    r["unpatched cpu state"] = page.inner_text("#cpu_state")[:80]
+    if page.inner_text("#cpu_state").strip():
+        problems.append(f"no debugger: the Debugger still shows the previous machine's state: {r['unpatched cpu state']!r}")
+    # With the debugger again (v86.wasm patched): the sections are back and read this machine.
+    page.evaluate("() => { patchV86Wasm = window.__patch; }")
+    show_tab(page, "machine")
+    page.click("#boot")
+    wait_for(lambda: gate_on_screen(page) and page.evaluate("stepper !== null"), 60)
+    show_tab(page, "debugger")
+    page.evaluate("document.querySelectorAll('#cpu_state details').forEach((d) => d.open = true)")
+    wait_for(lambda: page.locator("#cpu_control [data-reg='CR0']").count() > 0, 10)
+    cr0 = page.inner_text("#cpu_control [data-reg='CR0']") if page.locator("#cpu_control [data-reg='CR0']").count() else ""
+    want_cr0 = page.evaluate("'CR0 0x' + (stepper.cpu.cr[0] >>> 0).toString(16).padStart(8, '0')")
+    r["patched again cpu state"] = cr0
+    if not cr0.startswith(want_cr0):
+        problems.append(f"the debugger back: the CR0 row {cr0!r}, the CPU's {want_cr0!r}")
+    page.evaluate("() => { patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
     # No listed RAM size holds it: the largest is picked.
     page.set_input_files("#file", str(patched("huge-init.bin", o260=("<I", 1 << 30))))
     wait_for(lambda: page.evaluate("image && image.name") == "huge-init.bin", 10)
@@ -2212,10 +2235,10 @@ def hand_tables(page, sk, xlate, problems, r):
         off_pd = page.inner_text("#xlate_out")
     finally:
         page.evaluate(HAND_SAVE_JS, False)
-    want = [f"0x00000000-0x00bfffff 3 PDEs, 4 MiB pages from 0x00000000 flags 0x83",
+    want = ["0x00000000-0x00bfffff 3 PDEs, 4 MiB pages from 0x00000000 flags 0x83",
             f"0x01000000-0x017fffff 2 PDEs, page tables from 0x{S + 0x1000:08x} flags 0x03",
             f"0x01800000-0x01bfffff page tables from 0x{S + 0x4000:08x} flags 0x03",
-            f"0x02000000-0x023fffff 4 MiB pages from 0x00c00000 flags 0x83"]
+            "0x02000000-0x023fffff 4 MiB pages from 0x00c00000 flags 0x83"]
     r["hand_pd"] = pd.splitlines()
     if pd.splitlines() != want:
         problems.append(f"hand-made page directory: {pd.splitlines()}, want {want}")

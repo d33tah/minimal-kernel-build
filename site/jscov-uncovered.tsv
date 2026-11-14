@@ -69,7 +69,7 @@ bookmarks.js	355	ab9d9b16	Save in the dialog with no draft: the dialog is open o
 bookmarks.js	365-367	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
 bookmarks.js	440-442	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
 bookmarks.js	444	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
-bookmarks.js	447	b368dd8a	a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps land after the switch is ready
+bookmarks.js	447	b368dd8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
 bookmarks.js	552	33ddae1b	bmNote without #bm_status: the element is in index.html
 bookmarks.js	560	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
 bookmarks.js	592	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
@@ -236,7 +236,7 @@ memmap.js	1144	f7d01f15	cellAt() for a pointer outside the map: pointer events o
 memmap.js	1167	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
 memmap.js	1178	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
 quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
-quests.js	108-109	f7488a69	no loader parts at instruction 0 in the log: v86 loads every kernel here by the Linux boot protocol and install() logs its writes before the first instruction, so the parts are there whenever a machine exists
+quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
 quests.js	139	3444ec90	no 0x55 0xAA at 0xC0000: v86 always copies its VGA BIOS there before the first instruction
 quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
@@ -347,7 +347,7 @@ stepper.js	1105	b61b9bc1	as 927-929, in rerun()
 stepper.js	1119	01be68f7	rerun() reaching a halt while re-running: the reverse suite's re-runs (hello, minified Linux, Debian before its idle loop) contain no hlt
 stepper.js	1131	b61b9bc1	as 927-929, in rerun() after mkb_read_imm8
 stepper.js	1141	b61b9bc1	as 927-929, in rerun() after mkb_run
-sw.js	163	d154bd52	keepPage skips storing when the storage estimate is above 80% of the quota: a test cannot shrink the origin's quota for a service worker
+sw.js	163	d154bd52	sometimes: keepPage skips storing when the storage estimate is above 80% of the quota: a test cannot shrink the origin's quota for a service worker, and the quota follows the runner's free disk (ran in run 43628096699)
 symimport.js	44	1ab3716f	parseElf reads only the ranges elfSlices fetched (header, program and section headers, .shstrtab, .symtab and its string table); an invariant check
 symimport.js	386	af4b876c	localStorage throwing while an import is forgotten: storage that throws there is tested elsewhere (the page keeps no data), this catch only logs nothing
 symimport.js	440	ae20bf27	localStorage throwing while the command line is remembered: same as above, the catch only drops the write
@@ -368,7 +368,7 @@ vars.js	356	80bed91b	a struct or union with no definition anywhere in the vmlinu
 vars.js	438	3c2339b6	struct, union and array types nested more than 24 levels: pointers are leaves in the tree, so only nesting of aggregates counts, and no kernel type nests that deep
 vars.js	469	1b7c41a3	localStorage throwing while the watch list is saved: the list then lasts until the page closes; storage failure is tested for the stored list, not this write
 vars.js	609	1ff4b2a5	localsReadBytes without a stepper CPU or for more than 4 KiB: locals are drawn only at a pause with a stepper, and no parameter or local of the shipped kernels at the unwound frames is larger than a page
-vars.js	614	d1d82b85	localsReadBytes across a page the page tables do not map, after the first one mapped: localsPhys handles a contiguous run first, and a local that straddles a mapped and an unmapped page needs a stack at the edge of its mapping, which no CI stop has
+vars.js	614	d1d82b85	sometimes: ran in run 43628096699, in no run before: localsReadBytes across a page the page tables do not map, after the first one mapped: localsPhys handles a contiguous run first, and a local that straddles a mapped and an unmapped page needs a stack at the edge of its mapping, which no CI stop has
 vars.js	660	84ae2eef	a DW_AT_const_value given as a block (DW_FORM_block*): clang and GCC emit integer constants as data forms for the shipped kernels; the block form is in the hand-written DWARF of the dwarf_forms suite (not in the coverage jobs)
 vars.js	676-677	2ffd2630	a local in memory whose bytes span two pages that are not physically contiguous: kernel stacks are physically contiguous (THREAD_SIZE pages from the buddy allocator), so no stack slot of the CI stops is split
 vars.js	951	75780688	varsTaskRead of a task_struct whose comm or pid is past the end of RAM: the address was checked to be in RAM and task_structs of the shipped kernels are far below its end

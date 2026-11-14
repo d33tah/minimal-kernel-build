@@ -1153,9 +1153,56 @@ def panic_text_case(browser, base, shots):
     for spin in (False, True):
         panic_text_no_end(browser, base, spin, problems, r, errors)
     count_give_up(browser, base, problems, r, errors)
+    panic_budget_stepped(browser, base, problems, r, errors)
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
+
+
+def panic_budget_stepped(browser, base, problems, r, errors):
+    """The minified Linux stepped from the reset vector with a panic budget
+    of 2: it stops 2 instructions after panic() is entered (its end line
+    comes later) and says so. Stepped back 3,000 instructions and forward
+    again, the re-run stops at the two milestones and at that end as the
+    first run did."""
+    tag = "panic budget, stepped"
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&mips=10&fastforward=0&revk=20000&panicbudget=2#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    for _ in range(10):  # each Step stops at a milestone
+        if page.evaluate("!!stepper.end"):
+            break
+        page.evaluate("doStep(3000000)")
+    page.evaluate("afterStop()")
+    time.sleep(0.5)
+    rows = counters(page)
+    pe, end = rows.get("panic_entry") or {}, rows.get("end") or {}
+    banner = page.inner_text("#end_banner")
+    want = f"panic() entered, no end-of-panic text in the next 2 instructions. Stopped after {(pe.get('entry') or 0) + 2:,} instructions from the kernel entry."
+    r[tag] = [page.get_attribute("#end_banner", "data-kind"), pe, end]
+    if page.get_attribute("#end_banner", "data-kind") != "panic-budget" or banner != want or end.get("steps") != (pe.get("steps") or 0) + 2:
+        problems.append(f"{tag}: banner {banner!r}, want {want!r}; panic() entered at {pe}, the end at {end}")
+        page.close()
+        return
+    page.fill("#dbg_n", "3000")
+    _, _, text, st = rev_click(page, "#dbg_backn", False)
+    stops = []
+    for _ in range(5):
+        if page.evaluate("!!stepper.end"):
+            break
+        page.fill("#dbg_n", "5000")
+        page.click("#dbg_stepn")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        time.sleep(0.3)
+        stops.append(page.evaluate("stepper.steps"))
+    want_stops = [rows[HELLO]["steps"], rows[ALIVE]["steps"], end["steps"]]
+    again = page.inner_text("#end_banner")
+    r[tag + ", again"] = [st, stops]
+    if st != "done" or stops != want_stops or again != banner:
+        problems.append(f"{tag}: stepped back 3,000 ({st}: {text[:100]!r}) and forward, the re-run stopped at {stops} "
+                        f"(want {want_stops}), banner {again!r}")
+    page.close()
 
 
 PANIC_TEXT_JS = """([row, t]) => { const cpu = emulator.v86.cpu;
@@ -16587,8 +16634,9 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
     back 1 (the run bar), Step back 999 and Step back to E-deep (the
     Debugger), each the machine as it was there, 1 and 1,000 within a
     second; forward to E again: the same machine, the recordings not
-    counted twice; Back to the most called function twice: its last two
-    calls; the history keeps the last 32 checkpoints."""
+    counted twice; back 100 and on to E + 30 records past E, and back 30
+    is E; Back to the most called function twice: its last two calls; the
+    history keeps the last 32 checkpoints."""
     params, first, past, deep = REV_CASES[name]
     problems, r, errors = [], {}, []
     w = 390 if phone else 1280
@@ -16707,6 +16755,22 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
         rec = page.evaluate(REV_REC_JS)
         if rec != rec_e:
             problems.append(f"{tag}: the recordings at E after stepping back and forward: {rec} vs {rec_e}")
+        # Back 100, then on to E + 30: the re-run catches up at E and records 30
+        # new instructions; back 30 from there is the machine at E again.
+        page.fill("#dbg_n", "100")
+        _, _, text, st = rev_click(page, "#dbg_backn", phone)
+        rev_step_to(page, e + 30)  # Step stops at a milestone (hello's line) on the way
+        page.evaluate("afterStop()")
+        past = page.evaluate("[stepper.steps, stepper.behind(), stepper.future.length]")
+        rec = page.evaluate(REV_REC_JS)
+        page.fill("#dbg_n", "30")
+        _, _, text2, st2 = rev_click(page, "#dbg_backn", phone)
+        got = rev_state(page)
+        r["past E"] = [st, past, st2]
+        if st != "done" or past != [e + 30, False, 0] or rec["unique"] < rec_e["unique"] or rec["jumps"] <= rec_e["jumps"] or \
+                st2 != "done" or rev_diff(got, pe):
+            problems.append(f"{tag}: back 100 ({st}), on to E + 30 gave [steps, behind, future] {past} (want [{e + 30}, False, 0]), "
+                            f"jumps {rec_e['jumps']} -> {rec['jumps']}; back 30 ({st2}) differs from E: {rev_diff(got, pe)}")
 
         # Back to (reverse continue) the function called most in the last 20,000.
         calls = {}

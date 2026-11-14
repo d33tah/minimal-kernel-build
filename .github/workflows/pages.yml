@@ -340,10 +340,23 @@ jobs:
         ls tool-fixtures/*.json | wc -l
         du -sh tool-fixtures
 
+    # The build kits (plan E3, gen-kit.py): per kernel the -g build's
+    # objects, the sources and headers they include and the steps after the
+    # compile, for the page's rebuild (kit.js; deployed as kits/). Built
+    # again here under Node with clang.wasm: CI's bytes from the objects and
+    # from the sources (test_kit.mjs).
+    - name: Build kits of the kernels the page rebuilds
+      run: site/gen-kits.sh "$RUNNER_TEMP/g" "$RUNNER_TEMP/hello-os" "$RUNNER_TEMP/o0" "$RUNNER_TEMP/hostwasm" kits
+
     - uses: actions/upload-artifact@v4
       with:
         name: kernels
         path: out/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kits
+        path: kits/
 
     - uses: actions/upload-artifact@v4
       with:
@@ -485,6 +498,12 @@ jobs:
         echo "relink with the tools recorded: $(( $(date +%s) - start )) s"
         ls tool-fixtures/*.json | wc -l
         du -sh tool-fixtures
+
+    # What a build kit of this kernel would weigh on the site (plan E3's
+    # budget; its kit is step E6): the objects of vmlinux and the boot
+    # image, and the sources and headers they include.
+    - name: Kit size of the clang-built Debian
+      run: python3 site/gen-kit.py --budget "$RUNNER_TEMP/deb"
 
     - name: Collect
       run: |
@@ -636,6 +655,11 @@ jobs:
         name: kernels
         path: site/kernels
 
+    - uses: actions/download-artifact@v4
+      with:
+        name: kits
+        path: site/kits
+
     # A variant of the Debian sample: same bzImage and symbols, with its
     # initramfs; "break" stops Debian's init at the (initramfs) shell.
     - uses: actions/download-artifact@v4
@@ -689,14 +713,16 @@ jobs:
     # The browser test runs in its own job (browser-test below) so the
     # deploy does not wait ~11 minutes for it; a failing test still fails
     # the workflow run.
-    # Without clang/ (77 MB, not loaded by the page yet): every
-    # browser-test job downloads this artifact.
+    # Without clang/ (77 MB, not loaded by the page yet) and kits/ (the
+    # kit job downloads them): every browser-test job downloads this
+    # artifact.
     - uses: actions/upload-artifact@v4
       with:
         name: site
         path: |
           site/
           !site/clang/
+          !site/kits/
 
     - uses: actions/configure-pages@v5
 
@@ -1038,11 +1064,71 @@ jobs:
         name: jscov-raw-gen-worker
         path: jscov-raw/
 
+  # The build kits in the page (plan E3): every kernel the page rebuilds,
+  # built in Chromium, Firefox and WebKit by kit.js from its kit (CI's
+  # objects, then from the sources), must be CI's bytes; the bzImages the
+  # browsers wrote boot in qemu (site/test_kit.py). Chromium's run counts
+  # for jscov.
+  kit:
+    needs: [site, clang-wasm]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: site
+        path: site
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: kits
+        path: site/kits
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-firefox-webkit-${{ runner.os }}-v1
+
+    - name: Install Playwright, Chromium, Firefox, WebKit and qemu
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium firefox webkit
+        sudo apt-get install -y qemu-system-x86
+
+    - name: Build every kit in the page's Worker, boot the bzImages
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+        TERM: xterm
+      run: |
+        site/gen-clang-wasm.sh --check
+        "$RUNNER_TEMP/venv/bin/python" site/test_kit.py --browsers chromium,firefox,webkit --out kit-images --boot --json kit.json
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: kit-results
+        path: |
+          kit.json
+          kit-images/
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-raw-kit
+        path: jscov-raw/
+
   # e2e coverage of the site's JavaScript (the coverage browser-test jobs
   # and pwa-install): merged, reported, and held to the committed floor
   # site/jscov-baseline.json. Runs when a test job failed too.
   jscov:
-    needs: [browser-test, pwa-install, clang-worker, gen-worker]
+    needs: [browser-test, pwa-install, clang-worker, gen-worker, kit]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:

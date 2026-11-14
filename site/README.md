@@ -2304,6 +2304,71 @@ patch with one stale hunk changes nothing and names the file, the good one
 applies, a reload keeps everything, typing the shipped text back drops the
 edit, Revert and Revert all need two presses; and once without IndexedDB.
 
+### Build kits (gen-kit.py, kit.js)
+
+A build kit is what the page needs to build a kernel again (plan step
+E3), made in the kernels job from the -g build of hello, hello -Os, the
+minified Linux -O0 and -Os (`gen-kits.sh`, deployed as `kits/`):
+
+- the objects of the -g build, each with its compile command and the
+  files it includes (kbuild's `.cmd` files: `cmd_OBJ` up to the first
+  `;`, `deps_OBJ`; hello: the compile run again with `-MD`); the plain
+  build's objects are not shipped: the -g bzImage is the one the page
+  boots (hello's byte for byte; the minified Linux's but the 20 bytes of
+  its build-id note, a hash over the -g ELF: `check-code-identity.py`,
+  and the kit's `shipped.differs` says where)
+- every source and header those objects include, and the files the
+  steps read (linker scripts, `usr/initramfs_data.cpio`, kbuild's
+  generated headers)
+- the steps after the compile as the build ran them: `gen-kit.py` puts
+  wrappers in place of clang, ld.lld, llvm-ar, llvm-nm, llvm-objcopy,
+  nasm, sed and cat (and of the tree's host tools), touches every object
+  (kbuild) or deletes the outputs (hello) and runs the build's own
+  command again. Each run records its argv, the files it read and wrote
+  and where its stdin and stdout went; the steps that lead to vmlinux
+  (hello: `kernel.elf`) and the bzImage are kept in order: the thin
+  archives, the LTO `ld -r` and the final link, `nm | sed` for
+  `voffset.h` and `zoffset.h`, objcopy, kbuild's `{ cat; size_append; }`
+  (step `cat-size`), mkpiggy, the compiles that read a file a step made
+  (`piggy.o`, `header.o`), tools/build; hello's `0x$(nm | sed)` argument
+  is a variable of the step. The kit is `kits/NAME.json` (format in
+  `gen-kit.py`) plus `kits/blobs/SHA256.gz` (every file and object,
+  gzipped, fetched only when a build needs it) and `SHA256.wasm` (the host
+  tools of `gen-host-tools.py`, nasm).
+
+`kit.js` (loaded by `index.html`) runs a kit on a `ClangWorker`:
+`kitSource("kits/")`, `kitBuild(cc, kit, src, { compile, edits, keep })`
+with `compile` false (CI's objects, then the steps), `"all"` (every object
+from the sources first) or `"changed"` (the objects that include a file of
+`edits`, from `kitUsers(kit)`, the map file -> objects). sed, cat and
+cat-size run in JavaScript (`kitSed`: the GNU sed subset the kits use,
+checked against GNU sed on `testdata/sed-cases.json`); clang.wasm cannot
+start a process, so a `.S` compile runs the jobs `clang -###` lists
+(`clang -cc1 -E`, then `clang -cc1as`) itself. Every blob is checked
+against its SHA-256 and every step's output against CI's.
+
+The kits do not make generated files again: kbuild's headers
+(`autoconf.h`, `asm-offsets.h`, `bounds.h`, the syscall tables) and
+`usr/initramfs_data.cpio` (gen_init_cpio, from `minified/elo`) are files
+of the kit as CI made them (listed by `gen-kit.py`, kind 1 in the kit). An
+edit that should change one of them (a struct field asm-offsets reads, the
+initramfs list) is not rebuilt; vdso2c (no vdso in these kernels) and
+gen_init_cpio would be host tools in wasm when that matters (Debian, E6).
+Neither kernel compresses its image (hello has no decompressor, the
+minified Linux's `vmlinux.bin.raw` is the raw image with its size), so no
+compressor runs in the page; Debian's xz is for E6.
+
+Tests: `test_kit.mjs --unit` (kitSed against GNU sed, kitUsers, the
+errors) and `--build` (the kernels job, Node 20, wasi.js and clang.wasm:
+every kit from CI's objects and again from the sources, every object,
+step output, vmlinux and bzImage CI's bytes; an edit of `init/main.c`
+or `boot/hello.c` gives other products). `test_kit.py` (job `kit`):
+Chromium, Firefox and WebKit, the same builds in the page plus hello
+with "Hello, World!" edited to "Hello, Kit!!!", synthetic kits for the
+errors and the `.S` path, and qemu boots of the bzImages the browsers
+wrote (each browser's bytes equal). `gen-kit.py --budget TREE` estimates
+a kit of a built kbuild tree (the debian-clang job prints Debian's).
+
 ## Testing
 
     site/fetch-v86.sh

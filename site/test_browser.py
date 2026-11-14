@@ -17932,8 +17932,16 @@ def replay_tampered(browser, base, shots, problems, r):
             f = tmp / name
             f.write_text(json.dumps(body))
             show_tab(page, "snapshots")
-            page.evaluate("document.getElementById('run_status').textContent = ''")
+            # The verdict of the replay before is cleared: a wait must see this one's.
+            page.evaluate("(() => { const e = document.getElementById('run_status'); e.textContent = ''; delete e.dataset.replay; })()")
             page.set_input_files("#run_file", str(f))
+
+        def replay_end(timeout):
+            """This file's replay ended (INPUT.replay still holds the one
+            before until the page has read the file and booted: on CI's fast
+            runner replay_wait saw that one's end, 43583771338)."""
+            return wait_for(lambda: page.get_attribute("#run_status", "data-replay") in ("match", "differ", "stopped", "error"), timeout, 0.5) \
+                and replay_wait(page, timeout)
 
         refused = {"noend.json": ({**run, "end": None}, "Cannot replay: the run has no log or no end."),
                    "realtime.json": ({**run, "clock": "real"},
@@ -17952,7 +17960,7 @@ def replay_tampered(browser, base, shots, problems, r):
         log = [dict(e) for e in run["log"]]
         log[-1]["t"] += 0.001
         replay("edited.json", {**run, "kernelKey": "sha256:" + "0" * 64, "end": {**run["end"], "ram": "0" * 16}, "log": log})
-        if not replay_wait(page, 300):
+        if not replay_end(300):
             problems.append(f"{tag}: the edited run's replay did not finish: {page.text_content('#run_status')[:200]!r}")
         c = replay_state(page)
         want = f"Replay differs from the recording (kernel, RAM; 1 input not at its recorded moment) at instruction {run['end']['at']:,}."
@@ -17962,7 +17970,7 @@ def replay_tampered(browser, base, shots, problems, r):
         replay_shots(page, shots, "replay-tampered-1280-light")
 
         replay("ram3m.json", {**run, "ram": 3 << 20})
-        if not replay_wait(page, 300):
+        if not replay_end(300):
             problems.append(f"{tag}: the 3 MiB run's replay did not finish: {page.text_content('#run_status')[:200]!r}")
         c = replay_state(page)
         mem = [page.input_value("#memory"), page.evaluate("emuRam"), page.evaluate("[...document.getElementById('memory').options].map((o) => o.text)")]

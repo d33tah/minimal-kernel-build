@@ -16321,11 +16321,13 @@ def cfi_crafted_checks(page, tmp, problems, r):
     content = bytearray(cie)
     # Two more with a constant CFA each, [+8, +10) 0x10008 and [+10, +11)
     # 0x4008 (another 8 KiB stack): +9 returns to +11, which returns to +9.
+    # At +11: CFA = [ESP] and EDI = [[EBP]] (DW_OP_deref in both).
     for k, n, e in [(k, 1, e) for k, (e, _) in enumerate(exprs)] + [(8, 2, bytes([0x0c]) + struct.pack("<I", 0x10008)),
-                                                                    (10, 1, bytes([0x0c]) + struct.pack("<I", 0x4008))]:
+                                                                    (10, 1, bytes([0x0c]) + struct.pack("<I", 0x4008)),
+                                                                    (11, 1, bytes([0x74, 0, 0x06]))]:
         at = len(content)
         content += cfi_entry(struct.pack("<I", at + 4) + struct.pack("<ii", CFI_BASE + k - eh_addr - at - 8, n) + b"\0" +
-                             bytes([0x0f]) + cfi_uleb(len(e)) + e)
+                             bytes([0x0f]) + cfi_uleb(len(e)) + e + (bytes([0x10, 7, 3, 0x75, 0, 0x06]) if k == 11 else b""))
     page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", bytes(content) + bytes(4))[0]).decode(), CFI_OFFSET])
     for k, (e, why) in enumerate(exprs):
         u = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + k, "esp": 0x1000}, {"4100": CFI_BASE + 0x20}, CFI_BASE, hi, CFI_OFFSET])
@@ -16334,6 +16336,11 @@ def cfi_crafted_checks(page, tmp, problems, r):
             problems.append(f"crafted CFA expression {e.hex()}: {u}, want {why or 'CFA ESP+8'}")
     u = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + 9, "esp": 0x1000}, {"65540": CFI_BASE + 11, "16388": CFI_BASE + 9}, CFI_BASE, hi, CFI_OFFSET])
     r["crafted loop"] = u["why"]
+    d = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + 11, "esp": 0x1000, "ebp": 0x3000},
+                                      {"4096": 0x2008, "8196": CFI_BASE + 14, "12288": 0x3100, "12544": 0x7777}, CFI_BASE, hi, CFI_OFFSET])
+    r["crafted deref"] = d
+    if d["frames"][0]["cfa"] != 0x2008 or len(d["frames"]) < 2 or d["frames"][1]["regs"].get("7") != 0x7777:
+        problems.append(f"crafted CFA expressions, DW_OP_deref: {d}")
     if u["why"] != "a loop: 0xc1000009 with CFA 0x10008 again" or len(u["frames"]) != 3:
         problems.append(f"crafted CFA expressions, a loop: {u}")
     # Broken copies.

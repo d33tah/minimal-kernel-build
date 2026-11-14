@@ -334,9 +334,6 @@ function revTrim() {
 		REV.cache = null;
 }
 
-// The history's first count, or -1.
-const revStart = () => (REV.st === stepper && REV.cps.length ? REV.cps[0].steps : -1);
-
 function revFind(target) {
 	let best = null;
 	for (const c of REV.cps)
@@ -628,8 +625,6 @@ function revBranch(st, why) {
 	REV.why = why;
 	revRender();
 }
-
-const revBehind = () => !!stepper && stepper.behind();
 
 // The Debugger's reverse buttons and the line about the history.
 function revRender() {

@@ -51,7 +51,6 @@ const INPUT = {
 
 // ---- the boundary -------------------------------------------------------------
 
-const inputRecording = () => !!stepper && CLOCK.virtual && !(INPUT.replay && !INPUT.replay.done);
 const replayActive = () => !!INPUT.replay && !INPUT.replay.done;
 // The mode the replayed run is in here, or null.
 const replayMode = () => (replayActive() ? INPUT.replay.mode : null);

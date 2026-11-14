@@ -561,8 +561,6 @@ function bmDelete(b) {
 	u.type = "button";
 	u.textContent = "Undo";
 	u.addEventListener("click", () => {
-		if (!BM.undo)
-			return;
 		BM.list.splice(Math.min(BM.undo.i, BM.list.length), 0, BM.undo.b);
 		bmNote("“" + BM.undo.b.name + "” is back.");
 		bmSave();

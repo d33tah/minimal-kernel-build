@@ -1309,9 +1309,11 @@ def initrd_kinds(page, kernel, tmp, problems, r):
     r["initrd_kinds"] = {}
     for name, data, says in kinds:
         (tmp / name).write_bytes(data)
+        page.evaluate("window.__stepper = stepper")
         page.set_input_files("#initrd_file", str(tmp / name))
         want = f"{name}: {page_kib(len(data))}, v86 puts it at 0x4000000.{says}"
-        wait_for(lambda: page.inner_text("#initrd_status") == want, 20)
+        # The note is written before the boot with this initrd starts: wait for its machine too.
+        wait_for(lambda: page.inner_text("#initrd_status") == want and page.evaluate("!!stepper && stepper !== window.__stepper"), 30)
         got = page.inner_text("#initrd_status")
         r["initrd_kinds"][name] = got
         if got != want or page.get_attribute("#initrd_status", "data-mismatch"):

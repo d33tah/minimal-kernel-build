@@ -4327,8 +4327,9 @@ def lineaddr_case(browser, base, shots, name):
     addresses, where llvm-symbolizer on the -g ELF names that line
     (innermost, or as the call site of inlined code). Every listed range
     is that line for llvm-symbolizer. A C line of the Page listing opens
-    the panel with its addresses. Screenshots light/dark at 1280 and 390
-    px, no horizontal scroll."""
+    the panel with its addresses; a line with more than 40 ranges lists 40
+    and counts the rest. Screenshots light/dark at 1280 and 390 px, no
+    horizontal scroll."""
     problems, r = [], {}
     points = LINEADDR_POINTS[name]
     lines = main_c_lines(name, [t for t, _ in points])
@@ -4456,6 +4457,30 @@ def lineaddr_case(browser, base, shots, name):
             r["listing C line"] = f"main.c:{got_line}, {len(bps)} breakpoints"
             if got_line != lines[0] or sorted(bps) != sorted(first_bps):
                 problems.append(f"{name}: the listing's C line main.c:{lines[0]} lists line {got_line} {bps}, the panel {first_bps}")
+    if not problems and name == "minified-linux":
+        # get_current() is inlined everywhere: its line has more ranges
+        # than the list shows (40); the rest are counted, all of them are
+        # that line for llvm-symbolizer.
+        path = "arch/x86/include/asm/current.h"
+        text = gzip.decompress((SITE / "kernels" / name / "src" / (path + ".gz")).read_bytes()).decode().split("\n")
+        line = next(k + 1 for k, l in enumerate(text) if "this_cpu_read_stable(current_task)" in l)
+        page.evaluate(f"openSourceFile({json.dumps(path)})")
+        row = page.locator(f'#src_body [data-line="{line}"]')
+        wait_for(lambda: row.count() > 0, 30)
+        row.click()
+        got_line, bps, rows, calls = line_code(page)
+        items = page.evaluate("[...document.querySelectorAll('#src_addrs li')].map((e) => e.textContent)")
+        n = len(rows) + len(calls)
+        r[f"{path}:{line}"] = [len(rows), len(calls), len(bps), items[-1] if items else None]
+        if got_line != line or n <= 40 or len(items) != 41 or \
+                items[-1] != f"… and {n - 40} more (Run to sets all {len(bps)} breakpoints)":
+            problems.append(f"{name}: {path}:{line} ({len(rows)} ranges, {len(calls)} calls) lists {len(items)} items, the last {items[-1:]}")
+        elif elf:
+            fr = symbolize_frames(elf, [a + off for a, _ in rows])
+            wrong = [hex(a) for (a, _), f in zip(rows, fr) if not at_line(f, path, line, True)]
+            if wrong:
+                problems.append(f"{name}: copies of {path}:{line} that llvm-symbolizer puts elsewhere: {wrong[:5]}")
+        page.screenshot(path=str(shots / f"lineaddr-{name}-many-1280-light.png"))
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -10644,7 +10669,8 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
         return [f"{tag}: Code at EIP shows no C line"], r
     line = page.locator("#context .src:not(.nol)").first
     line.scroll_into_view_if_needed()
-    page.tap("#context .src:not(.nol) >> nth=0") if phone else line.click()
+    # A tap anywhere on the line; at 1280 a click on its C text (not its file:line link).
+    page.tap("#context .src:not(.nol) >> nth=0") if phone else line.locator(".srctext").click()
     if not wait_for(lambda: (lambda s: s["open"] and s["state"] == "ok")(srcfiles_state(page)), 25):
         ctx.close()
         return [f"{tag}: the Source panel did not open from Code at EIP: {srcfiles_state(page)}"], r
@@ -10653,6 +10679,15 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
     r["start"] = {k: start[k] for k in ("title", "file", "code", "executed", "hash")}
     if "(whole file)" in start["title"]:
         problems.append(f"{tag}: Code at EIP opened a whole file, not the function: {start['title']!r}")
+    if not phone:
+        # The title's file name opens the whole file; Back returns to the function.
+        page.click(f'#src_title button.crumb[data-path="{start["file"]}"]')
+        whole = srcfiles_wait_file(page, start["file"])
+        page.go_back()
+        back = wait_for(lambda: srcfiles_state(page)["title"] == start["title"], 10)
+        r["title file"] = [whole, back]
+        if not whole or not back:
+            problems.append(f"{tag}: the title's {start['file']} did not open the whole file ({whole}) or Back did not return ({back})")
     entries0 = nav_at(page)
 
     # 2. The switcher: call stack and recent files on top, then every file.
@@ -10724,6 +10759,23 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
     if str(pick["executed"]) != str(len(want)) or str(pick["code"]) != str(got["code"]):
         problems.append(f"{tag}: the switcher said {pick['executed']} of {pick['code']} lines ran, the panel {len(want)} of {got['code']}")
     srcfiles_shots(page, shots, f"srcfiles-{name}-{width}-file", scheme)
+    if not phone:
+        # Selecting a line's text (a drag along it) does not pick it.
+        pick0 = srcfiles_state(page)["pick"]
+        other = page.evaluate("""(p) => { const v = document.getElementById('src_body').getBoundingClientRect();
+            return [...document.querySelectorAll('#src_body [data-line]')].find((e) => { const b = e.getBoundingClientRect();
+                return e.dataset.line !== p && b.top >= v.top && b.bottom <= v.bottom && e.querySelector('.srctext').textContent.trim().length > 4; }).dataset.line; }""", pick0)
+        b = page.locator(f'#src_body [data-line="{other}"] .srctext').bounding_box()
+        page.mouse.move(b["x"] + 2, b["y"] + b["height"] / 2)
+        page.mouse.down()
+        page.mouse.move(b["x"] + min(b["width"] - 2, 120), b["y"] + b["height"] / 2, steps=5)
+        page.mouse.up()
+        time.sleep(0.3)
+        sel = [page.evaluate("window.getSelection().toString().trim().length > 0"), srcfiles_state(page)["pick"]]
+        page.evaluate("window.getSelection().removeAllRanges()")
+        r["drag select"] = [pick0, other, sel]
+        if not sel[0] or sel[1] != pick0:
+            problems.append(f"{tag}: a drag selecting line {other}'s text: [selection, pick] {sel}, want the pick {pick0!r} kept")
 
     # 4. The outline: a function of the file, scrolled to and picked.
     opts = page.evaluate("""() => [...document.querySelectorAll('#src_outline option')].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent, fn: o.dataset.fn || '' }))""")
@@ -10749,6 +10801,12 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
             problems.append(f"{tag}: the outline puts {want_fn} at line {o['v']}, llvm-symbolizer at {wl}")
         if nav_at(page)[0] != before[0] + 1:
             problems.append(f"{tag}: the outline jump is not a history entry: {before} -> {nav_at(page)}")
+        # Its first option (the count) goes nowhere.
+        at = [nav_at(page), srcfiles_state(page)["pick"]]
+        page.select_option("#src_outline", "")
+        time.sleep(0.4)
+        if [nav_at(page), srcfiles_state(page)["pick"]] != at:
+            problems.append(f"{tag}: the outline's first option moved [history, pick] {at} to {[nav_at(page), srcfiles_state(page)['pick']]}")
 
     # 5. The breadcrumb: the directory lists its files.
     d = target.rsplit("/", 1)[0]
@@ -10768,6 +10826,22 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
                 sorted(x["dir"].rsplit("/", 1)[-1] for x in items if x["dir"] and x["dir"].startswith(d + "/")) != subdirs:
             problems.append(f"{tag}: the breadcrumb {d}/ lists {files[:6]} (+dirs {[x['dir'] for x in items if x['dir']][:4]}), want {here[:6]} (+{subdirs[:4]})")
         srcfiles_fit(page, f"{tag} directory", problems, r)
+        if not phone:
+            # Up: the top directory's subdirectories and files; a directory row lists that one.
+            page.click('#src_list [role=option][data-group="up"]')
+            time.sleep(0.4)
+            items = page.evaluate(SRCFILES_LIST_JS)
+            top_dirs = sorted({p.split("/")[0] for p in known if "/" in p})
+            top_files = sorted(p for p in known if "/" not in p)
+            got = [sorted(x["dir"] for x in items if x["group"] == "dir"), sorted(x["path"] for x in items if x["path"])]
+            r["crumb up"] = [len(got[0]), len(got[1])]
+            if page.get_attribute("#src_switch", "data-dir") != "" or got != [top_dirs, top_files]:
+                problems.append(f"{tag}: Up from {d}/ lists {got[0][:6]} {got[1][:4]}, want {top_dirs[:6]} {top_files[:4]}")
+            elif top_dirs:
+                page.click(f'#src_list [role=option][data-group="dir"][data-dir="{top_dirs[0]}"]')
+                time.sleep(0.4)
+                if page.get_attribute("#src_switch", "data-dir") != top_dirs[0]:
+                    problems.append(f"{tag}: the directory row {top_dirs[0]} did not list it: {page.get_attribute('#src_switch', 'data-dir')!r}")
         page.keyboard.press("Escape")
         if not wait_for(lambda: not page.is_visible("#src_switch"), 3):
             problems.append(f"{tag}: Escape does not close the switcher")
@@ -10809,6 +10883,20 @@ def srcfiles_run(browser, base, shots, name, scheme, phone):
     if not phone:
         page.focus("#src_body")
         if srcfiles_open_switcher(page, "key", problems, f"{tag} keyboard"):
+            # Nothing matches: said so; the arrows and Enter do nothing.
+            page.keyboard.type("zqxzqx")
+            time.sleep(0.4)
+            note = page.evaluate("""() => [document.querySelectorAll('#src_list [role=option]').length,
+                (document.querySelector('#src_list .note') || {}).textContent || '', document.getElementById('src_q').getAttribute('aria-activedescendant')]""")
+            page.keyboard.press("ArrowDown")
+            page.keyboard.press("Enter")
+            time.sleep(0.3)
+            after = [page.is_visible("#src_switch"), srcfiles_state(page)["file"]]
+            r["no match"] = [note, after]
+            if note != [0, "No file matches.", None] or after != [True, target]:
+                problems.append(f"{tag}: a filter matching nothing: [options, note, active] {note}, after Down and Enter [open, file] {after}")
+            page.fill("#src_q", "")
+            page.focus("#src_q")
             page.keyboard.type("main" if name != "hello" else "hello")
             time.sleep(0.4)
             items = page.evaluate(SRCFILES_LIST_JS)

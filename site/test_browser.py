@@ -12700,7 +12700,10 @@ def snapdiff_guard(fn, *args):
     try:
         return fn(*args)
     except (PlaywrightError, IndexError, KeyError, TypeError) as e:
-        return [f"{fn.__name__}: {type(e).__name__}: {(str(e).splitlines() or [''])[0][:300]}"], {}
+        # The step that failed: its line here (a timeout's first line names no selector).
+        tb = [f for f in traceback.extract_tb(e.__traceback__) if f.filename == __file__ and f.name != "snapdiff_guard"]
+        at = f" at line {tb[-1].lineno} ({tb[-1].line})" if tb else ""
+        return [f"{fn.__name__}: {type(e).__name__}{at}: {(str(e).splitlines() or [''])[0][:300]}"], {}
 
 
 # ---- one count: every place names the Machine tab's count (X2) -------------
@@ -16641,6 +16644,8 @@ def bookmarks_unreachable(browser, base, shots):
         if d.get("kind") != "page" or f"page {eip_page:#x}" not in d.get("what", ""):
             problems.append(f"{tag}: the Memory tab's ☆ offers {d}, want page {eip_page:#x} (EIP's)")
         page.keyboard.press("Escape")
+        if not wait_for(lambda: page.evaluate(BM_DIALOG_JS) is None, 5):
+            problems.append(f"{tag}: Escape did not close the Memory tab's bookmark dialog")
         # A right click with Shift on a grid square is the browser's own menu: no dialog.
         x, y = page_center(page, eip_page)
         page.keyboard.down("Shift")
@@ -16649,6 +16654,7 @@ def bookmarks_unreachable(browser, base, shots):
         r["shift right click"] = page.evaluate(BM_DIALOG_JS)
         if r["shift right click"]:
             problems.append(f"{tag}: Shift + right click on a page square opened the bookmark dialog: {r['shift right click']}")
+            page.keyboard.press("Escape")
         st = snap_save(page, 1, False)
         snap_id = st["rows"][0]["id"]
         with page.expect_download() as dl:
@@ -16762,6 +16768,19 @@ def bookmarks_unreachable(browser, base, shots):
         page.screenshot(path=str(shots / "bookmarks-unreachable-1280-light.png"))
         if errors:
             problems.append(f"{tag}: page errors {errors[:3]}")
+    except (PlaywrightError, IndexError, KeyError, TypeError) as e:
+        # Name the step, keep what failed before it, and show the page then
+        # (CI run 43588908776 reported only "Page.click: Timeout").
+        tbk = [x for x in traceback.extract_tb(e.__traceback__) if x.filename == __file__]
+        at = f" at line {tbk[-1].lineno} ({tbk[-1].line})" if tbk else ""
+        try:
+            state = page.evaluate("({ url: location.href, tab, dialog: !document.getElementById('bm_dialog').hidden, "
+                                  "menu: !document.getElementById('runbadge_menu').hidden, runState, "
+                                  "status: document.getElementById('status').textContent, bm: document.getElementById('bm_status').textContent })")
+            page.screenshot(path=str(shots / "bookmarks-unreachable-failed.png"))
+        except PlaywrightError as e2:
+            state = f"(page not readable: {str(e2)[:80]})"
+        problems.append(f"{tag}: {type(e).__name__}{at}: {(str(e).splitlines() or [''])[0][:200]}; the page then: {state}")
     finally:
         ctx.close()
         shutil.rmtree(tmp, ignore_errors=True)

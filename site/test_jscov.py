@@ -8,6 +8,10 @@ top-level code, posts the result and is terminated by the page at once; a
 service worker whose fetch handler runs; a second page reached by goto,
 which then leaves for a third page on another site by itself (location.href:
 its last function runs just before the old renderer process goes away).
+The collector handles the service worker's attach a second late, as a busy
+CI runner may: Playwright runs a new service worker at once, and its
+coverage must still start before the worker's first line (block detail in
+sw.js; jscov.HOLD_SW_JS).
 The coverage of one headless Chromium run goes through report.js, and the
 report must show each executed function covered and each unexecuted one
 uncovered (the plan's V1 self-test), with the branch and line counts.
@@ -80,6 +84,8 @@ postMessage(workerRan());
 """,
     "sw.js": """// service worker
 function swFetch(url) {
+\tif (url.includes("through-sw"))
+\t\treturn "through";
 \treturn url.length;
 }
 
@@ -158,6 +164,13 @@ def main():
             (fix / n).write_text(t)
         os.environ["MKB_JSCOV"] = str(raw)
         jscov.configure(fix)
+        attached = jscov.Collector._attached
+
+        def late(self, sid, info, waiting):
+            if info.get("type") == "service_worker":
+                time.sleep(1.0)
+            return attached(self, sid, info, waiting)
+        jscov.Collector._attached = late
         jscov.install("selftest")
         httpd = serve(fix)
         base = f"http://127.0.0.1:{httpd.server_address[1]}"
@@ -227,6 +240,17 @@ def main():
             if taken in unc or not_taken not in unc:
                 problems.append(f"other.js after a reload: uncovered lines {sorted(unc)}, want {not_taken} (the return "
                                 f"not taken) among them and not {taken}")
+            # sw.js with block detail: in swFetch the return the page's fetch
+            # takes is covered, the other return (requests without
+            # "through-sw") too, and swNever's body not.
+            src = FILES["sw.js"].split("\n")
+            unc = set()
+            for a, _, b in (x.partition("-") for x in s["files"].get("sw.js", {}).get("uncoveredLines", "").split(",") if x):
+                unc.update(range(int(a), int(b or a) + 1))
+            through, never_ret = src.index('\t\treturn "through";') + 1, src.index("\treturn 1;") + 1
+            if through in unc or never_ret not in unc:
+                problems.append(f"sw.js: uncovered lines {sorted(unc)}, want {never_ret} (swNever) among them and not "
+                                f"{through} (the service worker ran before its coverage started?)")
             lines = cov.get("lines", {})
             if not lines.get("total") or lines.get("covered", 0) >= lines.get("total", 0):
                 problems.append(f"cov.js: lines {lines}, want some uncovered")

@@ -28,13 +28,16 @@ into lines and branches): what to read when a number looks wrong. Chromium
 runs without V8's code cache and compilation cache (see with_port()).
 """
 
+import atexit
 import base64
 import json
 import os
 import pathlib
+import shutil
 import socket
 import struct
 import sys
+import tempfile
 import threading
 import time
 import urllib.parse
@@ -49,6 +52,7 @@ TAKE_TIMEOUT_S = 10.0
 # recorded whenever it comes, the flush just does not wait longer.
 SW_WAIT_S = 1.0
 BINDING = "__mkbJscovFlush"
+SW_DIR = None  # install(): where the collector marks service workers whose coverage started
 WAIT_TYPES = {"page", "iframe", "worker", "service_worker", "shared_worker"}
 
 # Page init script: terminate() of a Worker takes its coverage first. The
@@ -85,6 +89,67 @@ TERMINATE_JS = """(() => {
   // The collector takes the coverage while this pause lasts (Debugger.paused).
   addEventListener('beforeunload', () => { debugger; });
 })();""" % {"b": BINDING}
+
+
+# Loaded into Playwright's driver (Node) by NODE_OPTIONS=--require. A new
+# service worker runs when Playwright's session runs it (the collector's
+# Runtime.runIfWaitingForDebugger does not start it), and Playwright runs it
+# at once. When that came before the collector's
+# Profiler.startPreciseCoverage, Chromium had compiled all of sw.js (service
+# workers are compiled eagerly) without block counters: every function of
+# that worker reported no blocks (13 of 13 in most coverage jobs of run
+# 43528247799; which jobs varied from run to run, so sw.js measured 72% in
+# one run and 92% in another). Here Playwright's run of a new service worker
+# waits until the browser has the collector's coverage start (the file
+# <MKB_JSCOV_SW>/<targetId>; a waiting worker answers nothing before it
+# runs, and gets the commands the browser holds for it first), at most
+# 20 s. JSCOV_HOOK_OK in the driver's stderr says the patch is in.
+HOLD_SW_JS = r"""'use strict';
+const Module = require('module');
+const fs = require('fs');
+const path = require('path');
+const dir = process.env.MKB_JSCOV_SW;
+const load = Module._load;
+let done = false;
+function ready(target, t0) {
+  return new Promise((resolve) => {
+    const poll = () => {
+      if (fs.existsSync(path.join(dir, target)))
+        return resolve(true);
+      if (Date.now() - t0 > 20000) {
+        process.stderr.write('jscov: service worker ' + target + ': no coverage start from the collector in 20 s, run anyway\n');
+        return resolve(false);
+      }
+      setTimeout(poll, 5);
+    };
+    poll();
+  });
+}
+Module._load = function (request, parent, isMain) {
+  const m = load.apply(this, arguments);
+  if (!done && dir && m && typeof m.CRConnection === 'function' && typeof m.CRSession === 'function' &&
+      m.CRConnection.prototype._onMessage && m.CRSession.prototype.send) {
+    done = true;
+    const C = m.CRConnection.prototype, S = m.CRSession.prototype, recv = C._onMessage, send = S.send;
+    C._onMessage = function (msg) {
+      if (msg && msg.method === 'Target.attachedToTarget' && msg.params && msg.params.targetInfo &&
+          msg.params.targetInfo.type === 'service_worker' && msg.params.waitingForDebugger)
+        (this.__mkbSw || (this.__mkbSw = new Map())).set(msg.params.sessionId, msg.params.targetInfo.targetId);
+      return recv.apply(this, arguments);
+    };
+    S.send = function (method, params) {
+      const sw = this._connection && this._connection.__mkbSw;
+      const target = sw && sw.get(this._sessionId);
+      if (method !== 'Runtime.runIfWaitingForDebugger' || !target)
+        return send.apply(this, arguments);
+      sw.delete(this._sessionId);
+      return ready(target, Date.now()).then(() => send.call(this, method, params));
+    };
+    process.stderr.write('jscov: JSCOV_HOOK_OK a new service worker runs once its coverage started\n');
+  }
+  return m;
+};
+"""
 
 
 def log(*a):
@@ -271,6 +336,12 @@ class Collector:
             pass
         return i
 
+    def ws_send(self, msg):
+        try:
+            self.ws.send(json.dumps(msg))
+        except OSError:
+            pass
+
     def call(self, method, params=None, session=None, timeout=TAKE_TIMEOUT_S):
         ev = threading.Event()
         with self.id_lock:
@@ -314,7 +385,9 @@ class Collector:
             elif sid:
                 log(f"take {msg['id']} on a {self.sessions.get(sid)}: {msg.get('error')}")
             then = self.after.pop(msg["id"], None)
-            if then:
+            if callable(then):
+                then()
+            elif then:
                 self.post(*then)
             w = self.waiting.pop(msg["id"], None) if sid else self.waiting.get(msg["id"])
             if w:
@@ -361,6 +434,14 @@ class Collector:
         # this session lets the target run.
         self.post("Profiler.enable", session=sid)
         self.post("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True}, session=sid)
+        if kind == "service_worker":
+            # Answered once the browser has read the start above (one
+            # connection's messages in order); then Playwright may run it.
+            with self.id_lock:
+                self.next_id += 1
+                i = self.next_id
+                self.after[i] = lambda: self._sw_ready(info.get("targetId"))
+            self.ws_send({"id": i, "method": "Browser.getVersion"})
         # Workers of this target; its service worker comes once, through the
         # browser's auto-attach (a second session on it never answers takes).
         self.post("Target.setAutoAttach", {"autoAttach": True, "waitForDebuggerOnStart": True, "flatten": True,
@@ -374,6 +455,14 @@ class Collector:
             self.post("Debugger.enable", session=sid)
         if waiting:
             self.post("Runtime.runIfWaitingForDebugger", session=sid)
+
+    def _sw_ready(self, target):
+        """The browser has this service worker's coverage start (it gives
+        the worker what it holds for it before it runs): Playwright may run
+        it (HOLD_SW_JS)."""
+        self.trace("sw-ready", target=(target or "")[:8])
+        if SW_DIR and target:
+            (SW_DIR / target).touch()
 
     # ---- coverage ----------------------------------------------------------
 
@@ -516,6 +605,13 @@ def install(label):
     if not outdir:
         return False
     log(f"env MKB_JSCOV = {outdir}")
+    global SW_DIR
+    SW_DIR = pathlib.Path(tempfile.mkdtemp(prefix="mkb-jscov-sw-"))
+    hook = SW_DIR / "hold-sw.cjs"
+    hook.write_text(HOLD_SW_JS)
+    atexit.register(shutil.rmtree, SW_DIR, True)
+    os.environ["MKB_JSCOV_SW"] = str(SW_DIR)
+    os.environ["NODE_OPTIONS"] = (os.environ.get("NODE_OPTIONS", "") + f" --require={hook}").strip()
     from playwright.sync_api import Browser, BrowserContext, BrowserType, Page
 
     def with_port(kw):

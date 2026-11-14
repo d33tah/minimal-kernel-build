@@ -2108,6 +2108,25 @@ renderer reuses the functions compiled for the one before, seen with the
 Debugger domain off). The self-test's reload, of a script its service
 worker serves from its cache, fails without the first.
 
+The service worker runs when Playwright's own session runs it (the
+collector's Runtime.runIfWaitingForDebugger does not start it), and
+Playwright runs it at once. When that came before the collector's
+coverage start, Chromium had compiled all of sw.js (it compiles a service
+worker eagerly) without block counters, and every function of that
+worker reported no blocks: 13 of 13 in most coverage jobs of run
+43528247799, different jobs in different runs, so sw.js measured 72% in
+one run and 92% in another. With MKB_JSCOV set, `install()` loads
+`jscov.HOLD_SW_JS` into Playwright's driver (`NODE_OPTIONS=--require`):
+Playwright's run of a new service worker waits until the browser has the
+collector's coverage start (a file per target in a temporary directory),
+at most 20 s; the driver prints `JSCOV_HOOK_OK` when the patch is in. The
+self-test handles the service worker's attach a second late and fails
+without it (sw.js without block detail: the untaken return covered, the
+never-called function not listed). A worker Chromium stops and starts
+again loads its V8 code cache from the install and still reports no
+blocks; that happens only where a test stops it or restarts the browser
+(pwa-install), the same in every run.
+
 Block coverage slows the page's own JavaScript: stepping a Debian boot
 again for a Step back took 679 ms instead of 199 ms (3.4x; binary block
 coverage, callCount off, 719 ms), so the wall-clock bounds of reverse,
@@ -2122,9 +2141,7 @@ before it leaves for another site by itself, and the untaken return of a
 function that runs only after a reload), merges, writes the table
 into the job summary, uploads the report (artifact `jscov-report`) and
 fails when a total is below `site/jscov-baseline.json` or a file's lines
-are below its `fileLines` (70: sw.js went from 92% to 72% between two
-runs, a worker started again runs Chromium's cached compile of sw.js,
-which reports no blocks).
+are below its `fileLines`.
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;

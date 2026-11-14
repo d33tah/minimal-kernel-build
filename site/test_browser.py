@@ -16083,10 +16083,13 @@ CFI_TABLE_JS = """async ([b64, offset]) => {
 
 CFI_ROWS_JS = """(pas) => pas.map((pa) => { const r = cfiRow(window.__cfi, pa); return r === null ? null : r.why ? 'why: ' + r.why : cfiRowText(r); })"""
 
-# unwind() from regs over a memory of { address: value }; the code is the fixture's.
-CFI_UNWIND_JS = """([regs, mem, lo, hi, offset]) => {
+# unwind() from regs over a memory of { address: value }; the code is the
+# fixture's; entry: [name, start, end] of code that is entry code (it
+# called the frame inside it with pt_regs).
+CFI_UNWIND_JS = """([regs, mem, lo, hi, offset, entry]) => {
+    const sym = (pa) => entry && pa >= entry[1] - offset && pa < entry[2] - offset ? [entry[0], entry[1] - offset] : null;
     const env = { rowAt: (pa) => cfiRow(window.__cfi, pa), read32: (va) => mem[va >>> 0],
-                  toPhys: (va) => (va >= lo && va < hi ? va - offset : null), symAt: () => null, isEntry: () => false };
+                  toPhys: (va) => (va >= lo && va < hi ? va - offset : null), symAt: sym, isEntry: (n) => !!entry && n === entry[0] };
     const u = unwind(regs, env);
     return { state: u.state, why: u.why, frames: u.frames.map((f) => ({ pc: f.pc, method: f.method, cfa: f.cfa, regs: f.regs })) };
 }"""
@@ -16139,6 +16142,17 @@ def cfi_unwind_checks(page, hi, problems, r):
     cases.append(("stack does not grow", u["state"] == "stopped" and (u["why"] or "").startswith("the stack does not grow back up"), u))
     u = walk(0x1234, {"esp": 0x1000}, {})
     cases.append(("not code", u["why"] == "0x1234 is not code of this kernel", u))
+    # f2 as entry code: the pt_regs at the CFA of f1's frame (17 words:
+    # EBX ... EIP at 12, CS at 13, EFLAGS at 14).
+    entry = ["asm_fixture", B + 0xd, B + 0xf]
+
+    def walk_entry(mem):
+        return page.evaluate(CFI_UNWIND_JS, [{"eip": B + 1, "esp": 0x1000}, {str(k): v for k, v in mem.items()}, B, hi, CFI_OFFSET, entry])
+    u = walk_entry({0x1000: 0x2222, 0x1004: B + 0xe})
+    cases.append(("pt_regs unreadable", u["why"] == "asm_fixture: its saved registers at 0x1008 cannot be read", u))
+    regs = {0x1008 + 4 * k: 0 for k in range(17)}
+    u = walk_entry({0x1000: 0x2222, 0x1004: B + 0xe, **regs, 0x1008 + 4 * 13: 0x1234, 0x1008 + 4 * 14: 0x202})
+    cases.append(("no pt_regs", u["why"] == "asm_fixture: no saved registers (pt_regs) at 0x1008 (CS 0x1234, EFLAGS 0x202)", u))
     r["unwind"] = {name: ok for name, ok, _ in cases}
     for name, ok, u in cases:
         if not ok:
@@ -16305,9 +16319,12 @@ def cfi_crafted_checks(page, tmp, problems, r):
              (bytes([0xe0]), "DWARF expression op 0xe0 is not supported"), (b"", "empty DWARF expression"),
              (bytes([0xa4, 0, 8]) + bytes(8), "a 8-byte typed constant is not supported")]
     content = bytearray(cie)
-    for k, (e, _) in enumerate(exprs):
+    # Two more with a constant CFA each, [+8, +10) 0x10008 and [+10, +11)
+    # 0x4008 (another 8 KiB stack): +9 returns to +11, which returns to +9.
+    for k, n, e in [(k, 1, e) for k, (e, _) in enumerate(exprs)] + [(8, 2, bytes([0x0c]) + struct.pack("<I", 0x10008)),
+                                                                    (10, 1, bytes([0x0c]) + struct.pack("<I", 0x4008))]:
         at = len(content)
-        content += cfi_entry(struct.pack("<I", at + 4) + struct.pack("<ii", CFI_BASE + k - eh_addr - at - 8, 1) + b"\0" +
+        content += cfi_entry(struct.pack("<I", at + 4) + struct.pack("<ii", CFI_BASE + k - eh_addr - at - 8, n) + b"\0" +
                              bytes([0x0f]) + cfi_uleb(len(e)) + e)
     page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", bytes(content) + bytes(4))[0]).decode(), CFI_OFFSET])
     for k, (e, why) in enumerate(exprs):
@@ -16315,6 +16332,10 @@ def cfi_crafted_checks(page, tmp, problems, r):
         r[f"crafted CFA expression {k}"] = [u["state"], u["why"], u["frames"][0]["cfa"]]
         if (why is None and u["frames"][0]["cfa"] != 0x1008) or (why and not (u["why"] or "").endswith("): " + why)):
             problems.append(f"crafted CFA expression {e.hex()}: {u}, want {why or 'CFA ESP+8'}")
+    u = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + 9, "esp": 0x1000}, {"65540": CFI_BASE + 11, "16388": CFI_BASE + 9}, CFI_BASE, hi, CFI_OFFSET])
+    r["crafted loop"] = u["why"]
+    if u["why"] != "a loop: 0xc1000009 with CFA 0x10008 again" or len(u["frames"]) != 3:
+        problems.append(f"crafted CFA expressions, a loop: {u}")
     # Broken copies.
 
     def one(cie):

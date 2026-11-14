@@ -12889,8 +12889,9 @@ def snapdiff_corrupt(browser, base, shots):
     "full" delta and Delete of a base whose delta cannot be rebuilt say so
     too, and keep it. A name confirmed unchanged is no rename. A diff
     with a snapshot of a smaller RAM lists the pages above its end that
-    hold bytes, and the hexdump of one shows zeros against v86's bytes,
-    all 256 rows on "all rows". After the site's data is cleared (the page's database
+    hold bytes, the hexdump of one shows zeros against v86's bytes, all
+    256 rows on "all rows", and the Page tab shows it as the snapshot had
+    it (zeros, named, renamed). After the site's data is cleared (the page's database
     connection is closed under it) Delete, Rename and Save each say that
     IndexedDB failed, and the snapshot stays in memory. Without the
     snapshot worker's script (404) a save is kept raw and Restore says the
@@ -13055,6 +13056,24 @@ def snapdiff_corrupt(browser, base, shots):
                         [len(x) for x in allrows] != [256, 256]:
                     problems.append(f"the hexdump of page {p0:#x} (beyond the 2 MiB snapshot): rows {r['hex beyond']}, "
                                     f"now's bytes as v86 has them: {b == want_b}, the snapshot's side all zero: {not any(any(v) for v in a.values())}")
+                # The page as the 2 MiB snapshot "had" it in the Page tab: zeros,
+                # its note naming the snapshot, and after a rename the new name.
+                page.click(f"#snap_pages [data-page='{p0}'] button.snapopena")
+                wait_for(lambda: shown_tab(page) == "page" and page.is_visible("#page_snap"), 15)
+                banner = page.text_content("#page_snap_text")
+                zero = page.evaluate("(() => { const d = document.getElementById('listing')._drawn; return !!d && d.bytes.length === 4096 && d.bytes.every((x) => !x); })()")
+                show_tab(page, "snapshots")
+                page.click(f"#snapshots tr[data-id='{a_id}'] button.snapname")
+                page.fill("#snapshots input.snapedit", "the 2 MiB one")
+                page.press("#snapshots input.snapedit", "Enter")
+                show_tab(page, "page")
+                wait_for(lambda: "the 2 MiB one" in (page.text_content("#page_snap_text") or ""), 10)
+                banner2 = page.text_content("#page_snap_text")
+                r["page tab beyond"] = [banner[:120], zero, banner2[:120]]
+                if banner != f"Showing snapshot “{name0}”; yellow bytes differ from now (when diffed). " or not zero or \
+                        not banner2.startswith("Showing snapshot “the 2 MiB one”;"):
+                    problems.append(f"page {p0:#x} of the 2 MiB snapshot in the Page tab: {r['page tab beyond']}")
+                show_tab(page, "snapshots")
             page.screenshot(path=str(shots / "snapdiff-corrupt-ramsizes.png"), full_page=True)
 
         # The site's data cleared while the page is open.
@@ -16585,11 +16604,13 @@ def bookmarks_edges(browser, base, shots):
 
 def bookmarks_unreachable(browser, base, shots):
     """hello to its end on the virtual clock at 1280 light: the Memory
-    tab's ☆ offers the page EIP is on; a position bookmark (with its run),
+    tab's ☆ offers the page EIP is on, Shift + right click on its square
+    opens no dialog; a position bookmark (with its run),
     a snapshot and the run's file; the bookmark's 🔗 copies its link (the
     clipboard holds it) or, when the browser refuses, says to copy it from
     the context menu; the link opened again finds the bookmark already
-    there. Then on hello-os paused at the reset vector (the Page tab's ☆
+    there; Import opens the file dialog and refuses a file that is no
+    JSON. Then on hello-os paused at the reset vector (the Page tab's ☆
     offers a line of EIP's page, the Calls tab's with no function picked
     says there is nothing to bookmark) with hello's bzImage answering 404:
     the snapshot's Switch and Replay, Replay a file of hello's run, the
@@ -16617,6 +16638,14 @@ def bookmarks_unreachable(browser, base, shots):
         if d.get("kind") != "page" or f"page {eip_page:#x}" not in d.get("what", ""):
             problems.append(f"{tag}: the Memory tab's ☆ offers {d}, want page {eip_page:#x} (EIP's)")
         page.keyboard.press("Escape")
+        # A right click with Shift on a grid square is the browser's own menu: no dialog.
+        x, y = page_center(page, eip_page)
+        page.keyboard.down("Shift")
+        page.mouse.click(x, y, button="right")
+        page.keyboard.up("Shift")
+        r["shift right click"] = page.evaluate(BM_DIALOG_JS)
+        if r["shift right click"]:
+            problems.append(f"{tag}: Shift + right click on a page square opened the bookmark dialog: {r['shift right click']}")
         st = snap_save(page, 1, False)
         snap_id = st["rows"][0]["id"]
         with page.expect_download() as dl:
@@ -16656,6 +16685,16 @@ def bookmarks_unreachable(browser, base, shots):
         r["link again"] = [bm_status(page), n]
         if bm_status(page) != "Opened “hello's end” from a link." or n != 1:
             problems.append(f"{tag}: the link of a bookmark already listed: {bm_status(page)!r}, {n} bookmarks (want 1)")
+        # Import… opens the file dialog.
+        bm_open_list(page, False)
+        (tmp / "junk.json").write_text("no bookmarks here")
+        with page.expect_file_chooser() as fc:
+            page.click("#bm_import")
+        fc.value.set_files(str(tmp / "junk.json"))
+        wait_for(lambda: "junk.json" in bm_status(page), 5)
+        r["import dialog"] = bm_status(page)
+        if not bm_status(page).startswith("junk.json is not a bookmarks file: "):
+            problems.append(f"{tag}: Import through its file dialog: {bm_status(page)!r}")
 
         # hello's bzImage gone: everything that would load hello says so.
         if "hello-os" not in kernel_entries():

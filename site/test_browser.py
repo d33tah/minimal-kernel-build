@@ -16433,7 +16433,7 @@ def suite_cfi(ctx):
 # equal gdb's and llvm-dwarfdump's.
 LTO_FIXTURE = {
     "a.c": "int counter;\nstatic int scale = 3;\n\nint helper(int x)\n{\n\tint y = x * scale;\n\n\tcounter += y;\n\treturn y + 1;\n}\n",
-    "b.c": "int helper(int x);\n\nint entry(int n)\n{\n\tint s = 0;\n\n\tfor (int i = 0; i < n; i++)\n\t\ts += helper(i);\n\treturn s;\n}\n",
+    "b.c": "int helper(int x);\n\nint entry(int n)\n{\n\tstatic int calls;\n\tint s = 0;\n\n\tcalls++;\n\tfor (int i = 0; i < n; i++)\n\t\ts += helper(i);\n\treturn s + calls;\n}\n",
 }
 LTO_BASE, LTO_OFFSET = 0xc1000000, 0xc0000000
 
@@ -16458,7 +16458,7 @@ LTO_OPEN_JS = """async ([b64, offset, pa]) => {
     return { open: 'ok', units: o.units,
         funcs: T.funcs.fns.map((e) => ({ name: e[0], at: T.funcs.files[e[1]] + ':' + e[2], proto: dwFuncProto(T, e),
             inlined: e[8].map((x) => x + offset) })),
-        vars: T.vars.map((v) => ({ name: v[0], at: dwVarDeclText(T, v), type: dwTypeName(T, v[2]), va: v[1] + offset })),
+        vars: T.vars.map((v) => ({ name: v[0], at: dwVarDeclText(T, v), type: dwTypeName(T, v[2]), va: v[1] + offset, scope: v[6] })),
         frames: dwarfLocalFrames(dwarfScopesAt(groups, pa)).map((f) => ({ func: f.func, inlined: f.inlined,
             params: f.params.map(name), locals: f.locals.map(name) })) };
 }"""
@@ -16546,6 +16546,14 @@ def dwarf_lto_case(browser, base, shots):
     v = next((v for v in got["vars"] if v["name"] == "counter"), None)
     if not m or not v or v["at"] != f"a.c:{m.group(1)}" or v["type"] != "int" or "type = int" not in gdb or v["va"] != nm.get("counter"):
         problems.append(f"counter: the page says {v}, gdb a.c:{m and m.group(1)} int, nm {nm.get('counter')}")
+    # entry's static local: its DIE in the code's unit is in entry's
+    # concrete DIE, which has no name (nameAt through its abstract origin).
+    # Where: gdb's info scope of entry; declared: llvm-dwarfdump's DIE.
+    m = re.search(r"Symbol calls is (?:in )?static storage at address (0x[0-9a-f]+)", gdb)
+    d = next((d for d in dies if d["tag"] == "DW_TAG_variable" and d.get("DW_AT_name") == '"calls"'), {})
+    v = next((v for v in got["vars"] if v["name"] == "calls"), None)
+    if not m or not v or v["at"] != f"b.c:{d.get('DW_AT_decl_line')}" or v["scope"] != "entry" or v["va"] != int(m.group(1), 16):
+        problems.append(f"calls: the page says {v}, gdb {m and m.group(0)} in entry, llvm-dwarfdump b.c:{d.get('DW_AT_decl_line')}")
     # Locals at the inlined call: helper's x and y, then entry's; names as
     # gdb's info scope lists them, x optimized out as gdb says.
     fr = got["frames"]

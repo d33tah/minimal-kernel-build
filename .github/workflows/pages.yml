@@ -799,6 +799,17 @@ jobs:
         "$RUNNER_TEMP/venv/bin/pip" install playwright
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium firefox webkit
 
+    # site/testdata/wasi-probe.c for the test's WASI checks, by the
+    # wasi-sdk that gen-clang-wasm.sh pins.
+    - name: Build wasi-probe.wasm with wasi-sdk
+      run: |
+        eval "$(/usr/bin/grep -E '^WASI_SDK(_URL|_SHA256)?=' site/gen-clang-wasm.sh)"
+        curl -sSfL --retry 5 -o "$RUNNER_TEMP/wasi-sdk.tgz" "$WASI_SDK_URL"
+        echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tgz" | sha256sum -c
+        tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/wasi-sdk.tgz"
+        "$RUNNER_TEMP/$WASI_SDK/bin/clang" --target=wasm32-wasip1 -O2 -Wall -Werror \
+          -o clang-fixtures/wasi-probe.wasm site/testdata/wasi-probe.c
+
     - name: Compile in the page's Worker, compare with CI's objects
       env:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw

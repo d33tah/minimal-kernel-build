@@ -1985,9 +1985,9 @@ The page runs it in a Worker (plan step E0c). `clang.js` (loaded by
 ClangWorker()`, `load()` (fetch and compile `clang/clang.wasm`, no deploy
 stamp, so the HTTP cache keeps it across deploys), `write([[path,
 bytes or text]])`, `read(paths)`, `remove(paths)`, `list()` and
-`run(argv, { cwd, env, outputs })`, which answers clang's exit code,
-stdout, stderr, the requested output files, the Worker's time and the
-wasm memory at the exit. `clangworker.js` keeps the in-memory file system
+`run(argv, { cwd, env, stdin, outputs })`, which answers the tool's exit
+code, stdout, stderr, the requested output files, the Worker's time and
+the wasm memory at the exit. `clangworker.js` keeps the in-memory file system
 for the Worker's life and runs each tool (argv[0]: clang, ld.lld,
 llvm-ar, ...) on a fresh instance. `wasi.js` is the WASI preview1 layer,
 written here for this module instead of a third-party shim: the E0 spike's
@@ -1997,7 +1997,9 @@ doubling plus a length, and the hot calls (fd_read, fd_write, fd_seek,
 fd_pread) make no BigInt beyond the 64-bit arguments WebAssembly passes.
 The build directory is preopened as "/" and as its absolute path with
 PWD set to it, like `check-wasm-objects.mjs` does with Node's WASI, so
-relative paths and `DW_AT_comp_dir` are what the native build saw.
+relative paths and `DW_AT_comp_dir` are what the native build saw. A
+WASI call it does not have answers ENOSYS, so a module that imports more
+still instantiates.
 llvm-objcopy fails to write an output file in this module ("Function not
 implemented", from its libc, under Node's WASI too); writing to stdout
 (`-`) works.
@@ -2016,7 +2018,14 @@ it also checks that another `-O` level and an edited source give other
 bytes and the source written back gives CI's again, runs ld.lld -r,
 llvm-objcopy -O binary to stdout, llvm-ar and llvm-nm, and the API's
 failures (a run before load, a 404 module, a Worker that does not start,
-terminate with a request pending). It prints the times and the peak RSS
+terminate with a request pending). `testdata/wasi-probe.c`, built in the
+job by the wasi-sdk that `gen-clang-wasm.sh` pins, runs in a ClangWorker
+of its own and checks the WASI calls the way wasi-libc makes them (stdin,
+clocks, files that grow, shrink and have holes, append, seek, directories
+and readdir, rename, unlink, rmdir, and the errors: EEXIST, ENOENT,
+EISDIR, ENOTDIR, ENOTEMPTY, ENOTSUP for links and sleeping); the kbuild
+host tools of step E0d will be such programs. Node's WASI fails 5 of its
+52 checks (it has symlinks and sleeps), so the probe tells layers apart. It prints the times and the peak RSS
 of the browser; `--json` keeps them, `--firefox-profile` profiles
 Firefox (Gecko profiler) and prints where the Worker's thread spent its
 samples, `--no-automation` starts Firefox (or `--firefox-binary`) without

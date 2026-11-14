@@ -10,12 +10,13 @@
 //   { op: "read", paths }           -> { files: [[path, Uint8Array | null]] } (copies)
 //   { op: "remove", paths }         -> { removed: n }
 //   { op: "list" }                  -> { files: [[path, size]], bytes }
-//   { op: "run", args, cwd, env, outputs }
+//   { op: "run", args, cwd, env, stdin, outputs }
 //                                   -> { code, stdout, stderr (text), stdoutBytes (Uint8Array),
 //                                        instantiateMs, mem,
 //                                        files: [[path, Uint8Array | null]] (outputs) }
 //                                      one run of a fresh instance: args[0] picks the
-//                                      tool, cwd is the build directory (absolute), mem
+//                                      tool, cwd is the build directory (absolute), stdin
+//                                      bytes or text (default: empty), mem
 //                                      the wasm memory at the exit in bytes
 //   any failure                     -> { error }
 // Every answer but an error also has ms, the time the Worker took for it
@@ -51,10 +52,10 @@ const ops = {
 		const files = fs.list();
 		return { files, bytes: files.reduce((s, f) => s + f[1], 0) };
 	},
-	run({ args, cwd, env, outputs }) {
+	run({ args, cwd, env, stdin, outputs }) {
 		if (!clangModule)
 			throw new Error("clang.wasm is not loaded");
-		const r = wasiRun(clangModule, fs, { args, cwd, env });
+		const r = wasiRun(clangModule, fs, { args, cwd, env, stdin: typeof stdin === "string" ? new TextEncoder().encode(stdin) : stdin });
 		const dec = new TextDecoder();
 		return {
 			code: r.code, stdout: dec.decode(r.stdout), stderr: dec.decode(r.stderr), stdoutBytes: r.stdout,

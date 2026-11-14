@@ -74,9 +74,10 @@ class ClangWorker {
 	}
 
 	// One tool run: args[0] is the tool (clang, ld.lld, llvm-objcopy, ...),
-	// cwd the absolute build directory; outputs: paths to send back.
-	run(args, { cwd = "/", env = {}, outputs = [] } = {}) {
-		return this.request({ op: "run", args, cwd, env, outputs });
+	// cwd the absolute build directory, stdin its input (bytes or text);
+	// outputs: paths to send back.
+	run(args, { cwd = "/", env = {}, stdin = "", outputs = [] } = {}) {
+		return this.request({ op: "run", args, cwd, env, stdin, outputs });
 	}
 
 	terminate() {

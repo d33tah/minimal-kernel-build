@@ -145,7 +145,8 @@ class MemFS {
 	}
 }
 
-// Write data at off into file node f, growing its buffer by doubling.
+// Write data at off into file node f, growing its buffer by doubling; a
+// gap after the end reads as zeros.
 function memfsWrite(f, data, off) {
 	const end = off + data.length;
 	if (end > f.data.length) {
@@ -153,6 +154,8 @@ function memfsWrite(f, data, off) {
 		grown.set(f.data.subarray(0, f.size));
 		f.data = grown;
 	}
+	if (off > f.size)
+		f.data.fill(0, f.size, off);
 	f.data.set(data, off);
 	if (end > f.size)
 		f.size = end;
@@ -332,8 +335,7 @@ function wasiRun(module, fs, opts) {
 			if (!f || f.node.dir)
 				return E.BADF;
 			const n = Number(size);
-			if (n > f.node.size)
-				memfsWrite(f.node, new Uint8Array(n - f.node.size), f.node.size);
+			memfsWrite(f.node, new Uint8Array(0), n);
 			f.node.size = n;
 			return E.SUCCESS;
 		},
@@ -346,6 +348,17 @@ function wasiRun(module, fs, opts) {
 				return E.BADF;
 			const got = readAt(f, iovs, n, Number(offset));
 			dv.setUint32(nread, got, true);
+			return E.SUCCESS;
+		},
+		fd_pwrite(fd, iovs, n, offset, nwritten) {
+			const f = fileOf(fd);
+			if (!f || f.node.dir)
+				return E.BADF;
+			const total = writeAt(f, iovs, n, Number(offset));
+			dv.setUint32(nwritten, total, true);
+			return E.SUCCESS;
+		},
+		fd_sync() {
 			return E.SUCCESS;
 		},
 		fd_prestat_get(fd, p) {
@@ -485,6 +498,9 @@ function wasiRun(module, fs, opts) {
 			}
 			if ((oflags & 2) && !node.dir)
 				return E.NOTDIR;
+			// Opened for writing (the fd_write right, 1 << 6).
+			if (node.dir && (rightsBase & 64n))
+				return E.ISDIR;
 			if (oflags & 8) {
 				if (node.dir)
 					return E.ISDIR;
@@ -549,7 +565,10 @@ function wasiRun(module, fs, opts) {
 	};
 
 	const t = performance.now();
-	const inst = new WebAssembly.Instance(module, { wasi_snapshot_preview1: imports });
+	// A call this layer does not have answers ENOSYS (a program linked
+	// against more of WASI still instantiates).
+	const wasi = new Proxy(imports, { get: (o, k) => o[k] || (() => E.NOSYS) });
+	const inst = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi });
 	const instantiateMs = performance.now() - t;
 	mem = inst.exports.memory;
 	let code = 0;

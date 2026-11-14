@@ -12,7 +12,10 @@ them to a ClangWorker, runs the argv and hashes what came out. Then, on the
 first fixture: another -O level and an edited source must give other bytes
 (the check tells objects apart and the compile reads the fed file); ld.lld,
 llvm-objcopy, llvm-ar and llvm-nm on the object; the API's errors (a run
-before load, a 404 module, terminate with a request pending).
+before load, a 404 module, a Worker that does not start, terminate with a
+request pending). Then testdata/wasi-probe.c (built with wasi-sdk into
+DIR/wasi-probe.wasm) in a ClangWorker of its own: the WASI calls of files,
+directories, stdin and clocks, with the errors programs check for.
 
 Per browser and fixture it reports the times (module fetch and compile,
 each run, instance creation), the wasm memory at clang's exit and the peak
@@ -51,7 +54,7 @@ import test_browser as tb
 SITE = tb.SITE
 RAW_LAUNCH = BrowserType.launch  # before jscov.install wraps it (Chromium only)
 
-RUN_JS = """async ({ names, repeat }) => {
+RUN_JS = """async ({ names, repeat, probe }) => {
   const b64 = (s) => { const t = atob(s), u = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) u[i] = t.charCodeAt(i); return u; };
   const hex = async (b) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map((x) => x.toString(16).padStart(2, '0')).join('');
   const res = { ua: navigator.userAgent, jobs: [] };
@@ -124,6 +127,14 @@ RUN_JS = """async ({ names, repeat }) => {
     job.removed = (await cc.remove(f.files.map((x) => x[0]))).removed;
     res.jobs.push(job);
   }
+  if (probe) {
+    // wasi-probe.c (wasi-sdk) on the same layer, in a Worker of its own.
+    const pw = new ClangWorker();
+    await pw.load('__clang_fixtures/wasi-probe.wasm');
+    const r = await pw.run(['wasi-probe'], { cwd: '/probe', stdin: 'probe\\n' });
+    res.probe = { code: r.code, stdout: r.stdout, stderr: r.stderr, ms: r.ms };
+    pw.terminate();
+  }
   const pending = cc.run(['clang', '--version']);
   cc.terminate();
   try { await pending; res.terminated = 'resolved'; } catch (e) { res.terminated = e.message; }
@@ -155,7 +166,8 @@ def serve(fdir, auto):
         def do_GET(self):
             path = self.path.split("?")[0]
             if path.startswith("/__clang_fixtures/"):
-                body, ctype = (fdir / path.rsplit("/", 1)[1]).read_bytes(), "application/json"
+                name = path.rsplit("/", 1)[1]
+                body, ctype = (fdir / name).read_bytes(), "application/wasm" if name.endswith(".wasm") else "application/json"
             elif path == "/__clang_auto.html":
                 body, ctype = (AUTO_HTML % (RUN_JS, json.dumps(auto["args"]))).encode(), "text/html"
             else:
@@ -295,6 +307,18 @@ def profile_summary(path, top=20):
     return {"busy": n, "idle": idle, "helpers": dict(helpers), "leaf": kinds.most_common(), "names": names.most_common(top)}
 
 
+def check_probe(res, problems, tag):
+    """wasi-probe.c's output: every check() of the source "ok", exit code 3."""
+    want = (SITE / "testdata" / "wasi-probe.c").read_text().count('check("')
+    p = res.get("probe") or {}
+    out = p.get("stdout", "").splitlines()
+    oks = [x for x in out if x.startswith("ok ")]
+    fails = [x for x in out if x.startswith("FAIL ")]
+    print(f"  wasi-probe: exit {p.get('code')}, {len(oks)} of {want} checks ok, {p.get('ms', 0):.0f} ms", flush=True)
+    if p.get("code") != 3 or len(oks) != want or fails or out[-1:] != ["PROBE OK"] or p.get("stderr") != "probe stderr\n":
+        problems.append(f"{tag}: wasi-probe: exit {p.get('code')}, {len(oks)} of {want} ok, {fails}, stderr {p.get('stderr')!r}")
+
+
 def check(res, fixtures, problems, tag):
     if "not loaded" not in res.get("unloaded", ""):
         problems.append(f"{tag}: a run before load: {res.get('unloaded')!r}, wanted 'clang.wasm is not loaded'")
@@ -334,6 +358,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fixtures", required=True, help="directory of check-wasm-objects.mjs --fixture files")
     ap.add_argument("--only", help="comma-separated fixture names (default: all)")
+    ap.add_argument("--no-probe", action="store_true", help="the fixtures have no wasi-probe.wasm: skip it")
     ap.add_argument("--browsers", default="chromium")
     ap.add_argument("--repeat", type=int, default=2, help="runs per fixture (the first includes tier-up)")
     ap.add_argument("--base", help="test this deployed site instead of serving site/")
@@ -355,7 +380,10 @@ def main():
     # Small ones first: the edit and tool checks run on the first.
     names.sort(key=lambda n: (fdir / n).stat().st_size)
     fixtures = {n: json.loads((fdir / n).read_text()) for n in names}
-    auto = {"args": {"names": names, "repeat": args.repeat}, "done": threading.Event(), "result": None}
+    probe = (fdir / "wasi-probe.wasm").exists()
+    if not probe and not args.no_probe:
+        sys.exit(f"no {fdir}/wasi-probe.wasm (build site/testdata/wasi-probe.c, or --no-probe)")
+    auto = {"args": {"names": names, "repeat": args.repeat, "probe": probe}, "done": threading.Event(), "result": None}
     httpd = None if args.base else serve(fdir, auto)
     base = args.base.rstrip("/") if args.base else f"http://127.0.0.1:{httpd.server_address[1]}"
     if args.no_automation and (args.base or args.browsers != "firefox"):
@@ -388,7 +416,7 @@ def main():
 
                 def fixture(route):
                     n = route.request.url.split("/__clang_fixtures/")[1]
-                    route.fulfill(path=str(fdir / n), content_type="application/json")
+                    route.fulfill(path=str(fdir / n), content_type="application/wasm" if n.endswith(".wasm") else "application/json")
                 page.route("**/__clang_fixtures/*", fixture)
                 page.goto(f"{base}/index.html?kernel=hello")
                 page.wait_for_function("typeof ClangWorker === 'function'")
@@ -403,7 +431,6 @@ def main():
             res = res or {"jobs": []}
             res["wall_s"], res["peak_rss"] = round(wall, 1), rss.done()
             results[bname] = res
-            check(res, fixtures, problems, bname)
             print(f"{bname}: {res.get('ua')}\n  {res.get('version')}; module fetch+compile {res.get('loadMs', 0):.0f} ms "
                   f"({(res.get('load') or {}).get('bytes', 0)} B); clang --version {res.get('versionMs', 0):.0f} ms; "
                   f"peak RSS of the browser {res['peak_rss'] >> 20} MiB; {wall:.1f} s", flush=True)
@@ -413,6 +440,9 @@ def main():
                 print(f"  {'SAME' if ok else 'DIFFERENT'} {job['name']}: {job['files']} files {job['bytes']} B "
                       f"(write {job['writeMs']:.0f} ms); runs {runs}; instance {job['runs'][0]['instantiateMs']:.0f} ms; "
                       f"wasm memory {job['runs'][0]['mem'] >> 20} MiB", flush=True)
+            check(res, fixtures, problems, bname)
+            if probe:
+                check_probe(res, problems, bname)
             if not args.no_automation:
                 ctx.close()
                 browser.close()

@@ -262,6 +262,19 @@ jobs:
         node site/check-wasm-objects.mjs "$w" minified fs/namei.o init/main.o
         node site/check-wasm-objects.mjs "$w" "$g/minified" fs/namei.o init/main.o
         node site/check-wasm-objects.mjs "$w" "$g/minified-os" fs/namei.o init/main.o
+        # The same under the page's own WASI (wasi.js), which also writes
+        # the inputs of the clang-worker job: per object its argv, its
+        # directory and every file the compile read.
+        x="--own-wasi --fixture=clang-fixtures"
+        node site/check-wasm-objects.mjs --self-test $x --name=hello "$w" hello "boot/hello.o=$(hcmd hello OPT=-O0)"
+        node site/check-wasm-objects.mjs $x --name=hello-os "$w" "$RUNNER_TEMP/hello-os" "boot/hello.o=$(hcmd "$RUNNER_TEMP/hello-os")"
+        node site/check-wasm-objects.mjs $x --name=hello-g "$w" "$g/hello" "boot/hello.o=$(hcmd "$g/hello" OPT=-O0 CC="clang -g")"
+        node site/check-wasm-objects.mjs $x --name=hello-os-g "$w" "$g/hello-os" "boot/hello.o=$(hcmd "$g/hello-os" CC="clang -g")"
+        node site/check-wasm-objects.mjs --self-test $x --name=minified "$w" "$o/minified" fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs $x --name=minified-os "$w" minified fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs $x --name=minified-g "$w" "$g/minified" fs/namei.o init/main.o
+        node site/check-wasm-objects.mjs $x --name=minified-os-g "$w" "$g/minified-os" fs/namei.o init/main.o
+        du -sh clang-fixtures
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
         mkdir -p debug-elfs
         cp "$g/minified/vmlinux" debug-elfs/minified-linux.elf
@@ -279,6 +292,11 @@ jobs:
       with:
         name: debug-elfs
         path: debug-elfs/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: clang-fixtures
+        path: clang-fixtures/
 
   # Debian 6.1 686 rebuilt from its source package and config with the
   # native clang 22.1.0 (gen-debian-clang.sh, LLVM=1, bzImage only): the
@@ -368,6 +386,11 @@ jobs:
           fs/open.o kernel/sched/core.o
         node site/check-wasm-objects.mjs site/clang/clang.wasm "$RUNNER_TEMP/deb" \
           arch/x86/boot/compressed/misc.o arch/x86/boot/compressed/string.o
+        # Under the page's own WASI (wasi.js), in this Node process with V8's
+        # fast API calls on; the inputs of the clang-worker job.
+        node site/check-wasm-objects.mjs --native-rerun --own-wasi --fixture=clang-fixtures --name=debian \
+          site/clang/clang.wasm "$RUNNER_TEMP/deb" fs/open.o kernel/sched/core.o
+        du -sh clang-fixtures
 
     - name: Collect
       run: |
@@ -379,6 +402,11 @@ jobs:
       with:
         name: debian-clang
         path: out/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: clang-fixtures-debian
+        path: clang-fixtures/
 
   # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
   # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
@@ -733,11 +761,70 @@ jobs:
         name: jscov-raw-${{ strategy.job-index }}
         path: jscov-raw/
 
+  # The page's toolchain (clang.js, clangworker.js, wasi.js) in Chromium,
+  # Firefox and WebKit: CI's objects of hello, the minified Linux and
+  # Debian compiled again in the page's Worker from the inputs the builds
+  # read must equal CI's (site/test_clang_worker.py). Chromium's run
+  # counts for jscov.
+  clang-worker:
+    needs: [site, clang-wasm, debian-clang]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: site
+        path: site
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: clang-wasm
+        path: site/clang
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: clang-fixtures*
+        merge-multiple: true
+        path: clang-fixtures
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-firefox-webkit-${{ runner.os }}-v1
+
+    - name: Install Playwright, Chromium, Firefox and WebKit
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium firefox webkit
+
+    - name: Compile in the page's Worker, compare with CI's objects
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: |
+        site/gen-clang-wasm.sh --check
+        ls -l clang-fixtures
+        "$RUNNER_TEMP/venv/bin/python" site/test_clang_worker.py --fixtures clang-fixtures \
+          --browsers chromium,firefox,webkit --json clang-worker.json
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: clang-worker-results
+        path: clang-worker.json
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jscov-raw-clang-worker
+        path: jscov-raw/
+
   # e2e coverage of the site's JavaScript (the coverage browser-test jobs
   # and pwa-install): merged, reported, and held to the committed floor
   # site/jscov-baseline.json. Runs when a test job failed too.
   jscov:
-    needs: [browser-test, pwa-install]
+    needs: [browser-test, pwa-install, clang-worker]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:

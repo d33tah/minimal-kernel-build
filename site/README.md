@@ -1976,8 +1976,49 @@ Firefox and Node, byte-identical to a native clang/lld of the same
 commit. `clang-wasm.yml` builds it when the script changes (about two
 hours), caches it by the script's hash and checks every file
 (`gen-clang-wasm.sh --check`, plus a changed licence file that must fail
-the check); the Pages workflow calls it and deploys `clang/`. The page
-does not load it yet and the service worker does not precache it.
+the check); the Pages workflow calls it and deploys `clang/`. The service
+worker does not precache it (77 MB); the page fetches it only when a
+`ClangWorker` loads it.
+
+The page runs it in a Worker (plan step E0c). `clang.js` (loaded by
+`index.html`) is the API the editor and the rebuild call: `new
+ClangWorker()`, `load()` (fetch and compile `clang/clang.wasm`, no deploy
+stamp, so the HTTP cache keeps it across deploys), `write([[path,
+bytes or text]])`, `read(paths)`, `remove(paths)`, `list()` and
+`run(argv, { cwd, env, outputs })`, which answers clang's exit code,
+stdout, stderr, the requested output files, the Worker's time and the
+wasm memory at the exit. `clangworker.js` keeps the in-memory file system
+for the Worker's life and runs each tool (argv[0]: clang, ld.lld,
+llvm-ar, ...) on a fresh instance. `wasi.js` is the WASI preview1 layer,
+written here for this module instead of a third-party shim: the E0 spike's
+@bjorn3/browser_wasi_shim copied a whole file on every write that extended
+it (43% of a Chromium profile); here a file is a buffer that grows by
+doubling plus a length, and the hot calls (fd_read, fd_write, fd_seek,
+fd_pread) make no BigInt beyond the 64-bit arguments WebAssembly passes.
+The build directory is preopened as "/" and as its absolute path with
+PWD set to it, like `check-wasm-objects.mjs` does with Node's WASI, so
+relative paths and `DW_AT_comp_dir` are what the native build saw.
+llvm-objcopy fails to write an output file in this module ("Function not
+implemented", from its libc, under Node's WASI too); writing to stdout
+(`-`) works.
+
+`test_clang_worker.py` (CI job `clang-worker`, Chromium, Firefox and
+WebKit) feeds a page's `ClangWorker` the inputs of CI's own compiles and
+checks the objects byte for byte against CI's: `check-wasm-objects.mjs
+--own-wasi --fixture=DIR` (kernels and debian-clang jobs) runs each
+compile under `wasi.js` in Node, reading the build directory's files as
+clang opens them, and writes per object its argv, directory and every
+file read, with the SHA-256 of the build's object (or of the native
+clang's rerun). Fixtures: hello and hello -Os, plain and -g;
+`fs/namei.o` and `init/main.o` of the minified Linux -O0 and -Os, plain
+and -g; Debian's `fs/open.o` and `kernel/sched/core.o`. On the first one
+it also checks that another `-O` level and an edited source give other
+bytes and the source written back gives CI's again, runs ld.lld -r,
+llvm-objcopy -O binary to stdout, llvm-ar and llvm-nm, and the API's
+failures (a run before load, a 404 module, a Worker that does not start,
+terminate with a request pending). It prints the times and the peak RSS
+of the browser; `--json` keeps them, `--firefox-profile` profiles
+Firefox (Gecko profiler) and prints the hottest functions of the Worker.
 
 CI builds the kernels with the native clang/lld 22.1.0 of
 `gen-clang-native.sh`: the same source and pins as `clang.wasm`, the same

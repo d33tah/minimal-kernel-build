@@ -2,7 +2,8 @@
 // Compile objects of a CI kernel build again with clang.wasm (the page's
 // in-browser compiler) and check that they equal CI's objects byte for byte.
 //
-//   node site/check-wasm-objects.mjs [--self-test] [--native-rerun] CLANG.wasm DIR OBJ...
+//   node site/check-wasm-objects.mjs [--self-test] [--native-rerun] [--own-wasi]
+//        [--fixture=OUT --name=NAME] CLANG.wasm DIR OBJ...
 //
 // DIR is the build directory (the compile commands' working directory).
 // OBJ is an object path relative to DIR: its compile command comes from
@@ -17,6 +18,13 @@
 // after the command its .cmd file keeps (Debian's config). The build's
 // object, its time stamps and the dependency file are restored afterwards;
 // a different object from clang.wasm is left next to it as OBJ.clang-wasm.
+// --own-wasi: clang.wasm runs in this process under the page's own WASI
+// (wasi.js, what clangworker.js runs in the browser) instead of Node's,
+// on an in-memory tree that reads the build directory's files as clang
+// opens them. --fixture=OUT (with --own-wasi): for each object, write
+// OUT/NAME-<object path with / as _>.json, the input of the browser test
+// (test_clang_worker.py): { name, obj, cwd, args, size, sha256 (of the
+// reference), files: [[path, base64]] (every file the compile read) }.
 // --self-test: the first object compiled by clang.wasm at another
 // optimization level (-O0 and -Os to -O2, others to -Os; the kernel does
 // not build at -O0) must be reported as different.
@@ -26,6 +34,7 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 // Node 20 and 22 call WASI experimental; the warning says nothing here.
 process.removeAllListeners('warning');
 const { WASI } = await import('node:wasi');
@@ -115,6 +124,34 @@ function runWasm(wasmPath, dir, argv) {
   return out;
 }
 
+// The same compile under wasi.js in this process; writes the object to
+// DIR like a run under Node's WASI. Files the compile reads are pushed to
+// inputs (the object and its dependency file are not read from DIR).
+let ownModule = null;
+function runOwn(wasmPath, dir, argv, inputs, skip) {
+  const { MemFS, wasiRun } = createRequire(import.meta.url)('./wasi.js');
+  ownModule ??= new WebAssembly.Module(fs.readFileSync(wasmPath));
+  const abs = fs.realpathSync(dir);
+  const mfs = new MemFS();
+  mfs.lookup = (p) => {
+    if (skip.includes(p)) return null;
+    const st = fs.statSync(p, { throwIfNoEntry: false });
+    if (st?.isDirectory()) return { dir: true };
+    if (!st?.isFile()) return null;
+    const data = new Uint8Array(fs.readFileSync(p));
+    inputs.push([p, data]);
+    return { data };
+  };
+  const t = performance.now();
+  const r = wasiRun(ownModule, mfs, { args: argv, cwd: abs });
+  const ms = Math.round(performance.now() - t);
+  process.stderr.write(r.stderr);
+  const obj = argv[argv.indexOf('-o') + 1];
+  const out = mfs.readFile(path.resolve(abs, obj));
+  if (out) fs.writeFileSync(path.join(dir, obj), out);
+  return { code: r.code, ms, mem: r.mem };
+}
+
 function runNative(dir, argv) {
   const r = spawnSync(argv[0], argv.slice(1), { cwd: dir, stdio: ['ignore', 'inherit', 'inherit'] });
   if (r.status !== 0) throw new Error('native compile failed: ' + argv.join(' '));
@@ -123,7 +160,11 @@ function runNative(dir, argv) {
 async function main(args) {
   const selfTest = args.includes('--self-test');
   const rerun = args.includes('--native-rerun');
-  args = args.filter((a) => a !== '--self-test' && a !== '--native-rerun');
+  const own = args.includes('--own-wasi');
+  const opt = (k) => args.find((a) => a.startsWith(k + '='))?.slice(k.length + 1);
+  const fixture = opt('--fixture'), name = opt('--name');
+  if (fixture && (!own || !name)) throw new Error('--fixture needs --own-wasi and --name');
+  args = args.filter((a) => !/^--(self-test|native-rerun|own-wasi|fixture=|name=)/.test(a));
   const [wasmPath, dir, ...objs] = args;
   if (!objs.length) {
     console.error('usage: check-wasm-objects.mjs [--self-test] [--native-rerun] CLANG.wasm DIR OBJ[=COMMAND]...');
@@ -151,21 +192,32 @@ async function main(args) {
           (sha(ref) === sha(saved) ? 'is the same' : `differs: ${saved.length} B ${sha(saved)}`) + ')';
       }
       fs.rmSync(objPath);
-      const r = runWasm(wasmPath, dir, argv);
+      const abs = fs.realpathSync(dir), inputs = [];
+      const run = (args) => (own ? runOwn(wasmPath, dir, args, inputs, [objPath, depPath].filter(Boolean).map((p) => path.resolve(abs, path.relative(dir, p))))
+        : runWasm(wasmPath, dir, args));
+      const r = run(argv);
       const out = fs.existsSync(objPath) ? fs.readFileSync(objPath) : null;
       const same = r.code === 0 && out !== null && sha(out) === sha(ref);
       console.log(`${same ? 'SAME' : 'DIFFERENT'} ${obj}: clang.wasm ${out ? out.length + ' B ' + sha(out) : 'no output (exit ' + r.code + ')'}, ` +
-        `${refName} ${ref.length} B ${sha(ref)} (clang exit ${r.code}, ${r.ms} ms, wasm memory ${r.mem >> 20} MiB` +
+        `${refName} ${ref.length} B ${sha(ref)} (${own ? 'own WASI, ' : ''}clang exit ${r.code}, ${r.ms} ms, wasm memory ${r.mem >> 20} MiB` +
         (r.node !== undefined ? `; node then exited with ${r.node}` : '') + ')');
       if (selfTest && obj === (objs[0].split('=')[0])) {
         const other = argv.map((a) => /^-O[0-9sz]?$/.test(a) ? (a === '-O0' || a === '-Os' ? '-O2' : '-Os') : a);
         if (!other.some((a, k) => a !== argv[k])) other.splice(1, 0, '-Os');
         fs.rmSync(objPath);
-        const r2 = runWasm(wasmPath, dir, other);
+        const r2 = run(other);
         const out2 = fs.existsSync(objPath) ? fs.readFileSync(objPath) : null;
         if (r2.code !== 0 || out2 === null) throw new Error(`self-test: clang.wasm failed at the other -O level (exit ${r2.code})`);
         if (sha(out2) === sha(ref)) throw new Error(`self-test: ${obj} at another -O level compared equal`);
         console.log(`self-test: ${obj} at another -O level is reported as different (${sha(out2)})`);
+      }
+      if (fixture && same) {
+        fs.mkdirSync(fixture, { recursive: true });
+        const read = [...new Map(inputs).entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+        const files = read.map(([p, d]) => [p, Buffer.from(d).toString('base64')]);
+        const f = path.join(fixture, `${name}-${obj.replace(/\//g, '_')}.json`);
+        fs.writeFileSync(f, JSON.stringify({ name, obj, cwd: abs, args: argv, size: ref.length, sha256: sha(ref), files }));
+        console.log(`fixture ${f}: ${files.length} input files, ${read.reduce((s, [, d]) => s + d.length, 0)} B`);
       }
       if (!same) {
         bad++;

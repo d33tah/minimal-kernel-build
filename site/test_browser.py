@@ -16720,7 +16720,7 @@ DWF_BUILDS = {
 DWF_FUNCS = ("sum", "stop", "mix", "use", "entry")
 DWF_VARS = ("shared", "gflags", "gword", "gcolor", "cv", "gop", "vfp", "gdbl", "gll")
 
-DWF_JS = """async ([b64, offset, lo, hi, src]) => {
+DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
     const w = new Worker('dwarfworker.js' + location.search);
     const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
@@ -16798,6 +16798,22 @@ DWF_JS = """async ([b64, offset, lo, hi, src]) => {
                     for (const [a, n, e] of v[3]) // a default location (DW_LLE_default_location): -1, -1
                         out.exprs.push([v[0], n ? a + offset : -1, n ? a + n + offset : -1, dwExprText(hex(e))]);
             }
+    // probe [pa, registers by DWARF number, { address: byte }]: each
+    // variable's value there (dwLocation) as bytes, null where not known,
+    // or why it has none.
+    if (probe) {
+        const [pa, regs, mem] = probe;
+        const ctx = { reg: (r) => regs[r], read: (a, n) => { let v = 0; for (let k = n - 1; k >= 0; k--) { if (mem[a + k] === undefined) return undefined; v = v * 256 + mem[a + k]; } return v; },
+                      readBytes: (a, n) => { const b = []; for (let k = 0; k < n; k++) { if (mem[a + k] === undefined) return null; b.push(mem[a + k]); } return Uint8Array.from(b); } };
+        out.values = {};
+        for (const f of dwarfLocalFrames(dwarfScopesAt(groups, pa)))
+            for (const v of [...f.params, ...f.locals]) {
+                const l = dwLocAt(v[3], pa);
+                const r = l.why ? l : dwLocation(l.expr, ctx, dwTypeSize(T, v[1]));
+                out.values[v[0]] = r.why ? r.why : r.mem !== undefined ? 'at ' + r.mem :
+                    r.whys.length && !r.known.some((x) => x) ? r.whys.join('; ') : [...r.bytes].map((x, k) => (r.known[k] ? x : null));
+            }
+    }
     return out;
 }"""
 
@@ -17031,7 +17047,9 @@ def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
     def imp(path, done="compile units"):
         page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
         page.set_input_files("#symfile", str(path))
-        wait_for(lambda: done in page.inner_text("#sym_status"), 30)
+        # (The status of the import before names another file, or is the same file's.)
+        wait_for(lambda: page.inner_text("#sym_status").startswith(path.name + " ") and done in page.inner_text("#sym_status") and
+                 page.evaluate("DBG.file && DBG.file.name") == path.name, 30)
         return page.inner_text("#sym_status")
 
     def reload(state):
@@ -17294,7 +17312,11 @@ def pa_of(elf, name):
 # declares (opcode_base 14); a DWARF 5 unit without a line program, its
 # variable's type in the first unit (DW_FORM_ref_addr), a .debug_loclists
 # list with DW_LLE_start_length and DW_LLE_default_location, a DIE with a
-# DW_FORM_data16 value. Against llvm-symbolizer, gdb and llvm-dwarfdump.
+# DW_FORM_data16 value, and variables in g located by
+# DW_OP_implicit_value, pieces of a register and a constant, a 4-bit
+# DW_OP_bit_piece, DW_OP_regx (MM0) and an unknown operation. Against
+# llvm-symbolizer, gdb and llvm-dwarfdump, the values against gdb's on a
+# core file with EIP in g.
 DWF_HAND_S = """	.text
 	.globl f
 	.type f,@function
@@ -17443,6 +17465,16 @@ gv:
 	.uleb128 0x0b
 	.uleb128 0x0b
 	.byte 0, 0
+	.uleb128 12
+	.uleb128 0x34
+	.byte 0
+	.uleb128 0x03
+	.uleb128 0x08
+	.uleb128 0x49
+	.uleb128 0x10
+	.uleb128 0x02
+	.uleb128 0x18
+	.byte 0, 0
 	.byte 0
 
 	.section .debug_info,"",@progbits
@@ -17474,6 +17506,11 @@ gv:
 	.uleb128 4
 	.asciz "int"
 	.byte 4
+	.byte 5
+.Llong:
+	.uleb128 4
+	.asciz "long long int"
+	.byte 8
 	.byte 5
 	.uleb128 5
 	.asciz "second"
@@ -17520,6 +17557,31 @@ gv:
 	.uleb128 11
 	.quad 0x1122334455667788, 0x99aabbccddeeff00
 	.byte 16
+	.uleb128 12
+	.asciz "iv"
+	.long .Lint
+	.uleb128 6
+	.byte 0x9e, 4, 42, 0, 0, 0
+	.uleb128 12
+	.asciz "ll"
+	.long .Llong
+	.uleb128 11
+	.byte 0x50, 0x93, 4, 0x9e, 4, 1, 0, 0, 0, 0x93, 4
+	.uleb128 12
+	.asciz "bf"
+	.long .Lint
+	.uleb128 4
+	.byte 0x51, 0x9d, 4, 0
+	.uleb128 12
+	.asciz "mx"
+	.long .Lint
+	.uleb128 2
+	.byte 0x90, 29
+	.uleb128 12
+	.asciz "bad"
+	.long .Lint
+	.uleb128 1
+	.byte 0xff
 	.byte 0
 	.byte 0
 .Lcu2_end:
@@ -17605,7 +17667,11 @@ def dwf_hand_checks(page, tmp, symbolize, gdb_scopes):
     nm = {l.split()[2]: int(l.split()[0], 16) for l in
           subprocess.run(["llvm-nm", str(elf)], capture_output=True, text=True).stdout.splitlines() if len(l.split()) == 3}
     lo, hi = nm["f"], nm["g"] + 4
-    got = page.evaluate(DWF_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET, lo - CFI_OFFSET, hi - CFI_OFFSET, "h.c"])
+    from test_dwarf import write_core
+    regs = {"eip": nm["g"] + 1, "esp": 0x10000, "eax": 0x11223344, "ecx": 0x55, "cs": 0x60, "eflags": 0x202}
+    write_core(tmp / "core", regs, [(0x10000, base64.b64encode(bytes(4096)).decode())])
+    probe = [nm["g"] + 1 - CFI_OFFSET, {"0": regs["eax"], "1": regs["ecx"], "4": regs["esp"]}, {}]
+    got = page.evaluate(DWF_JS, [base64.b64encode(elf.read_bytes()).decode(), CFI_OFFSET, lo - CFI_OFFSET, hi - CFI_OFFSET, "h.c", probe])
     if got.get("open") != "ok" or got.get("error"):
         return [f"hand-written DWARF: did not open: {str(got)[:300]}"], r
     r["versions"] = got["versions"]
@@ -17633,7 +17699,7 @@ def dwf_hand_checks(page, tmp, symbolize, gdb_scopes):
     if have != ["int (void)", "h.c:5", m and int(m.group(1), 16), "enum mode", [["M_LOW", int(re.findall(r"= (\d+)", gdb)[-1])]]] or \
             "type = int (void)" not in gdb or "type = enum mode" not in gdb:
         problems.append(f"hand-written DWARF: f, second, gmode, M_LOW: {have}, gdb {gdb!r}")
-    mine = {(n, a, b): t for n, a, b, t in got["exprs"]}
+    mine = {(n, a, b): t for n, a, b, t in got["exprs"] if n in ("lv", "w")}
     theirs = {k: v for k, v in dwf_dwarfdump_exprs(elf).items() if k[0] in ("lv", "w")}
     r["exprs"] = sorted(mine.items(), key=str)
     if mine != theirs or len(theirs) != 4:
@@ -17642,10 +17708,34 @@ def dwf_hand_checks(page, tmp, symbolize, gdb_scopes):
     scopes = gdb_scopes(str(elf), range(nm["f"], nm["g"]))
     bad = [(hex(va), l, scopes.get(va)) for va, l in zip(vas, got["locals"]) if va < nm["g"] and
            (not l or sorted(map(tuple, l[0]["vars"])) != sorted(scopes.get(va) or []))]
-    w = [l[0]["vars"] if l else None for va, l in zip(vas, got["locals"]) if va >= nm["g"]]
+    w = [[x for x in l[0]["vars"] if x[0] == "w"] if l else None for va, l in zip(vas, got["locals"]) if va >= nm["g"]]
     r["w"] = w
     if bad or w != [[["w", "reg:ECX"]]] * 2 + [[["w", "expr"]]] * 2:
         problems.append(f"hand-written DWARF: locals: {bad[:3]}, w in g {w}")
+    # Without .debug_loc / .debug_loclists (renamed): lv and w have no location there.
+    for sec, var, va in ((".debug_loc", "lv", nm["f"]), (".debug_loclists", "w", nm["g"])):
+        data = cfi_with_section(elf.read_bytes(), sec, rename=sec[:-1] + "x")[0]
+        g = page.evaluate(DWF_JS, [base64.b64encode(data).decode(), CFI_OFFSET, va - CFI_OFFSET, va + 1 - CFI_OFFSET, "h.c", None])
+        have = [x for x in (g.get("locals") or [[{"vars": []}]])[0][0]["vars"] if x[0] == var]
+        r["without " + sec] = have
+        if have != [[var, "out"]]:
+            problems.append(f"hand-written DWARF without {sec}: {var} at {va:#x}: {have}")
+    # The values in g on the core: gdb's bytes, or both without one.
+    script = tmp / "values.py"
+    script.write_text("import gdb, json\nout = {}\nfor n in ('w', 'iv', 'll', 'bf', 'mx', 'bad'):\n"
+                      "    try:\n        out[n] = list(bytes(gdb.parse_and_eval(n).bytes))\n"
+                      "    except Exception as e:\n        out[n] = 'error: ' + str(e)\nprint('@@' + json.dumps(out))\n")
+    out = subprocess.run(["gdb", "-nx", "-batch", "-ex", f"core-file {tmp / 'core'}", "-x", str(script), str(elf)], capture_output=True, text=True).stdout
+    theirs = json.loads(out.split("@@", 1)[1]) if "@@" in out else {}
+    mine = got.get("values", {})
+    r["values"] = [mine, theirs]
+    for n in ("w", "iv", "ll"):
+        if mine.get(n) != theirs.get(n):
+            problems.append(f"hand-written DWARF: {n} in g: the page {mine.get(n)}, gdb {theirs.get(n)}")
+    for n, page_why, gdb_why in (("bf", "a bit piece (4 bits at bit 0) is not supported", "optimized out"), ("mx", "in register 29, which is not known in this frame", "not available"),
+                                 ("bad", "DWARF operation 0xff is not supported", "Unhandled DWARF expression opcode 0xff")):
+        if gdb_why not in str(theirs.get(n)) or page_why not in str(mine.get(n)):
+            problems.append(f"hand-written DWARF: {n} in g: the page {mine.get(n)!r}, gdb {theirs.get(n)!r}")
     return problems, r
 
 

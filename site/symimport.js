@@ -43,10 +43,9 @@ async function elfSlices(file) {
 				return b.subarray(off - o, off - o + len);
 		throw new Error("ELF: bytes " + off + "+" + len + " were not read");
 	};
+	// parseSymbolFile calls this for a file that starts with the ELF magic.
 	const h = await get(0, 52);
 	const dv = new DataView(h.buffer);
-	if (h.length < 52 || dv.getUint32(0) !== 0x7f454c46)
-		throw new Error("not an ELF file");
 	if (h[4] !== 1 || h[5] !== 1)
 		throw new Error("not a 32-bit little-endian ELF (only i386 kernels boot here)");
 	const u16 = (o) => dv.getUint16(o, true), u32 = (o) => dv.getUint32(o, true);
@@ -477,7 +476,8 @@ function magicAt(b, o) {
 }
 
 // Walks newc cpio entries from offset o; calls fn(name, dataStart, size)
-// for each, returns the offset after the TRAILER (4-byte aligned).
+// for each, returns the offset after the TRAILER (4-byte aligned), or
+// after the last whole header when there is none.
 function cpioWalk(b, o, fn) {
 	const txt = new TextDecoder();
 	while (o + 110 <= b.length && magicAt(b, o) === "cpio") {
@@ -488,8 +488,7 @@ function cpioWalk(b, o, fn) {
 		o = (data + size + 3) & ~3;
 		if (name === "TRAILER!!!")
 			return o;
-		if (fn(name, data, size) === false)
-			return -1;
+		fn(name, data, size);
 	}
 	return o;
 }
@@ -511,7 +510,7 @@ async function analyzeInitrd(bytes, name) {
 		info.fromName = m[1].replace(/\.(img|gz|cpio|zst|xz|lz4)$/, "");
 	let o = 0;
 	while (magicAt(bytes, o) === "cpio") {
-		const next = cpioWalk(bytes, o, () => true);
+		const next = cpioWalk(bytes, o, () => {});
 		if (next <= o)
 			break;
 		o = next;
@@ -537,7 +536,6 @@ async function analyzeInitrd(bytes, name) {
 			if (!info.bits && size > 4 && /^(?:usr\/)?(?:bin\/busybox|sbin\/udevadm|bin\/sh|init)$/.test(n) &&
 			    main[data] === 0x7f && main[data + 1] === 0x45 && main[data + 2] === 0x4c && main[data + 3] === 0x46)
 				info.bits = main[data + 4] === 2 ? 64 : 32;
-			return true;
 		});
 		info.releases = [...rel];
 		info.decoded = true;

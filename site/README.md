@@ -2254,7 +2254,16 @@ The import case boots the minified Linux with its own System.map
 start_kernel names start_kernel in the Debugger as with symbols.json, a
 counted boot has a start_kernel frame holding most of the run and detects
 the panic, the listing is decoded live, a malformed file gives an error and
-keeps the symbols, nothing scrolls sideways at 390 px. The initrd case loads a 512-byte newc cpio built in the test with the
+keeps the symbols, nothing scrolls sideways at 390 px. The import-edges
+case gives the page symbol files built in the test that it must refuse,
+each with its reason (an x86-64 ELF, an ELF cut after 20 bytes, one
+without section headers, a stripped one, one whose only symbols are in a
+section that is not loaded or in no PT_LOAD, a one-line System.map, an
+offset that is not hex), System.maps without section markers placed by
+each automatic rule and by hand (every symbol's physical address and
+size, a weak one too, and the sections from the symbols' extent), an ELF
+with an offset by hand, and a bzImage dropped together with its
+System.map, then Forget. The initrd case loads a 512-byte newc cpio built in the test with the
 minified Linux and checks RAM was raised, its bytes are at 64 MiB in
 guest RAM, the note about our kernels, the initrd region in the map and
 grid, the RAM error at 32 MB and "no initrd". The header-check case
@@ -2266,7 +2275,11 @@ against the numbers in the file, the RAM picked for it, and that Boot
 starts nothing when the kernel or the initrd does not fit in RAM (v86
 threw "offset is out of bounds" there before). With a v86.wasm the page
 cannot patch (no debugger) the Debugger shows no machine state, and with
-the debugger back the state is this machine's. The fetch-failure case
+the debugger back the state is this machine's. For a bzImage without a
+kernel_version the initrd note says what a zstd initrd and one with a
+broken gzip stream are for (from their file names), a cpio cut inside its
+first header and one without its trailer (its lib/modules release). The
+fetch-failure case
 also checks a kernel picked in the Machine tab that answers 404,
 kernels.json missing or empty (Boot then does nothing), hello without
 symbols.json or disasm.json (missing, not JSON, not listed): it still

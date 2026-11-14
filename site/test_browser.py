@@ -21680,6 +21680,9 @@ def mm_ui_case(browser, base, shots, problems, r):
         r["filmstrip"] = film
         if len({f[0] for f in film}) < 3:
             problems.append(f"ui: the replay does not move: {film}")
+        # a replay that reaches the log's end goes live again
+        if not wait_for(lambda: page.evaluate("MMAP.live && !MMAP.playing && MMAP.idx === MEV.n"), 30, 0.2):
+            problems.append(f"ui: the replay did not end live: {page.evaluate('[MMAP.live, MMAP.playing, MMAP.idx, MEV.n]')}")
         # the slider: the first event, then Live
         page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = '0'; s.dispatchEvent(new Event('input')); }")
         mm_frames(page)
@@ -21692,6 +21695,17 @@ def mm_ui_case(browser, base, shots, problems, r):
         if not live["live"] or live["idx"] != n or "Hello, World!" not in live["screen"]:
             problems.append(f"ui: Live: {live['idx']} of {n}, {live['screen'][:60]!r}")
         r["1280 labels"] = mm_labels_check(page, "ui 1280", problems)
+        # a RAM page the CPU wrote (sampled): its cell lists the stretch
+        a = page.evaluate("MMAP.samples.length ? MMAP.samples[MMAP.samples.length - 1].pages[0] * 4096 : -1")
+        if a < 0:
+            problems.append("ui: no CPU RAM write sampled")
+        else:
+            x, y = mm_cell_xy(page, page.evaluate("(a) => MMAP.cellOf(a)", a))
+            page.mouse.click(x, y)
+            wrote = page.evaluate("[...document.querySelectorAll('#mm_info li')].map((l) => l.textContent).filter((t) => t.startsWith('CPU wrote here between'))")
+            r["sampled cell"] = {"page": hex(a), "rows": wrote[:2]}
+            if not wrote:
+                problems.append(f"ui: the cell of sampled page {hex(a)} lists no CPU write")
         # a click on the colour text memory's cell: its events
         d = page.evaluate("MMAP.cellOf(0xb8000)")
         x, y = mm_cell_xy(page, d)

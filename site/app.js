@@ -2455,6 +2455,12 @@ dbgOnChange(() => {
 	try {
 		if (openFnSource(w.pa, w.name) !== "loading") {
 			openFnWant = null;
+			// The listing is drawn again now (its C lines, the panel
+			// narrows it): it keeps the function's line in view, not EIP's.
+			navScrollWant = { page: w.page, addr: w.pa, until: realNow() + NAV_SCROLL_MS };
+			const line = listingLineAt(w.pa);
+			if (line)
+				scrollListingTo(line);
 			fnHeaderInView(w.pa);
 		}
 	} finally {

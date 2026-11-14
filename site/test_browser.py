@@ -1170,10 +1170,11 @@ def count_give_up(browser, base, problems, r, errors):
         page = browser.new_page(viewport={"width": 1100, "height": 1000})
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(f"{base}/index.html?kernel=minified-linux&speed=full&count=1")
+        # Set (or clicked) in the same check that sees the count running:
+        # the minified Linux's count takes about a second.
         page.wait_for_function("typeof counting !== 'undefined' && counting && runState === 'stepped'" +
-                               (" && (countMs = 12000001)" if how == "limit" else ""), timeout=60000)
-        if how == "count off":
-            machine_do(page, "uncheck", "#count")
+                               (" && (countMs = 12000001)" if how == "limit" else " && (document.getElementById('count').click(), true)"),
+                               timeout=60000)
         ok = wait_for(lambda: page.evaluate("runState === 'jit' || !!(stepper && stepper.end)"), 30)
         note = page.evaluate("countNote")
         wait_for(lambda: gate_on_screen(page) and page.evaluate("!!stepper.end"), 120)
@@ -9935,10 +9936,17 @@ GRAPHOPEN_HOLD_JS = """(() => { const f = window.fetch; let release; const held 
         return f(u, ...a); }; })()"""
 
 
+# The listing's line of physical address pa is inside the listing's box.
+GRAPHOPEN_IN_VIEW_JS = """(pa) => { const box = document.getElementById('listing').getBoundingClientRect();
+    const e = document.querySelector('#listing .ins[data-addr="' + pa + '"]'); if (!e) return false;
+    const b = e.getBoundingClientRect(); return b.height > 0 && b.top >= box.top - 1 && b.bottom <= box.bottom + 1; }"""
+
+
 def graphopen_loading(browser, base, shots):
     """hello, its DWARF line shard held back: a double click on hello_main's
     box opens the Page tab at once and the Source panel when the shard
-    arrives (the open waits for it); a second open whose user goes to
+    arrives (the open waits for it), with the function's first
+    instruction still in view in the listing; a second open whose user goes to
     another tab before the shard arrives opens no Source panel then."""
     problems, r = [], {}
     fn, steps, src_file = GRAPHOPEN_POINTS["hello"]
@@ -9971,13 +9979,16 @@ def graphopen_loading(browser, base, shots):
                 show_tab(page, "debugger")
             page.evaluate("mkbRelease()")
             wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-state") == "ok", 5 if leave else 20)
-            after = [page.is_visible("#src_panel"), page.get_attribute("#src_body", "data-file"), (page.text_content("#src_title") or "")[:40]]
+            time.sleep(0.5)
+            after = [page.is_visible("#src_panel"), page.get_attribute("#src_body", "data-file"), (page.text_content("#src_title") or "")[:40],
+                     page.evaluate(GRAPHOPEN_IN_VIEW_JS, sym["paddr"])]
             tag = "shard held, then " + ("another tab" if leave else "it arrives")
             r[tag] = [before, after]
             if before != [True, True, False]:
                 problems.append(f"{tag}: before the shard [Page tab, shard asked for, Source panel] {before}, want [True, True, False]")
-            if not leave and (not after[0] or after[1] != src_file or not after[2].startswith(fn + ",")):
-                problems.append(f"{tag}: the Source panel {after}, want {fn} in {src_file}")
+            if not leave and (not after[0] or after[1] != src_file or not after[2].startswith(fn + ",") or not after[3]):
+                problems.append(f"{tag}: [Source panel, its file, title, {fn}'s first instruction in view in the listing] {after}, "
+                                f"want {fn} in {src_file} and in view")
             if leave and after[0]:
                 problems.append(f"{tag}: the Source panel opened in the Debugger tab after the user left: {after}")
             if not leave:
@@ -13231,7 +13242,13 @@ def pwa_edge_insecure(browser, timeout, problems, r, errors):
         base = f"http://127.0.0.1:{httpd.server_address[1]}"
         c = browser.new_context(viewport={"width": 1280, "height": 900})
         host = "http://mkb.test"
-        c.route(host + "/**", lambda route: route.fulfill(response=route.fetch(url=base + route.request.url[len(host):])))
+
+        def proxy(route):
+            try:
+                route.fulfill(response=route.fetch(url=base + route.request.url[len(host):]))
+            except PlaywrightError:
+                pass  # the context closed while a request was on its way
+        c.route(host + "/**", proxy)
         try:
             page = c.new_page()
             page.on("pageerror", lambda e: errors.append(str(e)[:200]))
@@ -13242,6 +13259,7 @@ def pwa_edge_insecure(browser, timeout, problems, r, errors):
             if r["insecure origin"][:3] != [True, [False, False], ""]:
                 problems.append(f"an insecure origin: [booted, [secure context, service worker API], notes, status] {r['insecure origin']}")
         finally:
+            c.unroute_all(behavior="ignoreErrors")
             c.close()
             httpd.shutdown()
 

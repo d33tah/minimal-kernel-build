@@ -2254,10 +2254,6 @@ function driverTick() {
 			return;
 		}
 	}
-	if (reason === "hlt" && stepper.dead()) {
-		pause("The CPU executed hlt with interrupts off: nothing more to run.").then(replayAfterStop);
-		return;
-	}
 	// Slow motion: the Debugger's state when an instruction has executed
 	// (or every 250 ms for the clock), the views that follow EIP when
 	// frameUpdate says so; not on every animation frame.
@@ -3130,7 +3126,7 @@ function endText() {
 	// Nothing was stepped (full JIT speed, count off): no count to report.
 	const after = !e.steps ? "" : " after " + num(e.sinceEntry !== null ? e.sinceEntry : e.steps) + " instructions from the kernel entry";
 	if (e.kind === "panic-budget")
-		return "panic() entered, no end-of-panic text after " + num(stepper.panicBudget) + " instructions" + after + ". Stopped.";
+		return "panic() entered, no end-of-panic text in the next " + num(stepper.panicBudget) + " instructions. Stopped" + after + ".";
 	if (e.kind === "panic-text")
 		return "Kernel panic: " + e.message + (e.exact ? " (stopped where its last line was written)" : " (stopped by the page)") + after + ".";
 	if (e.kind === "panic")

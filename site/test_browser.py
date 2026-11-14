@@ -957,7 +957,8 @@ def header_check_case(browser, base, shots):
     LOADED_HIGH clear; a 32-bit part larger than 2 MB of RAM; an init_size
     beyond the RAM picked, reaching the initrd at 64 MiB and an
     initrd_addr_max below it; the initrd past 64 MB of RAM; an init_size no
-    listed RAM size holds (the largest is picked)."""
+    listed RAM size holds (the largest is picked). A v86.wasm the page
+    cannot patch for stepping: hello boots without the debugger."""
     problems, r = [], {}
     hello = (SITE / kernel_entries()["hello"]["path"]).read_bytes()
     tmp = pathlib.Path(tempfile.mkdtemp(dir=os.environ.get("MKB_TMP")))
@@ -1059,7 +1060,29 @@ def header_check_case(browser, base, shots):
             problems.append(f"{tag}: status {status!r}, want {'a' if after else 'no'} prediction that it will not work")
         if name == "not-a-bzimage.bin":
             page.screenshot(path=str(shots / "header-check-1280.png"))
+        if name == "big.bin":
+            # "Not booted": light 1280 and dark 390 px, no sideways scroll.
+            page.screenshot(path=str(shots / "header-check-1280-light-not-booted.png"))
+            page.emulate_media(color_scheme="dark")
+            page.set_viewport_size({"width": 390, "height": 900})
+            time.sleep(0.3)
+            if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+                problems.append(f"{tag}: horizontal scroll at 390 px")
+            page.screenshot(path=str(shots / "header-check-390-dark-not-booted.png"))
+            page.emulate_media(color_scheme="light")
+            page.set_viewport_size({"width": 1280, "height": 900})
     page.click("#initrd_clear")
+    # A v86.wasm the page cannot patch for stepping (another v86 build):
+    # hello still boots, without the debugger, which says why.
+    page.set_input_files("#file", str(SITE / kernel_entries()["hello"]["path"]))
+    wait_for(lambda: page.evaluate("image && image.name") == "bzImage", 10)
+    page.evaluate("() => { patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
+    show_tab(page, "machine")
+    page.click("#boot")
+    booted = wait_for(lambda: gate_on_screen(page), 60)
+    r["unpatched v86.wasm"] = [booted, page.inner_text("#dbg_status"), page.evaluate("stepper === null")]
+    if r["unpatched v86.wasm"] != [True, "No debugger: Error: test: not the v86.wasm this page patches", True]:
+        problems.append(f"v86.wasm not patched: [booted, debugger status, no stepper] {r['unpatched v86.wasm']}")
     # No listed RAM size holds it: the largest is picked.
     page.set_input_files("#file", str(patched("huge-init.bin", o260=("<I", 1 << 30))))
     wait_for(lambda: page.evaluate("image && image.name") == "huge-init.bin", 10)
@@ -1122,6 +1145,9 @@ def panic_text_case(browser, base, shots):
     page.screenshot(path=str(shots / "panic-text.png"))
     page.close()
     panic_text_real_time(browser, base, problems, r, errors)
+    for spin in (False, True):
+        panic_text_no_end(browser, base, spin, problems, r, errors)
+    count_give_up(browser, base, problems, r, errors)
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
@@ -1131,18 +1157,78 @@ PANIC_TEXT_JS = """([row, t]) => { const cpu = emulator.v86.cpu;
     for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * row + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * row + 2 * i + 1, 7); } }"""
 
 
+def count_give_up(browser, base, problems, r, errors):
+    """Counting at full speed gives up after 200 minutes of stepping
+    (COUNT_LIMIT_MS; the time spent is set past it as the minified Linux's
+    count starts), or when count is switched off while it counts: the
+    count line says so and the JIT runs the boot on to its end."""
+    for how, want in (("limit", "Gave up after 12000 s of stepping."), ("count off", "Counting switched off.")):
+        page = browser.new_page(viewport={"width": 1100, "height": 1000})
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=full&count=1")
+        page.wait_for_function("typeof counting !== 'undefined' && counting && runState === 'stepped'" +
+                               (" && (countMs = 12000001)" if how == "limit" else ""), timeout=60000)
+        if how == "count off":
+            machine_do(page, "uncheck", "#count")
+        ok = wait_for(lambda: page.evaluate("runState === 'jit' || !!(stepper && stepper.end)"), 30)
+        note = page.evaluate("countNote")
+        wait_for(lambda: gate_on_screen(page) and page.evaluate("!!stepper.end"), 120)
+        r["count " + how] = [ok, note, gate_on_screen(page), page.evaluate("counting")]
+        if r["count " + how] != [True, want, True, False]:
+            problems.append(f"count ({how}): [the JIT took over, note, both lines, counting] {r['count ' + how]}")
+        page.close()
+
+
+def panic_text_no_end(browser, base, spin, problems, r, errors):
+    """A "Kernel panic - not syncing:" line without its end line (another
+    kernel's panic) under the page's JIT (virtual clock, full speed, count
+    off), from start_kernel: the stepper takes over and runs on to the
+    minified Linux's own panic (init exits) and halt (the hlt before EIP);
+    spinning there (jmp $) it stops after the panic budget's instructions
+    instead, and the banner says so in one sentence each."""
+    tag = "panic line without its end" + (", spinning" if spin else "")
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&speed=full&count=0&panicbudget=3000000#debugger")
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(x for x in syms if x["name"] == "start_kernel")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", "start_kernel")
+    page.click("#dbg_runto")
+    if not run_to_wait(page, {sk["paddr"]}, 120)[0]:
+        problems.append(f"{tag}: Run to start_kernel: {page.inner_text('#dbg_status')!r}")
+        page.close()
+        return
+    if spin:
+        page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
+    page.evaluate(PANIC_TEXT_JS, [41, "Kernel panic - not syncing: no end line follows"])
+    machine_do(page, "click", "#dbg_continue")
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("!!stepper.end"), 120)
+    got = page.evaluate("""() => ({ kind: stepper.end.kind, banner: document.getElementById('end_banner').textContent,
+        budget: stepper.panicBudget, eip: stepper.nextPhys(), before: emulator.read_memory(stepper.nextPhys() - 1, 1)[0] })""")
+    r[tag] = {k: v for k, v in got.items() if k != "banner"} | {"banner": got["banner"][:100]}
+    if spin:
+        want = f"panic() entered, no end-of-panic text in the next {3000000:,} instructions. Stopped after "
+        if not ok or got["kind"] != "panic-budget" or not got["banner"].startswith(want) or got["eip"] != sk["paddr"]:
+            problems.append(f"{tag}: {got}, want {want!r} at start_kernel")
+    elif not ok or not got["banner"].startswith("Kernel panic (init exited with code 0)") or got["before"] != 0xF4:
+        problems.append(f"{tag}: {got}, want the kernel's own panic, halted (hlt, 0xf4, before EIP)")
+    page.close()
+
+
 def panic_text_real_time(browser, base, problems, r, errors):
     """The real-time clock at full speed (v86's own loop, which the page
-    cannot stop inside, mips=real): the minified Linux paused at
-    start_kernel is made to spin there (jmp $, as panic() ends), then
-    Debian's "(initramfs) " prompt at a row's start pauses the machine
-    once, Continue runs on, and an end of panic text stops it (both checked
-    4 times a second, where the run has got to: not exact). The command
-    line comes from ?cmdline=."""
+    cannot stop inside): the minified Linux paused at start_kernel is made
+    to spin there (jmp $, as panic() ends); Step 100,000,000 gives up after
+    5 s; it runs on the page's JIT (virtual clock) and the clock is switched
+    to real time while it runs; then Debian's "(initramfs) " prompt at a
+    row's start pauses the machine once, Continue runs on, and an end of
+    panic text stops it (both checked 4 times a second, where the run has
+    got to: not exact). The command line comes from ?cmdline=."""
     cmdline = "nokaslr cryptomgr.notests mkb.clock=real"
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     page.on("pageerror", lambda e: errors.append(str(e)))
-    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&speed=full&count=0&mips=real&cmdline=" + urllib.parse.quote(cmdline))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&speed=full&count=0&cmdline=" + urllib.parse.quote(cmdline))
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60):
         problems.append("real time: the minified Linux did not start paused")
         page.close()
@@ -1161,8 +1247,21 @@ def panic_text_real_time(browser, base, problems, r, errors):
         page.close()
         return
     page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
-    page.evaluate(PANIC_TEXT_JS, [40, "(initramfs) "])
+    # Step 100,000,000 on the spin: Step gives up after 5 s, still there.
+    page.fill("#dbg_n", "100000000")
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.inner_text("#dbg_status").startswith("Stepped "), 30)
+    r["step_limit"] = [page.inner_text("#dbg_status"), page.get_attribute("#regs", "data-phys")]
+    if not re.fullmatch(r"Stepped [\d,]+ instructions \(5 s limit\)\.", r["step_limit"][0]) or r["step_limit"][1] != str(sk["paddr"]):
+        problems.append(f"Step 100,000,000 on a jmp $: {r['step_limit']}, want the 5 s limit at {sk['paddr']}")
     machine_do(page, "click", "#dbg_continue")
+    jit = wait_for(lambda: page.evaluate("runState === 'jit' && !!jitLoopId && CLOCK.virtual"), 10)
+    machine_do(page, "select_option", "#clock_mips", "real")
+    real = wait_for(lambda: page.evaluate("runState === 'jit' && !jitLoopId && !CLOCK.virtual && emulator.is_running()"), 10)
+    r["clock switched while running"] = [jit, real]
+    if not jit or not real:
+        problems.append(f"the clock switched to real time while the page's JIT ran: [JIT on the virtual clock, then v86's own loop] {[jit, real]}")
+    page.evaluate(PANIC_TEXT_JS, [40, "(initramfs) "])
     ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
                   and "(initramfs) prompt" in page.inner_text("#dbg_status"), 10, 0.1)
     r["real_time_prompt"] = [page.inner_text("#dbg_status"), page.evaluate("stepper.prompt && stepper.prompt.exact")]
@@ -6209,7 +6308,9 @@ def fetch_fail_lists(ctx, base, problems, r):
     bzImage from disk. hello's symbols.json missing (404), not JSON, or not
     in its kernels.json entry, and its disasm.json not JSON or not listed:
     hello still runs, without symbols (Run to hello_main says the kernel
-    has none) and the console names the file that did not parse."""
+    has none) and the console names the file that did not parse; with
+    version.json unreachable the header says "local build"; Boot without
+    a kernel does nothing."""
     entries = json.loads((SITE / "kernels.json").read_text())
     warns = []
 
@@ -6221,10 +6322,13 @@ def fetch_fail_lists(ctx, base, problems, r):
         page = ctx.new_page()
         page.goto(f"{base}/index.html?kernel=hello")
         wait_for(lambda: (page.text_content("#status") or "").startswith(want), 30)
+        show_tab(page, "machine")
+        page.click("#boot")  # no kernel: nothing to boot
+        time.sleep(0.5)
         st = page.text_content("#status") or ""
         r["kernels.json " + body[:8]] = st
         if not st.startswith(want) or not st.endswith("Load a bzImage from disk.") or page.evaluate("!!emulator"):
-            problems.append(f"kernels.json {body!r}: status {st!r}, want {want!r}... and no machine")
+            problems.append(f"kernels.json {body!r}, Boot pressed: status {st!r}, want {want!r}... and no machine")
         page.close()
         ctx.unroute("**/kernels.json*")
     hello = next(e for e in entries["kernels"] if e["name"] == "hello")
@@ -6233,6 +6337,8 @@ def fetch_fail_lists(ctx, base, problems, r):
             ("symbols.json 404, disasm.json not JSON", {"symbols.json": (404, "no"), "disasm.json": (200, "{")}, "disasm:", False),
             ("symbols.json not JSON", {"symbols.json": (200, "{")}, "symbols:", True),
             ("not listed in kernels.json", {"kernels.json": (200, json.dumps(bare))}, None, False)):
+        # version.json unreachable too (the request fails): "local build".
+        ctx.route("**/version.json*", lambda route: route.abort())
         for f, (status, body) in routes.items():
             ctx.route(("**/kernels/hello/" if f != "kernels.json" else "**/") + f + "*", answer(status, body))
         del warns[:]
@@ -6243,14 +6349,15 @@ def fetch_fail_lists(ctx, base, problems, r):
         page.click("#dbg_runto")
         want = "Run to hello_main: no symbol of that name (this kernel has no symbols). Run to takes a function name, a hex address or file:line."
         wait_for(lambda: page.inner_text("#dbg_status") == want, 10)
-        got = [ok, page.inner_text("#dbg_status"), page.evaluate("!!disasm"), warns[:2]]
+        got = [ok, page.inner_text("#dbg_status"), page.evaluate("!!disasm"), warns[:2], page.inner_text("#build_info")]
         r[label] = got
-        if not ok or got[1] != want or got[2] != has_disasm or (warn and not any(w.startswith(warn) for w in warns)):
+        if not ok or got[1] != want or got[2] != has_disasm or (warn and not any(w.startswith(warn) for w in warns)) or got[4] != "local build":
             problems.append(f"hello with {label}: {got}, want paused at the reset vector, {want!r}, "
                             f"disasm.json used {has_disasm}, a console warning {warn}")
         page.close()
         for f in routes:
             ctx.unroute(("**/kernels/hello/" if f != "kernels.json" else "**/") + f + "*")
+        ctx.unroute("**/version.json*")
 
 
 def suite_misc(ctx):
@@ -9304,6 +9411,21 @@ def memeip_run(browser, base, shots, name, scheme, phone, full):
         nav_press(page, "#nav_back", "tap" if phone else "click")
         if not wait_for(lambda: shown_tab(page) == "memory", 5):
             problems.append(f"{tag0}: Back after the EIP line does not return to the Memory tab ({shown_tab(page)})")
+        # The ESP link opens the stack's page (ESP from the CPU: the kernel's
+        # direct map at 0xC0000000, or no paging).
+        esp = page.evaluate("emulator.v86.cpu.reg32[4] >>> 0")
+        esp_phys = esp - 0xC0000000 if esp >= 0xC0000000 else esp
+        if page.locator("#mem_esp_go").count():
+            page.locator("#mem_esp_go").tap() if phone else page.click("#mem_esp_go")
+            ok = wait_for(lambda: shown_tab(page) == "page" and page.get_attribute("#listing", "data-page") == str(esp_phys // 4096), 10)
+            r[f"{tag0} stack link -> Page"] = [ok, hex(esp), page.get_attribute("#listing", "data-page")]
+            if not ok:
+                problems.append(f"{tag0}: the stack link does not open ESP {esp:#x}'s page {esp_phys // 4096}: tab {shown_tab(page)}, "
+                                f"listing page {page.get_attribute('#listing', 'data-page')}")
+            nav_press(page, "#nav_back", "tap" if phone else "click")
+            wait_for(lambda: shown_tab(page) == "memory", 5)
+        else:
+            problems.append(f"{tag0}: no stack link for ESP {esp:#x}: {page.inner_text('#mem_eip')!r}")
         memeip_clear_of_toggle(page, tag0, problems, r)
         shot("mark")
         # The end of the run: the minified Linux's panic, hello's halt, at full speed.
@@ -9382,8 +9504,95 @@ def memeip_case(browser, base, shots, linux):
     return any(out)
 
 
+def memory_controls_case(browser, base, shots):
+    """The Memory tab from the keyboard and the mouse (hello, 1280 px): Enter
+    and Space on a legend entry highlight its pages and say how many
+    (the grid's own count of that class), again turns it off; a click on a
+    bar segment highlights its class; a "?" clicked twice opens and closes
+    its popover; with 2 MiB + 64 KiB of RAM (?mem=,
+    528 pages: half a row of the grid empty) the hover line names the page
+    under the mouse and is empty over an empty cell; the Page tab's
+    previous and next buttons move one page; Step after hello's halt says
+    there is nothing to step; a #page~src= link that is not valid
+    percent-encoding opens the Page tab without the Source panel."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 1280, "height": 900})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    mem = (2 << 20) + (64 << 10)
+    page.goto(f"{base}/index.html?kernel=hello&mem={mem}")
+    wait_for(lambda: gate_on_screen(page), 60)
+    show_tab(page, "memory")
+    li = page.locator("#legend li[data-cls='r-conv']")
+    n = page.evaluate("pageClass.filter((c) => c === 'r-conv').length")
+    got = []
+    for key in ("Enter", " "):
+        li.focus()
+        page.keyboard.press(key)
+        got.append([li.get_attribute("aria-pressed"), page.inner_text("#focus_info")[:60]])
+    r["legend keys"] = got
+    if got[0][0] != "true" or f" {n} pages" not in got[0][1] or got[1] != ["false", ""]:
+        problems.append(f"Enter then Space on conventional RAM's legend entry: {got}, want {n} pages highlighted, then none")
+    bar = page.locator("#map_low > div", has_text="conventional").first
+    if bar.count():
+        bar.click()
+        r["bar click"] = [li.get_attribute("aria-pressed"), page.inner_text("#focus_info")[:60]]
+        if r["bar click"][0] != "true":
+            problems.append(f"a click on the first MiB's conventional segment: legend entry {r['bar click']}")
+        bar.click()
+    else:
+        problems.append("no conventional RAM segment in the first MiB's bar")
+    # A "?" clicked opens its popover, clicked again closes it.
+    tip = page.locator("#panel_memory .tip").first
+    tip.click()
+    shown = page.is_visible("#tip_pop")
+    tip.click()
+    r["tip twice"] = [shown, page.is_visible("#tip_pop")]
+    if r["tip twice"] != [True, False]:
+        problems.append(f"a Memory tab '?' clicked twice: popover [after one, after two] {r['tip twice']}")
+    pages = mem // 4096
+    hover = []
+    for p in (5, pages + 4):
+        x, y = page_center(page, p)
+        page.mouse.move(x, y)
+        time.sleep(0.2)
+        hover.append(page.inner_text("#hover_info")[:40])
+    r["hover"] = [page.get_attribute("#pages", "data-pages"), hover]
+    if r["hover"][0] != str(pages) or not hover[0].startswith("page 0x5000, conventional RAM") or hover[1]:
+        problems.append(f"hover over page 5, then an empty cell past the last page: {r['hover']}")
+    open_page(page, 5)
+    page.click("#page_prev")
+    prev = page.get_attribute("#listing", "data-page")
+    page.click("#page_next")
+    page.click("#page_next")
+    nxt = page.get_attribute("#listing", "data-page")
+    r["prev, next next"] = [prev, nxt]
+    if [prev, nxt] != ["4", "6"]:
+        problems.append(f"page 5, previous, next twice: listing pages {[prev, nxt]}, want 4 and 6")
+    # hello has halted (hlt with interrupts off): Step has nothing to step.
+    wait_for(lambda: page.evaluate("!!stepper.end"), 30)
+    machine_do(page, "click", "#dbg_step")
+    want = "The CPU executed hlt with interrupts off: nothing to step."
+    wait_for(lambda: page.inner_text("#dbg_status") == want, 10)
+    r["step after the halt"] = page.inner_text("#dbg_status")
+    if r["step after the halt"] != want:
+        problems.append(f"Step after hello's halt: {r['step after the halt']!r}, want {want!r}")
+    # A link whose ~src= part is not valid percent-encoding: the Page tab,
+    # no Source panel, no error.
+    page.goto(f"{base}/index.html?kernel=hello#page~src=%E0%A4%A")
+    wait_for(lambda: gate_on_screen(page), 60)
+    r["malformed src hash"] = [shown_tab(page), page.is_visible("#src_panel")]
+    if r["malformed src hash"] != ["page", False]:
+        problems.append(f"#page~src=%E0%A4%A: [tab, Source panel] {r['malformed src hash']}, want the Page tab without the panel")
+    page.close()
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    return problems, r
+
+
 def suite_memeip(ctx):
-    return memeip_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
+    failed = report("memory controls", *memory_controls_case(ctx.browser, ctx.base, ctx.shots))
+    return memeip_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries) or failed
 
 
 # ---- graphopen: a double click in the Calls chart opens the function (G1) --
@@ -9694,8 +9903,69 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
     return problems, r
 
 
+# DWARF line shards (dwarf/<hex>.bin) wait for window.mkbRelease().
+GRAPHOPEN_HOLD_JS = """(() => { const f = window.fetch; let release; const held = new Promise((r) => { release = r; });
+    window.mkbRelease = release; window.mkbHeld = 0;
+    window.fetch = async (u, ...a) => { if (/\\/dwarf\\/[0-9a-f]+\\.bin/.test(String(u))) { window.mkbHeld++; await held; }
+        return f(u, ...a); }; })()"""
+
+
+def graphopen_loading(browser, base, shots):
+    """hello, its DWARF line shard held back: a double click on hello_main's
+    box opens the Page tab at once and the Source panel when the shard
+    arrives (the open waits for it); a second open whose user goes to
+    another tab before the shard arrives opens no Source panel then."""
+    problems, r = [], {}
+    fn, steps, src_file = GRAPHOPEN_POINTS["hello"]
+    sym = next(s for s in json.loads((SITE / kernel_entries()["hello"]["symbols"]).read_text())["symbols"] if s["name"] == fn)
+    errors = []
+    for leave in (False, True):
+        ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+        ctx.add_init_script(GRAPHOPEN_HOLD_JS)
+        page = ctx.new_page()
+        page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+        try:
+            page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+            wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+            page.fill("#dbg_addr", fn)
+            page.click("#dbg_runto")
+            ok, at, status = run_to_wait(page, {sym["paddr"]}, 120)
+            page.fill("#dbg_n", str(steps))
+            page.click("#dbg_stepn")
+            wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+            show_tab(page, "calls")
+            xy = wait_for(lambda: page.evaluate("G.rects.length > 0") and graph_box_xy(page, fn), 20) and graph_box_xy(page, fn)
+            if not ok or not xy:
+                problems.append(f"shard held: Run to {fn} {ok} ({status!r}), its box {xy}")
+                continue
+            graph_double(page, xy, False)
+            opened = wait_for(lambda: shown_tab(page) == "page", 8)
+            time.sleep(1)
+            before = [opened, page.evaluate("mkbHeld > 0"), page.is_visible("#src_panel")]
+            if leave:
+                show_tab(page, "debugger")
+            page.evaluate("mkbRelease()")
+            wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-state") == "ok", 5 if leave else 20)
+            after = [page.is_visible("#src_panel"), page.get_attribute("#src_body", "data-file"), (page.text_content("#src_title") or "")[:40]]
+            tag = "shard held, then " + ("another tab" if leave else "it arrives")
+            r[tag] = [before, after]
+            if before != [True, True, False]:
+                problems.append(f"{tag}: before the shard [Page tab, shard asked for, Source panel] {before}, want [True, True, False]")
+            if not leave and (not after[0] or after[1] != src_file or not after[2].startswith(fn + ",")):
+                problems.append(f"{tag}: the Source panel {after}, want {fn} in {src_file}")
+            if leave and after[0]:
+                problems.append(f"{tag}: the Source panel opened in the Debugger tab after the user left: {after}")
+            if not leave:
+                page.screenshot(path=str(shots / "graphopen-loading-1280.png"))
+        finally:
+            ctx.close()
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    return problems, r
+
+
 def graphopen_case(browser, base, shots, linux):
-    out = []
+    out = [report("graphopen loading", *graphopen_loading(browser, base, shots))]
     runs = [("hello", "light", False), ("hello", "dark", True)]
     if linux:
         runs += [("minified-linux", "dark", False), ("minified-linux", "light", True)]
@@ -12304,11 +12574,17 @@ def tabs_case(browser, base, shots, linux=False):
         time.sleep(0.5)
         none = page.text_content("#settings_stored") or ""
         page.select_option("#set_speed", "100")
+        page.select_option("#set_mips", "1000")
+        page.uncheck("#set_count")
+        page.check("#compact_tabs")
         r["no storage"] = [none[:80], page.input_value("#dbg_speed")]
         if "Nothing remembered for any kernel yet." not in none or page.locator("#settings_stored .setrow").count():
             problems.append(f"Settings without storage: {none[:200]!r}")
-        if page.input_value("#dbg_speed") != "100":
-            problems.append(f"Settings without storage: speed 100/s set, the Machine tab shows {page.input_value('#dbg_speed')}")
+        now = [page.input_value("#dbg_speed"), page.input_value("#clock_mips"), page.is_checked("#count"),
+               not any(t["wordShown"] for t in tabs_look(page))]
+        if now != ["100", "1000", False, True]:
+            problems.append(f"Settings without storage: speed 100/s, clock 1000/us, count off, compact tabs set; "
+                            f"the page has [speed, clock, count, compact] {now}")
     else:
         problems.append("without storage: hello did not boot")
     c.close()

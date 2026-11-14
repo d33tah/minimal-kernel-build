@@ -16928,6 +16928,180 @@ def dwf_broken(tmp, good):
     return out
 
 
+# The import as the page uses it (dbginfo.js): the fixture (m.c and a
+# second unit, u.c) imported through "From disk / Symbols", what the
+# page answers for its code, what it says after a reload with only some
+# of it read before, after IndexedDB lost it, and for broken files.
+DWF_SECOND = "int other(int x)\n{\n\treturn x * 3 + 1;\n}\n"
+
+DBG_WAIT_JS = """async ([fn, args]) => {
+    const plain = (r) => JSON.parse(JSON.stringify(r === undefined ? null : r, (k, v) => v instanceof Map ? [...v] : v));
+    for (let i = 0; i < 300; i++) {
+        const r = window[fn](...args);
+        if (r !== 'loading' && !(r && r.state === 'loading'))
+            return plain(r);
+        await new Promise((ok) => setTimeout(ok, 100));
+    }
+    return 'timeout';
+}"""
+
+
+def dwf_ui_fixture(tmp):
+    """m.c and u.c by clang -gdwarf-5 -O2 -mregparm=3, linked at CFI_BASE."""
+    (tmp / "m.c").write_text(DWF_SOURCE)
+    (tmp / "u.c").write_text(DWF_SECOND)
+    elf = tmp / "ui.elf"
+    flags = ["-m32", "-O2", "-ffreestanding", "-fno-pic", "-gdwarf-5", "-mregparm=3"]
+    try:
+        for n in ("m", "u"):
+            subprocess.run(["clang", *flags, "-c", n + ".c", "-o", n + ".o"], cwd=tmp, check=True, capture_output=True, text=True)
+        subprocess.run(["clang", "-m32", "-fuse-ld=lld", "-nostdlib", "-no-pie", "-Wl,-e,entry", f"-Wl,-Ttext=0x{CFI_BASE:x}",
+                        "m.o", "u.o", "-o", str(elf)], cwd=tmp, check=True, capture_output=True, text=True)
+    except (OSError, subprocess.CalledProcessError) as e:
+        return None, f"clang: {getattr(e, 'stderr', '') or e}"[:300]
+    return elf, None
+
+
+def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
+    problems, r = [], {}
+    elf, why = dwf_ui_fixture(tmp)
+    if not elf:
+        return [f"the import fixture did not build: {why}"], r
+    sizes = {l.split()[3]: (int(l.split()[0], 16), int(l.split()[1], 16)) for l in
+             subprocess.run(["llvm-nm", "-S", str(elf)], capture_output=True, text=True).stdout.splitlines() if len(l.split()) == 4}
+    m_vas = [va for f in ("use", "mix", "entry") for va in range(sizes[f][0], sum(sizes[f]))]
+    other = sizes["other"][0]
+    pa = lambda va: va - CFI_OFFSET
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    # The Machine tab: the Debugger's panels would read the variables by themselves.
+    url = f"{base}/index.html?kernel=hello&paused=1#machine"
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+
+    def ask(fn, *args):
+        return page.evaluate(DBG_WAIT_JS, [fn, list(args)])
+
+    def imp(path, done="compile units"):
+        page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+        page.set_input_files("#symfile", str(path))
+        wait_for(lambda: done in page.inner_text("#sym_status"), 30)
+        return page.inner_text("#sym_status")
+
+    def reload(state):
+        page.goto("about:blank")
+        page.goto(url)
+        wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == state, 60)
+        return page.inner_text("#sym_status")
+
+    def expect(what, got, want):
+        r[what] = got
+        if got != want:
+            problems.append(f"import: {what}: {got!r}, want {want!r}")
+    # Round A: only file:line of m.c's unit is read.
+    st = imp(elf)
+    if "DWARF 5 of the imported ui.elf: 2 compile units, each decoded when first needed" not in st:
+        problems.append(f"import: status {st!r}")
+    want = symbolize(str(elf), m_vas, [str(tmp) + "/"])
+    got = [ask("dbgFrames", pa(va)) for va in m_vas]
+    bad = [(hex(va), g, w) for va, g, w in zip(m_vas, got, want) if g["state"] != "ok" or not frames_agree(g["frames"], w)]
+    r["frames"] = f"{len(m_vas) - len(bad)}/{len(m_vas)} agree with llvm-symbolizer"
+    if bad:
+        problems.append(f"import: frames differ from llvm-symbolizer: {bad[:2]}")
+    expect("frames outside the units", ask("dbgFrames", 0x10), {"state": "none", "why": "no compile unit of the imported vmlinux covers this address"})
+    line = DWF_SOURCE.split("\n").index("\tgll = acc;") + 1
+    lc = ask("dbgLineCode", "m.c", line)
+    rows = [va for a, b, _ in lc.get("rows", []) for va in (a + CFI_OFFSET, b - 1 + CFI_OFFSET)]
+    lines = [w[0][2] if w else None for w in symbolize(str(elf), rows, [])]
+    r["line code"] = [lc.get("state"), lc.get("how"), lines]
+    if lc.get("state") != "ok" or not rows or any(x != line for x in lines) or lc.get("how") != "1 compile unit of the imported vmlinux name m.c":
+        problems.append(f"import: the code of m.c:{line}: {lc}, llvm-symbolizer says {lines}")
+    expect("a line without code", ask("dbgLineCode", "m.c", 1)["why"],
+           "m.c:1 has no code in the line table (a comment, a declaration, or code the compiler left out or merged into another line)")
+    expect("an unknown file", ask("dbgFileCode", "nosuch.c"), {"state": "none", "why": "no source file nosuch.c with code in this kernel's line table"})
+    st = reload("cached")
+    if "(remembered from an earlier import: units not decoded then need the file again)" not in st:
+        problems.append(f"import: after a reload the status is {st!r}")
+    g = ask("dbgFrames", pa(m_vas[0]))
+    if g.get("state") != "ok" or not frames_agree(g["frames"], want[0]):
+        problems.append(f"import: after a reload the frames at {m_vas[0]:#x} are {g}")
+    expect("after a reload, a unit not read", ask("dbgFrames", pa(other)),
+           {"state": "none", "why": "not decoded before the reload: import the vmlinux again to read its DWARF here"})
+    expect("after a reload, the variables", ask("dbgTypes"), {"state": "none", "why": "the variables were not read before the reload: import the vmlinux again"})
+    expect("after a reload, the CFI", ask("dbgCfiRow", pa(m_vas[0])), {"why": "the call frame information was not read before the reload: import the vmlinux again"})
+    expect("after a reload, the code of a line", ask("dbgFileCode", "m.c"),
+           {"state": "none", "why": "the imported vmlinux is not open since the reload: import it again to find the code of a line"})
+    page.evaluate("new Promise((ok) => { const q = indexedDB.deleteDatabase('mkb-dwarf'); q.onsuccess = q.onerror = q.onblocked = ok; })")
+    st = reload("")
+    if "No file:line: import the unstripped vmlinux again to see its DWARF (file:line)" not in st:
+        problems.append(f"import: after IndexedDB lost the units the status is {st!r}")
+    # Round B: variables, locals, function facts and CFI read, then a reload.
+    imp(elf)
+    ty = ask("dbgTypes")
+    if ty.get("state") != "ok":
+        problems.append(f"import: the variables: {str(ty)[:300]}")
+    va = next(v for v in m_vas if want[m_vas.index(v)] and len(want[m_vas.index(v)]) > 1)
+    lo = ask("dbgLocals", pa(va))
+    gs = gdb_scopes(str(elf), [va]).get(va) or []
+    mine = sorted(v[0] for v in lo["frames"][0]["params"] + lo["frames"][0]["locals"]) if lo.get("state") == "ok" and lo["frames"] else None
+    r["locals"] = [hex(va), mine, gs]
+    if mine is None or mine != sorted(n for n, _ in gs):
+        problems.append(f"import: the parameters and locals at {va:#x}: {str(lo)[:300]}, gdb {gs}")
+    ask("dbgFnFactsAt", pa(va))
+    title = page.evaluate("(pa) => dbgTitle(pa)", pa(va))
+    w = want[m_vas.index(va)]
+    r["title"] = title
+    if not title.startswith(f"{w[0][0]} at m.c:{w[0][2]}\ninlined into {w[1][0]} at m.c:{w[1][2]}") or "(" not in title.split("\n")[2]:
+        problems.append(f"import: the title at {va:#x}: {title!r}, llvm-symbolizer {w}")
+    fi = ask("dbgCfiFrame", pa(m_vas[0]))
+    fdes = dwarfdump_cfi(str(elf))
+    expect("call frame information", page.evaluate("dbgCfiInfo()"), f".debug_frame of the imported vmlinux ({len(fdes)} FDEs)")
+    if not isinstance(fi, dict) or not fi.get("fde"):
+        problems.append(f"import: the frame at {m_vas[0]:#x}: {fi}")
+    show_tab(page, "machine")
+    for scheme, width in (("light", 1280), ("dark", 390)):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": width, "height": 900})
+        page.locator("#sym_status").scroll_into_view_if_needed()
+        page.screenshot(path=str(shots / f"dwarf-forms-import-{width}-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    # Broken copies, imported while the reader Workers of the good one run.
+    broken = {name: (data, want) for name, data, want in dwf_broken(tmp, elf)}
+    bad_elf = tmp / "abbrev.elf"
+    bad_elf.write_bytes(broken["abbreviation"][0])
+    imp(bad_elf)
+    why = broken["abbreviation"][1][0].split(": ", 1)[1]
+    expect("a broken unit's frames", ask("dbgFrames", pa(m_vas[0])), {"state": "none", "why": "debug info did not load: " + why})
+    expect("a broken unit's code of a line", ask("dbgFileCode", "m.c"), {"state": "none", "why": "could not read the line tables: " + why})
+    expect("a broken unit's variables", ask("dbgTypes"), {"state": "none", "why": "the variables did not load: " + why})
+    v6 = tmp / "v6.elf"
+    v6.write_bytes(broken["version 6"][0])
+    st = imp(v6, "No file:line")
+    if "No file:line: could not read the DWARF of v6.elf: DWARF version 6 at .debug_info+0." not in st:
+        problems.append(f"import: DWARF version 6: the status is {st!r}")
+    # Round B's reload: types, locals of m.c's unit and the CFI came back.
+    imp(elf)
+    ask("dbgTypes")
+    ask("dbgLocals", pa(va))
+    ask("dbgCfiRow", pa(m_vas[0]))
+    page.wait_for_timeout(500)
+    reload("cached")
+    expect("after a reload, the locals of a unit not read", ask("dbgLocals", pa(other)),
+           {"state": "none", "why": "the parameters and locals of this compile unit were not read before the reload: import the vmlinux again"})
+    row = page.evaluate("(pa) => cfiRowText(dbgCfiRow(pa))", pa(m_vas[0]))
+    f = next((f for f in fdes if f[0] <= m_vas[0] < f[1]), None)
+    wrow = [t for a, t in (f[2] if f else []) if a <= m_vas[0]]
+    expect("after a reload, the CFI row", row, wrow[-1] if wrow else None)
+    show_tab(page, "machine")
+    page.click("#sym_forget")
+    page.close()
+    if errors:
+        problems.append(f"import: page errors: {errors[:3]}")
+    return problems, r
+
+
 def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     from test_dwarf import symbolize, gdb_scopes
     problems, r = [], {}
@@ -16961,7 +17135,11 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
                     r["broken: " + what] = have
                     if have != want:
                         problems.append(f"broken input, {what}: the import says {have!r}, want {want!r}")
-    page.close()
+        page.close()
+        ui = pathlib.Path(tmp) / "ui"
+        ui.mkdir()
+        p, r["import"] = dwf_ui_checks(browser, base, shots, ui, symbolize, gdb_scopes)
+        problems += p
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     return problems, r

@@ -4008,6 +4008,7 @@ async function init() {
 	const params = new URLSearchParams(location.search);
 	MEV.panel();
 	MMAP.init(); // memmap.js
+	QUESTS.init(); // quests.js
 	// ?mem=BYTES may name any multiple of 4 KiB, for probing the minimum.
 	let memParam = null;
 	const m = Number(params.get("mem"));

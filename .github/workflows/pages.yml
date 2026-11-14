@@ -825,6 +825,7 @@ jobs:
         - followfuzz
         - memevents
         - memmap
+        - quests
     name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:
     - uses: actions/checkout@v4

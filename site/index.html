@@ -164,6 +164,17 @@
   <ul class="legend" id="grid_legend"></ul>
   <p class="note mono" id="focus_info" aria-live="polite"></p>
   <p class="note" id="hover_info" aria-live="polite"></p>
+  <details id="qs" class="qs">
+    <summary>Quests <span id="qs_badge" class="qs-badge"></span> <span class="tip" tabindex="0" role="button" title="Challenges about the standards a PC boots with: the boot protocol, the BIOS's memory map, text mode memory, option ROMs, PCI configuration, the MultiProcessor table. The page checks each one by itself from the memory events and the machine's state: answer in the box, click the right cell on the live memory map, or step back to the right instruction. A hint makes the relevant region blink on the map. What you solved is remembered in this browser, per kernel. While this is open the page records memory events (as the live memory map does); some quests need them from the first instruction.">?</span></summary>
+    <div class="qs-head">
+      <div class="qs-meter" id="qs_meter" role="progressbar" aria-label="Quests solved on this kernel" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span id="qs_fill"></span></div>
+      <span id="qs_progress" class="qs-progress"></span>
+      <button id="qs_reset" type="button">Start over</button>
+    </div>
+    <p class="note" id="qs_note"></p>
+    <ol class="qs-list" id="qs_list"></ol>
+    <p class="qs-toast" id="qs_toast" role="status" aria-live="polite"></p>
+  </details>
   <details id="mm" class="mm">
     <summary>Live memory map <span class="tip" tabindex="0" role="button" title="The whole 32-bit physical address space on a Hilbert curve: addresses next to each other stay next to each other on the square. It is cut at every region a standard the guest used names (IBM PC memory map, the BIOS&#x27;s E820 answers, PCI BARs, ACPI or MultiProcessor tables, IA32_APIC_BASE) and at the end of RAM; each region gets cells by its size, at least 16 so the small ones show, and stretches no standard names get a few hatched cells. While this is open the page records memory events (as the Memory events list does) and lights their cells in the initiator&#x27;s colour, then they fade: the CPU outside RAM (memory-mapped I/O) with a pulse from the cell of the code that did it (the ring), a device in RAM (DMA) from its PCI region or the edge, the emulator as a drop poured along the curve (the loader places the kernel before the first instruction). The CPU&#x27;s writes to RAM are sampled per frame by page (a write needs a TLB entry made for writing; the map empties the TLB each frame). Beside it, the colour text memory at 0xB8000 as the guest writes it. The slider moves through the log event by event, Replay plays it, Live follows the machine again; a step back cuts the log and the map follows. Click a cell, or focus the map and use the arrow keys, PageUp/PageDown (regions) and Enter, for its events: go there steps back to the instruction, file:line opens the Source panel. Only first touch: each region lights once per initiator and the story lists who touched it first. Closed, nothing is recorded or drawn.">?</span></summary>
     <div class="mm-bar">
@@ -500,6 +511,13 @@
     <li><span class="lgs plain" inert><span class="mm-sw mm-k-ram"></span> <span class="mm-sw mm-k-reserved"></span> <span class="mm-sw mm-k-mmio"></span> <span class="mm-sw mm-k-rom"></span> <span class="mm-sw mm-k-none"></span></span>
       <span>The regions under them, pale until touched: <b>grey</b> RAM, <b>dark grey</b> reserved (E820), <b>purple</b> memory-mapped I/O (video memory, PCI BARs, APICs, HPET), <b>yellow</b> ROM, <b>hatched</b> addresses no standard the guest used names. Where: Live memory map and its region list.</span></li>
   </ul>
+  <h4>Quests (Memory tab)</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain" inert><span class="qs-card qs-sample" data-state="solved"><span class="qs-mark">&#9733;</span> <span class="qs-wontext">solved</span></span> <span class="qs-meter" style="width: 6rem"><span style="width: 50%"></span></span></span>
+      <span><b>Green</b> card with a <b>star</b>: a quest solved on this kernel in this browser; the <b>bar</b> fills with the quests solved out of those this kernel can give. A <b>dimmed</b> card is one this kernel cannot give (it says which can). Where: Quests.</span></li>
+    <li><span class="lgs plain" inert><span class="qs-hint">a hint</span> <span class="mm-sw mm-hintsw"></span> <span class="qs-fb bad">Too small</span></span>
+      <span><b>Pink</b>: a quest&#x27;s hint and the cells it makes blink on the live memory map. <b>Red text</b>: an answer that is not right yet, with which way it is off. Where: Quests, Live memory map.</span></li>
+  </ul>
   <h4>Bookmarks</h4>
   <ul class="lgnd">
     <li><span class="lgs asm" inert><span class="ins">00126280 55        push %ebp <span class="bmstar tipmark">&#9733;</span></span></span>
@@ -592,6 +610,7 @@
 <script src="cpustate.js"></script>
 <script src="memevents.js"></script>
 <script src="memmap.js"></script>
+<script src="quests.js"></script>
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
 <script src="settings.js"></script>

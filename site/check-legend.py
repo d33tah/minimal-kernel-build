@@ -88,6 +88,11 @@ CHROME = {
     "bmgo": "a bookmark's name in the list (link colour; its ★ is the legend's gold star)",
     "bmwhat": "what a bookmark points at, under its name (muted)",
     "snapcol": "the hexdump columns of a snapshot diff (their yellow is <mark>, in the legend)",
+    "qs-badge": "the solved count after the Quests heading (muted)",
+    "qs-burst": "the burst of the map's colours when a quest is solved (a celebration, marks nothing)",
+    "qs-learn": "the heading of a quest's paragraph on its standard (muted)",
+    "qs-std": "the name of a quest's standard (muted)",
+    "qs-toast": "the short note after a solved quest (the solved green of the legend)",
 }
 
 

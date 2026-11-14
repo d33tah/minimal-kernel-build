@@ -1954,7 +1954,52 @@ with the map closed (330.7 against 363.1 MIPS, 3.4 ms a frame). The test
 from the log against the stepper's mirror of the screen, the story on the
 minified Linux and Debian, Replay's drop, the slider, a click, the
 keyboard, go there, only first touch, closing, that the events equal the
-list's, and the cost.
+list's, and the cost. Labels wrap at spaces into lines of at most about
+45% of the map's width and are never cut short (`MMAP.labelsDrawn` keeps
+what was drawn; the suite checks it at 1280 and 390 px), and the text
+inset after the BIOS's writes keeps its cleared cells black (only painted
+characters glow).
+
+## Quests (M3)
+
+The Memory tab's "Quests" (`quests.js`, closed by default, remembered;
+`?quests=1` opens it) are seven challenges about the standards a PC boots
+with. The page checks each one itself, from the memory events
+(`memevents.js`), the machine's state and the live memory map:
+
+| quest | standard | solved by | kernels |
+|---|---|---|---|
+| The loader's delivery | Linux x86 boot protocol | typing the bytes the loader put in RAM (command line, real-mode and protected-mode parts, initrd: the emulator's writes at instruction 0) | all |
+| Read the ROM's signature | option ROM header | typing the video BIOS's length (0x55 0xAA, then 512-byte blocks at 0xC0002) | all |
+| Where does RAM end? | E820 | clicking the map cell of the last usable byte (or typing it) | those that call INT 15h E820h (not hello) |
+| First paint | IBM PC text mode memory | stepping back to the first write into 0xB8000 by code running from RAM | all; needs the events from the first instruction |
+| Who is on the bus? | PCI class codes | picking the base class of a device the OS read the class code of | Debian |
+| Size a BAR | PCI BAR sizing | typing the size of the first BAR the OS sized | Debian |
+| Find the I/O APIC | MultiProcessor Specification | clicking the I/O APIC on the map once the OS touched it | Debian |
+
+"The OS" is what runs after the first E820 call: the BIOS makes none, so
+the PCI accesses before it are the BIOS's. A quest the kernel cannot give
+says so once the run has ended ("try Debian"); before that it waits. Each
+quest has a hint (its region blinks on the map for 8 s: `MMAP.hint`), a
+paragraph on its standard with a link to the specification or a
+reputable page, a progress bar per kernel, a burst and a short note when
+one is solved, and Start over. Solved quests are stored per kernel in
+`localStorage` (`mkb-quests`); without storage they are kept until the
+page is closed and a note says so. While the panel is open the page
+records memory events; `MEV.since` says from which instruction the log
+has no gap, and "First paint" offers Boot again when it is not 0. No DMA
+quest: no kernel here makes a device write RAM.
+
+The test (`test_browser.py`, suite `quests`) solves every quest as a user
+would: on the minified Linux the loader's bytes read from the map's cells
+(equal to the bzImage's size plus the command line), the ROM's length
+from the Page tab (vgabios.bin agrees), the end of usable RAM from the
+story's E820 lines (a wrong cell first), the first paint through its story
+line's go there (it names vgacon); wrong and malformed answers, the hint
+on the map, the celebration, the reload, Start over, a late opening with
+Boot again, no storage, 390 px light and dark; on Debian the PCI class (a
+wrong choice first), the first BAR the OS sized and the I/O APIC (its hint
+blinks the MP table's pointer).
 
 
 ## Debug info: help, sizes, times and tests

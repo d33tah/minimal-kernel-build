@@ -213,32 +213,32 @@ livedis.js	31	14f00310	iced_x86.js without its Node tail: the pinned iced 1.21.0
 livedis.js	47-49	639da600	iced failing to load (fetch or instantiate error): the site ships it and no test blocks it
 livedis.js	76	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set
 livedis.js	140	ac623510	run() over an empty range or one past guest RAM: the code symbols and text sections of the shipped kernels lie in RAM with a size
-memevents.js	124	cd4dba2a	install() on a v86.wasm without the memory-event exports (mev_set) or a libv86.js without mem_pending: the site ships only the gen-v86.sh build, which has both
-memevents.js	201	44e02e66	a CPU access reported while recording is off: setOn(false) tells v86.wasm (mev_set) to stop reporting CPU accesses, so only E820 answers come then
-memevents.js	206	c5b13b62	acpiTry from a CPU access at an address no standard names: the memevents suite checks that no CPU event of hello, the minified Linux or Debian is unnamed (0 in every run), so this lookup never fires; mev_tables_case calls acpiTry directly
-memevents.js	279	376e22c8	query() before the first machine made the columns: its callers (the debug list, memmap.js, quests) run after a boot
-memevents.js	401	83b8f4d4	a memory BAR whose base is still 0 when the regions are rebuilt: SeaBIOS assigns every memory BAR of v86's PCI devices before the kernel starts, and the regions are rebuilt only after a write of a base
-memevents.js	583	558ba921	acpiTry finding neither ACPI nor an MP table: it runs at E820 answers, after v86's SeaBIOS has built its MP table, so it always finds that one
-memevents.js	597	c8b06019	restored() without a log or without a stepper: cpustate.js calls it after a restore, which needs a booted machine with both
-memevents.js	724	3bff6978	panel() without the #mev element: index.html has it
-memmap.js	172-182	bfdf2e93	not run by the memmap suite yet (M track: a test would need the map open across a second boot or a cleared log, so attach() starts a new log; the suite opens it once per page load)
-memmap.js	185	444a094c	not run by the memmap suite yet (M track: a test would need the map opened after the run began without ?memmap=1, so the screen as it is then becomes the text base)
-memmap.js	227	a33b63c5	a zero-length segment between two equal edges: edges come from a Set, so two consecutive edges never repeat; defensive
-memmap.js	232	601a5d26	not run by the memmap suite yet (M track: a test would need two neighbouring segments named by the same region (a region split by another one inside it that ends where it starts); the shipped machines' regions do not touch that way)
-memmap.js	340-342	c0799458	not run by the memmap suite yet (M track: a test would need a rewind to a position at or after the text base of a map opened mid-run (see 185))
-memmap.js	443	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
-memmap.js	449	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
-memmap.js	457-466	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
-memmap.js	493-495	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
-memmap.js	512	c490037c	not run by the memmap suite yet (M track: a test would need a step back to before the text base of a map opened mid-run (see 185))
-memmap.js	669	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
-memmap.js	874	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
-memmap.js	883-885	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
-memmap.js	1029	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
-memmap.js	1065	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
-memmap.js	1085	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
-memmap.js	1108	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
-memmap.js	1119	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
+memevents.js	125	cd4dba2a	install() on a v86.wasm without the memory-event exports (mev_set) or a libv86.js without mem_pending: the site ships only the gen-v86.sh build, which has both
+memevents.js	208	44e02e66	a CPU access reported while recording is off: setOn(false) tells v86.wasm (mev_set) to stop reporting CPU accesses, so only E820 answers come then
+memevents.js	213	c5b13b62	acpiTry from a CPU access at an address no standard names: the memevents suite checks that no CPU event of hello, the minified Linux or Debian is unnamed (0 in every run), so this lookup never fires; mev_tables_case calls acpiTry directly
+memevents.js	286	376e22c8	query() before the first machine made the columns: its callers (the debug list, memmap.js, quests) run after a boot
+memevents.js	408	83b8f4d4	a memory BAR whose base is still 0 when the regions are rebuilt: SeaBIOS assigns every memory BAR of v86's PCI devices before the kernel starts, and the regions are rebuilt only after a write of a base
+memevents.js	591	558ba921	acpiTry finding neither ACPI nor an MP table: it runs at E820 answers, after v86's SeaBIOS has built its MP table, so it always finds that one
+memevents.js	605	c8b06019	restored() without a log or without a stepper: cpustate.js calls it after a restore, which needs a booted machine with both
+memevents.js	735	3bff6978	panel() without the #mev element: index.html has it
+memmap.js	230	a33b63c5	a zero-length segment between two equal edges: edges come from a Set, so two consecutive edges never repeat; defensive
+memmap.js	235	601a5d26	not run by the memmap suite yet (M track: a test would need two neighbouring segments named by the same region (a region split by another one inside it that ends where it starts); the shipped machines' regions do not touch that way)
+memmap.js	446	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
+memmap.js	452	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
+memmap.js	460-469	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
+memmap.js	496-498	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
+memmap.js	672	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
+memmap.js	894	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
+memmap.js	942-944	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
+memmap.js	1088	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
+memmap.js	1124	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
+memmap.js	1144	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
+memmap.js	1167	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
+memmap.js	1178	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
+quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
+quests.js	108-109	f7488a69	no loader parts at instruction 0 in the log: v86 loads every kernel here by the Linux boot protocol and install() logs its writes before the first instruction, so the parts are there whenever a machine exists
+quests.js	139	3444ec90	no 0x55 0xAA at 0xC0000: v86 always copies its VGA BIOS there before the first instruction
+quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	170-172	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	183	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
@@ -338,7 +338,7 @@ stepper.js	857	320b0d21	branch() when not behind and with no future: its caller 
 stepper.js	869	16d2bb25	branch() dropping task switches recorded after the branch point: the reverse suite branches (a key typed after stepping back) on stretches with no task switch
 stepper.js	934-936	ec4eac36	wasm memory grown during record() (typed arrays detached): v86 allocates the guest RAM up front and its memory does not grow while stepping the shipped kernels
 stepper.js	941-943	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor in 43611610762, whose exactstop coverage job did not finish
-stepper.js	981-983	21db661f	as 927-929, after mkb_read_imm8
+stepper.js	981-983	21db661f	sometimes: the wasm memory replaced between two steps (typed arrays detached; as 934-936, after the fetch): the quests suite's Step after go there with the live memory map open ran it on d-claude (the map's write tracking allocates in v86.wasm); other runs do not grow the memory while stepping
 stepper.js	986	c540c46d	an instruction fetch fault with no pending jump record: not reached while the shipped kernels are stepped
 stepper.js	1013-1015	21db661f	as 927-929, after mkb_run
 stepper.js	1053-1055	892e9009	an instruction above the seen bitmap (beyond RAM): the shipped kernels and the BIOS run nothing there while stepped

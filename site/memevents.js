@@ -112,7 +112,8 @@ const MEV = {
 	facts: [],     // derived from obs: { pos, kind, text } (the debug list, quests)
 	check: null,
 	listTimer: null,
-	needs: new Set(), // who wants the events recorded: "list", "map", "url"
+	needs: new Set(), // who wants the events recorded: "list", "map", "quests", "url"
+	since: Infinity,  // recording without a gap from this position on (0: the whole run)
 
 	install(em, st) {
 		const cpu = em.v86.cpu;
@@ -157,6 +158,8 @@ const MEV = {
 		this.counts = [0, 0, 0];
 		this.obs = [];
 		this.check = null;
+		this.on = false; // a new machine: setOn follows (install)
+		this.since = Infinity;
 		this.rebuild();
 	},
 
@@ -174,6 +177,10 @@ const MEV = {
 	},
 
 	setOn(on) {
+		if (on && !this.on)
+			this.since = this.st ? this.st.steps : 0;
+		else if (!on)
+			this.since = Infinity;
 		this.on = !!on;
 		if (this.ex && !this.missing)
 			this.ex.mev_set(this.on ? 3 : 2); // bit 0 the CPU's accesses, bit 1 the E820 answers
@@ -571,6 +578,7 @@ const MEV = {
 		const pcmp = mp >= 0 ? u32(mp + 4) : -1;
 		if (!a.lapic && sig(pcmp, "PCMP")) {
 			a.std = "MultiProcessor Specification table";
+			a.mp = mp; // the floating pointer "_MP_"
 			a.lapic = u32(pcmp + 36);
 			found.push("MultiProcessor Specification table");
 			for (let e = pcmp + 44, k = 0; k < u16(pcmp + 34) && e < n; k++) {
@@ -606,6 +614,9 @@ const MEV = {
 			this.rebuild();
 		}
 		this.acpiTried = -Infinity;
+		// recording on from here: the log has no gap after pos either
+		if (this.on)
+			this.since = Math.min(this.since, pos);
 		if (this.check)
 			this.checkBase();
 	},

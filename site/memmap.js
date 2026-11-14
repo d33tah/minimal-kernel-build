@@ -39,6 +39,7 @@ const MM_TOKENS = ["mm-cpu", "mm-dev", "mm-emu", "mm-ram"];
 const MM_TEXT_LO = 0xb8000, MM_TEXT_HI = 0xc0000, MM_COLS = 80, MM_ROWS = 25;
 const MM_SAMPLE_CAP = 1 << 22; // page numbers kept from the CPU's RAM writes
 const MM_KEY = "mkb-memmap-open";
+const MM_HINT_MS = 8000; // a quest's hint blinks this long
 // IBM PC code page 437
 const MM_CP437 = " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂" +
 	"ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
@@ -96,6 +97,8 @@ const MMAP = {
 	cursor: -1,      // keyboard cursor cell
 	pick: -1,        // the cell whose events are shown
 	cpuCell: -1,     // the code of the last CPU event
+	hl: null,        // a quest's hint: { ranges, label, t0, cells } (hint())
+	labelsDrawn: null,
 	t: 0, raf: 0, frames: 0, drawMs: 0,
 	colours: null,
 
@@ -621,7 +624,7 @@ const MMAP = {
 			}
 		}
 		this.anims = this.anims.filter((a) => t - a.t0 < a.dur);
-		if (hot || this.anims.length || this.dirtyAll)
+		if (hot || this.anims.length || this.dirtyAll || this.hl)
 			this.draw();
 		if (this.textDirty || this.textGlow)
 			this.drawText();
@@ -674,7 +677,7 @@ const MMAP = {
 		this.colours = {
 			dark, bg, fg: rgb("fg"), line: rgb("line"),
 			kind: { ram: rgb("page-free"), reserved: rgb("r-hole"), mmio: rgb("r-vga"), rom: rgb("r-rom"), none: bg },
-			layer: MM_TOKENS.map(rgb), key: dark + ":" + bg.join(),
+			layer: MM_TOKENS.map(rgb), hint: rgb("mm-hint"), key: dark + ":" + bg.join(),
 		};
 	},
 
@@ -771,6 +774,8 @@ const MMAP = {
 		ctx.stroke(this.borders);
 		this.drawLabels(ctx, dpr);
 		this.drawAnims(ctx, dpr);
+		if (this.hl)
+			this.drawHint(ctx, dpr);
 		// the CPU marker: the cell of the code of the last CPU event
 		if (this.cpuCell >= 0) {
 			const [x, y] = this.cellPx(this.cpuCell);
@@ -791,27 +796,42 @@ const MMAP = {
 		}
 	},
 
-	// A label centred at x, its baseline at y; with taken (the boxes drawn so
-	// far), not drawn where it would cover another one.
+	// A label centred at x, its first baseline at y, wrapped at spaces into
+	// lines of at most about 45% of the map's width (never cut short); with
+	// taken (the boxes drawn so far), not drawn where it would cover another
+	// one. labelsDrawn keeps what was drawn (the tests read it).
 	label(ctx, text, x, y, dpr, colour, taken) {
-		const C = this.colours;
+		const C = this.colours, lh = 12 * dpr;
 		ctx.font = Math.round(10 * dpr) + "px ui-sans-serif, system-ui, sans-serif";
-		const w = ctx.measureText(text).width, W = ctx.canvas.width;
+		const W = ctx.canvas.width, H = ctx.canvas.height, maxW = Math.max(110 * dpr, W * 0.45);
+		const lines = [];
+		for (const word of text.split(" ")) {
+			const longer = lines.length ? lines[lines.length - 1] + " " + word : "";
+			if (lines.length && ctx.measureText(longer).width <= maxW)
+				lines[lines.length - 1] = longer;
+			else
+				lines.push(word);
+		}
+		const widths = lines.map((l) => ctx.measureText(l).width), w = Math.max(...widths);
 		const lx = Math.max(2 * dpr, Math.min(W - w - 2 * dpr, x - w / 2));
+		const ly = Math.max(9 * dpr, Math.min(H - 3 * dpr - (lines.length - 1) * lh, y));
+		const box = [lx - 2 * dpr, ly - 9 * dpr, lx + w + 2 * dpr, ly + 3 * dpr + (lines.length - 1) * lh];
 		if (taken) {
-			const box = [lx - 2 * dpr, y - 9 * dpr, lx + w + 2 * dpr, y + 3 * dpr];
 			if (taken.some((b) => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3]))
 				return;
 			taken.push(box);
 		}
 		ctx.fillStyle = "rgb(" + C.bg.join() + ",0.8)";
-		ctx.fillRect(lx - 2 * dpr, y - 9 * dpr, w + 4 * dpr, 12 * dpr);
+		ctx.fillRect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
 		ctx.fillStyle = colour || "rgb(" + C.fg.join() + ")";
-		ctx.fillText(text, lx, y);
+		lines.forEach((l, k) => ctx.fillText(l, lx + (w - widths[k]) / 2, ly + k * lh));
+		if (this.labelsDrawn)
+			this.labelsDrawn.push({ text, lines, left: box[0] / dpr, right: box[2] / dpr, width: W / dpr });
 	},
 
 	drawLabels(ctx, dpr) {
 		const minCells = ctx.canvas.width / dpr < 420 ? 300 : 100, taken = [];
+		this.labelsDrawn = [];
 		// first touch: the newest three stories as callouts, newest on top;
 		// region names only where they leave room
 		if (this.firstOnly) {
@@ -829,7 +849,7 @@ const MMAP = {
 			const r = MEV.nameOf(g.region);
 			const name = g.kind === "none" ? "no standard name" : r.name.replace(/, before any E820 answer described it/, "");
 			const [x, y] = this.cellPx(g.centre);
-			this.label(ctx, name.length > 28 ? name.slice(0, 27) + "…" : name, x, y + 4 * dpr, dpr, null, taken);
+			this.label(ctx, name, x, y + 4 * dpr, dpr, null, taken);
 		}
 	},
 
@@ -873,6 +893,45 @@ const MMAP = {
 				if (a.edge && p < 0.5 && a.i >= MEV.first())
 					this.label(ctx, MEV.event(a.i).source || "device", Math.min(W / 3, 40 * dpr), fy, dpr);
 			}
+		}
+	},
+
+	// A quest's hint (quests.js): open the map, bring it into view and let
+	// the cells of the address ranges [lo, hi) blink for MM_HINT_MS, with a
+	// label.
+	hint(ranges, label) {
+		const box = $("mm");
+		if (!box.open)
+			box.open = true; // its toggle event starts the map
+		this.hl = { ranges, label, t0: -1, cells: 0 };
+		this.dirtyAll = true;
+		$("mm_map").scrollIntoView({ block: "center" });
+		this.schedule();
+	},
+
+	drawHint(ctx, dpr) {
+		const h = this.hl, C = this.colours, s = this.scale;
+		if (h.t0 < 0)
+			h.t0 = this.t;
+		const age = this.t - h.t0;
+		if (age > MM_HINT_MS || !this.segs.length) {
+			this.hl = null;
+			return;
+		}
+		const a = 0.45 + 0.35 * Math.sin(age / 160);
+		ctx.fillStyle = "rgb(" + C.hint.join() + "," + a.toFixed(3) + ")";
+		let cells = 0, first = -1;
+		for (const [lo, hi] of h.ranges) {
+			const c1 = this.cellOf(Math.min(2 ** 32 - 1, Math.max(lo, hi - 1)));
+			for (let d = this.cellOf(lo); d <= c1; d++, cells++)
+				ctx.fillRect(this.cellX[d] * s, this.cellY[d] * s, s, s);
+			if (first < 0)
+				first = Math.round((this.cellOf(lo) + c1) / 2);
+		}
+		h.cells = cells;
+		if (first >= 0 && h.label) {
+			const [x, y] = this.cellPx(first);
+			this.label(ctx, h.label, x, y - 10 * dpr, dpr, "rgb(" + C.hint.join() + ")");
 		}
 	},
 

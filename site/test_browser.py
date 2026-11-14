@@ -16883,6 +16883,129 @@ def guestin_snapshot(browser, base, shots, problems, r):
         ctx.close()
 
 
+# The RTC's register B and VMware's GETTIME as a guest driver uses them:
+# alarm 11:22:33 (BCD) armed with the periodic and update interrupts, then
+# the host time and time zone through the backdoor (EAX magic, ECX 23).
+GUESTIN_PORTS_JS = """() => { const c = emulator.v86.cpu, io = c.io, rtc = c.devices.rtc;
+  const cmos = (i, v) => { io.port_write8(0x70, i); io.port_write8(0x71, v); };
+  cmos(0x01, 0x33); cmos(0x03, 0x22); cmos(0x05, 0x11);
+  const guestNow = GUEST.dateNow();
+  cmos(0x0b, rtc.cmos_b | 0x70);
+  c.reg32[0] = 0x564d5868; c.reg32[1] = 23;
+  const eax = io.port_read32(0x5658) >>> 0;
+  return { guestNow, alarm: rtc.next_interrupt_alarm, periodic: rtc.next_interrupt, update: rtc.update_interrupt_time,
+    eax, ebx: c.reg32[3] >>> 0, edx: c.reg32[2] | 0, pageTz: new Date().getTimezoneOffset(), dateIsReal: Date === RealDate }; }"""
+
+
+def guestin_edges(browser, base, shots, problems, r):
+    """hello paused on ?rtc=GUESTIN_RTC, the browser in Asia/Kolkata (UTC
+    +5:30): the RTC alarm a guest sets through register B is that day at
+    the alarm's time, the periodic and update interrupts start at the
+    guest's date, VMware's GETTIME gives the guest's date in seconds and
+    microseconds with a time zone offset of 0, and the page's own Date is
+    the browser's again afterwards. ?rtc= and ?seed= that cannot be read
+    are named on the Machine tab and the defaults used. A snapshot saved on
+    the real-time clock: restored on real time, the clock goes back to
+    the snapshot's; restored after a reload on the virtual clock, the
+    guest's date goes on from the browser date the RTC had at the save,
+    the run notes that a snapshot without an input log was restored and the
+    note over the screen names the Restore."""
+    tag = "edges"
+    ctx = browser.new_context(color_scheme="dark", viewport={"width": 1280, "height": 900}, timezone_id="Asia/Kolkata")
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10&rtc={GUESTIN_RTC}", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+            problems.append(f"{tag}: hello did not start paused")
+            return
+        x = page.evaluate(GUESTIN_PORTS_JS)
+        r["ports"] = x
+        start = datetime.datetime.fromisoformat(GUESTIN_RTC.replace("Z", "+00:00"))
+        alarm = int(start.replace(hour=11, minute=22, second=33).timestamp() * 1000)
+        if x["alarm"] != alarm:
+            problems.append(f"{tag}: the RTC alarm 11:22:33 set through register B is at {x['alarm']}, want {alarm} (that day, UTC)")
+        if not (iso_ms(GUESTIN_RTC) <= x["guestNow"] < iso_ms(GUESTIN_RTC) + 1000) or x["periodic"] != x["guestNow"] or \
+                x["update"] != x["guestNow"]:
+            problems.append(f"{tag}: periodic / update interrupts from {x['periodic']} / {x['update']}, the guest's date {x['guestNow']}")
+        if x["eax"] != x["guestNow"] // 1000 or x["ebx"] != x["guestNow"] % 1000 * 1000 or x["edx"] != 0:
+            problems.append(f"{tag}: VMware GETTIME gave {x['eax']} s + {x['ebx']} us, zone {x['edx']} min; "
+                            f"want {x['guestNow'] // 1000} s + {x['guestNow'] % 1000 * 1000} us, zone 0")
+        if x["pageTz"] != -330 or not x["dateIsReal"]:
+            problems.append(f"{tag}: after the guest's I/O the page's Date has offset {x['pageTz']} (want -330), is the browser's: {x['dateIsReal']}")
+
+        page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10&rtc=yesterday&seed=lots", timeout=120000)
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        show_tab(page, "machine")
+        line = page.text_content("#guest_in_text")
+        r["unreadable"] = line
+        want = (f"?rtc=yesterday is not a date (ISO 8601, e.g. {GUESTIN_DEFAULT_RTC}). ?seed=lots is not a number. RTC 2026-01-01 00:00:00 UTC "
+                "(from 2026-01-01 00:00:00 UTC) · RDRAND seed 1")
+        if line != want:
+            problems.append(f"{tag}: ?rtc=yesterday&seed=lots: the Machine tab says {line!r}, want {want!r}")
+        page.eval_on_selector("#vclock", "e => e.scrollIntoView({block: 'center'})")
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / "guestin-edges-unreadable.png"))
+
+        # A snapshot on the real-time clock.
+        page.goto(f"{base}/index.html?kernel=hello&mips=real", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
+            problems.append(f"{tag}: hello on real time did not end in 120 s")
+            return
+        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        st = snap_save(page, 1, False)
+        row = st["rows"][0]["id"]
+        saved = page.evaluate("({ clock: snapshots[0].meta.clock, time: snapshots[0].time, rtc: emulator.v86.cpu.devices.rtc.last_update, "
+                              "guest: 'rtcStart' in snapshots[0].meta })")
+        time.sleep(8)
+        later = page.evaluate("CLOCK.now()")
+        snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
+        wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or "failed" in page.text_content("#snap_status"), 30)
+        back = page.evaluate("CLOCK.now()")
+        r["real time restore"] = {"saved": saved, "before": later - saved["clock"], "after": back - saved["clock"]}
+        if saved["guest"] or page.get_attribute("#snap_status", "data-restored") != row or later - saved["clock"] < 8000 or \
+                not (0 <= back - saved["clock"] < 4000):
+            problems.append(f"{tag}: restored on real time: the clock {later - saved['clock']:.0f} ms past the snapshot's before, "
+                            f"{back - saved['clock']:.0f} ms after (want back at it); status {page.text_content('#snap_status')[:120]!r}")
+
+        page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10", timeout=120000)
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        show_tab(page, "snapshots")
+        snap_wait_rows(page, 1)
+        wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+        snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
+        wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or "failed" in page.text_content("#snap_status"), 30)
+        g = page.evaluate("({ now: GUEST.dateNow(), clock: CLOCK.now(), virtual: CLOCK.virtual, taint: INPUT.taint, steps: stepper.steps, "
+                          "run: document.getElementById('run_text').textContent })")
+        show_tab(page, "machine")
+        line = page.text_content("#guest_in_text")
+        # The page started paused at the reset vector; the note over the
+        # screen is the Restore's now (FAILS on 8c05ba7fe: "Paused at the
+        # reset vector." stayed over hello's end).
+        reason = page.text_content("#vm_reason") if page.is_visible("#vm_overlay") else None
+        r["virtual restore note"] = reason
+        if reason != f"Restored the snapshot “{st['rows'][0]['name']}”.":
+            problems.append(f"{tag}: after a Restore in a page started paused, the note over the screen says {reason!r}")
+        r["virtual restore"] = {"guest_minus_rtc": g["now"] - saved["rtc"], "line": line, "taint": g["taint"]}
+        iso = lambda ms: datetime.datetime.fromtimestamp(ms / 1000, datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        if page.get_attribute("#snap_status", "data-restored") != row or not g["virtual"] or not (0 <= g["now"] - saved["rtc"] < 1000):
+            problems.append(f"{tag}: restored on the virtual clock: the guest's date {g['now']}, the RTC's at the save {saved['rtc']} "
+                            f"(want it to go on from there); status {page.text_content('#snap_status')[:120]!r}")
+        if f"(from {iso(g['now'] - g['clock'])})" not in line or not line.startswith("RTC " + iso(saved["rtc"])[:16]):
+            problems.append(f"{tag}: the Machine tab after that Restore: {line!r}")
+        why = "a snapshot without an input log was restored"
+        if not g["taint"] or g["taint"]["why"] != why or why not in g["run"]:
+            problems.append(f"{tag}: the run after restoring a snapshot without an input log: taint {g['taint']}, {g['run']!r}")
+        page.eval_on_selector("#vclock", "e => e.scrollIntoView({block: 'center'})")
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / "guestin-edges-realtime-restored.png"))
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:2]}")
+    finally:
+        ctx.close()
+
+
 def guestin_shell_dates(browser, base, shots, name, problems, r):
     """Debian with its initramfs at full speed on ?rtc=GUESTIN_RTC: at the
     (initramfs) prompt `hwclock -u` (the guest reads the CMOS clock) and
@@ -16977,6 +17100,7 @@ def guestin_case(browser, base, shots, entries, debian, initrd):
         if not x["line"] or "browser" not in x["line"]:
             problems.append(f"hello on real time: the Machine tab line {x['line']!r}")
     guestin_snapshot(browser, base, shots, problems, r)
+    guestin_edges(browser, base, shots, problems, r)
     if debian:
         runs = [guestin_debian_stepped(browser, base, shots, debian[0], scheme, phone, f"debian-{scheme}-{390 if phone else 1280}", problems)
                 for scheme, phone in (("light", False), ("dark", True))]

@@ -398,6 +398,10 @@ async function restoreSnapshot(s) {
 			counting = false;
 			countNote = "A snapshot was restored: the counters stopped there.";
 		}
+		// The Debugger's note (shown over the screen while paused) said why
+		// the machine stopped where it was before ("Paused at the reset
+		// vector.", a Run to): now it is here because of the Restore.
+		$("dbg_status").textContent = "Restored the snapshot “" + s.name + "”.";
 		if (runState === "paused" || runState === "stepped")
 			afterStop();
 		$("snap_status").textContent = "Restored “" + s.name + "” (" + s.kernel + ").";

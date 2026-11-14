@@ -29,6 +29,7 @@ import functools
 import gzip
 import http.server
 import json
+import math
 import os
 import pathlib
 import random
@@ -1572,6 +1573,333 @@ def task_names_check(page, name, shots, r):
     return problems
 
 
+# The Calls tab's controls on a finished run (tasks_case, minified Linux):
+# every fillText of the canvas is recorded, so the checks read what was
+# drawn, not the page's own bookkeeping.
+GRAPH_SPY_JS = """() => { if (window.__ft) return; window.__ft = [];
+    const f = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (t, x, y, ...a) {
+        if (this.canvas.id === 'graph_canvas') __ft.push([String(t), x, y]); return f.call(this, t, x, y, ...a); };
+    const u = URL.createObjectURL; window.__blobs = [];
+    URL.createObjectURL = (b) => { const h = u(b); __blobs.push(h); return h; }; }"""
+# Redraw now; the texts drawn.
+GRAPH_DRAW_JS = "() => { __ft = []; G.dirty = true; graphTick(); return __ft; }"
+
+
+def graph_canvas_xy(page, x, y):
+    """Viewport point of canvas point (x, y)."""
+    b = page.locator("#graph_canvas").bounding_box()
+    return b["x"] + x, b["y"] + y
+
+
+def graph_controls(page, name, shots, r):
+    """Clicks on a task switch's label and on merged sub-pixel calls, Fit,
+    the wheel and a two-finger pinch (not in Top 30), a cancelled touch,
+    drags in the icicle (sticky labels of the rows scrolled away) and
+    transposed (time downwards) views, the depth cap's "+N" marks, "hide
+    interrupts", "chains", Enter and arrow keys, the info's Page tab
+    button, a call tree toggle and a search with more than 2,000 rows, two
+    quick presses that open a function (and swallow the click after it), a
+    bookmark on a Top 30 box, and the export's blob URL revoked after 10 s."""
+    problems = []
+    page.evaluate(GRAPH_SPY_JS)
+    syms = {s["name"]: s for s in json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]}
+    show_canvas(page)
+    with page.expect_download():
+        page.click("#graph_json")
+    blob_at = time.monotonic()
+    blob = page.evaluate("__blobs[__blobs.length - 1]")
+    texts = page.evaluate(GRAPH_DRAW_JS)
+
+    # A task switch's label: the info names the incoming task, as drawn.
+    sw = page.evaluate("""() => { const st = G.stepper, h = G.switchHits[0]; if (!h) return null;
+        return { i: h[0], lx: h[1], x: h[1] + h[3] / 2, y: h[2] + h[4] / 2, task: st.swTask[h[0]], at: st.swStep[h[0]] - st.sinceEntry }; }""")
+    if not sw:
+        problems.append(f"{name}: no task switch label drawn")
+    else:
+        label = next((t for t, x, y in texts if abs(x - sw["lx"] - 2) < 0.01 and abs(y - sw["y"]) < 0.01), None)
+        page.mouse.click(*graph_canvas_xy(page, sw["x"], sw["y"]))
+        time.sleep(0.3)
+        info, swname = page.inner_text("#graph_info"), page.get_attribute("#graph_info", "data-switch")
+        r["switch info"] = info[:120]
+        if not label or swname != label or f"Task switch {sw['at']:,} instructions from the entry, to task {sw['task']}: {label}" not in info:
+            problems.append(f"{name}: clicking the task switch label {label!r} ({sw}) shows {info[:160]!r} (data-switch {swname!r})")
+        time.sleep(0.7)  # the next press starts afresh
+
+    # Merged calls narrower than a pixel: a click zooms into their range.
+    m = page.evaluate("""() => { const st = G.stepper, L = G.layout;
+        for (const h of G.mergedHits) { const [x, y, w, hh, n, t0, t1] = h; const cx = x + w / 2, cy = y + hh / 2;
+            if (n < 2 || timelineFrameAt(cx, cy) >= 0 || G.switchHits.some(([, a, b, c, d]) => cx >= a - 2 && cx <= a + c + 2 && cy >= b - 2 && cy <= b + d + 2)) continue;
+            return { cx, cy, n, t0, t1, row: Math.round((y - G.areaTop + G.yOff) / 17) }; }
+        return null; }""")
+    if not m:
+        problems.append(f"{name}: no merged column of 2 or more calls to click")
+    else:
+        page.mouse.click(*graph_canvas_xy(page, m["cx"], m["cy"]))
+        time.sleep(0.4)
+        x0, x1 = page.evaluate("[G.x0, G.x1]")
+        pad = (m["t1"] - m["t0"]) * 0.05
+        info = page.inner_text("#graph_info")
+        boxes = page.evaluate("""([t0, t1, row]) => G.rects.filter(([k]) => G.layout.row[k] === row &&
+            G.stepper.fStart[k] >= t0 && G.stepper.fStart[k] < t1).length""", [m["t0"], m["t1"], m["row"]])
+        r["merged"] = [m["n"], m["row"], boxes, info[:80]]
+        if abs(x0 - (m["t0"] - pad)) > 1e-6 * x1 or abs(x1 - (m["t1"] + pad)) > 1e-6 * x1 or \
+                not info.startswith(f"{m['n']:,} calls in this range") or "zoomed in" not in info or boxes < 1:
+            problems.append(f"{name}: clicking {m['n']} merged calls [{m['t0']}, {m['t1']}] gave the window [{x0}, {x1}] "
+                            f"(want +-{pad:.1f}), {boxes} boxes in row {m['row']}, info {info[:120]!r}")
+        # Fit: the whole run again.
+        page.click("#graph_fit")
+        time.sleep(0.3)
+        got = page.evaluate("[G.x0, G.x1, G.stepper.sinceEntry, G.stepper.steps]")
+        if got[0] != got[2] or got[1] != got[3]:
+            problems.append(f"{name}: Fit shows [{got[0]}, {got[1]}], the run is [{got[2]}, {got[3]}]")
+
+    # The wheel zooms about the pointer; it does nothing in Top 30.
+    w = page.evaluate("document.getElementById('graph_canvas').clientWidth")
+    px = round(w * 0.3)
+    x0, x1 = page.evaluate("[G.x0, G.x1]")
+    page.mouse.move(*graph_canvas_xy(page, px, 200))
+    page.mouse.wheel(0, -500)
+    time.sleep(0.4)
+    a0, a1 = page.evaluate("[G.x0, G.x1]")
+    span = (x1 - x0) / math.e
+    t = x0 + px / w * (x1 - x0)
+    r["wheel"] = [round(x1 - x0), round(a1 - a0)]
+    if abs(a1 - a0 - span) > 1e-6 * span or abs(a0 - (t - px / w * span)) > 1e-6 * span:
+        problems.append(f"{name}: a wheel step of -500 at x={px} zoomed [{x0}, {x1}] to [{a0}, {a1}], want span {span:.0f} about {t:.0f}")
+    page.click("#gview_top")
+    time.sleep(0.3)
+    page.mouse.move(*graph_canvas_xy(page, px, 100))
+    page.mouse.wheel(0, -500)
+    time.sleep(0.2)
+    if page.evaluate("[G.x0, G.x1]") != [a0, a1]:
+        problems.append(f"{name}: the wheel over Top 30 changed the timeline window")
+    page.click("#gview_timeline")
+    page.click("#graph_fit")
+    time.sleep(0.3)
+
+    # Two fingers 100 px apart moved to 300 px: a third of the span.
+    # In Top 30 a pinch does nothing to the timeline.
+    cdp = page.context.new_cdp_session(page)
+    cx, cy = graph_canvas_xy(page, w / 2, 200)
+    tp = lambda i, d: {"x": cx + (d if i == 2 else -d), "y": cy, "id": i}
+
+    def pinch():
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [tp(1, 50), tp(2, 50)]})
+        for i in range(1, 6):
+            cdp.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [tp(1, 50 + 20 * i), tp(2, 50 + 20 * i)]})
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+        time.sleep(0.3)
+    x0, x1 = page.evaluate("[G.x0, G.x1]")
+    for v in ("top", "timeline"):
+        page.click("#gview_" + v)
+        time.sleep(0.3)
+        pinch()
+    a0, a1 = page.evaluate("[G.x0, G.x1]")
+    r["pinch"] = round((x1 - x0) / (a1 - a0), 3)
+    if abs(r["pinch"] - 3) > 0.01:
+        problems.append(f"{name}: a pinch from 100 to 300 px in Top 30, then in the timeline, zoomed by {r['pinch']}, want 3 (once)")
+    # A cancelled touch leaves no pointer behind.
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [tp(1, 0)]})
+    held = page.evaluate("G.pointers.size")
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchCancel", "touchPoints": []})
+    time.sleep(0.2)
+    after = page.evaluate("[G.pointers.size, G.press === null]")
+    if held != 1 or after != [0, True]:
+        problems.append(f"{name}: a touch held {held} pointers, after its cancel {after}")
+    cdp.detach()
+    page.click("#graph_fit")
+    time.sleep(0.3)
+
+    # Icicle drag upwards by 60 px: the rows scrolled away keep the names
+    # of the calls over the middle of the window on top.
+    cx, cy = graph_canvas_xy(page, w / 2, 300)
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    page.mouse.move(cx, cy - 60, steps=4)
+    page.mouse.up()
+    time.sleep(0.3)
+    texts = page.evaluate(GRAPH_DRAW_JS)
+    want = page.evaluate("""() => { const st = G.stepper, L = G.layout, tm = (G.x0 + G.x1) / 2;
+        for (let k = 0; k < st.fStart.length; k++) if (L.head[k] === k && L.row[k] === 0 && st.fStart[k] <= tm && fEnd(st, k) > tm)
+            return st.nodeName(st.fNode[k]); return null; }""")
+    sticky = [t for t, x, y in texts if t.startswith("↑ ")]
+    r["sticky"] = [page.evaluate("G.yOff"), want, sticky[:1]]
+    if page.evaluate("G.yOff") != 60 or not want or not sticky or not sticky[0].startswith("↑ " + want):
+        problems.append(f"{name}: a 60 px drag upwards: yOff {page.evaluate('G.yOff')}, sticky labels {sticky[:2]}, want the top row's {want!r} first")
+    page.screenshot(path=str(shots / f"graph-sticky-{name}-1100.png"))
+    page.click("#graph_fit")
+
+    # Transposed, depth cap 3: "+N" past the cap; a drag moves the time
+    # window by the dragged share of the height and scrolls the columns.
+    page.click("#graph_transpose")
+    page.evaluate("document.getElementById('graph_depth').value = 3; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
+    time.sleep(0.3)
+    texts = page.evaluate(GRAPH_DRAW_JS)
+    deeper = [t for t, x, y in texts if re.fullmatch(r"\+\d+", t)]
+    rows = page.evaluate("Math.max(...G.rects.map(([k]) => G.layout.row[k]))")
+    r["transposed +N"] = [len(deeper), rows]
+    if not deeper or rows > 3:
+        problems.append(f"{name}: transposed with depth 3: {len(deeper)} '+N' marks, rows up to {rows}")
+    page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
+    x0, x1, xoff, ch = page.evaluate("[G.x0, G.x1, G.xOff, document.getElementById('graph_canvas').clientHeight]")
+    cx, cy = graph_canvas_xy(page, w / 2, 200)
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    page.mouse.move(cx - 50, cy + 80, steps=4)
+    page.mouse.up()
+    time.sleep(0.3)
+    a0, a1, aoff = page.evaluate("[G.x0, G.x1, G.xOff]")
+    dt = 80 / (ch - 26 - 24) * (x1 - x0)
+    r["transposed drag"] = [round(x0 - a0), round(dt), aoff]
+    if abs((x0 - a0) - dt) > 1e-6 * (x1 - x0) or abs(a1 - a0 - (x1 - x0)) > 1e-6 * (x1 - x0) or aoff != xoff + 50:
+        problems.append(f"{name}: a transposed drag of (-50, +80) px moved [{x0}, {x1}] to [{a0}, {a1}] (want -{dt:.0f}), xOff {xoff} -> {aoff}")
+    page.screenshot(path=str(shots / f"graph-transposed-drag-{name}-1100.png"))
+    page.click("#graph_fit")
+    page.click("#graph_transpose")
+    time.sleep(0.3)
+
+    # "hide interrupts" off: the interrupt frames are drawn; the selection goes.
+    page.evaluate("G.selected = 0; renderGraphInfo()")
+    n_on = page.evaluate("G.rects.filter(([k]) => G.stepper.fIrq[k]).length")
+    page.uncheck("#graph_fold")
+    time.sleep(0.3)
+    n_off, sel = page.evaluate("[G.rects.filter(([k]) => G.stepper.fIrq[k]).length, G.selected]")
+    page.check("#graph_fold")
+    time.sleep(0.3)
+    n_back = page.evaluate("G.rects.filter(([k]) => G.stepper.fIrq[k]).length")
+    r["irq boxes"] = [n_on, n_off, n_back]
+    if n_on or not n_off or n_back or sel != -1:
+        problems.append(f"{name}: interrupt boxes with hide interrupts on/off/on {r['irq boxes']}, selection after the toggle {sel}")
+
+    # "chains": single-call chains drawn as one box "a › b" only when ticked.
+    texts = page.evaluate(GRAPH_DRAW_JS)
+    on = sum(" › " in t for t, x, y in texts)
+    page.uncheck("#graph_chains")
+    time.sleep(0.3)
+    off = sum(" › " in t for t, x, y in page.evaluate(GRAPH_DRAW_JS))
+    page.check("#graph_chains")
+    r["chain labels"] = [on, off]
+    if not on or off:
+        problems.append(f"{name}: labels with ' › ' with chains on {on}, off {off}")
+
+    # Arrows: with nothing selected, the widest box of the top row; Right
+    # the next box of its row to the right; Up from the top row stays;
+    # Ctrl+Left is not a move.
+    page.evaluate("G.selected = -1; renderGraphInfo(); G.dirty = true; graphTick()")
+    rects = page.evaluate("G.rects.map(([k, x, y, w, h]) => [k, x, w, G.layout.row[k]])")
+    top = min(x[3] for x in rects)
+    first = max((x for x in rects if x[3] == top), key=lambda x: x[2])
+    right = min((x for x in rects if x[3] == top and x[1] > first[1]), key=lambda x: x[1] - first[1], default=None)
+    page.focus("#graph_canvas")
+    # Enter with nothing selected opens nothing.
+    entries0 = nav_at(page)
+    page.keyboard.press("Enter")
+    time.sleep(0.5)
+    if shown_tab(page) != "calls" or nav_at(page) != entries0:
+        problems.append(f"{name}: Enter on the canvas with nothing selected opened {shown_tab(page)!r}, history {entries0} -> {nav_at(page)}")
+    seq = []
+    for key in ("ArrowRight", "ArrowRight", "ArrowUp", "Control+ArrowLeft"):
+        page.keyboard.press(key)
+        time.sleep(0.15)
+        seq.append(page.evaluate("G.selected"))
+    want = [first[0], right[0] if right else first[0]]
+    want += [want[1], want[1]]
+    r["arrows"] = [seq, want]
+    if seq != want:
+        problems.append(f"{name}: arrows Right, Right, Up, Ctrl+Left selected {seq}, want {want}")
+
+    # The info's "Page tab" button: the listing at the function's entry.
+    xy = graph_box_xy(page, "start_kernel")
+    page.mouse.click(xy["x"], xy["y"])
+    time.sleep(0.7)
+    page.locator("#graph_info").get_by_role("button", name="Page tab", exact=True).first.click()
+    ok = wait_for(lambda: shown_tab(page) == "page", 5)
+    nav_settle(page)
+    got = page.evaluate("selectedPage")
+    r["page button"] = [ok, got]
+    if not ok or got != syms["start_kernel"]["paddr"] // 4096:
+        problems.append(f"{name}: the info's Page tab button showed tab {shown_tab(page)!r}, page {got}, want {syms['start_kernel']['paddr'] // 4096}")
+    page.go_back()
+    wait_for(lambda: shown_tab(page) == "calls", 5)
+    time.sleep(0.6)
+
+    # Two presses 15 px apart (no dblclick): the second opens the function,
+    # and a click right after the open does not reach the Page tab.
+    xy = graph_box_xy(page, "start_kernel")
+    # Clicks as the document sees them first (ms since the open) and those
+    # that reach it: swallowed exactly when within 500 ms of the open (on a
+    # slow host the click after the open may come later than that).
+    page.evaluate("""() => { window.__cap = []; window.__bub = [];
+        const dt = () => (G.openedAt ? Math.round(realNow() - G.openedAt) : null);
+        document.addEventListener('click', () => __cap.push(dt()), true);
+        document.addEventListener('click', () => __bub.push(dt())); }""")
+    entries0 = nav_at(page)
+    page.mouse.click(xy["x"], xy["y"])
+    page.mouse.click(xy["x"] + 15, xy["y"])
+    ok = wait_for(lambda: page.evaluate("tab") == "page", 5, 0.02)
+    page.mouse.click(5, 300)
+    time.sleep(0.7)
+    page.mouse.click(5, 300)
+    cap, bub = page.evaluate("[__cap, __bub]")
+    r["two presses"] = [ok, cap, bub, entries0, nav_at(page)]
+    want = [t for t in cap if t is None or t >= 500]
+    if not ok or page.evaluate("selectedPage") != syms["start_kernel"]["paddr"] // 4096 or len(cap) != 4 or \
+            cap[:2] != [None, None] or cap[2] is None or bub != want:
+        problems.append(f"{name}: two presses 15 px apart on start_kernel: Page tab {ok}; clicks (ms after the open) {cap}, "
+                        f"reaching the page {bub}, want {want} (within 500 ms of the open swallowed)")
+    page.go_back()
+    wait_for(lambda: shown_tab(page) == "calls", 5)
+    time.sleep(0.6)
+
+    # Call tree: a row's toggle opens and closes its callees.
+    page.click("#gview_tree")
+    time.sleep(0.4)
+    rows = "#graph_tree .trow:not(.thead)"
+    rows0 = page.locator(rows).count()
+    i = page.evaluate("""(sel) => [...document.querySelectorAll(sel)].findIndex((r) => {
+        const t = r.querySelector('.ttog'); return !t.disabled && t.textContent === '\u25b8'; })""", rows)
+    tname = page.locator(rows).nth(i).get_attribute("data-name")
+    page.locator(rows).nth(i).locator(".ttog").click()
+    rows1 = page.locator(rows).count()
+    page.locator(rows).nth(i).locator(".ttog").click()
+    rows2 = page.locator(rows).count()
+    r["tree toggle"] = [tname, rows0, rows1, rows2]
+    if not rows1 > rows0 or rows2 != rows0:
+        problems.append(f"{name}: the call tree toggle of {tname}: rows {rows0} -> {rows1} -> {rows2}")
+    # A search matching more than 2,000 call paths shows 2,001 rows and says so.
+    page.fill("#graph_search", "_")
+    time.sleep(0.5)
+    many = [page.locator(rows).count(), page.evaluate("document.getElementById('graph_tree').lastChild.textContent")]
+    page.fill("#graph_search", "")
+    r["tree search _"] = many
+    if many[0] != 2001 or many[1] != "(more rows not shown: search to narrow)":
+        problems.append(f"{name}: the call tree searched for '_': {many}, want 2001 rows and the note")
+
+    # Top 30: a right click on a box bookmarks its function; its box gets a ★.
+    page.click("#gview_top")
+    time.sleep(0.5)
+    xy = graph_box_xy(page, "start_kernel", "top")
+    page.mouse.click(xy["x"], xy["y"], button="right")
+    b = bm_dialog_save(page, problems, f"{name} Top 30", "fn", want_default="start_kernel")
+    time.sleep(0.5)
+    texts = page.evaluate(GRAPH_DRAW_JS)
+    marks = page.get_attribute("#graph_canvas", "data-bmarks")
+    r["top bookmark"] = [b and b["t"], marks]
+    if not b or b["t"] != {"pa": syms["start_kernel"]["paddr"], "name": "start_kernel"} or marks != "1" or \
+            not any(t.startswith("★ start_kernel") for t, x, y in texts):
+        problems.append(f"{name}: a Top 30 right click bookmarked {b and b['t']}, {marks} boxes marked")
+    page.screenshot(path=str(shots / f"graph-top-bookmark-{name}-1100.png"))
+    page.click("#gview_timeline")
+
+    # The JSON export's blob URL is revoked 10 s after the download.
+    time.sleep(max(0, 10.5 - (time.monotonic() - blob_at)))
+    gone = page.evaluate("(h) => fetch(h).then(() => false, () => true)", blob)
+    if not gone:
+        problems.append(f"{name}: the JSON export's blob URL still loads 10 s later")
+    return problems
+
+
 def tasks_case(browser, base, shots, name):
     """Task switches on a full counted run: a resumed task continues its
     suspended calls (no scheduler code as a root, no orphaned calls), one
@@ -1591,6 +1919,8 @@ def tasks_case(browser, base, shots, name):
     problems += cp
     r["coverage_rows"] = len(cov["rows"])
     r["coverage_1x_8x"] = [row[1:] for row in cov["rows"][:6]]
+    if name == "minified-linux":
+        problems += graph_controls(page, name, shots, r)
     problems += task_names_check(page, name, shots, r)
     page.close()
     if r["tasks"] < 2:
@@ -9845,6 +10175,18 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
     page.emulate_media(color_scheme=scheme)
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    tagw = f"{name} {width} {scheme}"
+    if not phone:
+        # At the reset vector the timeline has no box: the arrow keys select nothing.
+        show_tab(page, "calls")
+        page.focus("#graph_canvas")
+        page.keyboard.press("ArrowRight")
+        time.sleep(0.3)
+        empty = page.evaluate("[G.rects.length, G.selected, tab]")
+        r["arrow at reset"] = empty
+        if empty != [0, -1, "calls"]:
+            problems.append(f"{tagw}: ArrowRight on the empty timeline at the reset vector: [boxes, selected, tab] {empty}")
+        show_tab(page, "debugger")
     page.fill("#dbg_addr", hex(sym["vaddr"]))
     page.click("#dbg_runto")
     ok, at, status = run_to_wait(page, {sym["paddr"]}, 240)
@@ -9859,7 +10201,6 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
     if not wait_for(lambda: page.evaluate("G.rects.length > 0"), 20):
         ctx.close()
         return [f"{name}: the Calls timeline drew no box"], r
-    tagw = f"{name} {width} {scheme}"
 
     def select(xy):
         page.touchscreen.tap(xy["x"], xy["y"]) if phone else page.mouse.click(xy["x"], xy["y"])

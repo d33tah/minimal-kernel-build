@@ -282,14 +282,6 @@ class Stepper {
 		return out;
 	}
 
-	maxDepth() {
-		let m = 0;
-		const d = this.fDepth;
-		for (let k = 0; k < d.length; k++)
-			if (d[k] > m) m = d[k];
-		return m;
-	}
-
 	pushFrame(node, t, irq, esp) {
 		const k = this.fStart.length;
 		const parent = this.stack.length ? this.stack[this.stack.length - 1] : this.lastTop;

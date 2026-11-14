@@ -61,7 +61,6 @@ function graphReset(st) {
 
 // ---- data -------------------------------------------------------------------
 
-const nowStep = () => (G.stepper ? G.stepper.steps : 0);
 // The run starts at the kernel entry once it has been reached.
 const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
 const fEnd = (st, k) => (st.fEnd[k] < 0 ? recTo(st) : st.fEnd[k]);
@@ -537,18 +536,8 @@ function drawTimeline() {
 		G.cover.set(r, covered);
 	}
 	ctx.fillStyle = "#fff";
-	const pinned = new Set(); // transposed: one label pinned at the top per column
 	for (const [, x, y, rw, rh, label] of labels) {
-		let ly = y + rh / 2;
-		if (G.transpose) {
-			ly = y + 7;
-			if (y < areaTop) {
-				if (pinned.has(x) || y + rh < areaTop + 14)
-					continue;
-				pinned.add(x);
-				ly = areaTop + 7;
-			}
-		}
+		const ly = G.transpose ? y + 7 : y + rh / 2;
 		const text = fitLabel(ctx, label, rw - 6);
 		if (text) {
 			ctx.fillText(text, Math.max(x, 0) + 3, ly);
@@ -1067,8 +1056,6 @@ function drawTop() {
 	for (const [key, count] of edges) {
 		const [a, b] = key.split(",").map(Number);
 		const pa = pos.get(a), pb = pos.get(b);
-		if (!pa || !pb)
-			continue;
 		ctx.lineWidth = 0.8 + Math.log2(count) * 0.5;
 		ctx.globalAlpha = pb.y > pa.y ? 0.6 : 0.25; // upward: a symbol also called from deeper down
 		ctx.setLineDash(pb.y > pa.y ? [] : [4, 3]);
@@ -1434,8 +1421,6 @@ function initGraph() {
 			const d0 = Math.abs(prev[i] - other[i]), d1 = Math.abs(cur[i] - other[i]);
 			if (d0 > 10)
 				zoomAt((x + other[0]) / 2, (y + other[1]) / 2, d1 / d0);
-			if (G.press)
-				G.press.moved = true;
 		}
 		G.pointers.set(ev.pointerId, [x, y]);
 	});

@@ -30,7 +30,10 @@ function genStatus(text) {
 }
 
 // key: symimport.js imageKey() of the bzImage (null without storage).
-async function genImport(file, key) {
+// Each step is a function of its own, called when the one before it ends
+// (no await inside: e2e coverage, site/jscov.py, splits a function's run
+// at the takes it awaits across).
+function genImport(file, key) {
 	if (GEN.worker)
 		GEN.worker.terminate();
 	const sha = key ? key.slice(MAP_KEY.length, MAP_KEY.length + 16) : String(Date.now());
@@ -38,34 +41,46 @@ async function genImport(file, key) {
 	const w = GEN.worker = new ClangWorker(withV("genworker.js"));
 	w.onprogress = (m) => { if (mine === GEN) genStatus("Making the kernel's data files in this browser: " + m.progress + "…"); };
 	genStatus("Making the kernel's data files in this browser…");
-	let r;
-	try {
-		r = await w.request({ op: "gen", file, name: file.name, clang: new URL("clang/clang.wasm", location.href).href });
-	} catch (e) {
-		if (mine === GEN) {
-			GEN.state = "failed";
-			GEN.note = "The data files of " + file.name + " were not made (" + e.message + "): file:line and variables come from its DWARF as they are needed.";
-			genStatus();
-			w.terminate();
-			GEN.worker = null;
-		}
+	return w.request({ op: "gen", file, name: file.name, clang: new URL("clang/clang.wasm", location.href).href })
+		.then((r) => genMade(mine, r), (e) => genFailed(mine, e));
+}
+
+function genFailed(mine, e) {
+	if (mine !== GEN)
 		return;
-	}
+	GEN.state = "failed";
+	GEN.note = "The data files of " + GEN.name + " were not made (" + e.message + "): file:line and variables come from its DWARF as they are needed.";
+	genStatus();
+	GEN.worker.terminate();
+	GEN.worker = null;
+}
+
+function genMade(mine, r) {
 	if (mine !== GEN)
 		return;
 	for (const [p, b] of r.files)
 		GEN.files.set(GEN.base + p, b);
 	GEN.why = r.why;
 	GEN.secs = r.ms / 1000; // the Worker's clock: the page's may be clock.js's virtual one
-	if (key)
-		await dbgIdbOp("readwrite", (s) => s.put({ name: file.name, why: r.why, secs: GEN.secs, files: r.files }, key + ":gen"));
-	if (mine === GEN)
-		genApply();
+	genApply();
+	genKeep();
+}
+
+// IndexedDB keeps the files for this bzImage (dbgForget drops them with the rest).
+function genKeep() {
+	if (!GEN.key)
+		return;
+	const files = [...GEN.files].map(([k, b]) => [k.slice(GEN.base.length), b]);
+	const rec = { name: GEN.name, why: GEN.why, secs: GEN.secs, files };
+	dbgIdbOp("readwrite", (s) => s.put(rec, GEN.key + ":gen"));
 }
 
 // After a reload: the files made for this bzImage before.
-async function genRestore(key) {
-	const rec = key ? await dbgIdbOp("readonly", (s) => s.get(key + ":gen")) : undefined;
+function genRestore(key) {
+	return key ? dbgIdbOp("readonly", (s) => s.get(key + ":gen")).then((rec) => genRestored(key, rec)) : Promise.resolve(false);
+}
+
+function genRestored(key, rec) {
 	if (!rec || !rec.files)
 		return false;
 	if (GEN.worker)
@@ -119,7 +134,7 @@ function genApply() {
 
 // A source tree picked (source.js) for a kernel whose files were made
 // here: src/ from it, as gen-src.js makes it in CI.
-async function genSrcPicked() {
+function genSrcPicked() {
 	if (GEN.state !== "done" || image !== GEN.image || !genGet("dwarf/index.json") || SRC.mode !== "picked" || !SRC.entries)
 		return;
 	const mine = GEN, pick = SRC;
@@ -127,19 +142,19 @@ async function genSrcPicked() {
 	const w = GEN.worker || (GEN.worker = new ClangWorker(withV("genworker.js")));
 	w.onprogress = (m) => { if (mine === GEN) genStatus("Indexing the C source in this browser: " + m.progress + "…"); };
 	genStatus("Indexing the C source in this browser…");
-	let r;
-	try {
-		r = await w.request({ op: "src", dwarf, tree: [...pick.entries], origin: pick.info + ", indexed in this browser" });
-	} catch (e) {
-		if (mine === GEN)
-			genStatus(GEN.note + " The C source was not indexed (" + e.message + "): its lines are read from the pick as they are shown.");
-		return;
-	}
+	return w.request({ op: "src", dwarf, tree: [...pick.entries], origin: pick.info + ", indexed in this browser" })
+		.then((r) => genSrcMade(mine, pick, r), (e) => {
+			if (mine === GEN)
+				genStatus(GEN.note + " The C source was not indexed (" + e.message + "): its lines are read from the pick as they are shown.");
+		});
+}
+
+function genSrcMade(mine, pick, r) {
 	if (mine !== GEN || pick !== SRC)
 		return;
 	if (r.pastEnd.length) {
 		genStatus(GEN.note + " " + pick.name + " is not the tree the kernel was built from: " + r.pastEnd.length +
-			" files are shorter than the lines its DWARF names (" + r.pastEnd.slice(0, 3).join(", ") + ").");
+			" files are shorter than the lines its DWARF names (" + r.pastEnd.slice(0, 3).join(", ") + "); its lines are read from the pick as they are shown.");
 		return;
 	}
 	for (const k of [...GEN.files.keys()])
@@ -147,10 +162,6 @@ async function genSrcPicked() {
 			GEN.files.delete(k);
 	for (const [p, b] of r.files)
 		GEN.files.set(GEN.base + p, b);
-	if (GEN.key) {
-		const all = [...GEN.files].map(([k, b]) => [k.slice(GEN.base.length), b]);
-		await dbgIdbOp("readwrite", (s) => s.put({ name: GEN.name, why: GEN.why, secs: GEN.secs, files: all }, GEN.key + ":gen"));
-	}
-	if (mine === GEN && pick === SRC)
-		genApply();
+	genApply();
+	genKeep();
 }

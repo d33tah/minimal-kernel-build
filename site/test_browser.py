@@ -21076,8 +21076,20 @@ def genimport_case(browser, base, shots):
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_bytes(gzip.decompress(gz.read_bytes()))
         show_tab(page, "machine")
-        page.set_input_files("#src_dir", str(tree))
-        wait_for(lambda: page.evaluate("SRC.mode === 'shipped' && !!SRC.have && /indexed in this browser/.test(SRC.info || '')"), 60)
+        # Another tree first: a file shorter than the lines the DWARF names.
+        wrong = pathlib.Path(tmp) / "wrong"
+        shutil.copytree(tree, wrong)
+        (wrong / "init" / "main.c").write_text("\n".join((tree / "init" / "main.c").read_text().split("\n")[:10]))
+        page.set_input_files("#src_dir", str(wrong))
+        wait_for(lambda: "is not the tree the kernel was built from" in page.inner_text("#gen_status"), 60)
+        r["wrong_tree"] = [page.evaluate("SRC.mode"), page.inner_text("#gen_status")[-160:]]
+        if r["wrong_tree"][0] != "picked" or "init/main.c" not in r["wrong_tree"][1]:
+            problems.append(f"a tree that is not the kernel's: {r['wrong_tree']}")
+        # The right tree, twice (the second replaces the first's src/).
+        for _ in range(2):
+            page.set_input_files("#src_dir", str(tree))
+            wait_for(lambda: page.evaluate("SRC.mode === 'picked'"), 10)
+            wait_for(lambda: page.evaluate("SRC.mode === 'shipped' && !!SRC.have && /indexed in this browser/.test(SRC.info || '')"), 60)
         r["src"] = page.evaluate("({ mode: SRC.mode, info: SRC.info, have: SRC.have ? SRC.have.size : 0 })")
         want = json.loads((kdir / "src" / "index.json").read_text())["files"]
         if r["src"]["mode"] != "shipped" or r["src"]["have"] != len(want):
@@ -21106,6 +21118,19 @@ def genimport_case(browser, base, shots):
     r["reload"] = page.evaluate("({ gen: GEN.state, restored: !!GEN.restored, mode: DBG.mode, src: SRC.mode, insns: disasm ? disasm.insns.length : null, status: $('gen_status').textContent })")
     if not r["reload"]["restored"] or r["reload"]["mode"] != "shards" or r["reload"]["src"] != "shipped" or not r["reload"]["insns"]:
         problems.append(f"after a reload: {r['reload']}")
+    page.close()
+    # Another kernel chosen while the files are made: they are not used.
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
+    wait_for(lambda: page.evaluate("!!(symbols && image)"), 60)
+    page.set_input_files("#symfile", str(elf))
+    wait_for(lambda: page.evaluate("GEN.state === 'running'"), 30)
+    page.select_option("#kernel", "hello")
+    wait_for(lambda: page.evaluate("GEN.state === null && image.name === 'hello'"), 60)
+    r["switched"] = page.evaluate("({ gen: GEN.state, kernel: image.name, mode: DBG.mode, imported: !!(symbols && symbols.imported) })")
+    if r["switched"]["gen"] is not None or r["switched"]["imported"] or r["switched"]["kernel"] != "hello":
+        problems.append(f"another kernel while the files were made: {r['switched']}")
     page.close()
     # An offset typed by hand: the files would place code elsewhere, none is made.
     page = browser.new_page(viewport={"width": 1280, "height": 1000})

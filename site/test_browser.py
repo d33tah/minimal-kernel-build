@@ -16133,6 +16133,206 @@ def cfi_unwind_checks(page, hi, problems, r):
             problems.append(f"unwind on the CFI fixture, {name}: {json.dumps(u)[:400]}")
 
 
+# CFI the assembler does not write: .eh_frame built here byte by byte
+# into a copy of the fixture (the section header points at bytes appended
+# to the file): CIE version 1 with "zPLR" (a personality pointer, an LSDA
+# in each FDE), FDE pointers as uleb128, sleb128, pc-relative sdata2 and
+# udata2 (an FDE of no code here), DW_CFA_expression and DW_CFA_restore
+# of a CIE rule (rows against llvm-dwarfdump's), and
+# DW_CFA_GNU_negative_offset_extended (against GNU readelf's, which
+# llvm-dwarfdump does not know); broken copies give their error.
+def cfi_uleb(v):
+    out = bytearray()
+    while True:
+        b, v = v & 0x7f, v >> 7
+        out.append(b | (0x80 if v else 0))
+        if not v:
+            return bytes(out)
+
+
+def cfi_sleb(v):
+    out = bytearray()
+    while True:
+        b, v = v & 0x7f, v >> 7
+        if (v == 0 and not b & 0x40) or (v == -1 and b & 0x40):
+            return bytes(out + bytes([b]))
+        out.append(b | 0x80)
+
+
+def cfi_entry(body):
+    """A length-prefixed CIE/FDE padded with DW_CFA_nop to 4 bytes."""
+    body += bytes(-(len(body) + 4) % 4)
+    return struct.pack("<I", len(body)) + body
+
+
+def cfi_cie(eh, ver, aug, augdata, init):
+    body = struct.pack("<I", 0 if eh else 0xffffffff) + bytes([ver]) + aug.encode() + b"\0" + (b"\4\0" if ver >= 4 else b"")
+    body += cfi_uleb(1) + cfi_sleb(-4) + (b"\x08" if ver == 1 else cfi_uleb(8))
+    if aug.startswith("z"):
+        body += cfi_uleb(len(augdata)) + augdata
+    return cfi_entry(body + init)
+
+
+def cfi_eh_frame(sec_addr, f2=None):
+    """The crafted .eh_frame at virtual sec_addr: [(lo, hi)] of its FDEs with code."""
+    out = bytearray()
+
+    def fde(cie_at, pc, rng, aug, prog):
+        here = len(out)
+        out.extend(cfi_entry(struct.pack("<I", here + 4 - cie_at) + pc + rng + (cfi_uleb(len(aug)) + aug if aug is not None else b"") + prog))
+    init = bytes([0x0c, 4, 4, 0x88, 1])  # CFA=ESP+4, EIP=[CFA-4]
+    a = len(out)
+    out.extend(cfi_cie(True, 1, "zPLR", bytes([0x00]) + struct.pack("<I", 0) + bytes([0x00, 0x01]), init))
+    # f1 [+0, +6): uleb128 pointers; CFA+8, EBP, EBX at CFA+12 (negative
+    # offset extended), EIP restored to the CIE's rule, EDI by expression.
+    fde(a, cfi_uleb(CFI_BASE), cfi_uleb(6), struct.pack("<I", 0),
+        bytes([0x41, 0x0e, 8, 0x85, 2, 0x41, 0x83, 3, 0x88, 3, 0x41, 0xc8, 0x41, 0x10, 7, 2, 0x75, 0]))
+    c = len(out)
+    out.extend(cfi_cie(True, 3, "zR", bytes([0x09]), init))
+    fde(c, cfi_sleb(CFI_BASE + 6), cfi_sleb(4), b"", bytes([0x42, 0x0e, 12]))
+    d = len(out)
+    out.extend(cfi_cie(True, 1, "zR", bytes([0x1a]), init))
+    here = len(out) + 8
+    fde(d, struct.pack("<h", CFI_BASE + 10 - (sec_addr + here)), struct.pack("<h", 3), b"", bytes([0x41, 0x0e, 16]))
+    e = len(out)
+    out.extend(cfi_cie(True, 1, "zR", bytes([0x02]), init))
+    fde(e, struct.pack("<H", 0x1234), struct.pack("<H", 2), b"", b"")
+    out.extend(bytes(4))
+    return bytes(out), [(CFI_BASE, CFI_BASE + 6), (CFI_BASE + 6, CFI_BASE + 10), (CFI_BASE + 10, CFI_BASE + 13)]
+
+
+def cfi_with_section(b, name, content=None, rename=None):
+    """ELF bytes with section name's contents replaced by content (appended
+    to the file) or the section renamed."""
+    x = bytearray(b)
+    shoff, = struct.unpack_from("<I", b, 0x20)
+    shentsize, shnum, shstrndx = struct.unpack_from("<HHH", b, 0x2e)
+    strs = struct.unpack_from("<I", b, shoff + shstrndx * shentsize + 16)[0]
+    for k in range(shnum):
+        h = shoff + k * shentsize
+        n = strs + struct.unpack_from("<I", b, h)[0]
+        if b[n:b.index(0, n)] != name.encode():
+            continue
+        if rename:
+            x[n:n + len(rename)] = rename.encode()
+        if content is not None:
+            struct.pack_into("<II", x, h + 16, len(x), len(content))
+            x += content
+        return bytes(x), struct.unpack_from("<I", b, h + 12)[0]
+    raise KeyError(name)
+
+
+CFI_ERR_JS = """async ([b64, offset]) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const w = new Worker('dwarfworker.js' + location.search);
+    const ask = (m) => new Promise((res) => { w.onmessage = (e) => res(e.data); w.postMessage(m); });
+    const o = await ask({ type: 'open', file: new File([bytes], 'cfi.elf'), offset });
+    const c = o.ok ? await ask({ type: 'cfi' }) : null;
+    w.terminate();
+    window.__cfi = c && c.table;
+    return c ? c.why || c.message || c.source : o.why;
+}"""
+
+
+def cfi_crafted_checks(page, tmp, problems, r):
+    base = cfi_fixture(tmp, "eh_frame").read_bytes()
+    _, eh_addr = cfi_with_section(base, ".eh_frame", b"")
+    eh, fdes_want = cfi_eh_frame(eh_addr)
+    hi = CFI_BASE + 0xf
+
+    def rows_check(kind, data, flag):
+        elf = tmp / f"crafted-{kind}.elf"
+        elf.write_bytes(data)
+        src = page.evaluate(CFI_ERR_JS, [base64.b64encode(data).decode(), CFI_OFFSET])
+        fdes = dwarfdump_cfi(str(elf))
+        want = {}
+        for va in range(CFI_BASE, hi + 1):
+            f = next((f for f in fdes if f[0] <= va < f[1]), None)
+            prev = [t for a, t in (f[2] if f else []) if a <= va]
+            want[va] = prev[-1] if prev else None
+        have = dict(zip(want, page.evaluate(CFI_ROWS_JS, [va - CFI_OFFSET for va in want])))
+        bad = [(hex(va), want[va], have[va]) for va in want if want[va] != have[va]]
+        r[f"crafted {kind}"] = f"{src}: {len(want) - len(bad)}/{len(want)} addresses, {len(fdes)} FDEs"
+        if src != flag or bad or not fdes:
+            problems.append(f"crafted {kind}: {src}, rows differ from llvm-dwarfdump: {bad[:4]} ({fdes})")
+        return fdes
+    fdes = rows_check("eh_frame", cfi_with_section(base, ".eh_frame", eh)[0], ".eh_frame")
+    if sorted((f[0], f[1]) for f in fdes if f[0] >= CFI_BASE) != fdes_want:
+        problems.append(f"crafted .eh_frame: llvm-dwarfdump's FDEs {[(hex(f[0]), hex(f[1])) for f in fdes]}, built {fdes_want}")
+    # At +4 (CFA=ESP+8): EDI by its DW_CFA_expression rule ([EBP+0]), EBX
+    # at CFA-12, the return address at CFA-4.
+    u = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + 4, "esp": 0x1000, "ebp": 0x2000},
+                                      {"4100": CFI_BASE + 0xb, "8192": 0x7777, "4092": 0x3333},
+                                      CFI_BASE, hi, CFI_OFFSET])
+    regs = {int(k): v for k, v in u["frames"][1]["regs"].items()} if len(u["frames"]) > 1 else {}
+    r["crafted unwind"] = u
+    if u["frames"][0]["cfa"] != 0x1008 or regs.get(7) != 0x7777 or regs.get(3) != 0x3333:
+        problems.append(f"crafted .eh_frame: unwind from +4: {u}")
+    info = page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", hi + 0x100 - CFI_OFFSET)
+    if info != "no call frame information":
+        problems.append(f"crafted .eh_frame: the frame of code without an FDE: {info!r}")
+    init = bytes([0x0c, 4, 4, 0x88, 1])
+    # DW_CFA_GNU_negative_offset_extended EBX 3: EBX at CFA+12 from +1.
+    cie = cfi_cie(True, 1, "zR", bytes([0x1b]), init)
+    neg = cfi_with_section(base, ".eh_frame", cie + cfi_entry(struct.pack("<I", len(cie) + 4) +
+                           struct.pack("<ii", CFI_BASE - eh_addr - len(cie) - 8, 13) + b"\0" + bytes([0x41, 0x2f, 3, 3])) + bytes(4))[0]
+    (tmp / "crafted-neg.elf").write_bytes(neg)
+    page.evaluate(CFI_ERR_JS, [base64.b64encode(neg).decode(), CFI_OFFSET])
+    have = page.evaluate(CFI_ROWS_JS, [0x1000001])[0]
+    gnu = subprocess.run(["readelf", "-wF", str(tmp / "crafted-neg.elf")], capture_output=True, text=True).stdout
+    m = re.search(r"^\s+LOC\s+CFA\s+ebx\s+ra\s*\n(?:.*\n)*?c1000001 esp\+4\s+(\S+)\s+c-4", gnu, re.M)
+    r["crafted negative offset"] = [have, m and m.group(1)]
+    if not m or m.group(1) != "c+12" or have != "CFA=ESP+4: EBX=[CFA+12], EIP=[CFA-4]":
+        problems.append(f"DW_CFA_GNU_negative_offset_extended: the page {have!r}, readelf -wF {gnu[-400:]!r}")
+    # CFA expressions (DW_CFA_def_cfa_expression), one FDE per byte of f1:
+    # a 4-byte DW_OP_const_type added to ESP, then expressions that give
+    # no CFA, each with its reason.
+    exprs = [(bytes([0x74, 0, 0xa4, 0, 4, 8, 0, 0, 0, 0x22]), None),
+             (bytes([0x22]), "DWARF expression stack underflow"), (bytes([0x50]), "in register EAX"),
+             (bytes([0x90, 0x21]), "in register ?"), (bytes([0xfa, 0, 0, 0, 0]), "optimized out (DW_OP_GNU_parameter_ref: the value its caller passed, not kept)"),
+             (bytes([0xe0]), "DWARF expression op 0xe0 is not supported"), (b"", "empty DWARF expression"),
+             (bytes([0xa4, 0, 8]) + bytes(8), "a 8-byte typed constant is not supported")]
+    content = bytearray(cie)
+    for k, (e, _) in enumerate(exprs):
+        at = len(content)
+        content += cfi_entry(struct.pack("<I", at + 4) + struct.pack("<ii", CFI_BASE + k - eh_addr - at - 8, 1) + b"\0" +
+                             bytes([0x0f]) + cfi_uleb(len(e)) + e)
+    page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", bytes(content) + bytes(4))[0]).decode(), CFI_OFFSET])
+    for k, (e, why) in enumerate(exprs):
+        u = page.evaluate(CFI_UNWIND_JS, [{"eip": CFI_BASE + k, "esp": 0x1000}, {"4100": CFI_BASE + 0x20}, CFI_BASE, hi, CFI_OFFSET])
+        r[f"crafted CFA expression {k}"] = [u["state"], u["why"], u["frames"][0]["cfa"]]
+        if (why is None and u["frames"][0]["cfa"] != 0x1008) or (why and not (u["why"] or "").endswith("): " + why)):
+            problems.append(f"crafted CFA expression {e.hex()}: {u}, want {why or 'CFA ESP+8'}")
+    # Broken copies.
+
+    def one(cie):
+        """cie and an FDE of f1 (pc-relative sdata4, no augmentation data)."""
+        return cie + cfi_entry(struct.pack("<I", len(cie) + 4) + struct.pack("<ii", CFI_BASE - eh_addr - len(cie) - 8, 13) + b"\0") + bytes(4)
+    broken = [
+        ("augmentation", one(cfi_cie(True, 1, "eh", b"", init)), 'unsupported CIE augmentation "eh"'),
+        ("encoding", one(cfi_cie(True, 1, "zR", bytes([0x04]), init)), "unsupported .eh_frame pointer encoding 0x4"),
+        ("application", one(cfi_cie(True, 1, "zR", bytes([0x33]), init)), "unsupported .eh_frame pointer application 0x33"),
+        ("64-bit", struct.pack("<I", 0xffffffff) + bytes(12), "64-bit DWARF CFI is not supported"),
+    ]
+    for what, content, want in broken:
+        have = page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", content)[0]).decode(), CFI_OFFSET])
+        r[f"crafted {what}"] = have
+        if have != want:
+            problems.append(f"crafted .eh_frame, {what}: {have!r}, want {want!r}")
+    # An opcode DWARF does not define: the rows of its FDE say so.
+    cie = cfi_cie(True, 1, "zR", bytes([0x1b]), init)
+    content = cie + cfi_entry(struct.pack("<I", len(cie) + 4) + struct.pack("<ii", CFI_BASE - eh_addr - len(cie) - 8, 13) + b"\0" + bytes([0x3f])) + bytes(4)
+    page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", content)[0]).decode(), CFI_OFFSET])
+    got = page.evaluate(CFI_ROWS_JS, [0x1000000, 0x1000002]) + [page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", 0x1000002)]
+    want = ["why: unknown DW_CFA opcode 0x3f"] * 2 + ["call frame information unreadable: unknown DW_CFA opcode 0x3f"]
+    r["crafted unknown opcode"] = got
+    if got != want:
+        problems.append(f"crafted .eh_frame, an unknown opcode: {got}, want {want}")
+    have = page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", rename=".eh_xxxxx")[0]).decode(), CFI_OFFSET])
+    if have != "this vmlinux has no call frame information (.debug_frame or .eh_frame)":
+        problems.append(f"an ELF without CFI: {have!r}")
+
+
 def cfi_case(browser, base, shots):
     """The fixture's CFI, .eh_frame and .debug_frame, opened in the page
     like an imported vmlinux: every row equals llvm-dwarfdump's (the long
@@ -16177,6 +16377,7 @@ def cfi_case(browser, base, shots):
                 problems.append(f"{kind}: f1's frame summary {info!r}, want {want_info!r}")
             if kind == "eh_frame":
                 cfi_unwind_checks(page, hi, problems, r)
+        cfi_crafted_checks(page, pathlib.Path(tmp), problems, r)
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     page.close()

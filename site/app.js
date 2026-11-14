@@ -1683,6 +1683,13 @@ async function boot() {
 	resetCounters();
 	updateDebugUi();
 	const fatal = checkImage(image.hdr, ram()).some(([level]) => level === "error");
+	// v86 throws a RangeError copying a kernel or an initrd past the end of
+	// RAM: nothing to start.
+	if (V86_KERNEL_ADDR + image.hdr.payload > ram() || (initrd && V86_INITRD_ADDR + initrd.bytes.length > ram())) {
+		setStatus("Not booted: " + image.name + " or its initrd does not fit in " + kib(ram()) +
+			" of RAM (the header check says why). Pick more RAM.");
+		return;
+	}
 	setStatus("Booting " + image.name + " with " + kib(ram()) + "...");
 	try {
 		// A new machine starts at virtual time 0 (or real time).

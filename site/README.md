@@ -2201,6 +2201,10 @@ kernel it then starts paused
 (`?paused=1`): Step 10 changes EIP and marks changed registers and counts
 exactly 10, Run to 0x100000 stops there, and 1k/s slow motion advances
 the counter over 2 s and flashes at least one written page in the grid.
+The runto suite's case also checks Enter in the Step N field and each
+reason a Run to is refused (a misspelt name with the similar ones, a
+data symbol, a data address typed as a word, free text, an address past
+4 GiB), with the machine left where it was.
 The import case boots the minified Linux with its own System.map
 (`llvm-nm -n`) and with the vmlinux ELF instead of symbols.json: Run to
 start_kernel names start_kernel in the Debugger as with symbols.json, a
@@ -2209,8 +2213,22 @@ the panic, the listing is decoded live, a malformed file gives an error and
 keeps the symbols, nothing scrolls sideways at 390 px. The initrd case loads a 512-byte newc cpio built in the test with the
 minified Linux and checks RAM was raised, its bytes are at 64 MiB in
 guest RAM, the note about our kernels, the initrd region in the map and
-grid, the RAM error at 32 MB and "no initrd". The panic-text case writes the panic line through the VGA MMIO handlers
-of a running page and checks the machine pauses with the banner; with
+grid, the RAM error at 32 MB and "no initrd". The header-check case
+loads bzImages built from hello's with a broken header (not a bzImage,
+protocol 2.01 with LOADED_HIGH clear, a 32-bit part larger than 2 MB of
+RAM, an init_size past the RAM, an initrd_addr_max below the initrd, an
+init_size no listed RAM holds) and checks each line of the header check
+against the numbers in the file, the RAM picked for it, and that Boot
+starts nothing when the kernel or the initrd does not fit in RAM (v86
+threw "offset is out of bounds" there before). The fetch-failure case
+also checks a kernel picked in the Machine tab that answers 404,
+kernels.json missing or empty, and hello without symbols.json or
+disasm.json (missing, not JSON, not listed): it still runs and Run to
+says it has no symbols. The panic-text case writes the panic line through the VGA MMIO handlers
+of a running page and checks the machine pauses with the banner, and on
+the real-time clock at full speed (`mips=real`, v86's own loop; the
+machine spinning at start_kernel) the "(initramfs) " prompt pauses it
+once and the panic line stops it, neither exact; with
 `MKB_DISTRO_CACHE` (the cache of `test_distro_symbols.py`) the Debian
 kernel is booted without an initrd and must stop itself. When a `debian*` kernel is in kernels.json (CI, or locally after
 copying it there) the Debian case checks its defaults, waits for the

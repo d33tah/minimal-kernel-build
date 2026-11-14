@@ -43,6 +43,7 @@ import tempfile
 import threading
 import time
 import traceback
+import urllib.parse
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
@@ -937,6 +938,141 @@ def initrd_case(browser, base, shots):
     return problems, r
 
 
+def page_kib(n):
+    """app.js kib(): bytes below 1 KiB, else KiB with at most one decimal and thousands commas."""
+    if n < 1024:
+        return f"{n} bytes"
+    t = f"{n / 1024:,.1f}"
+    return (t[:-2] if t.endswith(".0") else t) + " KiB"
+
+
+def header_check_case(browser, base, shots):
+    """bzImages from disk whose boot header v86 cannot use, built here from
+    hello's: each problem of the header check (Machine tab) is said, with
+    the numbers read here from the file, and Boot still starts the machine
+    with "The header check predicts this will not work" after an error,
+    unless the kernel or the initrd does not fit in RAM at all (v86 threw a
+    RangeError copying it: "Emulator error: offset is out of bounds"): then
+    Boot says so and starts nothing. Not a bzImage; protocol 2.01 with
+    LOADED_HIGH clear; a 32-bit part larger than 2 MB of RAM; an init_size
+    beyond the RAM picked, reaching the initrd at 64 MiB and an
+    initrd_addr_max below it; the initrd past 64 MB of RAM; an init_size no
+    listed RAM size holds (the largest is picked)."""
+    problems, r = [], {}
+    hello = (SITE / kernel_entries()["hello"]["path"]).read_bytes()
+    tmp = pathlib.Path(tempfile.mkdtemp(dir=os.environ.get("MKB_TMP")))
+
+    def patched(name, data=hello, **fields):
+        b = bytearray(data)
+        for off, (fmt, v) in fields.items():
+            struct.pack_into(fmt, b, int(off[1:], 16), v)
+        (tmp / name).write_bytes(b)
+        return tmp / name
+    u32 = lambda b, o: struct.unpack_from("<I", b, o)[0]
+    setup = ((hello[0x1f1] or 4) + 1) * 512
+    code32 = u32(hello, 0x214)
+    big = hello + bytes(1536 * 1024)
+    big_payload = len(big) - setup
+    init = 80 << 20
+    init_end = u32(hello, 0x258) + init
+    rd_max = (64 << 20) - 1
+    cpio = tmp / "rd.cpio"
+    cpio.write_bytes(bytes(512))
+    rd_end = (64 << 20) + cpio.stat().st_size
+    page = browser.new_page(viewport={"width": 1280, "height": 900})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello")
+    wait_for(lambda: gate_on_screen(page), 60)
+    show_tab(page, "machine")
+    mem_opts = page.evaluate("[...document.getElementById('memory').options].map((o) => Number(o.value))")
+    (tmp / "not-a-bzimage.bin").write_bytes(bytes(8192))
+    patched("old-low.bin", o206=("<H", 0x201), o211=("<B", hello[0x211] & 0xfe))
+    patched("big.bin", big)
+    patched("init-size.bin", o260=("<I", init), o22c=("<I", rd_max))
+    # (file, initrd, RAM picked then, the header check's lines, the status after Boot)
+    predict = "The header check predicts this will not work"
+    no_room = lambda name, ram: f"Not booted: {name} or its initrd does not fit in {page_kib(ram)} of RAM (the header check says why). Pick more RAM."
+    cases = [
+        ("not-a-bzimage.bin", None, None, [
+            "No \"HdrS\" signature at 0x202: this is not a bzImage.",
+            "Boot flag at 0x1fe is 0x0, not 0xaa55: v86 refuses the image (\"Bad checksum1\")."], predict),
+        ("old-low.bin", None, None, [
+            "Boot protocol 2.01 is older than 2.02, which v86 assumes.",
+            f"LOADED_HIGH is clear: the kernel expects its 32-bit part at {code32:#x}, but v86 ignores loadflags and copies it "
+            "to 1 MiB, so it will not start here. (qemu -kernel honours the flag.)"], predict),
+        ("big.bin", None, 2 << 20, [
+            f"v86 copies the {page_kib(big_payload)} 32-bit part to 1 MiB, but RAM ends at 0x200000. The loader cannot place "
+            "the kernel: pick more RAM."], no_room("big.bin", 2 << 20)),
+        ("init-size.bin", None, 18 << 20, [
+            f"The kernel says it needs memory up to {init_end:#x} (pref_address + init_size), but RAM ends at {18 << 20:#x} "
+            f"({page_kib(18 << 20)}). init_size covers bss and brk in full; a kernel that does not touch all of them can still "
+            f"boot, otherwise it fails early, typically with no output. {page_kib(init_end)} is enough."], None),
+        ("init-size.bin", cpio, None, [
+            f"The kernel accepts an initrd only below {rd_max:#x} (initrd_addr_max), but v86 puts it at {64 << 20:#x}\u2013{rd_end - 1:#x}.",
+            f"The kernel's memory (up to {init_end:#x}) reaches the initrd at 64 MiB."], None),
+        ("init-size.bin", None, 64 << 20, [
+            f"The kernel says it needs memory up to {init_end:#x} (pref_address + init_size), but RAM ends at {64 << 20:#x} "
+            f"({page_kib(64 << 20)}). init_size covers bss and brk in full; a kernel that does not touch all of them can still "
+            f"boot, otherwise it fails early, typically with no output. {page_kib(init_end)} is enough.",
+            f"v86 puts the initrd ({page_kib(512)}) at 64 MiB, so RAM must be larger than {page_kib(rd_end)}; it is "
+            f"{page_kib(64 << 20)}. Pick more RAM.",
+            f"The kernel accepts an initrd only below {rd_max:#x} (initrd_addr_max), but v86 puts it at {64 << 20:#x}\u2013{rd_end - 1:#x}.",
+            f"The kernel's memory (up to {init_end:#x}) reaches the initrd at 64 MiB."], no_room("init-size.bin", 64 << 20)),
+    ]
+    said = lambda: page.evaluate("[...document.querySelectorAll('#problems > div')].map((d) => [d.className, d.textContent])")
+    for k, (name, rd, mem, want, after) in enumerate(cases):
+        tag = name + (" with an initrd" if rd or k == len(cases) - 1 else "") + (f" at {page_kib(mem)}" if mem else "")
+        if rd:
+            page.set_input_files("#initrd_file", str(rd))
+        elif k and cases[k - 1][0] == name:
+            pass
+        else:
+            page.set_input_files("#file", str(tmp / name))
+            wait_for(lambda: page.evaluate("image && image.name") == name, 10)
+        if name == "init-size.bin" and not rd and mem == 18 << 20:
+            # useImage picks the smallest listed RAM that holds init_size.
+            need = min(v for v in mem_opts if v >= init_end)
+            r["init_size_ram"] = page.input_value("#memory")
+            if page.input_value("#memory") != str(need):
+                problems.append(f"{tag}: RAM {page.input_value('#memory')}, want the smallest that holds {init_end:#x}: {need}")
+        if mem:
+            wait_for(lambda: "Running " + name in (page.text_content("#status") or ""), 30)
+            page.select_option("#memory", str(mem))
+            page.click("#boot")
+        ram = int(page.input_value("#memory"))
+        wait_for(lambda: (after == (page.text_content("#status") or "") if after and after.startswith("Not booted")
+                          else f"Running {name} with {page_kib(ram)}" in (page.text_content("#status") or ""))
+                 and [t for _, t in said()] == want, 30)
+        got = said()
+        r[tag] = [t[:60] for _, t in got]
+        if [t for _, t in got] != want:
+            problems.append(f"{tag}: the header check says {[t for _, t in got]}, want {want}")
+        if [c for c, _ in got] != [("error" if t.startswith(("No ", "Boot flag", "LOADED_HIGH", "v86 ")) else "warn") for t in want]:
+            problems.append(f"{tag}: problem classes {[c for c, _ in got]}")
+        status = page.text_content("#status") or ""
+        r[tag + ": status"] = status
+        if after and after.startswith("Not booted"):
+            if status != after or page.evaluate("!!emulator || runState !== 'off'"):
+                problems.append(f"{tag}: status {status!r}, emulator {page.evaluate('!!emulator')}, want {after!r} and no machine")
+        elif (after == predict) != (predict in status):
+            problems.append(f"{tag}: status {status!r}, want {'a' if after else 'no'} prediction that it will not work")
+        if name == "not-a-bzimage.bin":
+            page.screenshot(path=str(shots / "header-check-1280.png"))
+    page.click("#initrd_clear")
+    # No listed RAM size holds it: the largest is picked.
+    page.set_input_files("#file", str(patched("huge-init.bin", o260=("<I", 1 << 30))))
+    wait_for(lambda: page.evaluate("image && image.name") == "huge-init.bin", 10)
+    r["huge_init_ram"] = page.input_value("#memory")
+    if page.input_value("#memory") != str(max(mem_opts)):
+        problems.append(f"init_size 1 GiB: RAM {page.input_value('#memory')}, want the largest listed, {max(mem_opts)}")
+    page.close()
+    shutil.rmtree(tmp, ignore_errors=True)
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def third_party_case(browser, base, shots, folder):
     """Optional (MKB_THIRD_PARTY=dir with vmlinuz + initramfs): a distro
     kernel with its initrd prints its boot log on the VGA console."""
@@ -985,9 +1121,66 @@ def panic_text_case(browser, base, shots):
         problems.append("panic text did not stop the machine: " + r["banner"] + " / " + page.get_attribute("#dbg_state", "data-state"))
     page.screenshot(path=str(shots / "panic-text.png"))
     page.close()
+    panic_text_real_time(browser, base, problems, r, errors)
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
+
+
+PANIC_TEXT_JS = """([row, t]) => { const cpu = emulator.v86.cpu;
+    for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * row + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * row + 2 * i + 1, 7); } }"""
+
+
+def panic_text_real_time(browser, base, problems, r, errors):
+    """The real-time clock at full speed (v86's own loop, which the page
+    cannot stop inside, mips=real): the minified Linux paused at
+    start_kernel is made to spin there (jmp $, as panic() ends), then
+    Debian's "(initramfs) " prompt at a row's start pauses the machine
+    once, Continue runs on, and an end of panic text stops it (both checked
+    4 times a second, where the run has got to: not exact). The command
+    line comes from ?cmdline=."""
+    cmdline = "nokaslr cryptomgr.notests mkb.clock=real"
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&speed=full&count=0&mips=real&cmdline=" + urllib.parse.quote(cmdline))
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60):
+        problems.append("real time: the minified Linux did not start paused")
+        page.close()
+        return
+    r["real_time_cmdline"] = page.input_value("#cmdline")
+    if r["real_time_cmdline"] != cmdline:
+        problems.append(f"?cmdline={cmdline}: the command line field says {r['real_time_cmdline']!r}")
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(x for x in syms if x["name"] == "start_kernel")
+    show_tab(page, "debugger")
+    page.fill("#dbg_addr", "start_kernel")
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
+        problems.append(f"real time: Run to start_kernel: {page.inner_text('#dbg_status')!r}")
+        page.close()
+        return
+    page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
+    page.evaluate(PANIC_TEXT_JS, [40, "(initramfs) "])
+    machine_do(page, "click", "#dbg_continue")
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                  and "(initramfs) prompt" in page.inner_text("#dbg_status"), 10, 0.1)
+    r["real_time_prompt"] = [page.inner_text("#dbg_status"), page.evaluate("stepper.prompt && stepper.prompt.exact")]
+    if not ok or r["real_time_prompt"][1] is not False:
+        problems.append(f"real time, the (initramfs) prompt on the screen: {r['real_time_prompt']}, "
+                        f"state {page.get_attribute('#dbg_state', 'data-state')}, want paused at the prompt (not exact)")
+    page.evaluate(PANIC_TEXT_JS, [41, "---[ end Kernel panic - not syncing: spinning on the real-time clock ]---"])
+    machine_do(page, "click", "#dbg_continue")
+    ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text"
+                  and page.get_attribute("#dbg_state", "data-state") == "paused", 10, 0.1)
+    r["real_time_banner"] = [page.inner_text("#end_banner"), page.evaluate("stepper.end && stepper.end.exact"),
+                             page.get_attribute("#regs", "data-phys")]
+    if not ok or "Kernel panic: spinning on the real-time clock" not in r["real_time_banner"][0] or r["real_time_banner"][1] is not False:
+        problems.append(f"real time, an end of panic text: banner {r['real_time_banner']}, "
+                        f"state {page.get_attribute('#dbg_state', 'data-state')}")
+    if r["real_time_banner"][2] != str(sk["paddr"]):
+        problems.append(f"real time: stopped at {r['real_time_banner'][2]}, not in the jmp $ at start_kernel ({sk['paddr']})")
+    page.close()
 
 
 def distro_panic_case(browser, base, cache):
@@ -1565,6 +1758,45 @@ def cpu_state_tools(page, sk, problems, r):
         problems.append(f"ST0 in use: ST rows, FTW marked changed: {names(st)[:12]} {row(st, 'FTW')}")
 
 
+def runto_refusals(page, syms, problems, r):
+    """Paused at the reset vector: Step N from the keyboard (Enter in its
+    field) steps that many; a Run to the page refuses says why in the
+    Debugger's status and the machine stays where it is (the similar names
+    and sections from symbols.json)."""
+    s0 = page.evaluate("stepper.steps")
+    page.fill("#dbg_n", "3")
+    page.press("#dbg_n", "Enter")
+    r["step_n_enter"] = wait_for(lambda: page.evaluate("stepper.steps") == s0 + 3
+                                 and page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+    if not r["step_n_enter"]:
+        problems.append(f"Enter in the Step N field (3): {page.evaluate('stepper.steps') - s0} steps")
+    secs = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["sections"]
+    data = next(x for x in syms if x["name"] == "jiffies")
+    sec = next(x for x in secs if x["paddr"] <= data["paddr"] < x["paddr"] + x["size"])
+    not_code = f"{data['paddr']:#x} is in {sec['name']} ({sec['class']}), not code: the CPU never executes it, so Run to would not stop"
+    typo = "kernel_ini"
+    like = sorted(dict.fromkeys(x["name"] for x in syms if typo in x["name"].lower()), key=lambda n: (not n.startswith(typo), len(n)))
+    word = f"{data['vaddr']:x}"  # a kernel virtual address that is also a word (no symbol has that name)
+    assert word[0] in "abcdef" and not any(x["name"] == word for x in syms)
+    want = {
+        typo: f"Run to {typo}: no symbol of that name; similar: {', '.join(like)}. Run to takes a function name, a hex address or file:line.",
+        "jiffies": f"Run to jiffies: {not_code}",
+        word: f"Run to {not_code}.",
+        "free text": "Run to free text: not a function name, hex address or file:line",
+        "0x1ffffffff": "Run to 0x1ffffffff: not a function name, hex address or file:line",
+    }
+    eip = page.get_attribute("#regs", "data-phys")
+    got = {}
+    for text, w in want.items():
+        page.fill("#dbg_addr", text)
+        page.press("#dbg_addr", "Enter")
+        wait_for(lambda: page.inner_text("#dbg_status") == w, 5)
+        got[text] = page.inner_text("#dbg_status")
+        if got[text] != w or page.get_attribute("#dbg_state", "data-state") != "paused" or page.get_attribute("#regs", "data-phys") != eip:
+            problems.append(f"Run to {text!r}: status {got[text]!r}, want {w!r}; state {page.get_attribute('#dbg_state', 'data-state')}")
+    r["refused"] = got
+
+
 def runto_case(browser, base, shots):
     """Run to rest_init on the minified Linux stops there with no fault,
     with and without fast-forward. The fast Run to used to write its HLT
@@ -1582,6 +1814,8 @@ def runto_case(browser, base, shots):
             problems.append(f"did not start paused ({ff or 'fast'})")
             page.close()
             continue
+        if not ff:
+            runto_refusals(page, syms, problems, r)
         page.fill("#dbg_addr", hex(ri["vaddr"]))
         page.click("#dbg_runto")
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
@@ -5921,7 +6155,8 @@ def fetch_fail_case(browser, base, shots):
     """A kernel or its initrd the server does not have (404) is named with
     the HTTP status, and an error nothing else catches shows in the status
     line with the kernel and RAM (hello at 1280 light, service worker off
-    so the server's answer reaches the page)."""
+    so the server's answer reaches the page); a kernel picked in the
+    Machine tab that the server does not have names its file too."""
     problems, r = [], {}
     ctx = browser.new_context(viewport={"width": 1280, "height": 900})
     ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
@@ -5952,6 +6187,15 @@ def fetch_fail_case(browser, base, shots):
         r["uncaught"] = page.text_content("#status")
         if not re.match(r"Emulator error: Error: nobody catches this \(hello, 2,048 KiB RAM\)", r["uncaught"] or ""):
             problems.append(f"an uncaught rejection: status {r['uncaught']!r}")
+        # A kernel picked in the Machine tab that the server does not have.
+        ctx.route("**/kernels/hello-os/bzImage*", lambda route: route.fulfill(status=404, body="no"))
+        show_tab(page, "machine")
+        page.select_option("#kernel", "hello-os")
+        wait_for(lambda: "HTTP 404" in (page.text_content("#status") or ""), 30)
+        r["picked 404"] = page.text_content("#status")
+        if r["picked 404"] != "Error: kernels/hello-os/bzImage: HTTP 404":
+            problems.append(f"hello-os picked, its bzImage answered 404: status {r['picked 404']!r}")
+        fetch_fail_lists(ctx, base, problems, r)
         other = [e for e in errors if "nobody catches this" not in e]
         if other:
             problems.append(f"page errors besides the test's own: {other[:3]}")
@@ -5960,12 +6204,62 @@ def fetch_fail_case(browser, base, shots):
     return problems, r
 
 
+def fetch_fail_lists(ctx, base, problems, r):
+    """kernels.json missing or listing nothing: the status says to load a
+    bzImage from disk. hello's symbols.json missing (404), not JSON, or not
+    in its kernels.json entry, and its disasm.json not JSON or not listed:
+    hello still runs, without symbols (Run to hello_main says the kernel
+    has none) and the console names the file that did not parse."""
+    entries = json.loads((SITE / "kernels.json").read_text())
+    warns = []
+
+    def answer(status, body):
+        return lambda route: route.fulfill(status=status, body=body, content_type="application/json")
+    ctx.on("console", lambda m: m.type == "warning" and warns.append(m.text[:120]))
+    for body, want in (("no", "No kernels.json ("), ('{"kernels": []}', "kernels.json lists no kernels. Load a bzImage from disk.")):
+        ctx.route("**/kernels.json*", answer(404 if body == "no" else 200, body))
+        page = ctx.new_page()
+        page.goto(f"{base}/index.html?kernel=hello")
+        wait_for(lambda: (page.text_content("#status") or "").startswith(want), 30)
+        st = page.text_content("#status") or ""
+        r["kernels.json " + body[:8]] = st
+        if not st.startswith(want) or not st.endswith("Load a bzImage from disk.") or page.evaluate("!!emulator"):
+            problems.append(f"kernels.json {body!r}: status {st!r}, want {want!r}... and no machine")
+        page.close()
+        ctx.unroute("**/kernels.json*")
+    hello = next(e for e in entries["kernels"] if e["name"] == "hello")
+    bare = dict(entries, kernels=[{k: v for k, v in hello.items() if k not in ("symbols", "disasm")}])
+    for label, routes, warn, has_disasm in (
+            ("symbols.json 404, disasm.json not JSON", {"symbols.json": (404, "no"), "disasm.json": (200, "{")}, "disasm:", False),
+            ("symbols.json not JSON", {"symbols.json": (200, "{")}, "symbols:", True),
+            ("not listed in kernels.json", {"kernels.json": (200, json.dumps(bare))}, None, False)):
+        for f, (status, body) in routes.items():
+            ctx.route(("**/kernels/hello/" if f != "kernels.json" else "**/") + f + "*", answer(status, body))
+        del warns[:]
+        page = ctx.new_page()
+        page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        page.fill("#dbg_addr", "hello_main")
+        page.click("#dbg_runto")
+        want = "Run to hello_main: no symbol of that name (this kernel has no symbols). Run to takes a function name, a hex address or file:line."
+        wait_for(lambda: page.inner_text("#dbg_status") == want, 10)
+        got = [ok, page.inner_text("#dbg_status"), page.evaluate("!!disasm"), warns[:2]]
+        r[label] = got
+        if not ok or got[1] != want or got[2] != has_disasm or (warn and not any(w.startswith(warn) for w in warns)):
+            problems.append(f"hello with {label}: {got}, want paused at the reset vector, {want!r}, "
+                            f"disasm.json used {has_disasm}, a console warning {warn}")
+        page.close()
+        for f in routes:
+            ctx.unroute(("**/kernels/hello/" if f != "kernels.json" else "**/") + f + "*")
+
+
 def suite_misc(ctx):
     """Symbol import, initrds, panic text, determinism, follow mode."""
     failed = report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
     failed |= report("initrd", *initrd_case(ctx.browser, ctx.base, ctx.shots))
     if os.environ.get("MKB_THIRD_PARTY"):
         failed |= report("third_party", *third_party_case(ctx.browser, ctx.base, ctx.shots, os.environ["MKB_THIRD_PARTY"]))
+    failed |= report("header_check", *header_check_case(ctx.browser, ctx.base, ctx.shots))
     failed |= report("panic_text", *panic_text_case(ctx.browser, ctx.base, ctx.shots))
     if os.environ.get("MKB_DISTRO_CACHE"):
         failed |= report("distro_panic", *distro_panic_case(ctx.browser, ctx.base, os.environ["MKB_DISTRO_CACHE"]))

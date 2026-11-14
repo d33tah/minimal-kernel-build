@@ -22,20 +22,14 @@ function setStoredKeys() {
 	}
 }
 
+// setGet and setRemove only see keys setStoredKeys listed: localStorage
+// works then (where it throws, nothing is listed).
 function setGet(k) {
-	try {
-		return localStorage.getItem(k);
-	} catch (e) {
-		return null;
-	}
+	return localStorage.getItem(k);
 }
 
 function setRemove(k) {
-	try {
-		localStorage.removeItem(k);
-	} catch (e) {
-		// no storage: nothing to forget
-	}
+	localStorage.removeItem(k);
 }
 
 // The current bzImage's key part (SHA-256), if hashed already.

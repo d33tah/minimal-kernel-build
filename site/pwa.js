@@ -149,8 +149,6 @@ async function pwaInit() {
 	pwaCheck();
 }
 
-// After the page's own loads, so the precache does not compete with them.
-if (document.readyState === "complete")
-	pwaInit();
-else
-	window.addEventListener("load", pwaInit);
+// After the page's own loads, so the precache does not compete with them
+// (index.html loads this script itself: its load event is still to come).
+window.addEventListener("load", pwaInit);

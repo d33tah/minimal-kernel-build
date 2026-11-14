@@ -11820,13 +11820,20 @@ TABS_IDB_JS = """(op) => new Promise((res) => { const rq = indexedDB.open('mkb-d
 
 
 def tabs_settings(page, problems, r, shots):
-    """The Settings tab: every remembered key shown with an explanation,
-    changing a preference takes effect and is remembered, forget and reset
-    clear them (hello booted at 1280 px)."""
+    """The Settings tab: every remembered key shown with an explanation
+    (entries whose value is not JSON too), changing a preference takes
+    effect and is remembered, forget and reset clear them (the running
+    kernel's imported symbols with a reload of its own; a key written while
+    Reset waits) (hello booted at 1280 px)."""
     other = "mkb-map-" + "0" * 64
-    page.evaluate("""(other) => { localStorage.setItem('mkb-watch:hello', JSON.stringify(['msg']));
+    # Entries a later or older version may have left unreadable.
+    broken = {"mkb-map-" + "1" * 64: "Imported symbols for another bzImage (SHA-256 111111111111\u2026): ? (?, 0 symbols), "
+                                      "used instead of the kernel's own after every reload.",
+              "mkb-watch:hello-os": "Watch expressions for hello-os in the Debugger tab: none."}
+    page.evaluate("""([other, broken]) => { localStorage.setItem('mkb-watch:hello', JSON.stringify(['msg']));
       localStorage.setItem(other, JSON.stringify({ name: 'other.map', source: 'System.map', symbols: [], sections: [] }));
-      localStorage.setItem('mkb-later-step', 'x'); }""", other)
+      for (const k of broken) localStorage.setItem(k, '{not JSON');
+      localStorage.setItem('mkb-later-step', 'x'); }""", [other, list(broken)])
     page.evaluate(TABS_IDB_JS, other + ":index")
     page.reload()
     wait_for(lambda: "Running hello " in (page.text_content("#status") or "") and ALIVE in page.inner_text("#screen_container"), 60)
@@ -11856,6 +11863,10 @@ def tabs_settings(page, problems, r, shots):
             problems.append(f"Settings does not show the remembered {k}")
         elif len(row["text"]) < 25:
             problems.append(f"Settings row of {k} has no explanation: {row['text']!r}")
+    for k, want in broken.items():
+        row = page.evaluate(TABS_ROW_JS, k)
+        if not row or want not in row["text"]:
+            problems.append(f"Settings row of {k} (not JSON): {row and row['text']!r}, want {want!r}")
     wait_for(lambda: page.evaluate(TABS_ROW_JS, "idb:mkb-dwarf"), 10)
     row = page.evaluate(TABS_ROW_JS, "idb:mkb-dwarf")
     if not row or "1" not in row["text"]:
@@ -11920,6 +11931,7 @@ def tabs_settings(page, problems, r, shots):
     forget("mkb-later-step")
     if page.evaluate(TABS_IDB_JS, "") != 0:
         problems.append("Forget the other bzImage's symbols left its DWARF in IndexedDB")
+    tabs_forget_imported(page, problems, r, forget)
 
     # Reset all settings: nothing of ours stays, the defaults are back. The
     # boot (10/s after the reload) ends first: its "Still alive" count is a
@@ -11933,6 +11945,11 @@ def tabs_settings(page, problems, r, shots):
     if not page.locator("#settings_reset").count():
         problems.append("no Reset all settings button")
         return
+    # A key written while Reset waits for IndexedDB to forget the imported
+    # DWARF (a boot measuring its Still alive count then) goes too.
+    page.evaluate("""() => { const orig = dbgIdbOp;
+      dbgIdbOp = async (...a) => { if (a[0] === 'readwrite') { dbgIdbOp = orig; localStorage.setItem('mkb-ref-hello-real', '123'); }
+        return orig(...a); }; }""")
     page.click("#settings_reset")
     time.sleep(0.5)
     left = page.evaluate(TABS_STORED_JS)
@@ -11948,6 +11965,40 @@ def tabs_settings(page, problems, r, shots):
         problems.append(f"after Reset all settings: {now}, want the defaults")
     if page.locator("#panel_settings .setrow button.forget").count():
         problems.append("after Reset all settings Settings still lists remembered entries")
+
+
+def tabs_forget_imported(page, problems, r, forget):
+    """Symbols imported for the running kernel (a System.map of hello's
+    symbols.json with hello_main renamed): its Settings row names this
+    kernel, and Forget brings back the kernel's own symbols (Run to
+    hello_main works again)."""
+    syms = json.loads((SITE / kernel_entries()["hello"]["symbols"]).read_text())["symbols"]
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
+        smap = pathlib.Path(t) / "System.map"
+        smap.write_text("".join(f"{x['vaddr']:08x} {x['type']} {'renamed_main' if x['name'] == 'hello_main' else x['name']}\n"
+                                for x in syms))
+        before = set(page.evaluate(TABS_STORED_JS))
+        show_tab(page, "machine")
+        page.set_input_files("#symfile", str(smap))
+        wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported"
+                 and set(page.evaluate(TABS_STORED_JS)) - before, 20)
+    key = next(iter(set(page.evaluate(TABS_STORED_JS)) - before), None)
+    if not key or not key.startswith("mkb-map-"):
+        problems.append(f"import a System.map for hello: new keys {key}, status {page.inner_text('#sym_status')!r}")
+        return
+    show_tab(page, "settings")
+    row = page.evaluate(TABS_ROW_JS, key)
+    n = page.evaluate("symbols.symbols.length")
+    want = f"Imported symbols for this kernel (hello): System.map (System.map, {n:,} symbols)"
+    r["imported_row"] = row and row["text"][:140]
+    if not row or want not in row["text"]:
+        problems.append(f"Settings row of hello's imported symbols: {row}, want {want!r}")
+    if not forget(key):
+        return
+    ok = wait_for(lambda: page.get_attribute("#sym_status", "data-state") == ""
+                  and page.evaluate("!!symbols && !symbols.imported && symbols.symbols.some((s) => s.name === 'hello_main')"), 30)
+    if not ok:
+        problems.append(f"Forget hello's imported symbols: status {page.inner_text('#sym_status')!r}, the kernel's own symbols not back")
 
 
 def tabs_mini(page):
@@ -12365,8 +12416,9 @@ def pwa_deploy(root, v, marker=None):
 
 
 def pwa_server(root):
-    """CachingHandler on root; state["down"] makes it answer nothing (offline)."""
-    state = {"down": False}
+    """CachingHandler on root; state["down"] makes it answer nothing (offline),
+    state["slow"] = (path, seconds) delays the answer for that file."""
+    state = {"down": False, "slow": None}
 
     class Handler(CachingHandler):
         extensions_map = {**CachingHandler.extensions_map, ".webmanifest": "application/manifest+json"}
@@ -12375,6 +12427,9 @@ def pwa_server(root):
             if state["down"]:
                 self.close_connection = True
                 return
+            slow = state["slow"]
+            if slow and self.path.split("?")[0] == "/" + slow[0]:
+                time.sleep(slow[1])
             super().do_GET()
 
         do_HEAD = do_GET
@@ -12598,6 +12653,10 @@ def pwa_case(browser, base, shots, timeout):
             c.route("**/version.json*", lambda route: route.fulfill(status=200, content_type="application/json",
                                                                      body=json.dumps(fake),
                                                                      headers={"Cache-Control": "no-store"}))
+        if not live:
+            # The new worker's install is slow (one file of its precache
+            # takes 10 s): Reload is pressed while it still installs.
+            state["slow"] = ("kernels/minified-linux-os/disasm.json", 10)
         c.set_offline(False)
         shown = wait_for(lambda: page.locator("#pwa_update").count() and page.is_visible("#pwa_update"), 30)
         r["update_note"] = page.text_content("#pwa_update") if page.locator("#pwa_update").count() else None
@@ -12615,8 +12674,20 @@ def pwa_case(browser, base, shots, timeout):
         page.emulate_media(color_scheme="light")
         page.set_viewport_size({"width": 1280, "height": 900})
         if not live:
-            with page.expect_navigation(timeout=30000):
+            r["installing_at_reload"] = page.evaluate("!!(PWA.reg && PWA.reg.installing)")
+            if not r["installing_at_reload"]:
+                problems.append("the new deploy's worker had installed before Reload (want Reload while it installs)")
+            checks = []
+            page.on("request", lambda q: "version.json" in q.url and checks.append(q.url))
+            with page.expect_navigation(timeout=45000):
                 page.click("#pwa_update button")
+                # The tab shown again while it reloads: no update check then.
+                page.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+                time.sleep(1)
+                r["checks_while_reloading"] = len(checks)
+            state["slow"] = None
+            if r["checks_while_reloading"]:
+                problems.append(f"version.json fetched {len(checks)} times while the page reloads into the new deploy")
             if not wait_for(lambda: gate_on_screen(page), timeout):
                 problems.append("after the update reload hello did not boot")
             r["after_reload"] = {
@@ -12656,8 +12727,13 @@ def pwa_after_update(page, base, state, timeout, problems, r):
     """The new deploy's service worker (block coverage from its start, the
     first one's often begins late): a Range request for a cached file gets
     its bytes from the cache (206, a suffix range, 416 past the end); a
-    POST is not answered by it; offline again the page loads from its
-    cache, hello boots, and a file never fetched gets the offline note."""
+    POST is not answered by it; a precached file fetched again is not
+    kept twice; with the origin's storage nearly full (a quota override) a
+    fetched file is not kept, with room it is; offline again the page loads
+    from its cache, hello boots, a file never fetched gets the offline
+    note, a request to another origin is left to the network (it fails,
+    no 503 from the worker), and without index.html in the cache the
+    worker's own offline page answers."""
     data = (SITE / kernel_entries()["hello"]["path"]).read_bytes()
     n = len(data)
     got = {}
@@ -12673,6 +12749,7 @@ def pwa_after_update(page, base, state, timeout, problems, r):
     r["post_status"] = post
     if post != 501:
         problems.append(f"a POST answered {post}, want the server's 501 (the service worker leaves non-GET requests alone)")
+    pwa_store_checks(page, base, problems, r)
     state["down"] = True
     page.context.set_offline(True)
     try:
@@ -12684,17 +12761,70 @@ def pwa_after_update(page, base, state, timeout, problems, r):
         r["offline_note_after_update"] = (page.text_content("#pwa_notes") or "")[:120]
         if "not available offline yet" not in r["offline_note_after_update"]:
             problems.append(f"offline after the update, a file never fetched: no note ({r['offline_note_after_update']!r})")
+        other = base.replace("127.0.0.1", "localhost") + "/version.json"
+        r["offline_fetches"] = page.evaluate(PWA_ANSWERED_JS, [other, "kernels/hello/not-there.bin"])
+        if r["offline_fetches"] != ["failed", 503]:
+            problems.append(f"offline: another origin's fetch, a file of this site never fetched: {r['offline_fetches']}, "
+                            "want failed (not the worker's) and the worker's 503")
+        page.evaluate("async (v) => (await caches.open('mkb-shell-' + v)).delete(new URL('index.html', location.href).href)", PWA_V[1])
+        resp = page.goto(f"{base}/index.html?kernel=hello")
+        r["offline_no_page"] = [resp.status if resp else None, (page.text_content("body") or "")[:80]]
+        if r["offline_no_page"] != [503, "Offline: index.html is not available offline yet."]:
+            problems.append(f"offline without index.html in the cache: {r['offline_no_page']}, want the worker's 503 page")
     finally:
         page.context.set_offline(False)
         state["down"] = False
 
 
+# [another origin, a path of this site]: "failed" when the fetch rejects, else its status.
+PWA_ANSWERED_JS = """async ([a, b]) => Promise.all([fetch(a, { mode: 'no-cors' }), fetch(b)].map((p) =>
+    p.then((x) => x.status, () => 'failed')))"""
+PWA_CACHED_JS = """async ([cache, path]) => !!(await (await caches.open(cache)).match(new URL(withV(path), location.href).href))"""
+
+
+def pwa_store_checks(page, base, problems, r):
+    """What the worker keeps of what the page fetches (online, deploy B)."""
+    data = "mkb-data-" + PWA_V[1]
+    r["manifest_refetch"] = page.evaluate("fetch('manifest.webmanifest').then((x) => x.status)")
+    time.sleep(1)
+    if r["manifest_refetch"] != 200 or page.evaluate(PWA_CACHED_JS, [data, "manifest.webmanifest"]):
+        problems.append(f"the precached manifest fetched again ({r['manifest_refetch']}) was kept in {data} too")
+    # Two files no view of this case fetched: one with the storage nearly
+    # full, one with room.
+    fresh = [f for f in ("kernels/hello/meta.json", "kernels/hello/dwarf/types.json", "kernels/hello/dwarf/files.json",
+                         "kernels/hello/src/index.json")
+             if not page.evaluate("async (p) => !!(await caches.match(new URL(withV(p), location.href).href))", f)][:2]
+    if len(fresh) < 2:
+        problems.append(f"no two files left that were never fetched: {fresh}")
+        return
+    cdp = page.context.new_cdp_session(page)
+    origin = base + "/"
+    cdp.send("Storage.overrideQuotaForOrigin", {"origin": origin, "quotaSize": 1})
+    try:
+        full = page.evaluate("async (p) => (await fetch(withV(p))).status", fresh[0])
+        time.sleep(1.5)
+        kept_full = page.evaluate(PWA_CACHED_JS, [data, fresh[0]])
+    finally:
+        cdp.send("Storage.overrideQuotaForOrigin", {"origin": origin})
+    room = page.evaluate("async (p) => (await fetch(withV(p))).status", fresh[1])
+    kept_room = wait_for(lambda: page.evaluate(PWA_CACHED_JS, [data, fresh[1]]), 10)
+    r["store"] = {fresh[0] + " (storage full)": [full, kept_full], fresh[1]: [room, kept_room]}
+    if full != 200 or kept_full or room != 200 or not kept_room:
+        problems.append(f"files fetched online, kept in {data}: {r['store']}, want only the one fetched with room kept")
+
+
 def pwa_edges(browser, shots, timeout):
-    """Two cases the main one does not reach (local only, they need their
-    own deploys). No service worker can be registered (sw.js missing): the
-    page says so in the console and boots as a plain page. Another tab
-    activates a newer deploy's worker: a page of the old deploy, now
-    controlled by it, shows the new-version notice."""
+    """Cases the main one does not reach (local only, they need their own
+    deploys). No service worker can be registered (sw.js missing): the
+    page says so in the console and boots as a plain page; then a worker
+    that never answers which deploy it is: the page takes it after waiting
+    for the answer. An insecure origin (no service worker API): a plain
+    page. The next deploy without its sw.js: the old worker serves the new
+    page online but does not keep it (offline the old deploy's page comes
+    back whole), and Reload still reaches the new deploy. Another tab
+    activates a newer deploy's worker (installed and waiting when it
+    opens): a page of the old deploy, now controlled by it, shows the
+    new-version notice."""
     problems, r, errors = [], {}, []
     with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
         root = pathlib.Path(t)
@@ -12717,9 +12847,36 @@ def pwa_edges(browser, shots, timeout):
                 problems.append(f"without sw.js: booted {booted}, console warnings {warns[:3]}")
             if page.evaluate("!!navigator.serviceWorker.controller") or (page.text_content("#pwa_notes") or "").strip():
                 problems.append(f"without sw.js: a controller or a note: {r['no sw.js']}")
+            # A worker that never answers the version question (busy, or a
+            # sw.js without it): no answer within 3 s, the page takes it.
+            sw = (SITE / "sw.js").read_text().replace('const V = "dev";', f'const V = "{PWA_V[0]}";')
+            mute = sw.replace('if (m.type === "version" && event.ports[0])', "if (false)")
+            if mute == sw or sw == (SITE / "sw.js").read_text():
+                problems.append("sw.js: no version answer or no V to replace")
+            (root / "sw.js").write_text(mute)
+            page.reload()
+            controlled = pwa_controlled(page, 30)
+            r["mute worker"] = [controlled, page.evaluate(PWA_SW_VERSION_JS), gate_on_screen(page),
+                                (page.text_content("#pwa_notes") or "")[:80]]
+            if r["mute worker"] != [True, "no answer", True, ""]:
+                problems.append(f"a worker that does not answer: [controlled, its answer, booted, notes] {r['mute worker']}")
+            # version.json answered with something that is not JSON (a
+            # captive portal's page): no notice, no error.
+            (root / "version.json").write_text("<html>Sign in to the network</html>")
+            checks = []
+            page.on("response", lambda q: q.url.split("?")[0].endswith("/version.json") and checks.append(q.status))
+            page.evaluate("window.dispatchEvent(new Event('online'))")
+            wait_for(lambda: checks, 10)
+            time.sleep(0.5)
+            r["version.json not JSON"] = [checks, (page.text_content("#pwa_notes") or "")[:80]]
+            if r["version.json not JSON"] != [[200], ""]:
+                problems.append(f"version.json not JSON: [statuses, notes] {r['version.json not JSON']}")
         finally:
             c.close()
             httpd.shutdown()
+
+    pwa_edge_insecure(browser, timeout, problems, r, errors)
+    pwa_edge_next_without_sw(browser, timeout, problems, r, errors)
 
     with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
         root = pathlib.Path(t)
@@ -12735,6 +12892,11 @@ def pwa_edges(browser, shots, timeout):
                 problems.append("another tab: the first page did not boot under its worker")
                 return problems, r
             pwa_deploy(root, PWA_V[1], "B")
+            # The old page's update check (its 5 minute timer) finds the new
+            # worker first: installed and waiting when the new tab opens.
+            old.evaluate("PWA.reg.update()")
+            if not wait_for(lambda: old.evaluate("!!PWA.reg.waiting"), 60):
+                problems.append("another tab: deploy B's worker did not install and wait")
             new = c.new_page()
             new.on("pageerror", lambda e: errors.append(str(e)[:200]))
             new.goto(f"{base}/index.html?kernel=hello")
@@ -12755,6 +12917,83 @@ def pwa_edges(browser, shots, timeout):
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     return problems, r
+
+
+def pwa_edge_insecure(browser, timeout, problems, r, errors):
+    """The site from an origin that is not a secure context (http on a
+    host name: navigator.serviceWorker does not exist): hello boots, no
+    worker, no note."""
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
+        root = pathlib.Path(t)
+        pwa_deploy(root, PWA_V[0], "A")
+        httpd, _ = pwa_server(root)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        c = browser.new_context(viewport={"width": 1280, "height": 900})
+        host = "http://mkb.test"
+        c.route(host + "/**", lambda route: route.fulfill(response=route.fetch(url=base + route.request.url[len(host):])))
+        try:
+            page = c.new_page()
+            page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            page.goto(host + "/index.html?kernel=hello")
+            booted = wait_for(lambda: gate_on_screen(page), timeout)
+            r["insecure origin"] = [booted, page.evaluate("[isSecureContext, 'serviceWorker' in navigator]"),
+                                    (page.text_content("#pwa_notes") or "")[:80], (page.text_content("#status") or "")[:80]]
+            if r["insecure origin"][:3] != [True, [False, False], ""]:
+                problems.append(f"an insecure origin: [booted, [secure context, service worker API], notes, status] {r['insecure origin']}")
+        finally:
+            c.close()
+            httpd.shutdown()
+
+
+def pwa_edge_next_without_sw(browser, timeout, problems, r, errors):
+    """Deploy B is live but its sw.js is not (missing): deploy A's worker
+    gets B's page online and does not keep it (B's assets are not in A's
+    caches), so offline A's whole page comes back. The A page's notice
+    (version.json says B) and Reload: the update check fails, the page
+    reloads into B anyway."""
+    with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as t:
+        root = pathlib.Path(t)
+        pwa_deploy(root, PWA_V[0], "A")
+        httpd, state = pwa_server(root)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        c = browser.new_context(viewport={"width": 1280, "height": 900})
+        try:
+            a = c.new_page()
+            a.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            a.goto(f"{base}/index.html?kernel=hello")
+            if not wait_for(lambda: gate_on_screen(a), timeout) or not pwa_controlled(a):
+                problems.append("next deploy without sw.js: the deploy A page did not boot under its worker")
+                return
+            pwa_deploy(root, PWA_V[1], "B")
+            (root / "sw.js").unlink()
+            b = c.new_page()
+            b.on("pageerror", lambda e: errors.append(str(e)[:200]))
+            b.goto(f"{base}/index.html?kernel=hello")
+            online = [wait_for(lambda: gate_on_screen(b), timeout), b.evaluate("window.deployMarker"), b.evaluate(PWA_SW_VERSION_JS)]
+            state["down"] = True
+            try:
+                b.goto(f"{base}/index.html?kernel=hello")
+                offline = [wait_for(lambda: gate_on_screen(b), timeout), b.evaluate("window.deployMarker")]
+            finally:
+                state["down"] = False
+            r["next deploy without sw.js"] = {"online": online, "offline": offline}
+            if online != [True, "B", PWA_V[0]] or offline != [True, "A"]:
+                problems.append(f"deploy B without its sw.js: online [booted, deploy, worker] {online}, "
+                                f"offline [booted, deploy] {offline}; want B under A's worker, then A's cached page")
+            b.close()
+            a.evaluate("window.dispatchEvent(new Event('online'))")
+            if not wait_for(lambda: a.locator("#pwa_update").count() and a.is_visible("#pwa_update"), 30):
+                problems.append(f"deploy B without its sw.js: no notice on the A page: {a.text_content('#pwa_notes')!r}")
+                return
+            with a.expect_navigation(timeout=30000):
+                a.click("#pwa_update button")
+            r["reload without sw.js"] = [wait_for(lambda: gate_on_screen(a), timeout), a.evaluate("window.deployMarker"),
+                                         a.evaluate(PWA_SW_VERSION_JS)]
+            if r["reload without sw.js"] != [True, "B", PWA_V[0]]:
+                problems.append(f"Reload with deploy B's sw.js missing: [booted, deploy, worker] {r['reload without sw.js']}")
+        finally:
+            c.close()
+            httpd.shutdown()
 
 
 def suite_pwa(ctx):

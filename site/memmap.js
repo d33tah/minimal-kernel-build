@@ -536,7 +536,8 @@ const MMAP = {
 		const keepLive = this.live, target = this.live ? MEV.n : this.target;
 		this.reset();
 		this.apply(Math.max(this.idx, target), false);
-		if (keepLive && MEV.st)
+		// live or at the log's end: the CPU's writes after the last event too
+		if ((keepLive || target >= MEV.n) && MEV.st)
 			this.applySamples(MEV.st.steps);
 		// the last events glow, older ones faded
 		this.heat.fill(0);

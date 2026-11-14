@@ -227,14 +227,14 @@ memmap.js	446	1a59a2ac	not run by the memmap suite yet (M track: a test would ne
 memmap.js	452	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
 memmap.js	460-469	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
 memmap.js	496-498	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
-memmap.js	672	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
-memmap.js	894	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
-memmap.js	942-944	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
-memmap.js	1088	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
-memmap.js	1124	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
-memmap.js	1144	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
-memmap.js	1167	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
-memmap.js	1178	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
+memmap.js	673	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
+memmap.js	895	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
+memmap.js	943-945	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
+memmap.js	1089	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
+memmap.js	1125	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
+memmap.js	1145	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
+memmap.js	1168	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
+memmap.js	1179	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
 quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
 quests.js	139	3444ec90	no 0x55 0xAA at 0xC0000: v86 always copies its VGA BIOS there before the first instruction

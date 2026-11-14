@@ -21756,10 +21756,16 @@ def mm_ui_case(browser, base, shots, problems, r):
         page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
         mm_frames(page)
         ft = page.evaluate("""() => { const g = MMAP.segs[MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MMAP.touched[d]) lit++;
-          return { cells: g.cells, lit, story: MMAP.story.length }; }""")
+          // the CPU's sampled RAM writes (layer 3) light whole regions too: the
+          // segment of the last sampled page, every cell
+          const s = MMAP.samples[MMAP.samples.length - 1], h = s ? MMAP.segs[MMAP.segOf(s.pages[0] * 4096)] : null; let ram = 0;
+          if (h) for (let d = h.c0; d < h.c1; d++) if (MMAP.touched[d] & 8) ram++;
+          return { cells: g.cells, lit, story: MMAP.story.length, ramCells: h ? h.cells : 0, ramLit: ram }; }""")
         r["first touch"] = ft
         if ft["lit"] != ft["cells"]:
             problems.append(f"ui: only first touch lights {ft['lit']} of the text region's {ft['cells']} cells")
+        if not ft["ramCells"] or ft["ramLit"] != ft["ramCells"]:
+            problems.append(f"ui: only first touch at the log's end lights {ft['ramLit']} of {ft['ramCells']} cells of the last sampled RAM page's region")
         page.evaluate("document.getElementById('mm').scrollIntoView()")
         page.screenshot(path=str(shots / "memmap-firsttouch-1280-dark.png"))
         page.uncheck("#mm_first")

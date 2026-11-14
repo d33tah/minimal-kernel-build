@@ -67,238 +67,34 @@ const fs = require("fs");
 const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
-const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfRow, dwarfPack, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfDecode,
+const { dwFuncShard, dwFuncProto, dwarfElf, dwarfFrames, dwarfFileCode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
-const { cfiFromElf, cfiPack, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
+const { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
 
-const SHARD_BITS = 16;
+const { kgenDwarf, KgInsnStarts } = require("./kgen.js");
 
-// Line shards: the page only reads them (dwarf.js dwarfDecode, which
-// also describes the format). The part of table t for [lo, hi): the line
-// row in force at lo is repeated at lo, ranges overlapping it are kept.
-// Strings are re-indexed.
-function dwarfSlice(t, lo, hi) {
-	const strings = [], map = new Map();
-	const sid = (k) => {
-		if (k < 0)
-			return -1;
-		let v = map.get(k);
-		if (v === undefined) {
-			v = strings.length;
-			strings.push(t.strings[k]);
-			map.set(k, v);
-		}
-		return v;
-	};
-	const la = [], lf = [], ll = [], lk = [];
-	let a = dwarfRow(t, lo);
-	if (a < 0)
-		a = 0;
-	for (let k = a; k < t.la.length && t.la[k] < hi; k++) {
-		la.push(Math.max(lo, t.la[k]));
-		lf.push(sid(t.lf[k]));
-		ll.push(t.ll[k]);
-		lk.push(t.la[k] >= lo && t.lk && t.lk[k] ? 1 : 0); // the row in force at lo starts before it
-	}
-	const sx = Array.from(t.sx || []).filter((x) => x >= lo && x < hi);
-	const rg = [];
-	for (let k = 0; k < t.ra.length; k++)
-		if (t.ra[k] < hi && t.rh[k] > lo)
-			rg.push([t.ra[k], t.rh[k], t.rd[k], sid(t.rn[k]), sid(t.rf[k]), t.rl[k]]);
-	return dwarfPack(strings, la, lf, ll, rg, lk, sx);
-}
-
-// A line table as an MKBD 2 shard.
-function dwarfEncode(t) {
-	const out = [];
-	const uv = (x) => {
-		for (;;) {
-			const c = x % 128;
-			x = Math.floor(x / 128);
-			if (x) out.push(c | 0x80);
-			else { out.push(c); return; }
-		}
-	};
-	const zv = (v) => v < 0 ? -2 * v - 1 : 2 * v;
-	const zz = (v) => uv(zv(v));
-	out.push(0x4d, 0x4b, 0x42, 0x44, 2);
-	uv(t.strings.length);
-	const enc = new TextEncoder();
-	for (const s of t.strings) {
-		for (const c of enc.encode(s))
-			out.push(c);
-		out.push(0);
-	}
-	uv(t.la.length);
-	let pa = 0, pf = 0, pl = 0;
-	for (let k = 0; k < t.la.length; k++) {
-		uv(t.la[k] - pa); pa = t.la[k];
-		uv(zv(t.lf[k] + 1 - pf) * 2 + (t.lk[k] ? 1 : 0)); pf = t.lf[k] + 1;
-		zz(t.ll[k] - pl); pl = t.ll[k];
-	}
-	uv(t.ra.length);
-	pa = 0;
-	for (let k = 0; k < t.ra.length; k++) {
-		uv(t.ra[k] - pa); pa = t.ra[k];
-		uv(t.rh[k] - t.ra[k]); uv(t.rd[k]); uv(t.rn[k] + 1); uv(t.rf[k] + 1); uv(t.rl[k]);
-	}
-	uv(t.sx.length);
-	pa = 0;
-	for (const x of t.sx) {
-		uv(x - pa); pa = x;
-	}
-	return Uint8Array.from(out);
-}
-
-// CFI shards: the page only reads them (unwind.js cfiDecode, which also
-// describes the format). The FDEs of t that overlap [lo, hi), with the
-// CIEs they use.
-function cfiSlice(t, lo, hi) {
-	const cieIx = new Map(), cies = [], fdes = [];
-	for (let i = 0; i < t.lo.length; i++) {
-		if (t.lo[i] >= hi || t.lo[i] + t.len[i] <= lo)
-			continue;
-		if (!cieIx.has(t.cie[i])) {
-			cieIx.set(t.cie[i], cies.length);
-			cies.push(t.cies[t.cie[i]]);
-		}
-		fdes.push([t.lo[i], t.len[i], cieIx.get(t.cie[i]), t.off[i], t.plen[i]]);
-	}
-	return cfiPack(cies, fdes, t.prog, t.bias);
-}
-
-// A CFI table as an MKBC 1 shard.
-function cfiEncode(t) {
-	const out = [];
-	const uv = (x) => {
-		for (;;) {
-			const c = x % 128;
-			x = Math.floor(x / 128);
-			if (x) out.push(c | 0x80);
-			else { out.push(c); return; }
-		}
-	};
-	const bytes = (a) => { uv(a.length); for (const x of a) out.push(x); };
-	out.push(0x4d, 0x4b, 0x42, 0x43, 1);
-	uv(t.bias === null ? 0 : t.bias + 1);
-	uv(t.cies.length);
-	for (const c of t.cies) {
-		uv(c.caf); uv(c.daf < 0 ? -2 * c.daf - 1 : 2 * c.daf); uv(c.ra); bytes(c.init);
-	}
-	uv(t.lo.length);
-	let pa = 0;
-	for (let i = 0; i < t.lo.length; i++) {
-		uv(t.lo[i] - pa); pa = t.lo[i];
-		uv(t.len[i]); uv(t.cie[i]); bytes(t.prog.subarray(t.off[i], t.off[i] + t.plen[i]));
-	}
-	return Uint8Array.from(out);
-}
-
-function reader(file) {
-	const fd = fs.openSync(file, "r");
-	return (off, len) => {
+// The generation itself is kgen.js kgenDwarf (the page's Worker runs it
+// on an imported vmlinux): here the ELF is read from disk, the files are
+// written to outDir and the instruction starts come from $OBJDUMP.
+async function generate(elf, outDir) {
+	const fd = fs.openSync(elf, "r");
+	const read = (off, len) => {
 		const b = Buffer.alloc(len);
 		fs.readSync(fd, b, 0, len, off);
 		return new Uint8Array(b.buffer, b.byteOffset, len);
 	};
-}
-
-async function generate(elf, outDir) {
-	const t0 = Date.now();
-	const read = reader(elf);
-	const e = dwarfElf(read);
-	const sec = dwarfSections(e, read);
-	if (!sec)
-		throw new Error(elf + " has no .debug_info");
-	// Every unit is decoded, so .debug_aranges (an address index) is not needed.
-	const dw = new DwarfReader({ ...sec, aranges: null });
-	const units = [];
-	const us = dw.units();
-	let nrows = 0, nranges = 0;
-	for (let i = 0; i < us.length; i++) {
-		if (us[i].unitType !== 1 && us[i].unitType !== 3)
-			continue;
-		const u = dw.decodeUnit(i);
-		nrows += u.rows.length / 4;
-		nranges += u.ranges.length / 6;
-		units.push(u);
-	}
-	const t1 = Date.now();
-	const table = dwarfTable(units, e.toPhys);
-	units.length = 0;
-	const t2 = Date.now();
 	fs.mkdirSync(outDir, { recursive: true });
 	for (const f of fs.readdirSync(outDir))
 		if (/^(cfi-)?[0-9a-f]+\.bin$|^(locals|funcs)-[0-9a-f]+\.json\.gz$|^index\.json$/.test(f))
 			fs.unlinkSync(path.join(outDir, f));
-	const shards = new Set();
-	for (let k = 0; k < table.la.length; k++)
-		if (table.lf[k] >= 0)
-			shards.add(Math.floor(table.la[k] / 2 ** SHARD_BITS));
-	for (let k = 0; k < table.ra.length; k++)
-		for (let s = Math.floor(table.ra[k] / 2 ** SHARD_BITS); s <= Math.floor((table.rh[k] - 1) / 2 ** SHARD_BITS); s++)
-			shards.add(s);
-	const list = [...shards].sort((a, b) => a - b);
-	let bytes = 0;
-	const insns = insnStarts(elf, e.toPhys);
-	const cov = new Coverage(table);
-	for (const s of list) {
-		const slice = dwarfSlice(table, s * 2 ** SHARD_BITS, (s + 1) * 2 ** SHARD_BITS);
-		const b = dwarfEncode(slice);
-		fs.writeFileSync(path.join(outDir, s.toString(16) + ".bin"), b);
-		bytes += b.length;
-		cov.addShard(s, slice);
-	}
-	const fj = cov.finish(await insns);
-	fs.writeFileSync(path.join(outDir, "files.json"), JSON.stringify(fj));
-	console.log(`${outDir}/files.json: ${fj.files.length} files, ${fj.funcs.length} functions, ` +
-		`${fj.files.reduce((n, f) => n + f[1], 0)} lines with code, ${fj.insns ? fj.insns.total + " instructions (" + fj.insns.inFunctions +
-		" in functions)" : "no instruction counts (" + fj.insnsWhy + ")"}; ${Date.now() - t2} ms with the shards`);
-	const t3 = Date.now();
-	const ty = types(dw, e, outDir);
-	const locals = ty.locals;
-	delete ty.locals;
-	console.log(`${outDir}: parameters and locals of ${locals.functions} functions (${locals.vars} variables), ` +
-		`${locals.shards.length} shards, ${locals.bytes} bytes (${locals.gzBytes} gzipped)`);
-	const funcs = funcShards(ty.funcs, outDir);
-	delete ty.funcs;
-	console.log(`${outDir}: facts of ${funcs.functions} functions (${funcs.outOfLine} with code of their own, ${funcs.copies} inlined copies), ` +
-		`${funcs.shards} shards, ${funcs.bytes} bytes (${funcs.gzBytes} gzipped)`);
-	const tj = JSON.stringify(ty);
-	fs.writeFileSync(path.join(outDir, "types.json"), tj);
-	console.log(`${outDir}/types.json: ${ty.vars.length} variables, ${ty.types.length} types, ${tj.length} bytes; ${Date.now() - t3} ms`);
-	const t4 = Date.now();
-	const cfi = cfiShards(e, read, outDir);
-	console.log(`${outDir}: ${cfi.why || `call frame information from ${cfi.source}: ${cfi.fdes} FDEs, ${cfi.cies} CIEs, ` +
-		`${cfi.shards.length} shards, ${cfi.bytes} bytes`}; ${Date.now() - t4} ms`);
-	const index = { format: 2, cfi, locals, funcs, breakpoints: table.lk.reduce((n, x) => n + x, 0) + table.sx.length, shardBits: SHARD_BITS, shards: list, units: us.length,
-		version: [...new Set(us.map((u) => u.ver))], lineRows: table.la.length, ranges: table.ra.length,
-		source: path.basename(elf), files: "files.json", types: "types.json", variables: ty.vars.length, typeCount: ty.types.length, typeBytes: tj.length };
-	fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify(index));
-	console.log(`${outDir}: ${us.length} units, ${nrows} line rows -> ${table.la.length}, ${nranges} function/inline ranges, ` +
-		`${list.length} shards, ${bytes} bytes; decode ${t1 - t0} ms, table ${t2 - t1} ms, write ${Date.now() - t2} ms`);
-}
-
-// cfi-<hex>.bin: the FDEs (with their CIEs) of each 64 KiB of physical
-// address space that has code with CFI (unwind.js cfiEncode); the page
-// reads the shard of an address when a backtrace passes there.
-function cfiShards(e, read, outDir) {
-	const c = cfiFromElf(e, read, e.toPhys);
-	if (c.why)
-		return { why: c.why };
-	const t = c.t, set = new Set();
-	for (let i = 0; i < t.lo.length; i++)
-		for (let s = Math.floor(t.lo[i] / 2 ** SHARD_BITS); s <= Math.floor((t.lo[i] + t.len[i] - 1) / 2 ** SHARD_BITS); s++)
-			set.add(s);
-	const shards = [...set].sort((a, b) => a - b);
-	let bytes = 0;
-	for (const s of shards) {
-		const b = cfiEncode(cfiSlice(t, s * 2 ** SHARD_BITS, (s + 1) * 2 ** SHARD_BITS));
-		fs.writeFileSync(path.join(outDir, "cfi-" + s.toString(16) + ".bin"), b);
-		bytes += b.length;
-	}
-	return { source: c.source, fdes: t.lo.length, cies: t.cies.length, shards, bytes };
+	await kgenDwarf(read, {
+		name: path.basename(elf),
+		insns: insnStarts(elf, dwarfElf(read).toPhys),
+		put: (name, data) => fs.writeFileSync(path.join(outDir, name), data),
+		gzip: (data) => zlib.gzipSync(data, { level: 9 }),
+		log: (text) => console.log(outDir + (/^[a-z]+\.json:/.test(text) ? "/" : ": ") + text),
+	});
 }
 
 // The physical address of every instruction start of the ELF's code, from
@@ -308,211 +104,14 @@ function insnStarts(elf, toPhys) {
 	const tool = process.env.OBJDUMP || "llvm-objdump";
 	return new Promise((resolve) => {
 		const p = spawn(tool, ["-d", "--no-show-raw-insn", elf], { stdio: ["ignore", "pipe", "ignore"] });
-		const out = [];
-		let rest = "";
+		const starts = new KgInsnStarts(toPhys);
 		p.stdout.setEncoding("latin1");
-		p.stdout.on("data", (chunk) => {
-			const lines = (rest + chunk).split("\n");
-			rest = lines.pop();
-			for (const l of lines) {
-				const m = /^ *([0-9a-f]+): *\t/.exec(l);
-				if (m) {
-					const pa = toPhys(parseInt(m[1], 16));
-					if (pa !== null)
-						out.push(pa);
-				}
-			}
-		});
+		p.stdout.on("data", (chunk) => starts.push(chunk));
 		p.on("error", (err) => resolve({ why: tool + ": " + err.message }));
-		p.on("close", (code) => {
-			if (code !== 0)
-				return resolve({ why: tool + " exited with " + code });
-			const a = Float64Array.from(out).sort();
-			resolve({ starts: a, tool: tool + " -d" });
-		});
+		p.on("close", (code) => resolve(code !== 0 ? { why: tool + " exited with " + code } : starts.finish(tool + " -d")));
 	});
 }
 
-// files.json for the page's Coverage tab. Code lines are counted the way
-// the page counts what ran (dwarf.js dwarfEachLine over the shards):
-//   files  [[path, lines with code, [shards holding them]], ...] sorted
-//   funcs  [[name, file index or -1, lines, instructions, lo, length,
-//            lo2, length2, ...], ...]: each DWARF function (an outermost
-//          range; the parts of one function, e.g. GCC's .cold copies, are
-//          one entry), its file (where most of its bytes' outermost frame
-//          is), its lines with code in that file and its instruction starts
-//   insns  { total, inFunctions, tool } (instruction starts in the image,
-//          and in DWARF functions), or insnsWhy when not counted
-class Coverage {
-	constructor(table) {
-		// Outermost ranges, sorted: a row belongs to the last one starting at
-		// or below it that still covers it.
-		this.fr = [];
-		for (let k = 0; k < table.ra.length; k++)
-			if (table.rd[k] === 0)
-				this.fr.push([table.ra[k], table.rh[k], table.strings[table.rn[k]] || "?"]);
-		this.fr.sort((x, y) => x[0] - y[0]);
-		this.maxLen = this.fr.reduce((m, r) => Math.max(m, r[1] - r[0]), 0);
-		this.lines = new Map();   // path -> Set of lines
-		this.shards = new Map();  // path -> Set of shards
-		this.fnLines = this.fr.map(() => new Set());   // "path\0line"
-		this.fnBytes = this.fr.map(() => new Map());   // path -> bytes
-	}
-
-	rangeAt(pa) {
-		const fr = this.fr;
-		let a = 0, b = fr.length;
-		while (a < b) { const m = (a + b) >> 1; if (fr[m][0] <= pa) a = m + 1; else b = m; }
-		for (let q = a - 1; q >= 0 && fr[q][0] >= pa - this.maxLen; q--)
-			if (fr[q][1] > pa)
-				return q;
-		return -1;
-	}
-
-	addShard(s, t) {
-		dwarfEachLine(t, s * 2 ** SHARD_BITS, (s + 1) * 2 ** SHARD_BITS, (a, b, frames) => {
-			const q = this.rangeAt(a);
-			for (const f of frames) {
-				if (!f.file || !f.line)
-					continue;
-				if (!this.lines.has(f.file)) {
-					this.lines.set(f.file, new Set());
-					this.shards.set(f.file, new Set());
-				}
-				this.lines.get(f.file).add(f.line);
-				this.shards.get(f.file).add(s);
-				if (q >= 0)
-					this.fnLines[q].add(f.file + "\0" + f.line);
-			}
-			const out = frames[frames.length - 1];
-			if (q >= 0 && out.file) {
-				const m = this.fnBytes[q];
-				m.set(out.file, (m.get(out.file) || 0) + b - a);
-			}
-		});
-	}
-
-	finish(insns) {
-		const paths = [...this.lines.keys()].sort();
-		const fileIx = new Map(paths.map((p, k) => [p, k]));
-		const starts = insns.starts;
-		const count = (lo, hi) => {
-			const at = (x) => { let a = 0, b = starts.length; while (a < b) { const m = (a + b) >> 1; if (starts[m] < x) a = m + 1; else b = m; } return a; };
-			return at(hi) - at(lo);
-		};
-		// One entry per (name, file): the parts of a function.
-		const byKey = new Map();
-		const funcs = [];
-		let inFunctions = 0;
-		this.fr.forEach(([lo, hi, name], q) => {
-			let file = null, best = 0;
-			for (const [p, n] of this.fnBytes[q])
-				if (n > best) { best = n; file = p; }
-			const key = name + "\0" + file;
-			let fn = byKey.get(key);
-			if (!fn) {
-				fn = { name, file, lines: new Set(), insns: 0, ranges: [] };
-				byKey.set(key, fn);
-				funcs.push(fn);
-			}
-			for (const k of this.fnLines[q])
-				if (k.slice(0, k.lastIndexOf("\0")) === file)
-					fn.lines.add(k);
-			fn.ranges.push(lo, hi - lo);
-			if (starts) {
-				const n = count(lo, hi);
-				fn.insns += n;
-				inFunctions += n;
-			}
-		});
-		const out = {
-			format: 1, shardBits: SHARD_BITS,
-			files: paths.map((p) => [p, this.lines.get(p).size, [...this.shards.get(p)].sort((a, b) => a - b)]),
-			funcs: funcs.map((f) => [f.name, f.file === null ? -1 : fileIx.get(f.file), f.lines.size, starts ? f.insns : null, ...f.ranges]),
-		};
-		if (starts)
-			out.insns = { total: starts.length, inFunctions, tool: insns.tool };
-		else
-			out.insnsWhy = insns.why;
-		return out;
-	}
-}
-
-// Variables and their types, every unit (dwarf.js DwarfTypes), and the
-// parameters and locals of every function (dwarf.js dwarfScopeGroups):
-// locals-<hex>.json.gz per 64 KiB of code, { format, fns: [group, ...] }
-// gzipped (88 MB of JSON for a distro kernel, 16 MB gzipped), with each
-// function in every shard its code touches.
-function types(dw, e, outDir) {
-	const acc = new DwarfTypes(dw);
-	const sections = [];
-	const secOf = dwarfSectionOf(e, sections);
-	const us = dw.units();
-	const shards = new Map();
-	let fns = 0, vars = 0, gzBytes = 0;
-	for (let i = 0; i < us.length; i++) {
-		if (us[i].unitType !== 1 && us[i].unitType !== 3)
-			continue;
-		for (const g of acc.addUnit(dw.decodeData(i, true), e.toPhys, secOf)) {
-			const js = JSON.stringify(g);
-			fns++;
-			for (const s of g)
-				vars += s[5].length;
-			const set = new Set();
-			const r = g[0][2];
-			for (let k = 0; k < r.length; k += 2)
-				for (let s = Math.floor(r[k] / 2 ** SHARD_BITS); s <= Math.floor((r[k] + r[k + 1] - 1) / 2 ** SHARD_BITS); s++)
-					set.add(s);
-			for (const s of set) {
-				if (!shards.has(s))
-					shards.set(s, []);
-				shards.get(s).push(js);
-			}
-		}
-	}
-	const list = [...shards.keys()].sort((a, b) => a - b);
-	let bytes = 0;
-	for (const s of list) {
-		const js = '{"format":1,"fns":[' + shards.get(s).join(",") + "]}";
-		const gz = zlib.gzipSync(js, { level: 9 });
-		fs.writeFileSync(path.join(outDir, "locals-" + s.toString(16) + ".json.gz"), gz);
-		bytes += js.length;
-		gzBytes += gz.length;
-	}
-	const T = acc.finish(sections);
-	T.locals = { shards: list, functions: fns, vars, bytes, gzBytes };
-	return T;
-}
-
-// funcs-<k>.json.gz: the function facts (dwarf.js DwarfFuncs) split by
-// name into shards of ~100 KB of JSON (gzipped ~35 KB), each with its own
-// file list: the page fetches the one shard a name hashes to.
-const FUNC_SHARD_BYTES = 100000;
-function funcShards(F, outDir) {
-	const total = JSON.stringify(F).length;
-	const n = Math.max(1, Math.round(total / FUNC_SHARD_BYTES));
-	const parts = Array.from({ length: n }, () => ({ format: 1, files: [], fns: [], ix: new Map() }));
-	for (const e of F.fns) {
-		const p = parts[dwFuncShard(e[0], n)];
-		const f = e[1] >= 0 ? F.files[e[1]] : null;
-		if (f !== null && !p.ix.has(f)) {
-			p.ix.set(f, p.files.length);
-			p.files.push(f);
-		}
-		p.fns.push([e[0], f === null ? -1 : p.ix.get(f), ...e.slice(2)]);
-	}
-	let bytes = 0, gzBytes = 0;
-	parts.forEach((p, k) => {
-		delete p.ix;
-		const js = JSON.stringify(p);
-		const gz = zlib.gzipSync(js, { level: 9 });
-		fs.writeFileSync(path.join(outDir, "funcs-" + k.toString(16) + ".json.gz"), gz);
-		bytes += js.length;
-		gzBytes += gz.length;
-	});
-	return { shards: n, functions: F.fns.length, outOfLine: F.fns.filter((e) => e[7].length).length,
-		copies: F.fns.reduce((x, e) => x + e[8].length, 0), bytes, gzBytes };
-}
 
 // One JSON line per name on stdin: its functions' facts as the page
 // renders them (the shard dwFuncShard names, types.json for the types,

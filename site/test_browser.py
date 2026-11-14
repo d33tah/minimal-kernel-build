@@ -13388,8 +13388,9 @@ def pwa_deploy(root, v, marker=None):
 
 def pwa_server(root):
     """CachingHandler on root; state["down"] makes it answer nothing (offline),
-    state["slow"] = (path, seconds) delays the answer for that file."""
-    state = {"down": False, "slow": None}
+    state["hold"] = (path, threading.Event()) holds the answer for that file
+    until the event is set (at most 60 s)."""
+    state = {"down": False, "hold": None}
 
     class Handler(CachingHandler):
         extensions_map = {**CachingHandler.extensions_map, ".webmanifest": "application/manifest+json"}
@@ -13398,9 +13399,9 @@ def pwa_server(root):
             if state["down"]:
                 self.close_connection = True
                 return
-            slow = state["slow"]
-            if slow and self.path.split("?")[0] == "/" + slow[0]:
-                time.sleep(slow[1])
+            hold = state["hold"]
+            if hold and self.path.split("?")[0] == "/" + hold[0]:
+                hold[1].wait(60)
             super().do_GET()
 
         do_HEAD = do_GET
@@ -13625,9 +13626,10 @@ def pwa_case(browser, base, shots, timeout):
                                                                      body=json.dumps(fake),
                                                                      headers={"Cache-Control": "no-store"}))
         if not live:
-            # The new worker's install is slow (one file of its precache
-            # takes 10 s): Reload is pressed while it still installs.
-            state["slow"] = ("kernels/minified-linux-os/disasm.json", 10)
+            # The new worker cannot finish installing (one file of its
+            # precache is held until Reload has been pressed): Reload is
+            # pressed while it installs, whatever the machine's speed.
+            state["hold"] = ("kernels/minified-linux-os/disasm.json", threading.Event())
         c.set_offline(False)
         shown = wait_for(lambda: page.locator("#pwa_update").count() and page.is_visible("#pwa_update"), 30)
         r["update_note"] = page.text_content("#pwa_update") if page.locator("#pwa_update").count() else None
@@ -13645,7 +13647,7 @@ def pwa_case(browser, base, shots, timeout):
         page.emulate_media(color_scheme="light")
         page.set_viewport_size({"width": 1280, "height": 900})
         if not live:
-            r["installing_at_reload"] = page.evaluate("!!(PWA.reg && PWA.reg.installing)")
+            r["installing_at_reload"] = wait_for(lambda: page.evaluate("!!(PWA.reg && PWA.reg.installing)"), 30)
             if not r["installing_at_reload"]:
                 problems.append("the new deploy's worker had installed before Reload (want Reload while it installs)")
             checks = []
@@ -13656,7 +13658,8 @@ def pwa_case(browser, base, shots, timeout):
                 page.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
                 time.sleep(1)
                 r["checks_while_reloading"] = len(checks)
-            state["slow"] = None
+                state["hold"][1].set()
+            state["hold"] = None
             if r["checks_while_reloading"]:
                 problems.append(f"version.json fetched {len(checks)} times while the page reloads into the new deploy")
             if not wait_for(lambda: gate_on_screen(page), timeout):
@@ -13680,6 +13683,8 @@ def pwa_case(browser, base, shots, timeout):
     finally:
         if errors:
             problems.append(f"page errors: {errors[:3]}")
+        if not live and state["hold"]:
+            state["hold"][1].set()
         c.close()
         if tmp:
             httpd.shutdown()
@@ -13820,9 +13825,10 @@ def pwa_edges(browser, shots, timeout):
                 problems.append(f"without sw.js: a controller or a note: {r['no sw.js']}")
             # A worker that never answers the version question (busy, or a
             # sw.js without it): no answer within 3 s, the page takes it.
-            sw = (SITE / "sw.js").read_text().replace('const V = "dev";', f'const V = "{PWA_V[0]}";')
+            # (site/ may be stamped already, as in CI: any V is replaced.)
+            sw, nv = re.subn(r'^const V = "[^"]*";$', f'const V = "{PWA_V[0]}";', (SITE / "sw.js").read_text(), flags=re.M)
             mute = sw.replace('if (m.type === "version" && event.ports[0])', "if (false)")
-            if mute == sw or sw == (SITE / "sw.js").read_text():
+            if mute == sw or nv != 1:
                 problems.append("sw.js: no version answer or no V to replace")
             (root / "sw.js").write_text(mute)
             page.reload()

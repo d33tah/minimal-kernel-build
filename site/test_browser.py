@@ -12889,9 +12889,12 @@ def snapdiff_corrupt(browser, base, shots):
     "full" delta and Delete of a base whose delta cannot be rebuilt say so
     too, and keep it. A name confirmed unchanged is no rename. A diff
     with a snapshot of a smaller RAM lists the pages above its end that
-    hold bytes. After the site's data is cleared (the page's database
+    hold bytes, and the hexdump of one shows zeros against v86's bytes,
+    all 256 rows on "all rows". After the site's data is cleared (the page's database
     connection is closed under it) Delete, Rename and Save each say that
-    IndexedDB failed, and the snapshot stays in memory."""
+    IndexedDB failed, and the snapshot stays in memory. Without the
+    snapshot worker's script (404) a save is kept raw and Restore says the
+    worker failed."""
     problems, r, errors = [], {}, []
     ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
     page = ctx.new_page()
@@ -13030,6 +13033,28 @@ def snapdiff_corrupt(browser, base, shots):
             if d.get("state") != "done" or not want or got != want:
                 problems.append(f"diff of a {ram_a}-byte snapshot with a {2 * ram_a}-byte machine: state {d.get('state')}, "
                                 f"pages above {ram_a:#x} {got[:4]} ({len(got)}), RAM has {want[:4]} ({len(want)})")
+            # The first of those pages byte by byte: zeros on the 2 MiB side,
+            # v86's bytes now; "all rows" shows all 256 rows of 16.
+            if got:
+                p0 = got[0][0]
+                page.click(f"#snap_pages [data-page='{p0}'] button.snaphex")
+                wait_for(lambda: page.get_attribute("#snap_hex", "data-page") == str(p0), 15)
+                hexrows = "() => [...document.querySelectorAll('#snap_hex pre')].map((e) => e.textContent.split('\\n').filter((l) => l))"
+                rows = page.evaluate(hexrows)
+                page.click("#snap_hex button:text('all rows')")
+                wait_for(lambda: len(page.evaluate(hexrows)[0]) == 256, 10)
+                allrows = page.evaluate(hexrows)
+                now = page.evaluate(f"Array.from(emulator.read_memory({p0} * 4096, 4096))")
+                parse = lambda lines: {int(l[:8], 16): [int(x, 16) for x in l[9:].split()[:16]] for l in lines}
+                a, b = parse(allrows[0]), parse(allrows[1]) if len(allrows) == 2 else {}
+                base_p = p0 * 4096
+                want_b = {base_p + o: now[o:o + 16] for o in range(0, 4096, 16)}
+                changed = sorted(o for o in want_b if any(want_b[o]))
+                r["hex beyond"] = [p0, len(rows[0]) if rows else 0, [len(x) for x in allrows]]
+                if not rows or sorted(parse(rows[1])) != changed or b != want_b or any(any(v) for v in a.values()) or \
+                        [len(x) for x in allrows] != [256, 256]:
+                    problems.append(f"the hexdump of page {p0:#x} (beyond the 2 MiB snapshot): rows {r['hex beyond']}, "
+                                    f"now's bytes as v86 has them: {b == want_b}, the snapshot's side all zero: {not any(any(v) for v in a.values())}")
             page.screenshot(path=str(shots / "snapdiff-corrupt-ramsizes.png"), full_page=True)
 
         # The site's data cleared while the page is open.
@@ -13056,6 +13081,26 @@ def snapdiff_corrupt(browser, base, shots):
         if "Not stored (" not in s_save or closing not in s_save or list(where.values())[-1] != "memory":
             problems.append(f"Save after the site's data was cleared: {s_save!r}, the new one is {list(where.values())[-1]!r}")
         page.screenshot(path=str(shots / "snapdiff-corrupt-cleared.png"), full_page=True)
+        ctx.close()
+
+        # The snapshot worker's script cannot be fetched (no service worker):
+        # the save is kept raw, Restore says the worker failed.
+        ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+        ctx.add_init_script("if (navigator.serviceWorker) navigator.serviceWorker.register = () => Promise.reject(new DOMException('not allowed by the test', 'SecurityError'));")
+        ctx.route("**/snapworker.js*", lambda route: route.fulfill(status=404, body="gone"))
+        page = ctx.new_page()
+        page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+        page.goto(f"{base}/index.html?kernel=hello&paused=1#snapshots")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        st = snap_save(page, 1, False)
+        row = st["rows"][0]["id"]
+        codec = page.evaluate("snapshots[0].codec")
+        snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
+        wait_for(lambda: "failed" in page.text_content("#snap_status"), 30)
+        r["no worker"] = [st["status"][-80:], codec, page.text_content("#snap_status")]
+        if not st["status"].endswith(" Not compressed (the snapshot worker failed).") or codec != "raw" or \
+                page.text_content("#snap_status") != "restore_state failed: Error: the snapshot worker failed":
+            problems.append(f"no snapshot worker: save {st['status'][-80:]!r} ({codec}), Restore {page.text_content('#snap_status')!r}")
         if errors:
             problems.append(f"corrupt: page errors {errors[:3]}")
     finally:
@@ -17894,6 +17939,93 @@ def replay_tampered(browser, base, shots, problems, r):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def replay_during(browser, base, shots, problems, r):
+    """While a replay runs (hello at 1280 dark, its run stepped from the
+    reset vector, replayed with Replay at a 20x CPU throttle): keys typed
+    into the screen while it is paused are not given to the guest, and the
+    replay, continued, ends matching and says it ignored those 4
+    scancodes; Step back while the next replay is paused stops it there
+    ("Replay stopped by Step back at instruction N") and steps back one;
+    Back to a name that is no symbol says what Run to says for it, with
+    Back to for Run to throughout (FAILS on 4e3e1ef8f: "Back to x: no
+    symbol of that name. Run to takes ...")."""
+    tag = "replay during (hello 1280 dark)"
+    ctx = replay_context(browser, "dark", False)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    try:
+        page.goto(f"{base}/index.html?kernel=hello&mips=10&fastforward=0", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
+            problems.append(f"{tag}: hello did not end")
+            return
+        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        end = page.evaluate("stepper.steps")
+        cdp = page.context.new_cdp_session(page)
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": 20})
+
+        def replay_paused():
+            """Replay; pause it while it steps the BIOS."""
+            show_tab(page, "snapshots")
+            page.click("#run_replay")
+            if not wait_for(lambda: page.evaluate("replayActive() && runState === 'stepped' && stepper.steps > 100000"), 120, 0.05):
+                return None
+            machine_do(page, "click", "#dbg_pause")
+            wait_for(lambda: page.evaluate("runState") == "paused", 30)
+            return page.evaluate("replayActive() ? stepper.steps : null")
+
+        if not replay_paused():
+            problems.append(f"{tag}: could not pause the replay while it steps: {page.text_content('#run_status')!r}")
+            return
+        show_tab(page, "machine")
+        page.click("#screen_container")
+        page.keyboard.type("ab")
+        wait_for(lambda: page.evaluate("INPUT.replay.ignored") == 4, 10)
+        typed = page.evaluate("[INPUT.replay.ignored, INPUT.pending.length]")
+        machine_do(page, "click", "#dbg_continue")
+        if not replay_wait(page, 180):
+            problems.append(f"{tag}: the replay did not end: {page.text_content('#run_status')!r}")
+            return
+        c = replay_state(page)
+        want = f"Replay matched: 0 scancodes at the recorded counts, and at instruction {end:,} the same EIP, RAM and screen as recorded. " \
+               "4 scancodes typed during the replay were ignored."
+        r["typed during"] = [typed, c["status"], c["verdict"], c["keyEntries"]]
+        if typed != [4, 0] or c["status"] != want or c["verdict"] != "match" or c["keyEntries"]:
+            problems.append(f"{tag}: keys typed during the replay: ignored, held {typed}; {c['status']!r} ({c['verdict']}, "
+                            f"{c['keyEntries']} key entries), want {want!r}")
+
+        at = replay_paused()
+        if not at:
+            problems.append(f"{tag}: could not pause the second replay while it steps")
+            return
+        show_tab(page, "machine")
+        wall, ms, st, state = rev_click(page, "#dbg_back", False)
+        run = page.text_content("#run_status")
+        r["step back during"] = [at, page.evaluate("stepper.steps"), st[:100], state, run, page.get_attribute("#run_status", "data-replay")]
+        if run != f"Replay stopped by Step back at instruction {at:,}." or page.get_attribute("#run_status", "data-replay") != "stopped" or \
+                state != "done" or page.evaluate("stepper.steps") != at - 1:
+            problems.append(f"{tag}: Step back during a replay: {r['step back during']}")
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": 1})
+
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", "no_such_function_here")
+        page.click("#dbg_runto")
+        wait_for(lambda: page.text_content("#dbg_status").startswith("Run to no_such"), 10)
+        run_to = page.text_content("#dbg_status")
+        page.click("#dbg_backto")
+        wait_for(lambda: page.text_content("#dbg_status").startswith("Back to"), 10)
+        back_to = page.text_content("#dbg_status")
+        r["back to no symbol"] = [run_to[:120], back_to[:120]]
+        if not run_to.startswith("Run to no_such_function_here: ") or back_to != run_to.replace("Run to", "Back to") or \
+                page.evaluate("stepper.steps") != at - 1:
+            problems.append(f"{tag}: Back to a name that is no symbol: {back_to!r}, Run to said {run_to!r}")
+        page.screenshot(path=str(shots / "replay-during-1280-dark.png"))
+        replay_fit(page, tag, problems)
+        if errs:
+            problems.append(f"{tag}: page errors {errs[:3]}")
+    finally:
+        ctx.close()
+
 def replay_case(browser, base, shots, entries, initrd):
     problems, r = [], {}
     tmp = pathlib.Path(tempfile.mkdtemp())
@@ -17905,6 +18037,7 @@ def replay_case(browser, base, shots, entries, initrd):
             return None
     guard(replay_prompt_edge, browser, base, shots, problems, r)
     guard(replay_tampered, browser, base, shots, problems, r)
+    guard(replay_during, browser, base, shots, problems, r)
     if "minified-linux" in entries:
         guard(replay_refused, browser, base, shots, problems, r)
         guard(replay_stepped, browser, base, shots, "minified-linux", problems, r)

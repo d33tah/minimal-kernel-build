@@ -673,7 +673,7 @@ function initReverse() {
 			return;
 		const want = await runToTargets($("dbg_addr").value.trim());
 		if (!want.targets) {
-			$("dbg_status").textContent = want.why.replace(/^Run to /, "Back to ");
+			$("dbg_status").textContent = want.why.replace(/\bRun to\b/g, "Back to");
 			updateDebugUi();
 			return;
 		}

@@ -21981,6 +21981,11 @@ def qs_click_addr(page, addr):
     return d
 
 
+def qs_hint_wait(page):
+    """Until the map has drawn the hint (live, it draws about 20 frames a second)."""
+    wait_for(lambda: page.evaluate("!!(MMAP.hl && MMAP.hl.cells > 0)"), 5, 0.05)
+
+
 def qs_story(page):
     return page.evaluate("[...document.querySelectorAll('#mm_story li')].map((l) => l.textContent)")
 
@@ -22031,7 +22036,7 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
         if "Type a number" not in bad["fb"] or "Too small" not in low["fb"] or low["state"] != "open":
             problems.append(f"minified: wrong loader answers: {bad['fb']!r} {low}")
         qs_card(page, "loader", ".qs-hintbtn").click()
-        mm_frames(page, 3)
+        qs_hint_wait(page)
         h = qs_state(page)
         r["loader hint"] = {"hl": h["hl"], "map": h["mapOpen"]}
         if not h["cards"]["loader"]["hint"] or not h["mapOpen"] or not h["hl"] or not any(a == 0x100000 for a, b in h["hl"]["ranges"]) or not h["hl"]["cells"]:
@@ -22065,7 +22070,7 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
         # the option ROM: its hint blinks the video BIOS ROM; its first bytes
         # in the Page tab; vgabios.bin agrees
         qs_card(page, "rom", ".qs-hintbtn").click()
-        mm_frames(page, 2)
+        qs_hint_wait(page)
         h = qs_state(page)["hl"]
         if not h or h["ranges"] != [[0xc0000, 0xc8000]] or not h["cells"]:
             problems.append(f"minified: the ROM's hint: {h}")
@@ -22095,7 +22100,7 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
         # E820: its hint (the usable entries blink), a wrong cell, then the
         # last byte of the highest usable entry from the story's E820 lines
         qs_card(page, "ramend", ".qs-hintbtn").click()
-        mm_frames(page, 2)
+        qs_hint_wait(page)
         h = qs_state(page)["hl"]
         if not h or h["label"] != "E820 usable RAM" or not h["cells"] or [0x100000, 0x1c0000] not in h["ranges"]:
             problems.append(f"minified: the E820 hint: {h}")
@@ -22120,7 +22125,7 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
         # first paint: its hint blinks the text memory; the story's line of
         # the kernel's code first touching the text memory, its go there
         qs_card(page, "paint", ".qs-hintbtn").click()
-        mm_frames(page, 2)
+        qs_hint_wait(page)
         h = qs_state(page)["hl"]
         if not h or h["ranges"] != [[0xb8000, 0xc0000]] or not h["cells"]:
             problems.append(f"minified: the first paint's hint: {h}")
@@ -22278,7 +22283,7 @@ def qs_debian_case(browser, base, shots, name, problems, r):
         # the I/O APIC: the hint blinks the MP table's pointer; the story's
         # MultiProcessor line has the address; its cell
         qs_card(page, "ioapic", ".qs-hintbtn").click()
-        mm_frames(page, 3)
+        qs_hint_wait(page)
         h = qs_state(page)["hl"]
         r["ioapic hint"] = h
         if not h or not h["cells"] or not all(0xf0000 <= a < b <= 0x100000 for a, b in h["ranges"]) or "_MP_" not in h["label"]:
@@ -22299,7 +22304,9 @@ def qs_debian_case(browser, base, shots, name, problems, r):
         hl = {}
         for q in ("pciclass", "barsize"):
             qs_card(page, q, ".qs-hintbtn").click()
-            mm_frames(page, 2)
+            # a new hint: its cells drawn
+            page.evaluate("MMAP.hl.cells = 0")
+            qs_hint_wait(page)
             hl[q] = qs_state(page)["hl"]
         r["pci hints"] = hl
         if not hl["pciclass"] or not hl["pciclass"]["ranges"] or not hl["pciclass"]["cells"] or not hl["barsize"] or len(hl["barsize"]["ranges"]) < 2:

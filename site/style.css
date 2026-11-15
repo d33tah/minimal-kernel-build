@@ -409,7 +409,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .mev-table td[data-col="step"], .mev-table td[data-col="size"], .mev-addr, .mev-val { font-family: ui-monospace, monospace; }
 .mev-table td[data-col="step"], .mev-table td[data-col="address"], .mev-table td[data-col="size"], .mev-table td[data-col="access"] { white-space: nowrap; }
 .mev-table .symlink, .mev-table .srclink { font-size: inherit; }
-.mev-table .symlink { border: 0; background: none; padding: 0; text-align: left; min-height: 0; text-decoration: underline dotted; text-underline-offset: 2px; }
+.mev-table .symlink { font-family: inherit; border: 0; background: none; padding: 0; text-align: left; min-height: 0; text-decoration: underline dotted; text-underline-offset: 2px; }
 .mev-addr .symlink { font-family: ui-monospace, monospace; }
 .mev-sub { display: block; color: var(--muted); font-size: 0.8125rem; }
 .mev-rw[data-rw="write"] { font-weight: 600; }

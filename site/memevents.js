@@ -976,7 +976,9 @@ const MEV = {
 		const span = document.createElement("span");
 		const sw = document.createElement("span");
 		sw.className = "sw mm-sw mm-k-" + (r.kind || "none");
-		span.append(sw, " ", this.btn(r.name, "Show this region on the live memory map (Memory tab)", () => this.showOnMap(r.lo || 0)));
+		const b = this.btn("", "Show this region on the live memory map (Memory tab)", () => this.showOnMap(r.lo || 0));
+		b.append(sw, " " + r.name); // the swatch wraps with the name
+		span.append(b);
 		return span;
 	},
 

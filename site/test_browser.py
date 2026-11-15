@@ -13704,8 +13704,8 @@ def suite_deltasnap(ctx):
 # changing while another tab is shown (tabs_u5).
 
 # In the order of the tab bar.
-TABS_WORDS = {"machine": "Machine", "memory": "Memory", "events": "Events", "quests": "Quests", "page": "Page",
-              "debugger": "Debugger", "calls": "Calls", "source": "Source", "snapshots": "Snapshots", "settings": "Settings",
+TABS_WORDS = {"machine": "Machine", "memory": "Memory", "page": "Page", "debugger": "Debugger", "calls": "Calls",
+              "source": "Source", "snapshots": "Snapshots", "events": "Events", "quests": "Quests", "settings": "Settings",
               "about": "About"}
 TABS_EMOJI = {"machine": "\U0001F5A5\uFE0F", "memory": "\U0001F5FA\uFE0F", "events": "\U0001F4CB", "quests": "\U0001F3AF",
               "page": "\U0001F522",

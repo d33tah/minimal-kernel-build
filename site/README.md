@@ -2004,8 +2004,9 @@ blinks the MP table's pointer).
 
 Operator 2026-11-15: "quests powinien być nową zakładką, events też i jest
 nieczytelne". The memory events and the quests have tabs of their own
-(📋 Events, 🎯 Quests, after Memory, which keeps the page grid and the live
-memory map). `#events`, `#quests`, `?tab=events`, `?tab=quests` open them;
+(📋 Events, 🎯 Quests, after Snapshots: before them the Source tab would sit
+under the open Source panel at 1280 px; Memory keeps the page grid and the
+live memory map). `#events`, `#quests`, `?tab=events`, `?tab=quests` open them;
 without a hash `?quests=1` opens Quests and `?memevents=1` Events (a hash
 wins). While the Quests tab is shown the live memory map moves beside its
 cards (`MMAP.place`; sticky at 1100 px and wider), since its quests are

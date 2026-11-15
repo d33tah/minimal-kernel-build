@@ -1222,7 +1222,7 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["machine", "memory", "events", "quests", "page", "debugger", "calls", "source", "snapshots", "settings", "about"];
+const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "events", "quests", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
 // The Machine tab first: it holds the VM's screen and run controls.

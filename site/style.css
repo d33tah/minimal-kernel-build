@@ -413,6 +413,11 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .mev-addr .symlink { font-family: ui-monospace, monospace; }
 .mev-sub { display: block; color: var(--muted); font-size: 0.8125rem; }
 .mev-rw[data-rw="write"] { font-weight: 600; }
+/* Reads and writes apart without colour: an arrow and a letter, filled for
+   a write (into memory), outlined for a read (out of it). */
+.mev-rwb { display: inline-block; min-width: 2.6em; margin-right: 0.4em; padding: 0 0.3em; border: 1.5px solid var(--fg); border-radius: 3px; text-align: center; font: 600 0.8125rem/1.35 ui-monospace, monospace; }
+.mev-rw[data-rw="write"] .mev-rwb { background: var(--fg); color: var(--bg); }
+.mev-rw[data-rw="read"] .mev-rwb { background: transparent; color: var(--fg); border-style: dashed; }
 .mev-text { font-size: 0.95rem; font-weight: 600; overflow-wrap: anywhere; }
 .mev-act { font-size: 0.8125rem; padding: 0 0.4rem; margin-left: 0.2rem; }
 .mev-std { color: var(--muted); font-size: 0.8125rem; border-bottom: 1px dotted var(--muted); cursor: help; }
@@ -428,6 +433,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
   .mev-table tr { border: 1px solid var(--line); border-radius: 6px; margin: 0.45rem 0; padding: 0.3rem 0.5rem; }
   .mev-table td { border: 0; padding: 0.1rem 0; display: flex; gap: 0.6rem; align-items: baseline; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
   .mev-table td::before { content: attr(data-label); flex: 0 0 4.6rem; color: var(--muted); font-size: 0.8125rem; font-family: system-ui, sans-serif; }
+  .mev-table td[data-empty] { display: none; }
   .mev-row[data-who] td:first-child { box-shadow: none; }
   .mev-row[data-who="cpu"] { border-left: 4px solid var(--mm-cpu); }
   .mev-row[data-who="device"] { border-left: 4px solid var(--mm-dev); }

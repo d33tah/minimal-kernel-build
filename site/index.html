@@ -554,6 +554,11 @@
     <li><span class="lgs plain" inert><span class="mm-sw mm-k-ram"></span> <span class="mm-sw mm-k-reserved"></span> <span class="mm-sw mm-k-mmio"></span> <span class="mm-sw mm-k-rom"></span> <span class="mm-sw mm-k-none"></span></span>
       <span>The regions under them, pale until touched: <b>grey</b> RAM, <b>dark grey</b> reserved (E820), <b>purple</b> memory-mapped I/O (video memory, PCI BARs, APICs, HPET), <b>yellow</b> ROM, <b>hatched</b> addresses no standard the guest used names. Where: Live memory map and its region list; the Events tab (before each region, the Region chips).</span></li>
   </ul>
+  <h4>Events tab</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain" inert><span class="mev-rw" data-rw="write"><span class="mev-rwb">&#8594; W</span>write</span> <span class="mev-rw" data-rw="read"><span class="mev-rwb">&#8592; R</span>read</span></span>
+      <span><b>Filled</b> badge with an arrow into memory and W: a write; <b>outlined</b> (dashed) badge with an arrow out of memory and R: a read. Writes are also in bold. The row&#x27;s left edge and the swatch under Who have the initiator&#x27;s colour (see Live memory map). Where: Events tab, column Access.</span></li>
+  </ul>
   <h4>Quests tab</h4>
   <ul class="lgnd">
     <li><span class="lgs plain" inert><span class="qs-card qs-sample" data-state="solved"><span class="qs-mark">&#9733;</span> <span class="qs-wontext">solved</span></span> <span class="qs-meter" style="width: 6rem"><span style="width: 50%"></span></span> <span class="qs-card qs-sample" data-state="open"><span class="qs-chip">To do</span></span> <span class="qs-card qs-sample" data-state="never"><span class="qs-chip">Needs Debian</span></span> <code class="qs-key">0xC0000</code></span>

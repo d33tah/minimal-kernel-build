@@ -1023,7 +1023,12 @@ const MEV = {
 		const acc = document.createElement("span");
 		acc.className = "mev-rw";
 		acc.dataset.rw = e.write ? "write" : "read";
-		acc.textContent = (g.n > 1 ? num(g.n) + " " : "") + (e.write ? "write" : "read") + (g.n > 1 ? "s" : "");
+		// a filled badge for a write (into memory), an outlined one for a read
+		const rwb = document.createElement("span");
+		rwb.className = "mev-rwb";
+		rwb.setAttribute("aria-hidden", "true");
+		rwb.textContent = e.write ? "→ W" : "← R";
+		acc.append(rwb, (g.n > 1 ? num(g.n) + " " : "") + (e.write ? "write" : "read") + (g.n > 1 ? "s" : ""));
 		cells.push(this.td("access", "Access", acc));
 		cells.push(this.td("address", "Address", this.addrLinks(g.lo, g.hi)));
 		cells.push(this.td("size", "Size", e.bytes !== undefined ? num(e.bytes) + " bytes" : (g.n > 1 ? num(g.n) + " × " : "") + e.size + (e.size === 1 ? " byte" : " bytes")));
@@ -1066,6 +1071,8 @@ const MEV = {
 			code.append(this.small("EIP " + mevHex(e.eip)));
 		}
 		cells.push(this.td("code", "Code", code));
+		if (!code.childNodes.length)
+			cells[cells.length - 1].dataset.empty = "1"; // a phone's card leaves it out
 		tr.append(...cells);
 		return tr;
 	},

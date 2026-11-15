@@ -22562,6 +22562,16 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             if back["regions"] < 8:
                 problems.append(f"hidden {scheme}: {back['regions']} regions listed")
             mt_readable(page, "#mev_table th, #mev_rows td, #mev_rows td *", 13, problems, f"events {scheme}")
+            # reads and writes apart at a glance, not by colour alone: the
+            # badge's marker, fill and border style, the access's weight
+            rw = page.evaluate("""() => Object.fromEntries(['read', 'write'].map((k) => { const a = document.querySelector(`#mev_rows .mev-rw[data-rw=${k}]`);
+              if (!a) return [k, null]; const b = a.querySelector('.mev-rwb'), cs = getComputedStyle(b);
+              return [k, { mark: b.textContent, bg: cs.backgroundColor, border: cs.borderTopStyle, weight: getComputedStyle(a).fontWeight }]; }))""")
+            r[f"read/write {scheme}"] = rw
+            rd, wr = rw.get("read"), rw.get("write")
+            if not rd or not wr or rd["mark"] == wr["mark"] or "R" not in rd["mark"] or "W" not in wr["mark"] or rd["bg"] == wr["bg"] or \
+                    rd["border"] == wr["border"] or int(wr["weight"]) <= int(rd["weight"]):
+                problems.append(f"read/write {scheme}: a read row and a write row do not differ in marker, fill, border and weight: {rw}")
             page.screenshot(path=str(shots / f"memtabs-events-1280-{scheme}.png"))
             # (before the rewind below, which restores instruction 0's state and
             # with it drops the loader's events at 0)

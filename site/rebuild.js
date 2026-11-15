@@ -20,7 +20,8 @@ const RB = {
 	why: "",         // why it did not
 	busy: false,
 	last: null,      // the last build booted: { from, bytes (bzImage), elf, elfName, same, text }
-	shownFor: null,  // the kernel (image) the status line is about
+	shownFor: null,  // the kernel (image) the status line and the build log are about
+	logCmds: 0,      // commands in the build log
 };
 
 const RB_SUFFIX = " (rebuilt here)";
@@ -60,7 +61,7 @@ function rbSync() {
 	// A result belongs to the kernel it was shown for.
 	if (!RB.busy && RB.shownFor !== image) {
 		st.dataset.state = "";
-		$("rb_log").hidden = $("rb_files").hidden = $("rb_progress").hidden = true;
+		$("rb_log").hidden = $("rb_files").hidden = $("rb_progress").hidden = $("rb_buildlog_box").hidden = true;
 	}
 	if (!RB.busy && !st.dataset.state)
 		st.textContent = can.ok ? "Rebuild and boot builds " + rbFrom() + " in this browser" +
@@ -92,6 +93,76 @@ function rbStepText(e) {
 	if (e.kind === "object")
 		return ["Compiled " + e.out + " (" + e.done + " of " + e.of + ").", 0.2 + 0.5 * e.done / e.of];
 	return ["Linking: step " + e.done + " of " + e.of + " (" + e.cmd + ") done.", 0.7 + 0.25 * e.done / e.of];
+}
+
+// --- the build log (E4a) ---
+// Every command the build runs, written as a shell would take it, then its
+// exit code, its time and its output; "# " lines are the page's notes. It
+// fills while the build runs, follows its end while it is scrolled to the
+// end (or closed), and stays until the next build.
+
+// One argument as a POSIX shell word.
+function rbWord(a) {
+	return /^[\w@%+=:,./-]+$/.test(a) ? a : "'" + a.replace(/'/g, "'\\''") + "'";
+}
+
+function rbLogStart() {
+	RB.logCmds = 0;
+	$("rb_buildlog").textContent = "";
+	$("rb_buildlog_box").hidden = false;
+	rbLogSum(true);
+}
+
+function rbLogSum(running) {
+	$("rb_buildlog_sum").textContent = "Build log (" + RB.logCmds + " command" + (RB.logCmds === 1 ? "" : "s") + (running ? ", running" : "") + ")";
+}
+
+// Text added at the end, in a span of class cls (none: plain).
+function rbLogAdd(text, cls) {
+	const log = $("rb_buildlog");
+	const atEnd = log.scrollHeight - log.clientHeight - log.scrollTop <= 4;
+	const n = cls ? document.createElement("span") : document.createTextNode(text);
+	if (cls) {
+		n.className = cls;
+		n.textContent = text;
+	}
+	log.appendChild(n);
+	if (atEnd)
+		log.scrollTop = log.scrollHeight;
+}
+
+function rbLogNote(text) {
+	rbLogAdd("# " + text + "\n", "rbnote");
+}
+
+// A kitBuild event of the log: "command" or "output".
+function rbLogEvent(e) {
+	if (e.kind === "command") {
+		RB.logCmds++;
+		rbLogSum(true);
+		rbLogAdd("$ " + e.argv.map(rbWord).join(" ") + (e.stdin ? " < (the previous step's output)" : "") + "\n", "rbcmd");
+		return;
+	}
+	if (e.stdout)
+		rbLogAdd(e.stdout.endsWith("\n") ? e.stdout : e.stdout + "\n");
+	if (e.stderr)
+		rbLogAdd(e.stderr.endsWith("\n") ? e.stderr : e.stderr + "\n", e.code ? "rbbad" : "");
+	rbLogAdd("  exit " + e.code + ", " + (e.ms / 1000).toFixed(2) + " s" +
+		(e.to ? ", stdout to " + e.to + " (" + e.bytes + " bytes)" : e.to === "" ? ", stdout to the next step (" + e.bytes + " bytes)" : "") + "\n",
+	e.code ? "rbbad" : "rbnote");
+}
+
+function rbLogCopy() {
+	const text = $("rb_buildlog").textContent, b = $("rb_buildlog_copy");
+	const said = (t) => {
+		b.textContent = t;
+		setTimeout(() => { b.textContent = "Copy the log"; }, 1500);
+	};
+	(navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject(new Error("no clipboard"))).then(() => said("Copied"), () => {
+		// No clipboard access: the text selected, for the user to copy.
+		getSelection().selectAllChildren($("rb_buildlog"));
+		said("Selected: copy it");
+	});
 }
 
 // The edits as kitBuild's: { path: text }; a deleted file or one the kit
@@ -136,31 +207,50 @@ async function rbRun() {
 	$("rb_files").hidden = true;
 	rbSync();
 	rbShow("Reading the build kit of " + from + "…", "running", 0);
+	const all = $("rb_all").checked;
+	rbLogStart();
+	rbLogNote("Rebuild of " + from + " in this browser, " + (all ? "every object compiled" : "the objects that include an edited file compiled") + ".");
 	const cc = new ClangWorker();
 	let r, kit, edits;
 	try {
 		const src = kitSource("kits/");
 		kit = await src.kit(from);
 		edits = await rbEdits(kit);
+		const names = Object.keys(edits);
+		rbLogNote("Build kit kits/" + from + ".json: " + kit.objects.length + " objects, " + kit.steps.length + " link steps; edited: " +
+			(names.length ? names.join(", ") : "nothing") + ".");
 		rbShow("Loading the compiler (clang.wasm, 23 MB to download the first time)…", "running", 0.02);
+		const tl = kitNow();
 		await cc.load();
+		rbLogNote("clang.wasm loaded in " + ((kitNow() - tl) / 1000).toFixed(2) + " s.");
+		const tf = kitNow();
 		r = await kitBuild(cc, kit, src, {
-			compile: $("rb_all").checked ? "all" : "changed",
+			compile: all ? "all" : "changed",
 			edits,
 			verify: false,
 			keep: kit.products.map((p) => p[0]),
 			onstep: (e) => {
+				if (e.kind === "command" || e.kind === "output")
+					return rbLogEvent(e);
+				if (e.kind === "fetch" && e.done === e.of)
+					rbLogNote("Fetched " + e.of + " files of the kit in " + ((kitNow() - tf) / 1000).toFixed(2) + " s.");
 				const [text, frac] = rbStepText(e);
 				rbShow(text, "running", frac);
 			},
 		});
 		r.tree = await rbTree(kit, src, edits);
+		rbLogNote("Done in " + ((kitNow() - t0) / 1000).toFixed(2) + " s: fetching " + (r.fetchMs / 1000).toFixed(2) + " s, compiling " +
+			(r.compileMs / 1000).toFixed(2) + " s (" + r.objects.length + " object" + (r.objects.length === 1 ? "" : "s") + "), linking " + (r.linkMs / 1000).toFixed(2) + " s (" +
+			r.steps.length + " steps). Products: " + r.products.map((p) => p[0] + " " + p[2] + " bytes, SHA-256 " + p[1]).join("; ") + ".");
 	} catch (e) {
 		RB.busy = false;
 		cc.terminate();
+		rbLogNote("Failed: " + e.message.replace(/\n[\s\S]*/, ""));
+		rbLogSum(false);
 		rbFailed(from, e);
 		return;
 	}
+	rbLogSum(false);
 	cc.terminate();
 	RB.busy = false;
 	if (image !== shown) {
@@ -206,6 +296,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	useImage(from + RB_SUFFIX, bytes.slice().buffer, mem);
 	image.from = from;
 	image.edits = edits;
+	RB.shownFor = image; // the build log and the status stay with it
 	const elfFile = new File([elf], elfName);
 	const map = await parseSymbolFile(elfFile, "auto");
 	applySymbols(map);
@@ -257,6 +348,7 @@ function initRebuild() {
 	$("rb_back").addEventListener("click", () => loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e))));
 	$("rb_dl_image").addEventListener("click", () => rbDownload("image"));
 	$("rb_dl_elf").addEventListener("click", () => rbDownload("elf"));
+	$("rb_buildlog_copy").addEventListener("click", rbLogCopy);
 	dbgOnChange(rbSync);
 	rbLoadIndex();
 }

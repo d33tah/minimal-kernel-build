@@ -635,6 +635,18 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .rblog { margin: 0.3rem 0; padding: 0.4rem; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere;
 	background: var(--err-bg); color: var(--err-fg); border-radius: 4px; max-height: 40vh; overflow: auto; }
 .rblog[hidden], #rb_files[hidden] { display: none; }
+/* The build log (E4a): every command of the build with its exit, time and
+   output, filled while the build runs. */
+.rblogbox { margin: 0.3rem 0; }
+.rblogbox[hidden] { display: none; }
+.rblogbox > summary { cursor: pointer; min-height: 32px; display: list-item; width: fit-content; padding: 0.3rem 0; color: var(--accent); font-weight: 600; }
+.rblogbox .scan { margin: 0.2rem 0; }
+.rbbuildlog { margin: 0; padding: 0.4rem; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere;
+	max-height: 40vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; color: var(--fg); background: var(--bg); }
+.rbbuildlog:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.rbbuildlog .rbcmd { color: var(--accent); }
+.rbbuildlog .rbbad { color: var(--err-fg); }
+.rbbuildlog .rbnote { color: var(--muted); }
 @media (pointer: coarse) {
 	/* 16px: a phone does not zoom the page when the text gets the focus. */
 	.edgutter, .edtext { font-size: 16px; }

@@ -19,7 +19,11 @@
 // r.files. onstep(event) says how far the build is: { kind: "fetch", done,
 // of } after each batch of blobs, { kind: "compile", out, done, of } before
 // an object is compiled and { kind: "object", ... } after it, { kind:
-// "step", tool, cmd, done, of } after a step (rebuild.js shows them).
+// "step", tool, cmd, done, of } after a step (rebuild.js shows them). For
+// the build log, each compile and step also says { kind: "command", argv,
+// stdin } before it runs and { kind: "output", code, ms, stdout, stderr,
+// to, bytes } after it (also when it failed): to is the file its stdout
+// went to, "" for the next step, null when stdout is in the event.
 // The kit's steps run in order: clang.wasm's tools, a module of
 // the kit (a host tool), and three run here: sed (kitSed, a GNU sed
 // subset), cat, and cat-size (cat, then the inputs' total size as 4
@@ -423,6 +427,10 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	const dir = kit.dir;
 	const abs = (p) => p.startsWith("/") ? p : dir + "/" + p;
 	const compile = opts.compile || false;
+	const say = (e) => {
+		if (opts.onstep)
+			opts.onstep(e);
+	};
 	const edits = new Map(Object.entries(opts.edits || {}).map(([p, v]) => [p, typeof v === "string" ? new TextEncoder().encode(v) : v]));
 	const fileSha = new Map(kit.files.map((f) => [f[0], f[1]]));
 	for (const p of edits.keys())
@@ -502,7 +510,10 @@ async function kitBuild(cc, kit, src, opts = {}) {
 			opts.onstep({ kind: "compile", out: o.out, done: res.objects.length, of: objects.length });
 		await load(tool);
 		const ro = { cwd: dir, env, module: tool, outputs: [abs(o.out)] };
+		say({ kind: "command", argv: o.argv });
+		const tc = kitNow();
 		const r = tool === "clang" ? await kitClang(cc, o.argv, ro) : await cc.run(o.argv, ro);
+		say({ kind: "output", code: r.code, ms: kitNow() - tc, stdout: r.stdout || "", stderr: r.stderr || "" });
 		if (r.code !== 0)
 			fail(o.out + ": " + o.argv[0], r);
 		const b = r.files[0][1];
@@ -525,7 +536,8 @@ async function kitBuild(cc, kit, src, opts = {}) {
 			await cc.remove(s.fresh.map(abs));
 		const argv = s.argv.map((a) => typeof a === "string" ? a : a.pre + kitLatin1(vars.get(a.var)).replace(/\n+$/, "") + a.post);
 		const stdin = s.stdin ? vars.get(s.stdin) : undefined;
-		let out;
+		say({ kind: "command", argv, stdin: !!s.stdin });
+		let out, r = { code: 0, stdout: "", stderr: "" };
 		if (s.tool === "sed") {
 			const names = kitSedArgs(argv.slice(1)).names;
 			out = kitSed(argv.slice(1), names.length ? kitConcat(await read(names)) : stdin);
@@ -539,11 +551,17 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		} else {
 			await load(s.tool);
 			const ro = { cwd: dir, env, module: s.tool, stdin: stdin || "" };
-			const r = argv[0] === "clang" ? await kitClang(cc, argv, ro) : await cc.run(argv, ro);
-			if (r.code !== 0)
-				fail("step " + (i + 1) + " (" + argv.join(" ").slice(0, 200) + ")", r);
+			r = argv[0] === "clang" ? await kitClang(cc, argv, ro) : await cc.run(argv, ro);
 			out = r.stdoutBytes;
 		}
+		// Where its stdout went: a file, the next step (a pipe or the
+		// shell's $(...)), or the log.
+		const to = s.stdout && s.stdout.file ? s.stdout.file : s.stdout && s.stdout.var ? "" : null;
+		const text = r.stdout || (out && !r.stdoutBytes ? kitLatin1(out) : "");
+		say({ kind: "output", code: r.code, ms: kitNow() - ts, stdout: to === null ? text : "", stderr: r.stderr || "",
+			to, bytes: out ? out.length : 0 });
+		if (r.code !== 0)
+			fail("step " + (i + 1) + " (" + argv.join(" ").slice(0, 200) + ")", r);
 		if (s.stdout && s.stdout.file)
 			await cc.write([[abs(s.stdout.file), out]]);
 		else if (s.stdout && s.stdout.var)

@@ -2452,6 +2452,20 @@ editor's button shows the percentage. Then:
 - the kernel boots in the Machine tab (on a phone the Source panel's sheet
   is closed for the screen)
 
+The build log (plan step E4a): "Build log" under the status opens a
+`<pre>` that fills while the build runs: each compile and link step as a
+shell command line (arguments quoted as a POSIX shell takes them), then
+what it printed (clang's warnings and errors, red when it failed) and
+`exit N, T s` with where its stdout went (a file, or the next step: a pipe
+or the shell's `$(...)`); `# ` lines are the page's notes (the kit read,
+clang.wasm loaded, the kit's files fetched, the phases' times and the
+products' SHA-256 at the end, or why it failed). kit.js gives the
+commands as `onstep` events `command` (before) and `output` (after, also
+for a failure). The log follows its end while it is scrolled to the end,
+stays after the build (also after an error) until the next one, and "Copy
+the log" puts its text on the clipboard (without clipboard access it
+selects it).
+
 The status says which bytes came out: "identical to CI's build" with the
 SHA-256 of each product (the kit's `products`) when nothing changed them,
 else the new bzImage's hash next to CI's. A step that fails (clang's
@@ -2508,6 +2522,17 @@ compiled, vmlinux and bzImage are the kit's bytes and the bzImage is the
 shipped one but for the 20-byte build-id (`kit.shipped.differs`). It
 reports the seconds from the press to the string on the screen and to the
 data files.
+
+The build log is tested in both suites: while the build still runs the
+log already holds command lines (a MutationObserver records the log and
+the build's state each time it grows); after it, the log holds clang and
+ld.lld command lines with `exit 0` and `# Done in`; for the minified
+Linux, opened during the build, it has one command per compiled object
+and per link step (45) and stayed scrolled to its end as it grew; the
+compile error's log has clang's `error: expected expression`, `exit 1`
+and no link command; Copy puts the whole text on the clipboard, and with
+the clipboard refused it selects it; at 390 px it fits the screen.
+Screenshots `rebuild-*-buildlog-{light,dark}`.
 
 ## Testing
 

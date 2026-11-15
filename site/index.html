@@ -310,6 +310,7 @@
       <progress id="rb_progress" max="1" value="0" hidden></progress>
       <p id="rb_status" class="note" role="status"></p>
       <pre id="rb_log" class="rblog" hidden></pre>
+      <details id="rb_buildlog_box" class="rblogbox" hidden><summary id="rb_buildlog_sum">Build log</summary><div class="scan"><button id="rb_buildlog_copy" type="button">Copy the log</button><span class="tip" tabindex="0" role="button" title="Every command of the build as it runs: the compiles (clang.wasm) and the link steps (ld.lld, objcopy, the kernel's own tools as wasm, and sed and cat done by the page), each with its exit code, its time and what it printed. Lines starting with # are the page's own notes (fetching the kit, the phases' times). It stays after the build, also after an error, until the next build.">?</span></div><pre id="rb_buildlog" class="rbbuildlog" tabindex="0" aria-label="Build log"></pre></details>
       <div id="rb_files" class="scan" hidden><button id="rb_dl_image" type="button">Download bzImage</button> <button id="rb_dl_elf" type="button">Download ELF</button></div>
     </div>
   </div>

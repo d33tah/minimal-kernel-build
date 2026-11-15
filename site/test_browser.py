@@ -23143,7 +23143,49 @@ RB_STATE_JS = """() => { const shown = (e) => !!e && !e.hidden && e.getClientRec
 
 # Every text the status line shows, with the progress bar's value.
 RB_WATCH_JS = """() => { window.rbSeen = []; const st = document.getElementById('rb_status'), bar = document.getElementById('rb_progress');
-  new MutationObserver(() => rbSeen.push([st.textContent, bar.hidden ? null : bar.value])).observe(st, { childList: true, characterData: true, subtree: true }); }"""
+  new MutationObserver(() => rbSeen.push([st.textContent, bar.hidden ? null : bar.value])).observe(st, { childList: true, characterData: true, subtree: true });
+  // The build log (E4a): what it held each time it grew, and the build's state then.
+  window.rbLogSeen = []; const log = document.getElementById('rb_buildlog');
+  if (log) new MutationObserver(() => rbLogSeen.push([st.dataset.state || '', (log.textContent.match(/^\\$ /gm) || []).length, log.textContent.length,
+      document.getElementById('rb_buildlog_box').open && log.getClientRects().length > 0, Math.round(log.scrollHeight - log.clientHeight - log.scrollTop)]))
+    .observe(log, { childList: true, characterData: true, subtree: true }); }"""
+
+# The build log after a build: its text, whether its box shows, and whether
+# it fits (no sideways scroll of the page).
+RB_LOG_JS = """() => { const b = document.getElementById('rb_buildlog_box'), l = document.getElementById('rb_buildlog');
+  if (!b || !l) return null;
+  return { text: l.textContent, boxShown: !b.hidden, open: b.open, summary: b.querySelector('summary').textContent,
+    logShown: l.getClientRects().length > 0, scrollTop: l.scrollTop, scrollMax: l.scrollHeight - l.clientHeight, clientH: l.clientHeight,
+    right: Math.round(b.getBoundingClientRect().right), vw: innerWidth, hscroll: document.documentElement.scrollWidth > innerWidth + 1,
+    seen: window.rbLogSeen || [] }; }"""
+
+
+def rb_buildlog(page, tag, problems, r, must, key="log"):
+    """The live build log of the build that just ended: lines came while it
+    ran, it holds `must` (each a string), it stays shown and opens."""
+    lg = page.evaluate(RB_LOG_JS)
+    if not lg:
+        problems.append(f"{tag}: no build log (#rb_buildlog_box, #rb_buildlog)")
+        return None
+    running = [x for x in lg["seen"] if x[0] == "running" and x[1] > 0]
+    r[key] = {"commands": lg["text"].count("\n$ ") + lg["text"].startswith("$ "), "chars": len(lg["text"]),
+              "growths while running": len(running), "summary": lg["summary"]}
+    if not running:
+        problems.append(f"{tag}: the build log got no command line while the build ran: {lg['seen'][:10]}")
+    for w in must:
+        if w not in lg["text"]:
+            problems.append(f"{tag}: the build log lacks {w!r}: {lg['text'][-1500:]!r}")
+    if not lg["boxShown"]:
+        problems.append(f"{tag}: the build log is not shown after the build")
+    return lg
+
+
+def rb_buildlog_open(page, phone):
+    if not page.query_selector("#rb_buildlog_box"):
+        return
+    if not page.evaluate("document.getElementById('rb_buildlog_box').open"):
+        rb_press(page, "#rb_buildlog_box > summary", phone)
+    wait_for(lambda: page.evaluate("document.getElementById('rb_buildlog').getClientRects().length > 0"), 5)
 
 RB_LINES_JS = """async (name) => {
   const s = symbols.symbols.find((x) => x.name === name);
@@ -23298,7 +23340,7 @@ def rebuild_run(browser, base, shots, tmp):
     elf_path = next(p for p, _, _ in kit["products"] if p != kit["shipped"]["path"])
     orig = gzip.decompress(rb_shipped_image(base, {"path": entry["src"] + RB_FILE + ".gz"})).decode()
     shipped_files = json.loads(rb_shipped_image(base, {"path": entry["dwarf"] + "files.json"}))
-    ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True, permissions=["clipboard-read", "clipboard-write"])
     page = ctx.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=hello")
@@ -23345,6 +23387,8 @@ def rebuild_run(browser, base, shots, tmp):
         problems.append(f"the progress bar went {fracs}")
     if "Rebuilding" in st["label"]:
         problems.append(f"the editor bar's button still says {st['label']!r}")
+    # The build log: every command with its exit and time, while it ran.
+    rb_buildlog(page, "1280", problems, r, ["$ clang ", "boot/hello.c", "$ ld.lld ", "$ llvm-objcopy ", "exit 0, ", "# Done in "])
 
     # 2. It boots in the Machine tab: the new string on the screen.
     if shown_tab(page) != "machine":
@@ -23408,6 +23452,19 @@ def rebuild_run(browser, base, shots, tmp):
         problems.append(f"no downloads or no way back after the rebuild: {st}")
     rb_shots(page, shots, "rebuild-1280-source", problems, "1280 Source tab")
     page.emulate_media(color_scheme="light")
+    # The build log opened, copied whole.
+    if not page.query_selector("#rb_buildlog_copy"):
+        problems.append("no Copy for the build log (#rb_buildlog_copy)")
+    else:
+        rb_buildlog_open(page, False)
+        page.locator("#rb_buildlog_box").scroll_into_view_if_needed()
+        rb_shots(page, shots, "rebuild-1280-buildlog", problems, "1280 build log")
+        page.emulate_media(color_scheme="light")
+        rb_press(page, "#rb_buildlog_copy", False)
+        time.sleep(0.3)
+        copied = page.evaluate("navigator.clipboard.readText()")
+        if copied != page.evaluate("document.getElementById('rb_buildlog').textContent"):
+            problems.append(f"Copy of the build log put {copied[:200]!r} on the clipboard")
     # The Source panel: the edited text, said to be the one built.
     page.evaluate("(p) => openSourceFile(p)", RB_FILE)
     if srcedit_state(page)["editing"]:
@@ -23426,9 +23483,14 @@ def rebuild_run(browser, base, shots, tmp):
     page.locator("#ed_text").click()
     page.keyboard.press("Control+Home")
     page.keyboard.type("int broken = ;\n")
+    page.evaluate(RB_WATCH_JS)
     rb_press(page, "#rb_go_panel", False)
     st = rb_wait(page, ("failed", "done"), 120)
     r["error"] = [st["status"], st["log"][:200]]
+    # The log keeps clang's output and its exit code; the link never ran.
+    lg = rb_buildlog(page, "compile error", problems, r, ["$ clang ", "boot/hello.c:1:14: error: expected expression", "exit 1, "], key="error log")
+    if lg and "$ ld.lld" in lg["text"]:
+        problems.append("compile error: the build log has link commands after the failed compile")
     if st["state"] != "failed" or "boot/hello.c:1:" not in st["log"] or "error" not in st["log"] or not st["logShown"] \
             or st["kernel"] != "hello (rebuilt here)" or "still runs hello (rebuilt here)" not in st["status"]:
         problems.append(f"a compile error: {st['state']} {st['status']!r}, log {st['log'][:300]!r}, kernel {st['kernel']}")
@@ -23495,6 +23557,7 @@ def rebuild_phone_run(browser, base, shots, tmp):
     rb_shots(page, shots, "rebuild-390-editor", problems, "390 editor")
     page.emulate_media(color_scheme="dark")
     rb_cover(page, "390 editor open", problems, r)
+    page.evaluate(RB_WATCH_JS)
     t0 = time.monotonic()
     rb_press(page, "#rb_go_panel", True)
     st = rb_wait(page, ("done", "failed"), 300)
@@ -23515,6 +23578,15 @@ def rebuild_phone_run(browser, base, shots, tmp):
     page.locator("#rb_box").scroll_into_view_if_needed()
     rb_shots(page, shots, "rebuild-390-source", problems, "390 Source tab")
     rb_cover(page, "390 Source tab", problems, r)
+    # The build log at 390 px: open, inside the screen's width.
+    if rb_buildlog(page, "390", problems, r, ["$ clang ", "$ ld.lld ", "# Done in "]):
+        rb_buildlog_open(page, True)
+        page.locator("#rb_buildlog_box").scroll_into_view_if_needed()
+        rb_shots(page, shots, "rebuild-390-buildlog", problems, "390 build log")
+        page.emulate_media(color_scheme="dark")
+        lg = page.evaluate(RB_LOG_JS)
+        if not lg["logShown"] or lg["right"] > lg["vw"] or lg["hscroll"]:
+            problems.append(f"390: the open build log: shown {lg['logShown']}, right {lg['right']} of {lg['vw']}, sideways scroll {lg['hscroll']}")
     rb_press(page, "#rb_back", True)
     wait_for(lambda: rb_state(page)["kernel"] == "hello", 30)
     page.evaluate("srcOverlay.revert('boot/hello.c')")
@@ -23565,6 +23637,21 @@ def rebuild_edges_run(browser, base):
     if st["state"] != "failed" or "boot/e4_new.h (not a file of the build kit)" not in st["status"] \
             or "boot/hello.c (deleted)" not in st["status"] or st["kernel"] != "hello":
         problems.append(f"edits the kit cannot build with: {st}")
+    # The build log says why too; Copy without clipboard access selects it.
+    lg = page.evaluate(RB_LOG_JS)
+    if not lg or "# Failed: the build cannot use your edits of boot/e4_new.h" not in lg["text"] or "(0 commands)" not in lg["summary"]:
+        problems.append(f"the refused build's log: {lg and (lg['summary'], lg['text'][:300])}")
+    elif page.query_selector("#rb_buildlog_copy"):
+        rb_buildlog_open(page, False)
+        page.evaluate("() => { navigator.clipboard.writeText = () => Promise.reject(new Error('denied by the test')); }")
+        rb_press(page, "#rb_buildlog_copy", False)
+        wait_for(lambda: page.inner_text("#rb_buildlog_copy") != "Copy the log", 3, 0.05)
+        sel = page.evaluate("[getSelection().toString(), document.getElementById('rb_buildlog').textContent, document.getElementById('rb_buildlog_copy').textContent]")
+        r["copy denied"] = sel[2]
+        if sel[0].strip() != sel[1].strip() or sel[2] != "Selected: copy it":
+            problems.append(f"Copy without clipboard access: selected {sel[0][:100]!r}, button {sel[2]!r}")
+        if not wait_for(lambda: page.inner_text("#rb_buildlog_copy") == "Copy the log", 4, 0.1):
+            problems.append("the Copy button does not say Copy the log again")
     rb_press(page, "#ed_revert_all", False)
     rb_press(page, "#ed_revert_all", False)
     wait_for(lambda: srcedit_overlay(page)["paths"] == [], 10)
@@ -23663,9 +23750,11 @@ def rbl_compiled(seen):
     return out
 
 
-def rbl_build(page, sel, phone, timeout=600):
+def rbl_build(page, sel, phone, timeout=600, open_log=False):
     """Press sel, wait for the end: (state, seconds to the end, seconds to
-    the edited string on the screen or None, the progress texts)."""
+    the edited string on the screen or None, the progress texts). open_log:
+    open the build log in the Source tab as soon as it shows (the build
+    then runs on with it open)."""
     page.evaluate(RB_WATCH_JS)
     # The string counts once the screen was without it (the kernel booted
     # before this build may have printed it); wall time, not the page's
@@ -23675,6 +23764,9 @@ def rbl_build(page, sel, phone, timeout=600):
         if (!has) s.cleared = true; else if (s.cleared && s.at === null) s.at = (Date.now() - s.t0) / 1000; }, 50); }""", RBL_MSG)
     t0 = time.monotonic()
     rb_press(page, sel, phone)
+    if open_log and wait_for(lambda: page.evaluate("(() => { const b = document.getElementById('rb_buildlog_box'); return !!b && !b.hidden; })()"), 30, 0.05):
+        show_tab(page, "source")
+        rb_buildlog_open(page, phone)
     wait_for(lambda: rb_state(page)["state"] in ("done", "failed"), timeout, 0.1)
     st = rb_state(page)
     s_end = round(time.monotonic() - t0, 1)
@@ -23734,7 +23826,7 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
         problems.append(f"{tag}: the editor holds another text than the one typed")
     rb_shots(page, shots, f"{stem}-editor", problems, f"{tag} editor")
     page.emulate_media(color_scheme=scheme)
-    st, s_end, s_screen = rbl_build(page, "#rb_go_panel", phone)
+    st, s_end, s_screen = rbl_build(page, "#rb_go_panel", phone, open_log=True)
     compiled = rbl_compiled(st["seen"])
     r["edit"] = {"status": st["status"], "compiled": compiled, "s to the string on the screen": s_screen, "s to the data files": s_end, "speed": st["speed"]}
     if st["state"] != "done":
@@ -23756,6 +23848,18 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     fracs = [f for _, f in st["seen"] if f is not None]
     if not fracs or fracs != sorted(fracs):
         problems.append(f"{tag}: the progress bar went {fracs[:40]}")
+    # The build log, opened while the build ran: one command per object
+    # compiled and per link step, each with its exit and time, and it
+    # followed its end as it grew.
+    lg = rb_buildlog(page, tag, problems, r, ["$ clang ", "init/main.c", "$ ld.lld ", "exit 0, ", "# Done in "])
+    if lg:
+        want_cmds = 1 + len(kit["steps"])
+        if r["log"]["commands"] != want_cmds:
+            problems.append(f"{tag}: the build log has {r['log']['commands']} commands, the build ran {want_cmds}")
+        opened = [x for x in lg["seen"] if x[0] == "running" and x[3]]
+        r["log"]["grew while open"] = len(opened)
+        if not opened or opened[-1][4] > 2:
+            problems.append(f"{tag}: the open build log did not follow its end while the build ran: {opened[-3:]}")
     # 2. Booted in the Machine tab: the string, then /init's lines.
     if shown_tab(page) != "machine":
         problems.append(f"{tag}: after the rebuild the {shown_tab(page)} tab is shown, not the Machine tab")

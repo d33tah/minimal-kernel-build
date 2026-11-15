@@ -223,10 +223,8 @@ memmap.js	245	601a5d26	not run by the memmap suite yet (M track: a test would ne
 memmap.js	450-451	065a9f1a	sometimes: only first touch lighting a region for a sample of CPU RAM writes that is the first touch of that region: in the memmap suite whether such a sample is still to be applied after #mm_first is checked depends on the runner's frame timing; ran in run 43672893701 and the runs before it, not in 43682889014 (memmap.js and its suite unchanged in between)
 memmap.js	458	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
 memmap.js	464	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
-memmap.js	472-481	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
 memmap.js	508-510	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
 memmap.js	685	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
-memmap.js	907	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
 memmap.js	955-957	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
 memmap.js	1101	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
 memmap.js	1137	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)

@@ -22563,6 +22563,9 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 problems.append(f"hidden {scheme}: {back['regions']} regions listed")
             mt_readable(page, "#mev_table th, #mev_rows td, #mev_rows td *", 13, problems, f"events {scheme}")
             page.screenshot(path=str(shots / f"memtabs-events-1280-{scheme}.png"))
+            # (before the rewind below, which restores instruction 0's state and
+            # with it drops the loader's events at 0)
+            line = page.evaluate("MEV.describe(MEV.event(MEV.query({ initiator: 'emulator' }).find((i) => MEV.event(i).source === 'kernel protected-mode part')))")
             # filter chips, the search box, grouping
             page.click("#mev_who [data-v=emulator]")
             emu = mt_look(page)["rows"]
@@ -22641,6 +22644,17 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             # libv86's device API, as mev_negative_case does), a search
             # that finds nothing, what each standard is
             page.evaluate("MEV.cpu.dma_write(0x1e << 3, new Uint8Array([1, 2, 3]), 0xa010)")
+            page.evaluate("MEV.cpu.dma_write(0x12 << 3, new Uint8Array([4]), 0xa020)")
+            # the live memory map (opened by map above) pulses them in: the IDE
+            # controller's from the edge (it has no memory BAR region),
+            # labelled; the display controller's from its BAR0 region
+            show_tab(page, "memory")
+            pulse = wait_for(lambda: page.evaluate("""MMAP.anims.some((a) => a.layer === 1 && a.edge && MEV.event(a.i).source === 'PCI 00:1e.0') &&
+              MMAP.anims.some((a) => a.layer === 1 && !a.edge && MEV.event(a.i).source === 'PCI 00:12.0' && MMAP.segName(MMAP.segs[MMAP.cellSeg[a.from]]).startsWith('PCI 00:12.0 BAR0'))"""), 10, 0.05)
+            page.screenshot(path=str(shots / f"memtabs-dma-pulse-1280-{scheme}.png"))
+            show_tab(page, "events")
+            if not pulse:
+                problems.append(f"device {scheme}: no pulse of the DMA on the live memory map")
             page.click("#mev_who [data-v=device]")
             dev = mt_look(page)["rows"]
             page.click("#mev_who [data-v='']")
@@ -22650,13 +22664,26 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             stds = page.evaluate("""() => ['IBM PC memory map', 'E820 type 1', 'PCI configuration mechanism #1', 'MultiProcessor Specification table',
               'ACPI MADT', 'IA32_APIC_BASE power-up value (Intel SDM)', ''].map((s) => MEV.stdText(s))""")
             r[f"device {scheme}"] = {"rows": [x["cells"] for x in dev[:2]], "none": none, "stds": [t[:40] for t in stds]}
-            if len(dev) != 1 or not dev[0]["cells"]["who"].startswith("DevicePCI 00:1e.0, mass storage controller, IDE (PCI class 01:01)") or "3 bytes" not in dev[0]["cells"]["size"] or "checksum" not in dev[0]["cells"]["value"]:
+            ide = [x for x in dev if x["cells"]["who"].startswith("DevicePCI 00:1e.0, mass storage controller, IDE (PCI class 01:01)")]
+            if len(dev) != 2 or len(ide) != 1 or "3 bytes" not in ide[0]["cells"]["size"] or "checksum" not in ide[0]["cells"]["value"] or \
+                    not dev[0]["cells"]["who"].startswith("DevicePCI 00:12.0, display controller"):
                 problems.append(f"device {scheme}: the DMA row {[x['cells'] for x in dev[:2]]}")
             if none[0] or "No event matches" not in none[1]:
                 problems.append(f"device {scheme}: a search that finds nothing: {none}")
             for s_, word in zip(stds, ("IBM PC", "INT 15h", "0xCF8", "_MP_", "MADT", "0xFEE00000", "No standard")):
                 if word not in s_:
                     problems.append(f"device {scheme}: the standard's text {s_[:60]!r} lacks {word!r}")
+            # MEV.describe (one line per event, the memevents suite's checks) of
+            # an emulator event names its reason; a click between the chips
+            # (on the group's label) changes no filter
+            page.click("#mev_who [data-v=cpu]")
+            page.click("#mev_who .mev-chiplabel")
+            kept = page.evaluate("MEV.filter.who")
+            page.click("#mev_who [data-v='']")
+            if not line.startswith("0  emulator  write  0x00100000") or not line.endswith("kernel protected-mode part"):
+                problems.append(f"device {scheme}: describe() of the loader's event: {line!r}")
+            if kept != "cpu":
+                problems.append(f"device {scheme}: a click on the Who label changed the filter to {kept!r}")
             # (the live memory map opened above records for itself)
             page.uncheck("#mev_on")
             off = page.evaluate("MEV.needs.has('list')")
@@ -22697,6 +22724,17 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 if not never or any(o != "1" or "Debian" not in c for o, c in never):
                     problems.append(f"switch: cards this kernel cannot give: {never}")
                 page.screenshot(path=str(shots / f"memtabs-quests-1280-{scheme}.png"))
+                # "Watch this run" cleared by the user stays cleared (and is remembered)
+                page.uncheck("#qs_on")
+                off = page.evaluate("[QUESTS.open, MEV.needs.has('quests'), localStorage.getItem('mkb-quests-open')]")
+                show_tab(page, "memory")
+                show_tab(page, "quests")
+                still = page.evaluate("[QUESTS.open, document.getElementById('qs_on').checked]")
+                page.check("#qs_on")
+                again = page.evaluate("[QUESTS.open, MEV.needs.has('quests')]")
+                r["watch box"] = [off, still, again]
+                if off != [False, False, "0"] or still != [False, False] or again != [True, True]:
+                    problems.append(f"switch: Watch this run cleared {off}, after a tab change {still}, ticked {again}")
             else:
                 show_tab(page, "quests")
                 time.sleep(0.6)

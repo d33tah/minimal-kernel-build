@@ -209,7 +209,8 @@ class Frames {
 		this.cEsp[c][i] = esp;
 		this.cNode[c][i] = node;
 		this.cParent[c][i] = parent;
-		const depth = parent >= 0 ? this.depth(parent) + 1 : 0;
+		const pd = parent >= 0 ? this.cDepth[parent >>> FR_BITS][parent & FR_MASK] : -1;
+		const depth = pd === FR_BIG16 ? this.depthBig.get(parent) + 1 : pd + 1;
 		if (depth > this.maxDepth)
 			this.maxDepth = depth;
 		if (depth < FR_BIG16) {
@@ -250,11 +251,21 @@ class Frames {
 		return e === 0 ? -1 : e !== FR_BIG ? this.start(k) + e - 1 : this.endBig.get(k);
 	}
 
-	setEnd(k, t) {
+	// Frame k ends at step t: its end, and its instructions go to its
+	// parent's children.
+	close(k, t) {
+		const s = this.start(k);
+		this.setEnd(k, t, s);
+		const p = this.cParent[k >>> FR_BITS][k & FR_MASK];
+		if (p >= 0)
+			this.addChild(p, t - s);
+	}
+
+	setEnd(k, t, start = this.start(k)) {
 		const c = this.cEnd[k >>> FR_BITS], i = k & FR_MASK;
 		if (c[i] === FR_BIG)
 			this.endBig.delete(k);
-		const v = t - this.start(k) + 1;
+		const v = t - start + 1;
 		if (v >>> 0 === v && v !== 0 && v !== FR_BIG) {
 			c[i] = v;
 		} else {
@@ -288,6 +299,20 @@ class Frames {
 
 	esp(k) {
 		return k >= 0 && k < this.n ? this.cEsp[k >>> FR_BITS][k & FR_MASK] : undefined;
+	}
+
+	// espOf, nodeOf, irqOf: the stepper's own reads of the frames on its
+	// stacks (k is always a stored frame), without the bounds check.
+	espOf(k) {
+		return this.cEsp[k >>> FR_BITS][k & FR_MASK];
+	}
+
+	nodeOf(k) {
+		return this.cNode[k >>> FR_BITS][k & FR_MASK];
+	}
+
+	irqOf(k) {
+		return this.cFlags[k >>> FR_BITS][k & FR_MASK] & FR_IRQ;
 	}
 
 	node(k) {
@@ -501,7 +526,7 @@ class Stepper {
 	pushFrame(node, t, irq, esp) {
 		const fr = this.fr;
 		const parent = this.stack.length ? this.stack[this.stack.length - 1] : this.lastTop;
-		this.stack.push(fr.push(t, node, parent, irq || (parent >= 0 ? fr.irq(parent) : 0), 0, this.task, this.lastPhys, esp));
+		this.stack.push(fr.push(t, node, parent, irq || (parent >= 0 ? fr.irqOf(parent) : 0), 0, this.task, this.lastPhys, esp));
 	}
 
 	// Resume a task: reopen its suspended call chain as continuation frames
@@ -523,11 +548,7 @@ class Stepper {
 	}
 
 	popFrame(t) {
-		const k = this.stack.pop(), fr = this.fr;
-		fr.setEnd(k, t);
-		const parent = fr.parent(k);
-		if (parent >= 0)
-			fr.addChild(parent, t - fr.start(k));
+		this.fr.close(this.stack.pop(), t);
 	}
 
 	// A transition into `node` at step index t: a call when it lands on the
@@ -614,8 +635,9 @@ class Stepper {
 			// returned elsewhere (e.g. on another stack) or tail-called us.
 			const st = this.stack;
 			const call = isCall || this.entryKind[node];
+			const fr = this.fr;
 			let i = 0;
-			while (i < st.length && (this.fr.esp(st[i]) > esp || (!call && this.fr.esp(st[i]) === esp)))
+			for (let e; i < st.length && ((e = fr.espOf(st[i])) > esp || (!call && e === esp));)
 				i++;
 			while (st.length > i)
 				this.popFrame(t);
@@ -654,7 +676,7 @@ class Stepper {
 		}
 		const st = this.stack;
 		let k = st.length - 1;
-		while (k >= 0 && this.fr.node(st[k]) !== node)
+		while (k >= 0 && this.fr.nodeOf(st[k]) !== node)
 			k--;
 		if (k >= 0) {
 			while (st.length - 1 > k)
@@ -666,7 +688,7 @@ class Stepper {
 		// is code it reached by a jump (a cold path, a function that falls
 		// through into the next symbol), so the new frame goes below it.
 		// Otherwise (no ESP, or the top is at our level) it replaces the top.
-		if (st.length && !(this.espUnwind && this.fr.esp(st[st.length - 1]) > esp))
+		if (st.length && !(this.espUnwind && this.fr.espOf(st[st.length - 1]) > esp))
 			this.popFrame(t);
 		this.pushFrame(node, t, 0, esp);
 	}

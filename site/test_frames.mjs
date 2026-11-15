@@ -55,12 +55,17 @@ class Model {
 const compare = (fr, m, when) => {
 	if (fr.n !== m.start.length)
 		fail(when + ": n " + fr.n + ", want " + m.start.length);
-	for (let k = 0; k < m.start.length; k++)
+	for (let k = 0; k < m.start.length; k++) {
 		for (const f of FIELDS)
 			if (fr[f](k) !== m[f][k]) {
 				fail(when + ": frame " + k + " " + f + " " + fr[f](k) + ", want " + m[f][k]);
 				return;
 			}
+		if (fr.espOf(k) !== m.esp[k] || fr.nodeOf(k) !== m.node[k] || fr.irqOf(k) !== m.irq[k]) {
+			fail(when + ": frame " + k + ": espOf/nodeOf/irqOf differ from esp/node/irq");
+			return;
+		}
+	}
 	for (const k of [-1, m.start.length, m.start.length + 1, FR_SIZE * 3])
 		for (const f of FIELDS)
 			if (fr[f](k) !== undefined)
@@ -95,13 +100,19 @@ for (let round = 0; round < rounds; round++) {
 			const k = open.pop();
 			// An end before the start (does not happen in a run, must still round-trip).
 			const end = rnd(300) === 0 ? m.start[k] - 1 - rnd(3) : t;
-			fr.setEnd(k, end);
 			m.end[k] = end;
 			const p = m.parent[k];
-			if (p >= 0) {
-				const d = rnd(400) === 0 ? 2 ** 32 + rnd(7) : end - m.start[k];
-				fr.addChild(p, d);
-				m.child[p] += d;
+			if (rnd(2)) { // what popFrame does
+				fr.close(k, end);
+				if (p >= 0)
+					m.child[p] += end - m.start[k];
+			} else {
+				fr.setEnd(k, end);
+				if (p >= 0) {
+					const d = rnd(400) === 0 ? 2 ** 32 + rnd(7) : end - m.start[k];
+					fr.addChild(p, d);
+					m.child[p] += d;
+				}
 			}
 		} else if (what < 86) {
 			const n = rnd(m.start.length + 1);

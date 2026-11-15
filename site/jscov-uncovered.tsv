@@ -228,6 +228,8 @@ memmap.js	685	95447f32	a colour token written as rgb()/rgba(): style.css gives e
 memmap.js	955-957	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
 memmap.js	1101	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
 memmap.js	1137	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
+memmap.js	1139	b891b306	sometimes: a cell list naming a sample of CPU RAM writes on its pages: the memmap and memtabs suites open cell lists while the machine runs, and whether a write sample has landed on that cell's pages by then depends on timing; ran in run 43749791653, not in run 43755059760 (no job of it)
+memmap.js	1142-1145	cf6de0ca	sometimes: the rows of those CPU write samples (line 1139); not run in run 43755059760
 memmap.js	1157	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
 memmap.js	1180	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
 memmap.js	1191	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
@@ -302,7 +304,7 @@ source.js	199	5eacb3f2	a source pick replaced by another pick while it was read:
 source.js	266	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
 source.js	547	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
 source.js	550	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
-source.js	646	32a00a3c	panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
+source.js	646	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
 source.js	682	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
 source.js	856	0785436c	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
 source.js	870	13ed0c3d	localStorage.setItem throwing (storage blocked or full): as line 848

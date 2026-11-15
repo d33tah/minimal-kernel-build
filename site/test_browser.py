@@ -18729,6 +18729,96 @@ def reverse_keys(browser, base, shots, name):
     return problems, r
 
 
+# B1: the minified Linux stepped from the reset vector to near its end
+# (1.8 M), then Step back at once. A checkpoint is packed in the Worker
+# after it is taken (a delta of the one before it); stepping goes on
+# meanwhile, so the newest few can still be packing when Step back
+# restores one. revBlob read the checkpoint's base before its packing was
+# done (none yet), took the delta's few pages for the whole RAM and v86
+# ran from zeroed memory: "Maximum call stack size exceeded" (its page
+# fault handler recursing) or a wasm "unreachable". Part 1 holds each new
+# checkpoint's packing back REV_LATE_HOLD_MS (a slow Worker) so the step
+# back meets one still packing on any machine; part 2 is the report's case
+# as it is (step to 1.8 M, Step back 5,000 right away).
+REV_LATE_HOLD_MS = 3000
+REV_LATE_HOLD_JS = """(ms) => { if (window.mkbSnapWorker) return;
+  window.mkbSnapWorker = snapWorker;
+  snapWorker = (msg, transfer) => msg.op !== 'pack' ? window.mkbSnapWorker(msg, transfer) :
+    new Promise((res) => setTimeout(res, ms)).then(() => window.mkbSnapWorker(msg, transfer)); }"""
+REV_LATE_UNHOLD_JS = "() => { if (window.mkbSnapWorker) { snapWorker = window.mkbSnapWorker; delete window.mkbSnapWorker; } }"
+REV_LATE_READY_JS = "async () => { await Promise.all(REV.cps.map((c) => c.ready.catch(() => {}))); return REV.cps.filter((c) => c.failed).length; }"
+
+
+def reverse_late(browser, base, shots):
+    """Step back right after stepping, from near the minified Linux's end:
+    the machine is the one recorded on the way, while the newest checkpoint
+    is still being packed (B1)."""
+    name = "minified-linux"
+    params = REV_CASES[name][0]
+    problems, r, errors = [], {}, []
+    tag = f"reverse late {name} 1280 light"
+    ctx = browser.new_context(color_scheme="light", viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+
+    def back(n, want, what):
+        page.evaluate(f"revStepBack({n})")
+        wait_for(lambda: page.evaluate("!REV.busy"), 120, 0.05)
+        got = rev_state(page)
+        status = page.inner_text("#dbg_status")
+        r[what] = {"steps": got["steps"], "status": status[:200]}
+        if page.get_attribute("#dbg_status", "data-rev") != "done" or rev_diff(got, want):
+            problems.append(f"{tag}: {what}: {status[:200]!r}; differs from the machine recorded there: {rev_diff(got, want)}")
+
+    def start():
+        page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10&{params}#debugger", timeout=120000)
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        show_tab(page, "debugger")
+        return ok
+
+    try:
+        # Part 1: a checkpoint at cp, its packing held back; 1,000 past it
+        # the machine is noted, 1,000 more stepped, Step back 1,000.
+        if not start():
+            return [f"{tag}: did not start paused"], r
+        k = page.evaluate("REV.kFixed")
+        cp = 1780000
+        if rev_step_to(page, cp - 1000) != cp - 1000:
+            return [f"{tag}: could not step to {cp - 1000} (the run ended at {page.evaluate('stepper.steps')})"], r
+        if page.evaluate(REV_LATE_READY_JS):
+            problems.append(f"{tag}: a checkpoint failed to pack")
+        page.evaluate(REV_LATE_HOLD_JS, REV_LATE_HOLD_MS)
+        rev_step_to(page, cp + 1000)
+        want = rev_state(page)
+        rev_step_to(page, cp + 2000)
+        # The checkpoint the step back restores (the last at or before
+        # cp + 1,000): taken on the way past cp, still packing.
+        held = page.evaluate(f"(() => {{ const c = revFind({cp + 1000}); return c ? [c.steps, c.size === 0, !c.full] : null; }})()")
+        r["held"] = {"k": k, "checkpoint [count, still packing, a delta]": held}
+        if not held or held[0] <= cp - 1000 or not held[1] or not held[2]:
+            problems.append(f"{tag}: the checkpoint the step back restores is {held} [count, still packing, a delta]; "
+                            f"want one taken after {cp - 1000}, a delta still packing (test setup: k {k})")
+        back(1000, want, f"back 1,000 to {cp + 1000} (checkpoint still packing)")
+        # Part 2: the report's case, nothing held back, on a new machine
+        # (part 1's may be broken).
+        page.goto("about:blank")
+        if not start():
+            return problems + [f"{tag}: did not start paused again"], r
+        rev_step_to(page, 1795000)
+        want = rev_state(page)
+        if rev_step_to(page, 1800000) != 1800000:
+            problems.append(f"{tag}: could not step to 1,800,000 (at {page.evaluate('stepper.steps')})")
+        else:
+            back(5000, want, "back 5,000 from 1,800,000")
+        page.screenshot(path=str(shots / "reverse-late-minified-linux-1280-light.png"))
+    finally:
+        if errors:
+            problems.append(f"{tag}: page errors {errors[:3]}")
+        ctx.close()
+    return problems, r
+
+
 def reverse_case(browser, base, shots, entries):
     out = []
     runs = [("hello", "dark", True), ("hello", "light", False)]
@@ -18741,6 +18831,10 @@ def reverse_case(browser, base, shots, entries):
         problems, r = snapdiff_guard(reverse_kernel, browser, base, shots, name, scheme, phone)
         out.append(report("reverse", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
                           seconds=round(time.monotonic() - t0)))
+    if "minified-linux" in entries:
+        t0 = time.monotonic()
+        problems, r = snapdiff_guard(reverse_late, browser, base, shots)
+        out.append(report("reverse late", problems, r, seconds=round(time.monotonic() - t0)))
     problems, r = snapdiff_guard(reverse_jit, browser, base, shots)
     out.append(report("reverse jit", problems, r))
     if "debian-6.1-686-initrd" in entries:

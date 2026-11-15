@@ -728,9 +728,8 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
 	/* The sheet covers the lower 65vh: the page scrolls that much further,
-	   so its end (the listing's last lines) can come up above the sheet and
-	   the toggle's bar on it. */
-	body:has(> .srcpanel:not([hidden])) { padding-bottom: calc(65vh + 60px); }
+	   so its end (the listing's last lines) can come up above the sheet. */
+	body:has(> .srcpanel:not([hidden])) { padding-bottom: 65vh; }
 }
 /* H1: the menu toggle, fixed bottom right on every tab, where the listings'
    lines end (their addresses and the symbol index are on the left), left
@@ -742,6 +741,7 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
    The menu above it holds the run state in words, Pause/Continue, the "new
    version" notice and Back and Forward through the jump history. */
 .runbadge { position: fixed; z-index: 6; right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); }
+.srcpanel:not([hidden]) ~ .runbadge { right: calc(min(46rem, 50vw) + 8px); }
 .rbtog { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 48px; min-height: 44px; padding: 4px 2px;
 	border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
 .rbtog[aria-expanded="true"] { border-color: var(--accent); }
@@ -783,22 +783,12 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .navhist button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .navhist button:disabled { color: var(--muted); }
 body { padding-bottom: 60px; }
-/* Where the page's lines reach the toggle, it sits on a bar across the
-   page (E5a): on a phone always, on a wide screen while the Source panel
-   takes the right half (the page's column is then as narrow as a tablet's).
-   A row that scrolls down to it goes under the bar whole, never with its
-   right end alone under the toggle. On a phone the bar is right above the
-   Source sheet when the sheet is open; the page's end comes up above it
-   either way. A full width page leaves the corner free (suite overlap). */
-.srcpanel:not([hidden]) ~ .runbadge { left: 0; right: min(46rem, 50vw); bottom: 0; display: flex; justify-content: flex-end;
-	padding: 6px 8px max(6px, env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
-.srcpanel:not([hidden]) ~ .runbadge .rbmenu { right: 8px; }
 @media (max-width: 640px) {
-	.runbadge { left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; background: var(--bg); border-top: 1px solid var(--line);
-		padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)); }
-	.srcpanel:not([hidden]) ~ .runbadge { right: 0; bottom: 65vh; padding-bottom: 6px; }
-	.runbadge .rbmenu, .srcpanel:not([hidden]) ~ .runbadge .rbmenu { right: max(8px, env(safe-area-inset-right)); }
+	.srcpanel:not([hidden]) ~ .runbadge { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
 	#listing, #context { padding-right: 3.4rem; }
+	/* The Rebuild and boot box too: with the Source sheet open its row sits
+	   right above the sheet, where the toggle is. */
+	.rbbox { padding-right: 3.4rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

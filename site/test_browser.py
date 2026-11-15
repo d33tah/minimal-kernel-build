@@ -9872,10 +9872,6 @@ NAV_COVER_JS = """() => {
         && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
         && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
     const hits = [], view = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
-    // E5a: on its bar (a phone, or the Source panel open) the toggle hides
-    // the lines under the bar whole: the view ends at the bar.
-    const bar = nav.closest('#runbadge') && document.getElementById('runbadge').getBoundingClientRect();
-    if (bar && bar.width > b.width + 4) view.bottom = Math.min(view.bottom, bar.top);
     let seen = 0;
     for (const id of ['listing', 'context']) {
         const box = document.getElementById(id);
@@ -10480,18 +10476,15 @@ def suite_runbadge(ctx):
     return report("runbadge", *runbadge_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries))
 
 
-# ---- overlap: nothing of the page half under the toggle or the panel (E5a) --
-# E5's screenshots: at 390 px the menu toggle (#runbadge, fixed bottom
-# right) lay over the right end of any row scrolled under it (the Machine
-# tab's kernel select, the Rebuild and boot row); at 1280 px with the Source
-# panel open the page ran on under the panel (status and build log lines cut
-# at its edge). Every tab, the window scrolled from top to end: at 390 and
-# 1280 px no word or control is under the toggle while the page beside it shows (at
-# the toggle's left edge or at the word's own start), and at the end of the
-# page its last line comes up above the toggle's bar; the same with the
-# Source sheet open. At 1280 px with the Source panel open no element of the
-# header or the tabs runs past the panel's left edge (inside a scroll box:
-# the box's visible part), and nothing scrolls sideways.
+# ---- overlap: nothing of the page under the Source panel (E5a) -------------
+# E5's screenshots: at 1280 px with the Source panel open the page ran on
+# under the panel (status and build log lines cut at its edge). Every tab,
+# the window scrolled from top to end, at 390 and 1280 px, also with the
+# Source sheet or panel open: the page never scrolls sideways. At 1280 px
+# with the Source panel open no element of the header or the tabs runs past
+# the panel's left edge (inside a scroll box: the box's visible part). The
+# menu toggle floats over the page (the operator wants no bar under it):
+# what it lies over is recorded, not checked.
 OVERLAP_TOGGLE_JS = """() => {
   const t = document.getElementById('runbadge_toggle'), badge = document.getElementById('runbadge');
   if (!t || !t.getClientRects().length) return null;
@@ -10523,9 +10516,7 @@ OVERLAP_TOGGLE_JS = """() => {
     const left = document.elementFromPoint(Math.max(1, b.left - 3), y), start = document.elementFromPoint(Math.max(1, rr.left + 1), y);
     if (!inBadge(left) || !inBadge(start)) hits.push(what.slice(0, 40));
   }
-  const br = badge.getBoundingClientRect(), main = document.querySelector('main').getBoundingClientRect();
   return { hits: [...new Set(hits)].slice(0, 8), toggle: [b.left, b.top, b.right, b.bottom].map(Math.round),
-           bar: [br.left, br.top, br.right, br.bottom].map(Math.round), mainBottom: Math.round(main.bottom),
            y: Math.round(scrollY), maxY: Math.round(document.documentElement.scrollHeight - innerHeight), vh: innerHeight,
            hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }"""
 
@@ -10553,32 +10544,28 @@ OVERLAP_TABS = ["machine", "memory", "events", "quests", "page", "debugger", "ca
 
 
 def overlap_scroll(page, tag, problems, r):
-    """Scroll the window from the top to the end; at each stop the toggle
-    must not lie over a piece of the page that shows beside it; at the end
-    the page's last line is above the toggle's bar."""
+    """Scroll the window from the top to the end; at each stop the menu
+    toggle shows and the page does not scroll sideways. What the toggle
+    lies over is recorded in r (it floats over the page)."""
     page.evaluate("window.scrollTo(0, 0)")
     time.sleep(0.2)
-    seen, y = [], 0
+    seen, under, y = [], [], 0
     for _ in range(40):
         got = page.evaluate(OVERLAP_TOGGLE_JS)
         if not got:
             problems.append(f"{tag}: no menu toggle shown")
             return
         seen.append(got["y"])
-        if got["hits"]:
-            problems.append(f"{tag} at scrollY {got['y']}: the toggle {got['toggle']} lies over {got['hits']} of the page shown beside it")
-            break
+        under += [w for w in got["hits"] if w not in under]
         if got["hscroll"]:
             problems.append(f"{tag}: the page scrolls sideways")
             break
         if got["y"] >= got["maxY"]:
-            if got["mainBottom"] > got["bar"][1] + 1:
-                problems.append(f"{tag}: at the end of the page its last line (bottom {got['mainBottom']}) stays under the toggle's bar {got['bar']}")
             break
         y = min(got["maxY"], got["y"] + int(got["vh"] * 0.4))
         page.evaluate(f"window.scrollTo(0, {y})")
         time.sleep(0.12)
-    r[tag] = len(seen)
+    r[tag] = [len(seen), under[:8]]
 
 
 def overlap_case(browser, base, shots):
@@ -10601,7 +10588,7 @@ def overlap_case(browser, base, shots):
         time.sleep(0.3)
         page.screenshot(path=str(shots / f"overlap-390-machine-{scheme}.png"))
     page.emulate_media(color_scheme="light")
-    # The Source sheet open (the toggle right above it).
+    # The Source sheet open (the toggle floats right above it).
     page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     for tab in ("machine", "source", "page"):
@@ -24169,16 +24156,27 @@ def rb_shots(page, shots, stem, problems, tag):
 # The run state toggle (#runbadge, fixed bottom right; on a phone with the
 # Source sheet open, right above the sheet) must not cover the Rebuild and
 # boot row: the window is scrolled so the row is level with the toggle (the
-# worst case), then the toggle may not lie over a word of it while the row
-# beside it shows (E4's 390 px screenshot: "compile every object" ended
-# under "halted"; E5a: the toggle's bar hides the row whole, overlap suite).
+# worst case), then no word of the row may be under it (E4's 390 px
+# screenshot: "compile every object" ended under "halted").
 RB_COVER_JS = """() => {
   const t = document.getElementById('runbadge_toggle'), row = document.querySelector('#rb_box .scan');
   if (!t || !t.getClientRects().length || !row.getClientRects().length) return { skip: true };
   let b = t.getBoundingClientRect(), rr = row.getBoundingClientRect();
   window.scrollBy(0, (rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2);
   b = t.getBoundingClientRect(); rr = row.getBoundingClientRect();
-  return { off: Math.round((rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2), y: Math.round(scrollY),
+  const hits = [], meets = (r) => r.width > 0.5 && r.height > 0.5 && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
+    && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
+  const tw = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+  for (let n = tw.nextNode(); n; n = tw.nextNode()) {
+    if (!n.parentElement.getClientRects().length) continue;
+    for (const m of n.data.matchAll(/\\S+/g)) {
+      const g = document.createRange(); g.setStart(n, m.index); g.setEnd(n, m.index + m[0].length);
+      if ([...g.getClientRects()].some(meets)) hits.push(m[0]);
+    }
+  }
+  for (const e of row.querySelectorAll('button, input, .tip'))
+    if (e.getClientRects().length && meets(e.getBoundingClientRect())) hits.push('#' + (e.id || e.className));
+  return { hits, off: Math.round((rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2), y: Math.round(scrollY),
            maxY: Math.round(document.documentElement.scrollHeight - innerHeight), badge: [b.left, b.top, b.right, b.bottom].map(Math.round),
            row: [rr.left, rr.top, rr.right, rr.bottom].map(Math.round) }; }"""
 
@@ -24186,8 +24184,6 @@ RB_COVER_JS = """() => {
 def rb_cover(page, tag, problems, r):
     got = page.evaluate(RB_COVER_JS)
     r.setdefault("cover", {})[tag] = got
-    if not got.get("skip"):
-        got["hits"] = (page.evaluate(OVERLAP_TOGGLE_JS) or {"hits": ["no toggle"]})["hits"]
     if got.get("skip"):
         problems.append(f"{tag}: no run state toggle or no Rebuild and boot row to check")
     elif got["hits"]:

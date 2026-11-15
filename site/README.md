@@ -1423,8 +1423,8 @@ Source panel, the buttons cover no text of a listing line on screen (light
 and dark). On 7967b0fc8 they covered the right end of the lines there.
 
 **The menu toggle (H1).** One small fixed button at the bottom right of
-every tab (`#runbadge_toggle`; left of the Source panel, on a phone on a
-bar across the screen above it, and the listings keep its column free) shows at a glance what the VM
+every tab (`#runbadge_toggle`; left of the Source panel, on a phone above
+it, and the listings keep its column free) shows at a glance what the VM
 does: three bars (it opens a menu), a dot and a word. The dot is green and
 pulses while the CPU runs, with the speed under it (1/s up to full); blue
 and pulsing while the boot fast-forwards with the JIT (JIT); hollow when
@@ -2591,38 +2591,33 @@ without hello (the reason names the kernels it has), a new file and a
 deleted file refused by name, and another kernel chosen while the build
 runs (its kit held back): built, not booted. Screenshots light and dark
 of each. At 390 px the run state toggle covers no word of the Rebuild and
-boot row with the window scrolled so the row is level with it (the
-toggle's bar hides the row whole). kits/index.json answered 503 twice and
+boot row with the window scrolled so the row is level with it (on a phone
+the box keeps the toggle's column free, like the listings). kits/index.json answered 503 twice and
 then the list: the button is enabled after the third request; always 503:
 four requests, then "kits/index.json: HTTP 503" (E5a; kitFetch, the same
 retry as the kit's own files). At 1280 px with the Source panel and the
 build log open, nothing of the page runs past the panel's edge.
 
-**Nothing half under the toggle or the panel (E5a, suite overlap).** On a
-phone (up to 640 px) the menu toggle sits on an opaque bar across the
-bottom of the screen (right above the Source sheet when it is open), so a
-row that scrolls down to it goes under the bar whole and is never cut at
-its right end; the page's end comes up above the bar. At wider screens with
-the Source panel open, the page (header, tabs, every tab) keeps to the left
-of the panel (`body` padding as wide as the panel), and the toggle sits on
-a bar across that column, since its lines now reach the toggle; without the
-panel the corner is free and the toggle floats there. Since the panel
+**Nothing under the Source panel (E5a, suite overlap).** At wider screens
+with the Source panel open, the page (header, tabs, every tab) keeps to the
+left of the panel (`body` padding as wide as the panel). Since the panel
 changes the column's width, the Page listing is drawn again when it opens
 or closes; it keeps the line it showed (or the jump's target it was asked
 to show, also when drawing the panel takes long on a slow host:
-listingHold/listingKeep). The suite opens hello
-and walks every tab, the window scrolled from top to end in steps: at 390
-px (also with the Source sheet open, Machine, Source and Page) and at 1280
-px with and without the Source panel, no word, select, input or button
-lies under the toggle while the page at the toggle's left or the word's own
-start shows; at the end the page's last line is above the bar; at 1280 px
-with the panel open no element of the header or the tabs runs past the
-panel's edge (inside a scroll box: its visible part) and nothing scrolls
-sideways; the Page listing scrolled to its middle still shows its line
-after the panel opens and after it closes. Screenshots overlap-390-machine,
-overlap-390-sheet and overlap-1280-panel, light and dark. On 3f805207f it
-fails: the toggle over the Machine tab's file input, words of the
-Debugger, Settings and About tabs; 46 to 182 elements under the panel.
+listingHold/listingKeep). The menu toggle floats as before (H1): left of
+the panel, right above the sheet on a phone. E5a first put it on an opaque
+bar across the bottom (on a phone, and across the page's column while the
+panel is open); the operator asked for that bar to go, so it went. The
+suite opens hello and walks every tab, the window scrolled from top to end
+in steps: at 390 px (also with the Source sheet open, Machine, Source and
+Page) and at 1280 px with and without the Source panel the page never
+scrolls sideways (what the toggle lies over is recorded, not checked); at
+1280 px with the panel open no element of the header or the tabs runs past
+the panel's edge (inside a scroll box: its visible part); the Page listing
+scrolled to its middle still shows its line after the panel opens and after
+it closes. Screenshots overlap-390-machine, overlap-390-sheet and
+overlap-1280-panel, light and dark. On 3f805207f it fails with 46 to 182
+elements under the panel.
 
 The status line ends with the time of the build and of its phases
 (fetching the kit, compiling, linking). Suite `rebuild_linux` (plan step

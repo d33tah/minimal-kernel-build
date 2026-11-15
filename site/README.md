@@ -2568,14 +2568,22 @@ bottom of the screen (right above the Source sheet when it is open), so a
 row that scrolls down to it goes under the bar whole and is never cut at
 its right end; the page's end comes up above the bar. At wider screens with
 the Source panel open, the page (header, tabs, every tab) keeps to the left
-of the panel (`body` padding as wide as the panel). The suite opens hello
+of the panel (`body` padding as wide as the panel), and the toggle sits on
+a bar across that column, since its lines now reach the toggle; without the
+panel the corner is free and the toggle floats there. Since the panel
+changes the column's width, the Page listing is drawn again when it opens
+or closes; it keeps the line it showed (or the jump's target it was asked
+to show, also when drawing the panel takes long on a slow host:
+listingHold/listingKeep). The suite opens hello
 and walks every tab, the window scrolled from top to end in steps: at 390
 px (also with the Source sheet open, Machine, Source and Page) and at 1280
-px no word, select, input or button lies under the toggle while the page
-at the toggle's left or the word's own start shows; at the end the page's
-last line is above the bar; at 1280 px with the panel open no element of
-the header or the tabs runs past the panel's edge (inside a scroll box: its
-visible part) and nothing scrolls sideways. Screenshots overlap-390-machine,
+px with and without the Source panel, no word, select, input or button
+lies under the toggle while the page at the toggle's left or the word's own
+start shows; at the end the page's last line is above the bar; at 1280 px
+with the panel open no element of the header or the tabs runs past the
+panel's edge (inside a scroll box: its visible part) and nothing scrolls
+sideways; the Page listing scrolled to its middle still shows its line
+after the panel opens and after it closes. Screenshots overlap-390-machine,
 overlap-390-sheet and overlap-1280-panel, light and dark. On 3f805207f it
 fails: the toggle over the Machine tab's file input, words of the
 Debugger, Settings and About tabs; 46 to 182 elements under the panel.

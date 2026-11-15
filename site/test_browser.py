@@ -9862,6 +9862,10 @@ NAV_COVER_JS = """() => {
         && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
         && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
     const hits = [], view = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+    // E5a: on its bar (a phone, or the Source panel open) the toggle hides
+    // the lines under the bar whole: the view ends at the bar.
+    const bar = nav.closest('#runbadge') && document.getElementById('runbadge').getBoundingClientRect();
+    if (bar && bar.width > b.width + 4) view.bottom = Math.min(view.bottom, bar.top);
     let seen = 0;
     for (const id of ['listing', 'context']) {
         const box = document.getElementById(id);
@@ -10612,6 +10616,25 @@ def overlap_case(browser, base, shots):
         show_tab(page, tab)
         time.sleep(0.6)
         overlap_scroll(page, f"1280 {tab}", problems, r)
+    # The Page listing keeps the line it shows when the panel opens and
+    # closes (the page's column changes width, the listing is drawn again).
+    page.evaluate("jumpTo(0x100000)")
+    wait_for(lambda: page.get_attribute("#listing", "data-page") == "256", 10)
+    page.evaluate("() => { const b = document.getElementById('listing'); b.scrollTop = (b.scrollHeight - b.clientHeight) / 2; }")
+    time.sleep(1.5)
+    keep = page.evaluate("navListingAnchor()")
+    line_js = """(a) => { const b = document.getElementById('listing'), br = b.getBoundingClientRect();
+      const e = b.querySelector('.ins[data-addr="' + a + '"]'); if (!e) return null; const r = e.getBoundingClientRect();
+      return { shown: r.top >= br.top - 1 && r.bottom <= br.bottom + 1, top: Math.round(r.top - br.top), h: Math.round(b.clientHeight),
+               scroll: b.scrollHeight > b.clientHeight + 4, w: Math.round(br.width) }; }"""
+    r["listing kept"] = [keep, page.evaluate(line_js, keep)]
+    for what, js in (("opens", "(p) => openSourceFile(p)"), ("closes", "() => closeSource()")):
+        page.evaluate(js, "boot/hello.c")
+        time.sleep(1.5)
+        got = page.evaluate(line_js, keep)
+        r["listing kept"].append(got)
+        if keep < 0 or not got or not got["shown"] or not got["scroll"]:
+            problems.append(f"1280 Page tab: the listing's line {keep:#x} after the Source panel {what}: {got} (before {r['listing kept'][1]})")
     page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     for tab in OVERLAP_TABS:
@@ -10624,6 +10647,7 @@ def overlap_case(browser, base, shots):
             problems.append(f"1280 {tab}: the Source panel is not open")
         elif got["hits"] or got["hscroll"]:
             problems.append(f"1280 {tab}: {got['n']} elements run under the Source panel (edge {got['edge']}): {got['hits']}, sideways scroll {got['hscroll']}")
+        overlap_scroll(page, f"1280 {tab}, Source panel open", problems, r)
     page.evaluate("document.getElementById('tab_machine').click()")
     for scheme in ("light", "dark"):
         page.emulate_media(color_scheme=scheme)

@@ -38,6 +38,7 @@ CHROME = {
     "top": "the sticky header's background",
     "tabbar": "tab buttons",
     "rbmenu": "the frame of the menu toggle's menu",
+    "runbadge": "the bar the menu toggle sits on (the page's background, a line above it)",
     "rbwords": "the run state in words in that menu (the text colour)",
     "rbpwa": "the new version notice in that menu (a warning's colours)",
     "tip": "the ? buttons",

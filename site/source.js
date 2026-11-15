@@ -557,11 +557,13 @@ function openSource(pa, k = 0) {
 // After srcPanel changed: shown, drawn, remembered, in the hash.
 function srcShown() {
 	srcSwClose(false);
+	const hold = $("src_panel").hidden ? listingHold() : null;
 	$("src_panel").hidden = false;
 	renderSourcePanel();
 	srcRemember(srcPanel.path);
 	writeHash();
 	edPanelShown();
+	listingKeep(hold);
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
@@ -1323,10 +1325,12 @@ let srcOpener = null;
 
 function closeSource() {
 	srcSwClose(false);
+	const hold = listingHold();
 	$("src_panel").hidden = true;
 	srcPanel = null;
 	edPanelShown();
 	writeHash();
+	listingKeep(hold);
 	const a = srcLinkAgain(srcOpener);
 	if (a)
 		a.focus();

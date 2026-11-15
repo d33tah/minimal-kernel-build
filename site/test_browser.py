@@ -2147,8 +2147,10 @@ def graph_controls(page, name, shots, r):
     # slow host the click after the open may come later than that).
     page.evaluate("""() => { window.__cap = []; window.__bub = [];
         const dt = () => (G.openedAt ? Math.round(realNow() - G.openedAt) : null);
-        document.addEventListener('click', () => __cap.push(dt()), true);
-        document.addEventListener('click', () => __bub.push(dt())); }""")
+        // The bubbling listener records the time its capture saw (CI run
+        // 43724195461: 823 ms at capture, 824 ms after the handlers ran).
+        document.addEventListener('click', (e) => { e.mkbDt = dt(); __cap.push(e.mkbDt); }, true);
+        document.addEventListener('click', (e) => __bub.push(e.mkbDt)); }""")
     entries0 = nav_at(page)
     page.mouse.click(xy["x"], xy["y"])
     page.mouse.click(xy["x"] + 15, xy["y"])
@@ -9815,6 +9817,15 @@ def nav_jumps(page, name, problems, r):
             return nav_first(page, f'#cov_tree .covrow[data-kind="{kind}"] .covname')
         return prep
 
+    def panel_addr():
+        if not wait_for(lambda: page.locator("#src_addrs button.symlink").count() > 0, 30):
+            return None
+        # The listing scrolled to its end first: the panel opening keeps the
+        # listing's line (E5a), and hello's address is then already where a
+        # jump puts it (no change of view, no entry).
+        page.evaluate("document.getElementById('listing').scrollTop = 1e9")
+        return nav_first(page, "#src_addrs button.symlink")
+
     def graph():
         show_tab(page, "calls")
         page.click("#gview_tree")
@@ -9828,8 +9839,7 @@ def nav_jumps(page, name, problems, r):
         ("branch target name", on("debugger", "#context .brt")),
         ("jump source (go there)", go_there),
         ("listing file:line", on("page", "#listing .src .srclink")),
-        ("Source panel address", lambda: nav_first(page, "#src_addrs button.symlink")
-         if wait_for(lambda: page.locator("#src_addrs button.symlink").count() > 0, 30) else None),
+        ("Source panel address", panel_addr),
         ("symbol index", lambda: page.locator("#symbol_index button").last if page.locator("#symbol_index button").count() else None),
         ("next page", on("page", "#page_next")),
         ("Memory grid page", grid),

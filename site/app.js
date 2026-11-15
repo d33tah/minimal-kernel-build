@@ -989,7 +989,9 @@ function renderPage(p, bytes, base, how, curAt) {
 		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1, draws: Number(box.dataset.draws || 0) + 1 });
 	const hit = jumpHitScroll ? box.querySelector(".jhit") : null;
 	const backLine = back && back.addr !== undefined ? listingLineAt(back.addr) : null;
-	if (backLine)
+	if (backLine && back.off !== undefined)
+		box.scrollTop += backLine.getBoundingClientRect().top - box.getBoundingClientRect().top - back.off;
+	else if (backLine)
 		scrollListingTo(backLine);
 	else if (back && back.addr === undefined)
 		box.scrollTop = back.top;
@@ -1400,17 +1402,17 @@ function navListingAnchor() {
 // The Source panel opens or closes: on a wide screen the page's column
 // changes width (E5a: the page keeps left of the panel) and the listing is
 // drawn again. listingHold, before the change: what it shows (a jump's
-// target still wanted, else the line near its top third); listingKeep,
-// after it (the panel drawn, which can take long on a slow host): the next
-// drawing keeps that line in view.
+// target still wanted, else the line near its top third and how far below
+// the listing's top it is); listingKeep, after it (the panel drawn, which
+// can take long on a slow host): the next drawing puts that line there.
 function listingHold() {
 	if (tab !== "page" || selectedPage < 0)
 		return null;
 	const w = navScrollWant;
 	if (w && w.page === selectedPage && realNow() < w.until)
 		return w;
-	const at = navListingAnchor();
-	return at >= 0 ? { page: selectedPage, addr: at } : null;
+	const at = navListingAnchor(), line = at >= 0 ? listingLineAt(at) : null;
+	return line ? { page: selectedPage, addr: at, off: line.getBoundingClientRect().top - $("listing").getBoundingClientRect().top } : null;
 }
 
 function listingKeep(h) {

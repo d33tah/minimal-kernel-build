@@ -21661,12 +21661,20 @@ def mm_ui_case(browser, base, shots, problems, r):
             return
         mm_frames(page)
         n = page.evaluate("MEV.n")
-        # Replay: the loader's drop first
+        # Replay: the loader's drop first. On a slow CI runner (runs
+        # 43649993796, 43658380830: no drop, 7,972 events replayed) a frame
+        # comes 100 ms after the last and applies ~160 events; the 40
+        # newest animations once pushed the loader's drops out before they
+        # were drawn. That frame, made here: the drop must be in it.
+        slow = page.evaluate("""() => { MMAP.play(true); MMAP.frame(MMAP.t + 100);
+          return { idx: MMAP.idx, anims: MMAP.anims.length,
+                   drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]) }; }""")
+        r["replay slow frame"] = slow
+        if "kernel protected-mode part" not in slow["drops"]:
+            problems.append(f"ui: a replay frame 100 ms after the start lost the kernel's drop: {slow}")
+        page.evaluate("MMAP.play(false)")
+        # Sampled in the page, at the frame the drop is on the map.
         page.click("#mm_play")
-        # Sampled in the page at the frame the kernel's drop is on the map:
-        # a wait for any drop and a second evaluate after it saw the drop
-        # already faded on a slow runner (run 43649993796: no drops, 7,972
-        # events replayed).
         drop = page.evaluate("""() => new Promise((done) => {
           const t0 = realNow();
           const look = () => {

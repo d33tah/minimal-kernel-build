@@ -388,7 +388,7 @@ const MMAP = {
 	},
 
 	// Apply events [idx, to) (and the samples before them); animate: pulses
-	// and drops for the newest ones.
+	// for the newest ones, drops for all.
 	apply(to, animate) {
 		const c = MEV.cols, m = MEV.cap - 1;
 		const n = to - this.idx;
@@ -419,7 +419,9 @@ const MMAP = {
 				this.textLast = ch;
 				this.textDirty = true;
 			}
-			if (i >= animFrom && (!this.firstOnly || first))
+			// The emulator's writes (the loader's drops) always: a slow
+			// frame applies more than 48 events and they come first.
+			if ((i >= animFrom || animate && ini === MM_L_EMU) && (!this.firstOnly || first))
 				this.animate(i, ini, c0, c1, write, bulk);
 		}
 		this.idx = to;

@@ -237,7 +237,7 @@ memmap.js	1168	7dd65a6c	announce() before the segments exist: the cursor moves o
 memmap.js	1179	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
 quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
-quests.js	139	3444ec90	no 0x55 0xAA at 0xC0000: v86 always copies its VGA BIOS there before the first instruction
+quests.js	139	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
 quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	170-172	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active

@@ -21663,9 +21663,22 @@ def mm_ui_case(browser, base, shots, problems, r):
         n = page.evaluate("MEV.n")
         # Replay: the loader's drop first
         page.click("#mm_play")
-        wait_for(lambda: page.evaluate("MMAP.anims.some((a) => a.type === 'drop')"), 5, 0.02)
-        drop = page.evaluate("""() => ({ drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]),
-          heat: MMAP.heat[2 * 16384 + MMAP.cellOf(0x100000)], playing: MMAP.playing, status: document.getElementById('mm_status').textContent })""")
+        # Sampled in the page at the frame the kernel's drop is on the map:
+        # a wait for any drop and a second evaluate after it saw the drop
+        # already faded on a slow runner (run 43649993796: no drops, 7,972
+        # events replayed).
+        drop = page.evaluate("""() => new Promise((done) => {
+          const t0 = realNow();
+          const look = () => {
+            const s = { drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]),
+              heat: MMAP.heat[2 * 16384 + MMAP.cellOf(0x100000)], playing: MMAP.playing, status: document.getElementById('mm_status').textContent };
+            if (s.drops.includes('kernel protected-mode part') && s.heat >= 0.3 || realNow() - t0 > 5000)
+              done(s);
+            else
+              requestAnimationFrame(look);
+          };
+          look();
+        })""")
         r["replay"] = drop
         if "kernel protected-mode part" not in drop["drops"] or drop["heat"] < 0.3 or not drop["playing"]:
             problems.append(f"ui: Replay shows no drop of the kernel at 1 MiB: {drop}")

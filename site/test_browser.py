@@ -23191,9 +23191,9 @@ def rb_shipped_image(base, entry):
 
 
 def rb_press(page, sel, phone):
-    loc = page.locator(sel).first
-    loc.scroll_into_view_if_needed(timeout=10000)
-    loc.tap(timeout=10000) if phone else loc.click(timeout=10000)
+    # The coverage tree is drawn again when the DWARF arrives (live: after
+    # the press was aimed, "Element is not attached to the DOM"): tried again.
+    srcedit_press(page, sel, phone)
 
 
 def rb_wait(page, states, timeout):

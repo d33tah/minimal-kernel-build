@@ -2318,7 +2318,9 @@ for a new file; text null: deleted); a file typed back to its base is no
 longer an edit. Without IndexedDB they stay in memory and the page says
 they go with a reload. The listings, the Debugger and the panel's own view
 keep the built text (their line numbers and coverage belong to that
-build); the panel says when its file has edits. The Source tab's "Your
+build); the panel says when its file has edits. Rebuild and boot
+(rebuild.js, below) builds a kernel from the edits: then the built text
+is the edited one. The Source tab's "Your
 edits" lists the changed files (+added -removed lines) with a diff and a
 revert each (a revert takes a second press within 5 s), downloads all of
 them as `<kernel>-edits.patch`, a git patch with a/ and b/ paths relative
@@ -2415,6 +2417,73 @@ with "Hello, World!" edited to "Hello, Kit!!!", synthetic kits for the
 errors and the `.S` path, and qemu boots of the bzImages the browsers
 wrote (each browser's bytes equal). `gen-kit.py --budget TREE` estimates
 a kit of a built kbuild tree (the debian-clang job prints Debian's).
+
+### Rebuild and boot (rebuild.js)
+
+How to try it: pick hello in the kernel list, open the Source tab, tap
+`hello.c` (or any C line in a listing), press Edit, change a string or add
+a function, press **Rebuild and boot** (in the editor's bar, or under "Your
+edits" in the Source tab). The page builds the kernel again with your
+edits, boots it in the Machine tab and then makes its debug data.
+
+`rebuild.js` (plan step E4) runs the shown kernel's build kit (kit.js)
+with the edits of srcedit.js's overlay (`kitBuild` with `compile:
+"changed"`: the objects that include an edited file are compiled by
+clang.wasm, the others are CI's; "compile every object": `"all"`). Each
+build runs in a new `ClangWorker` (terminated after it). The status line
+and a progress bar follow kitBuild's `onstep` events (loading clang.wasm,
+fetching the kit's blobs, each object compiled, each link step); the
+editor's button shows the percentage. Then:
+
+- the bzImage replaces the kernel (`useImage`, the same RAM), named
+  `<kernel> (rebuilt here)`, with `image.from` (the kernel whose source it
+  is: its edits, its kit, the next Rebuild) and `image.edits` (the text
+  of each file it was built from)
+- the ELF of the build (hello's `kernel.elf`, the minified Linux's
+  `vmlinux`, with DWARF) is imported as an unstripped vmlinux would be:
+  its symbols at once (`applySymbols`), its DWARF read as needed
+  (`dbgImport`) until genimport.js has made symbols.json, disasm.json and
+  the DWARF shards in a Worker; nothing is kept in IndexedDB or
+  localStorage for it (an unchanged rebuild has the shipped kernel's SHA-256)
+- the source tree is the kit's files with the edits in place, given to
+  source.js as a picked tree, so genimport.js makes `src/` from it: the
+  listings, the Source panel, the coverage tree and the Debugger read the
+  edited text at the lines the new DWARF names
+- the kernel boots in the Machine tab (on a phone the Source panel's sheet
+  is closed for the screen)
+
+The status says which bytes came out: "identical to CI's build" with the
+SHA-256 of each product (the kit's `products`) when nothing changed them,
+else the new bzImage's hash next to CI's. A step that fails (clang's
+errors, a link error) shows its messages under the status in the Source
+tab and the running kernel stays. An edit the kit cannot build with (a
+deleted file, a file that is not in the kit) is refused with its name.
+Download bzImage / Download ELF save the products. "Back to the shipped
+kernel" loads the kernel from the list again. Only the kernels of
+`kits/index.json` have the button (hello, hello -Os, the minified Linux
+-O0 and -Os); for others it says why. Nothing of the rebuilt kernel
+survives a reload.
+
+Test: suite `rebuild` of `test_browser.py` (job `kit`, which has the kits
+and clang.wasm). At 1280 px it opens `boot/hello.c` from the Source tab's
+file list, presses Edit, types a new function `e4_marker` (7 lines above
+`hello_main`) and a new string that calls it, and presses the editor's
+Rebuild and boot: the progress names each phase and only grows, the
+Machine tab shows the new string, `e4_marker` is in the symbols at the
+address of the downloaded ELF's `.symtab`, the DWARF lines of
+`e4_marker` and `hello_main` are the edited file's, the source the
+listings read is the edited text, the Page listing at `e4_marker` shows
+`return 4;`, the coverage tree's `hello.c` has more lines with code than
+the shipped one and lines run; a compile error shows clang's message in
+the Source tab and keeps the kernel; Revert all and a rebuild of every
+object give the bzImage the page ships and the kit's `kernel.elf` byte for
+byte; Back to the shipped kernel. At 390 px (touch, dark) the editor's
+button, the screen after the rebuild, the Source tab; and a site without
+`kits/index.json` says why there is no rebuild. Then the edges: a kit list
+without hello (the reason names the kernels it has), a new file and a
+deleted file refused by name, and another kernel chosen while the build
+runs (its kit held back): built, not booted. Screenshots light and dark
+of each.
 
 ## Testing
 

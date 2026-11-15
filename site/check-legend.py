@@ -85,6 +85,8 @@ CHROME = {
     "edlist": "the Source tab's list of edited files",
     "eddiffbtn": "a Diff toggle of that list, pressed while its diff is shown (the focus ring colour)",
     "edopen": "an edited file's name in that list (link colour, like every button that goes somewhere; struck through when deleted)",
+    "rbgo": "the Rebuild and boot buttons, filled with the accent colour so they stand out (an action, marks nothing)",
+    "rblog": "the messages of a build step that failed (the page's error colours, like every error note)",
     "bmgo": "a bookmark's name in the list (link colour; its ★ is the legend's gold star)",
     "bmwhat": "what a bookmark points at, under its name (muted)",
     "snapcol": "the hexdump columns of a snapshot diff (their yellow is <mark>, in the legend)",

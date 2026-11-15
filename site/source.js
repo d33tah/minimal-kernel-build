@@ -842,7 +842,8 @@ const SRC_RECENT_KEY = "mkb-src-recent";
 const SRC_RECENT_MAX = 8;
 let srcRecentMem = {};
 
-const srcKernelKey = () => (typeof image !== "undefined" && image ? image.name : "");
+// A kernel rebuilt in the page (rebuild.js) is its source's: image.from.
+const srcKernelKey = () => (typeof image !== "undefined" && image ? image.from || image.name : "");
 
 function srcRecent() {
 	let all = srcRecentMem;

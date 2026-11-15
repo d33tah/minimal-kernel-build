@@ -16,7 +16,11 @@
 // from the kit's sources first; "changed" compiles the objects that
 // include a file of edits (kitUsers). edits: { path: bytes or text } in
 // place of the kit's files. keep: paths whose bytes come back in
-// r.files. The kit's steps run in order: clang.wasm's tools, a module of
+// r.files. onstep(event) says how far the build is: { kind: "fetch", done,
+// of } after each batch of blobs, { kind: "compile", out, done, of } before
+// an object is compiled and { kind: "object", ... } after it, { kind:
+// "step", tool, cmd, done, of } after a step (rebuild.js shows them).
+// The kit's steps run in order: clang.wasm's tools, a module of
 // the kit (a host tool), and three run here: sed (kitSed, a GNU sed
 // subset), cat, and cat-size (cat, then the inputs' total size as 4
 // little-endian bytes: kbuild's size_append). A step's stdout goes to a
@@ -460,6 +464,8 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		res.fetched += data.length;
 		res.fetchedBytes += data.reduce((n, b) => n + b.length, 0);
 		await cc.write(part.map(([p], k) => [p, data[k]]));
+		if (opts.onstep)
+			opts.onstep({ kind: "fetch", done: res.fetched, of: blobs.length });
 	}
 	await cc.write([...edits].map(([p, b]) => [abs(p), b.slice()]));
 	res.fetchMs = kitNow() - t0;
@@ -492,6 +498,8 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	const t1 = kitNow();
 	for (const o of objects) {
 		const tool = o.argv[0] === "nasm" ? "nasm" : "clang";
+		if (opts.onstep)
+			opts.onstep({ kind: "compile", out: o.out, done: res.objects.length, of: objects.length });
 		await load(tool);
 		const ro = { cwd: dir, env, module: tool, outputs: [abs(o.out)] };
 		const r = tool === "clang" ? await kitClang(cc, o.argv, ro) : await cc.run(o.argv, ro);
@@ -549,7 +557,7 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		}
 		res.steps.push(step);
 		if (opts.onstep)
-			opts.onstep({ kind: "step", tool: s.tool, done: i + 1, of: kit.steps.length });
+			opts.onstep({ kind: "step", tool: s.tool, cmd: argv[0].replace(/^.*\//, ""), done: i + 1, of: kit.steps.length });
 	}
 	res.linkMs = kitNow() - t2;
 

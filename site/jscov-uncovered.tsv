@@ -163,14 +163,11 @@ fastforward.js	358-361	bcf5d2e0	as 351
 fastforward.js	390	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
 fastforward.js	419	cdfb4b72	a boot during the breakpoint run: a race
 fnfacts.js	135	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
-genimport.js	38	62f83410	E1 track (genimport.js, another agent's file): a second vmlinux import while the first one's Worker still runs
 genimport.js	50	d6863760	E1 track: a failure of an import already replaced by another (race)
 genimport.js	60	d6863760	E1 track: the result of an import already replaced by another (race)
-genimport.js	72	f3ece064	E1 track: no IndexedDB key for the import (a browser keeping no data)
 genimport.js	87	62f83410	E1 track: restoring kept files while an import's Worker still runs (race)
-genimport.js	132	913c16a7	E1 track: a C source picked before the generated files arrived: the tests pick it afterwards
-genimport.js	147-148	6eb409f2	E1 track: indexing the picked C source failing in the Worker; no test tree makes it fail
-genimport.js	154	7c65e5eb	E1 track: an index result for a pick or import already replaced (race)
+genimport.js	148-149	6eb409f2	E1 track: indexing the picked C source failing in the Worker; no test tree makes it fail
+genimport.js	155	7c65e5eb	E1 track: an index result for a pick or import already replaced (race)
 genworker.js	84	53d4ff50	E1 track: a WASI tool (llvm-nm, llvm-objdump) exiting non-zero: only for a file they cannot read, which the import refuses earlier
 genworker.js	93	566a07df	E1 track: an import with more than 20,000 symbols and trim auto: only Debian-sized kernels, not imported in the coverage jobs
 genworker.js	111	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
@@ -208,7 +205,7 @@ kgen.js	636	c8b20a61	a type or partial unit (see 552)
 kgen.js	745-747	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
 kgen.js	767	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
 kgen.js	781	70630452	Node only: module.exports
-kit.js	566	6ebc1b22	Node only: module.exports (test_kit.mjs requires kit.js; the page loads it as a script)
+kit.js	574	6ebc1b22	Node only: module.exports (test_kit.mjs requires kit.js; the page loads it as a script)
 livedis.js	31	14f00310	iced_x86.js without its Node tail: the pinned iced 1.21.0 (fetch-v86.sh, SHA-256) has it
 livedis.js	47-49	639da600	iced failing to load (fetch or instantiate error): the site ships it and no test blocks it
 livedis.js	76	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set
@@ -239,6 +236,8 @@ quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (ME
 quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
 quests.js	139	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
 quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
+rebuild.js	172-173	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
+rebuild.js	241	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	170-172	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	183	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
@@ -305,23 +304,23 @@ source.js	547	7dc2a1f4	openSource for a frame without file or line: its callers 
 source.js	550	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
 source.js	644	32a00a3c	panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
 source.js	680	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
-source.js	853	0785436c	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
-source.js	867	13ed0c3d	localStorage.setItem throwing (storage blocked or full): as line 848
-source.js	905	b2cc77c5	covRun not defined: index.html always loads coverage.js with source.js
-source.js	915	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race
-source.js	923	5a12f06c	unwindHere throwing: unwind.js answers stop reasons instead of throwing for the stacks the suites reach; a defensive catch
-source.js	1105	c48c3b85	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
-source.js	1172	a6af423b	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
+source.js	854	0785436c	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
+source.js	868	13ed0c3d	localStorage.setItem throwing (storage blocked or full): as line 848
+source.js	906	b2cc77c5	covRun not defined: index.html always loads coverage.js with source.js
+source.js	916	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race
+source.js	924	5a12f06c	unwindHere throwing: unwind.js answers stop reasons instead of throwing for the stacks the suites reach; a defensive catch
+source.js	1106	c48c3b85	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
+source.js	1173	a6af423b	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
 srcedit.js	123	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
 srcedit.js	211-213	5f7242f3	unreachable: edDiff takes the common head off before edMiddle, so the middle's first lines differ and the backtrace never ends inside a snake at d = 0
 srcedit.js	246	8b2e458e	edFilePatch of equal texts: in the page its callers pass only stored edits, and edPut drops an edit equal to its base; site/test_srcedit.mjs (Node) calls it with equal texts
-srcedit.js	480	4f0af11e	edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
-srcedit.js	521	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
-srcedit.js	587	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
-srcedit.js	604	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
-srcedit.js	772	d861a51e	Download with no edits: the button is disabled while there are none
-srcedit.js	785	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	851	5601638c	the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+srcedit.js	483	4f0af11e	edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
+srcedit.js	524	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
+srcedit.js	590	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
+srcedit.js	607	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
+srcedit.js	776	d861a51e	Download with no edits: the button is disabled while there are none
+srcedit.js	789	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
+srcedit.js	855	5601638c	the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 stepper.js	74	63341348	v86.wasm with no or several functions matching a step export's pattern: the shipped v86.wasm is pinned and built by the workflow, so each pattern matches once
 stepper.js	79	25f3f9cf	v86.wasm without an export section: as line 74
 stepper.js	311	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does

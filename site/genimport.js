@@ -128,8 +128,9 @@ function genApply() {
 	drawMaps();
 	drawGrid();
 	dbgChanged();
+	// rebuild.js waits for it (GEN.srcDone) before it says the kernel is ready.
 	if (SRC.mode === "picked" && SRC.entries)
-		genSrcPicked();
+		GEN.srcDone = genSrcPicked();
 }
 
 // A source tree picked (source.js) for a kernel whose files were made

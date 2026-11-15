@@ -465,7 +465,10 @@ function edSync() {
 	$("ed_revert").disabled = !e;
 	if (!ED.on && e) {
 		const s = edStats(srcPanel.path);
-		$("ed_state").textContent = "You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the kernel was built from; Edit shows yours.";
+		// A kernel rebuilt in the page (rebuild.js) was built from the edits.
+		const built = image && image.edits && image.edits[srcPanel.path] === e.text;
+		$("ed_state").textContent = built ? "This kernel was rebuilt here from your text of this file (+" + s.add + " -" + s.del + "), shown here." :
+			"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the kernel was built from; Edit shows yours.";
 	} else if (ED.on && ED.cur)
 		edState();
 	if (ED.diffShown && srcPanel)
@@ -708,6 +711,7 @@ function edStatus(text, state) {
 
 function edChanged() {
 	edRender();
+	rbSync(); // rebuild.js: the count of edits it would build with
 	if (srcPanel && !$("src_panel").hidden)
 		edSync();
 }

@@ -4061,6 +4061,7 @@ async function init() {
 		$("count").checked = false;
 	initSource();
 	initSrcEdit();
+	initRebuild();
 	initJumps();
 	initCoverage();
 	setupVars();

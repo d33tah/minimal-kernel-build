@@ -63,7 +63,10 @@ function graphReset(st) {
 
 // The run starts at the kernel entry once it has been reached.
 const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
-const fEnd = (st, k) => (st.fr.end(k) < 0 ? recTo(st) : st.fr.end(k));
+const fEnd = (st, k) => { const e = st.fr.end(k); return e < 0 ? recTo(st) : e; };
+// Reusable arrays of one chunk for Frames.startsOf / endsOf in scans.
+const FR_SCRATCH = [];
+const frScratch = (i) => FR_SCRATCH[i] || (FR_SCRATCH[i] = new Float64Array(FR_SIZE));
 // The count the recordings go to: after stepping back (R2) the stepper
 // is behind them, and the timeline still ends there, with now marked.
 const recTo = (st) => (st.behind && st.behind() ? st.ahead : st.steps);
@@ -210,48 +213,64 @@ function timelineLayout(st) {
 	if (G.layout && G.layout.key === key)
 		return G.layout;
 	const Row = fr.maxDepth < 0x7fff ? Int16Array : Int32Array;
+	const now = recTo(st); // the end of open frames (fEnd)
+	const hide = G.fold ? FR_IRQ : 0; // hiddenFrame: a flag bit
+	const chunks = fr.chunkCount();
 	// Children shown per frame, counted up to 2 (only "exactly one" matters).
 	const kids = new Uint8Array(n), row = new Row(n).fill(-1), isHead = new Uint8Array(n);
-	for (let k = 0; k < n; k++) {
-		const p = fr.parent(k);
-		if (p >= 0 && kids[p] < 2 && !hiddenFrame(st, k))
-			kids[p]++;
+	for (let c = 0, k = 0; c < chunks; c++) {
+		const par = fr.parentsOf(c), fl = fr.flagsOf(c), len = fr.chunkLen(c);
+		for (let i = 0; i < len; i++, k++) {
+			const p = par[i];
+			if (p >= 0 && kids[p] < 2 && !(fl[i] & hide))
+				kids[p]++;
+		}
 	}
 	const chain = new Map(); // head -> names below it
-	for (let k = 0; k < n; k++) {
-		if (hiddenFrame(st, k))
-			continue;
-		const p = fr.parent(k);
-		if (p < 0 || row[p] < 0) {
-			row[k] = 0;
-			isHead[k] = 1;
-			continue;
-		}
-		const incl = fEnd(st, p) - fr.start(p);
-		const self = incl - fr.child(p) - (fr.end(p) < 0 || fr.end(k) < 0 ? fEnd(st, k) - fr.start(k) : 0);
-		if (G.chains && kids[p] === 1 && self <= Math.max(2, incl * 0.01)) {
-			row[k] = row[p];
-			// The head of p's box: up through the frames in its chain.
-			let h = p;
-			while (!isHead[h])
-				h = fr.parent(h);
-			if (!chain.has(h))
-				chain.set(h, []);
-			chain.get(h).push(k);
-		} else {
+	for (let c = 0, k = 0; c < chunks; c++) {
+		const par = fr.parentsOf(c), fl = fr.flagsOf(c), len = fr.chunkLen(c);
+		for (let i = 0; i < len; i++, k++) {
+			if (fl[i] & hide)
+				continue;
+			const p = par[i];
+			if (p < 0 || row[p] < 0) {
+				row[k] = 0;
+				isHead[k] = 1;
+				continue;
+			}
+			if (G.chains && kids[p] === 1) {
+				const ep = fr.end(p), ek = fr.end(k);
+				const incl = (ep < 0 ? now : ep) - fr.start(p);
+				const self = incl - fr.child(p) - (ep < 0 || ek < 0 ? (ek < 0 ? now : ek) - fr.start(k) : 0);
+				if (self <= Math.max(2, incl * 0.01)) {
+					row[k] = row[p];
+					// The head of p's box: up through the frames in its chain.
+					let h = p;
+					while (!isHead[h])
+						h = fr.parentOf(h);
+					if (!chain.has(h))
+						chain.set(h, []);
+					chain.get(h).push(k);
+					continue;
+				}
+			}
 			row[k] = row[p] + 1;
 			isHead[k] = 1;
 		}
 	}
 	const deepest = row.slice();
-	for (let k = n - 1; k >= 0; k--) {
-		const p = fr.parent(k);
-		if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
-			deepest[p] = deepest[k];
+	for (let c = chunks - 1; c >= 0; c--) {
+		const par = fr.parentsOf(c), k0 = c * FR_SIZE;
+		for (let i = fr.chunkLen(c) - 1; i >= 0; i--) {
+			const p = par[i], k = k0 + i;
+			if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
+				deepest[p] = deepest[k];
+		}
 	}
 	G.layout = { key, row, isHead, chain, deepest };
 	return G.layout;
 }
+
 
 // Per task { name, how, comm?, pid?, va? }: "comm (pid N)" from its
 // task_struct where vars.js varsTasks can read it, else a guess (taskGuesses).
@@ -286,22 +305,29 @@ function taskGuesses(st) {
 	const thunk = /^__x86_indirect_thunk/;
 	const fallback = new Array(st.taskCount).fill("");
 	const setup = /^(sched_setscheduler.*|housekeeping_.*|set_cpus_allowed.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
-	for (let k = 0; k < n; k++) {
-		const t = st.fr.task(k);
-		if (names[t] || st.fr.depth(k) > 3 || st.fr.cont(k) || st.fr.irq(k) || skip.test(st.nodeName(st.fr.node(k))))
-			continue;
-		let p = st.fr.parent(k), viaThunk = false;
-		while (p >= 0 && thunk.test(st.nodeName(st.fr.node(p)))) {
-			p = st.fr.parent(p);
-			viaThunk = true;
+	const T = frScratch(0), D = frScratch(1);
+	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
+		st.fr.tasksOf(c, T);
+		st.fr.depthsOf(c, D);
+		const fl = st.fr.flagsOf(c), nodes = st.fr.nodesOf(c);
+		for (let i = 0, len = st.fr.chunkLen(c); i < len; i++) {
+			const t = T[i];
+			if (names[t] || D[i] > 3 || (fl[i] & (FR_CONT | FR_IRQ)) || skip.test(st.nodeName(nodes[i])))
+				continue;
+			const k = c * FR_SIZE + i;
+			let p = st.fr.parentOf(k), viaThunk = false;
+			while (p >= 0 && thunk.test(st.nodeName(st.fr.nodeOf(p)))) {
+				p = st.fr.parentOf(p);
+				viaThunk = true;
+			}
+			// kthread calls the thread function through a function pointer
+			// (a retpoline thunk on Debian), after setup calls of its own.
+			const pn = p >= 0 ? st.nodeName(st.fr.nodeOf(p)) : "";
+			if (/^ret_from_fork/.test(pn) || (pn === "kthread" && viaThunk))
+				names[t] = st.nodeName(nodes[i]);
+			else if (pn === "kthread" && !setup.test(st.nodeName(nodes[i])))
+				fallback[t] = st.nodeName(nodes[i]); // without retpolines: kthread's last other call
 		}
-		// kthread calls the thread function through a function pointer
-		// (a retpoline thunk on Debian), after setup calls of its own.
-		const pn = p >= 0 ? st.nodeName(st.fr.node(p)) : "";
-		if (/^ret_from_fork/.test(pn) || (pn === "kthread" && viaThunk))
-			names[t] = st.nodeName(st.fr.node(k));
-		else if (pn === "kthread" && !setup.test(st.nodeName(st.fr.node(k))))
-			fallback[t] = st.nodeName(st.fr.node(k)); // without retpolines: kthread's last other call
 	}
 	for (let t = 1; t < names.length; t++)
 		names[t] = names[t] || fallback[t];
@@ -319,7 +345,7 @@ function frameLabel(st, L, k) {
 }
 
 function isUnder(st, k, f) {
-	for (let p = k; p >= 0; p = st.fr.parent(p))
+	for (let p = k; p >= 0; p = st.fr.parentOf(p))
 		if (p === f)
 			return true;
 	return false;
@@ -355,7 +381,6 @@ function drawTimeline() {
 	const q = G.view === "timeline" ? $("graph_search").value.trim().toLowerCase() : "";
 	ctx.font = "11px system-ui, sans-serif";
 	ctx.textBaseline = "middle";
-	const n = st.fr.n;
 	// Minimap strip: the whole run (or the focused frame), shallow rows.
 	const msx = (t) => (t - t0) / (t1 - t0) * w;
 	// Calls narrower than a pixel mark their pixel column instead of being
@@ -363,22 +388,27 @@ function drawTimeline() {
 	const miniCol = [];
 	for (let r = 0; r <= 5; r++)
 		miniCol.push(new Int32Array(Math.ceil(w) + 1).fill(-1));
-	for (let k = 0; k < n; k++) {
-		const r = L.row[k] - rowOff;
-		if (r < 0 || r > 5 || !L.isHead[k] || (focus >= 0 && !isUnder(st, k, focus)))
-			continue;
-		const a = Math.max(st.fr.start(k), t0), b = Math.min(fEnd(st, k), t1);
-		if (b <= a)
-			continue;
-		const x = msx(a), ww = msx(b) - x;
-		if (ww < 1) {
-			const col = Math.min(Math.floor(x + ww / 2), miniCol[r].length - 1);
-			if (col >= 0)
-				miniCol[r][col] = k;
-			continue;
+	const now = recTo(st), S = frScratch(0), E = frScratch(1);
+	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
+		st.fr.startsOf(c, S);
+		st.fr.endsOf(c, E);
+		for (let i = 0, k = c * FR_SIZE, len = st.fr.chunkLen(c); i < len; i++, k++) {
+			const r = L.row[k] - rowOff;
+			if (r < 0 || r > 5 || !L.isHead[k] || (focus >= 0 && !isUnder(st, k, focus)))
+				continue;
+			const a = Math.max(S[i], t0), b = Math.min(E[i] < 0 ? now : E[i], t1);
+			if (b <= a)
+				continue;
+			const x = msx(a), ww = msx(b) - x;
+			if (ww < 1) {
+				const col = Math.min(Math.floor(x + ww / 2), miniCol[r].length - 1);
+				if (col >= 0)
+					miniCol[r][col] = k;
+				continue;
+			}
+			ctx.fillStyle = frameColour(st, k);
+			ctx.fillRect(x, 2 + r * 3.5, ww, 3);
 		}
-		ctx.fillStyle = frameColour(st, k);
-		ctx.fillRect(x, 2 + r * 3.5, ww, 3);
 	}
 	for (let r = 0; r <= 5; r++)
 		for (let col = 0; col < miniCol[r].length; col++)
@@ -442,67 +472,71 @@ function drawTimeline() {
 		}
 		return o;
 	};
-	for (let k = 0; k < n; k++) {
-		if (!L.isHead[k] || L.row[k] < 0)
-			continue;
-		const r = L.row[k] - rowOff;
-		if (r < 0 || r > cap)
-			continue;
-		const a = st.fr.start(k), b = fEnd(st, k);
-		if (b < G.x0 || a > G.x1)
-			continue;
-		if (focus >= 0 && !isUnder(st, k, focus))
-			continue;
-		const [x, y, rw, rh] = rect(a, b, r);
-		if (y + rh < areaTop || y > areaTop + areaH || x + rw < 0 || x > w)
-			continue;
-		const p0 = Math.max(0, tp(a)), p1 = Math.min(along, tp(b));
-		if (p1 - p0 < 1) {
-			// Every column it touches (one or two), counted once.
-			const o = rowCov(r), mid = Math.min(AL - 1, Math.max(0, Math.floor((p0 + p1) / 2)));
-			const c0 = Math.min(AL - 1, Math.max(0, Math.floor(p0))), c1 = Math.min(AL - 1, Math.max(c0, Math.ceil(p1) - 1));
-			for (let col = c0; col <= c1; col++) {
-				const ov = Math.max(0, Math.min(p1, col + 1) - Math.max(p0, col));
-				o.cov[col] += ov;
-				if (col === mid)
-					o.n[col]++;
-				if (ov >= o.best[col] || o.frame[col] < 0) {
-					o.best[col] = ov;
-					o.frame[col] = k;
+	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
+		st.fr.startsOf(c, S);
+		st.fr.endsOf(c, E);
+		for (let i = 0, k = c * FR_SIZE, len = st.fr.chunkLen(c); i < len; i++, k++) {
+			if (!L.isHead[k] || L.row[k] < 0)
+				continue;
+			const r = L.row[k] - rowOff;
+			if (r < 0 || r > cap)
+				continue;
+			const a = S[i], b = E[i] < 0 ? now : E[i];
+			if (b < G.x0 || a > G.x1)
+				continue;
+			if (focus >= 0 && !isUnder(st, k, focus))
+				continue;
+			const [x, y, rw, rh] = rect(a, b, r);
+			if (y + rh < areaTop || y > areaTop + areaH || x + rw < 0 || x > w)
+				continue;
+			const p0 = Math.max(0, tp(a)), p1 = Math.min(along, tp(b));
+			if (p1 - p0 < 1) {
+				// Every column it touches (one or two), counted once.
+				const o = rowCov(r), mid = Math.min(AL - 1, Math.max(0, Math.floor((p0 + p1) / 2)));
+				const c0 = Math.min(AL - 1, Math.max(0, Math.floor(p0))), c1 = Math.min(AL - 1, Math.max(c0, Math.ceil(p1) - 1));
+				for (let col = c0; col <= c1; col++) {
+					const ov = Math.max(0, Math.min(p1, col + 1) - Math.max(p0, col));
+					o.cov[col] += ov;
+					if (col === mid)
+						o.n[col]++;
+					if (ov >= o.best[col] || o.frame[col] < 0) {
+						o.best[col] = ov;
+						o.frame[col] = k;
+					}
+					if (a < o.t0[col]) o.t0[col] = a;
+					if (b > o.t1[col]) o.t1[col] = b;
 				}
-				if (a < o.t0[col]) o.t0[col] = a;
-				if (b > o.t1[col]) o.t1[col] = b;
+				continue;
 			}
-			continue;
+			{
+				const o = rowCov(r);
+				for (let col = Math.floor(p0); col < Math.min(AL, Math.ceil(p1)); col++)
+					o.full[col] = 1;
+			}
+			// A bookmarked function (K1): ★ before its name.
+			const bm = st.fr.node(k) < st.symName.length && bmFnNames(st.symStart[st.fr.node(k)]);
+			if (bm)
+				bmarked++;
+			const label = (bm ? "\u2605 " : "") + frameLabel(st, L, k);
+			const hit = q && label.toLowerCase().includes(q);
+			if (hit)
+				matches++;
+			ctx.fillStyle = frameColour(st, k);
+			ctx.globalAlpha = q ? (hit ? 1 : 0.18) : st.fr.irq(k) ? 0.6 : 0.9;
+			ctx.fillRect(x, y, Math.max(rw - 0.5, 0.5), Math.max(rh - 0.5, 0.5));
+			ctx.globalAlpha = 1;
+			if (k === G.selected) {
+				ctx.strokeStyle = fg;
+				ctx.lineWidth = 2;
+				ctx.strokeRect(x + 1, y + 1, rw - 2, rh - 2);
+			}
+			G.rects.push([k, x, y, rw, rh]);
+			drawn++;
+			if (G.transpose ? rh >= 13 : rw >= 40)
+				labels.push([k, x, y, rw, rh, label]);
+			if (r === cap && L.deepest[k] > L.row[k])
+				more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
 		}
-		{
-			const o = rowCov(r);
-			for (let col = Math.floor(p0); col < Math.min(AL, Math.ceil(p1)); col++)
-				o.full[col] = 1;
-		}
-		// A bookmarked function (K1): ★ before its name.
-		const bm = st.fr.node(k) < st.symName.length && bmFnNames(st.symStart[st.fr.node(k)]);
-		if (bm)
-			bmarked++;
-		const label = (bm ? "\u2605 " : "") + frameLabel(st, L, k);
-		const hit = q && label.toLowerCase().includes(q);
-		if (hit)
-			matches++;
-		ctx.fillStyle = frameColour(st, k);
-		ctx.globalAlpha = q ? (hit ? 1 : 0.18) : st.fr.irq(k) ? 0.6 : 0.9;
-		ctx.fillRect(x, y, Math.max(rw - 0.5, 0.5), Math.max(rh - 0.5, 0.5));
-		ctx.globalAlpha = 1;
-		if (k === G.selected) {
-			ctx.strokeStyle = fg;
-			ctx.lineWidth = 2;
-			ctx.strokeRect(x + 1, y + 1, rw - 2, rh - 2);
-		}
-		G.rects.push([k, x, y, rw, rh]);
-		drawn++;
-		if (G.transpose ? rh >= 13 : rw >= 40)
-			labels.push([k, x, y, rw, rh, label]);
-		if (r === cap && L.deepest[k] > L.row[k])
-			more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
 	}
 	// The merged sub-pixel columns, as runs of covered columns per row.
 	G.mergedHits = [];
@@ -611,7 +645,7 @@ function drawTimeline() {
 	// frames over the middle of the window.
 	if (!G.transpose && G.yOff > 0) {
 		const tm = (G.x0 + G.x1) / 2, hidden = [];
-		for (let k = 0; k < n; k++)
+		for (let k = 0, n = st.fr.n; k < n; k++)
 			if (L.isHead[k] && L.row[k] >= rowOff && st.fr.start(k) <= tm && fEnd(st, k) > tm &&
 				(focus < 0 || isUnder(st, k, focus))) {
 				const [, y] = rect(st.fr.start(k), fEnd(st, k), L.row[k] - rowOff);
@@ -986,48 +1020,56 @@ function drawTop() {
 		return;
 	}
 	const start = runStart();
+	const fr = st.fr, chunks = fr.chunkCount(), now = recTo(st), S = frScratch(0), E = frScratch(1);
+	const hide = G.fold ? FR_IRQ : 0; // hiddenFrame: a flag bit
 	// Inclusive count per symbol, counting only the outermost frame of each
 	// symbol on a path (recursion is not counted twice).
 	const incl = new Map();
-	const n = st.fr.n;
-	for (let k = 0; k < n; k++) {
-		if (st.fr.start(k) < start || hiddenFrame(st, k))
-			continue;
-		let p = st.fr.parent(k), rec = false;
-		while (p >= 0) {
-			if (st.fr.node(p) === st.fr.node(k)) { rec = true; break; }
-			p = st.fr.parent(p);
+	for (let c = 0; c < chunks; c++) {
+		fr.startsOf(c, S);
+		fr.endsOf(c, E);
+		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0, len = fr.chunkLen(c); i < len; i++) {
+			if (S[i] < start || (fl[i] & hide))
+				continue;
+			const node = nodes[i];
+			let p = par[i], rec = false;
+			while (p >= 0) {
+				if (fr.nodeOf(p) === node) { rec = true; break; }
+				p = fr.parentOf(p);
+			}
+			if (!rec)
+				incl.set(node, (incl.get(node) || 0) + (E[i] < 0 ? now : E[i]) - S[i]);
 		}
-		if (!rec)
-			incl.set(st.fr.node(k), (incl.get(st.fr.node(k)) || 0) + fEnd(st, k) - st.fr.start(k));
 	}
 	const shown = new Set([...incl].sort((a, b) => b[1] - a[1]).slice(0, 30).map(([id]) => id));
-	// Edges between shown symbols: from each shown frame to its nearest shown ancestor.
+	const shownFrame = (p) => shown.has(fr.nodeOf(p)) && !(fr.irqOf(p) && hide);
+	// Edges between shown symbols: from each shown frame to its nearest shown
+	// ancestor; the layer of a symbol: the fewest shown symbols above any of
+	// its frames.
 	const edges = new Map(), depth = new Map(), first = new Map();
-	for (let k = 0; k < n; k++) {
-		if (st.fr.start(k) < start || hiddenFrame(st, k) || !shown.has(st.fr.node(k)))
-			continue;
-		const id = st.fr.node(k);
-		if (!first.has(id))
-			first.set(id, st.fr.start(k));
-		let p = st.fr.parent(k);
-		while (p >= 0 && !(shown.has(st.fr.node(p)) && !hiddenFrame(st, p)))
-			p = st.fr.parent(p);
-		if (p >= 0 && st.fr.node(p) !== id && !st.fr.cont(k)) {
-			const key = st.fr.node(p) + "," + id;
-			edges.set(key, (edges.get(key) || 0) + 1);
+	for (let c = 0; c < chunks; c++) {
+		fr.startsOf(c, S);
+		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0, len = fr.chunkLen(c); i < len; i++) {
+			const id = nodes[i];
+			if (S[i] < start || (fl[i] & hide) || !shown.has(id))
+				continue;
+			if (!first.has(id))
+				first.set(id, S[i]);
+			let p = par[i];
+			while (p >= 0 && !shownFrame(p))
+				p = fr.parentOf(p);
+			if (p >= 0 && fr.nodeOf(p) !== id && !(fl[i] & FR_CONT)) {
+				const key = fr.nodeOf(p) + "," + id;
+				edges.set(key, (edges.get(key) || 0) + 1);
+			}
+			let d = 0;
+			for (; p >= 0; p = fr.parentOf(p))
+				if (shownFrame(p))
+					d++;
+			depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
 		}
-	}
-	// Layer of a symbol: the fewest shown symbols above any of its frames.
-	for (let k = 0; k < n; k++) {
-		if (st.fr.start(k) < start || hiddenFrame(st, k) || !shown.has(st.fr.node(k)))
-			continue;
-		let d = 0;
-		for (let q = st.fr.parent(k); q >= 0; q = st.fr.parent(q))
-			if (shown.has(st.fr.node(q)) && !hiddenFrame(st, q))
-				d++;
-		const id = st.fr.node(k);
-		depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
 	}
 	// Layout: rows by depth, ordered by first call, wrapped to the width.
 	const w = c.clientWidth;
@@ -1115,8 +1157,12 @@ function timelineDepth(st) {
 		d.push(st.fr.depth(k));
 		if (st.fr.depth(k) > max) max = st.fr.depth(k);
 	}
-	for (let k = 0; k < n; k++)
-		if (st.fr.depth(k) > max) max = st.fr.depth(k);
+	const D = frScratch(0);
+	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
+		st.fr.depthsOf(c, D);
+		for (let i = 0, len = st.fr.chunkLen(c); i < len; i++)
+			if (D[i] > max) max = D[i];
+	}
 	d.sort((a, b) => a - b);
 	G.depthKey = n;
 	G.depthVal = { max, p99: d[Math.floor(d.length * 0.99)] };

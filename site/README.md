@@ -951,7 +951,17 @@ as a colour emoji (also checked once in Firefox and WebKit):
   readers (Calls, call stack, unwinder, tests) use `fr.n` and
   `fr.start(k)`, `fr.end(k)` (-1 while open), `fr.node(k)`, `fr.depth(k)`,
   `fr.parent(k)`, `fr.irq(k)`, `fr.cont(k)`, `fr.child(k)`, `fr.esp(k)`,
-  `fr.task(k)`, `fr.from(k)`; a read past the end gives undefined. The
+  `fr.task(k)`, `fr.from(k)`; a read past the end gives undefined. Scans
+  over every frame (the timeline layout and drawing, Top 30, task names,
+  depth) go chunk by chunk (`fr.chunkCount()`, `fr.chunkLen(c)`,
+  `fr.parentsOf(c)`, `fr.nodesOf(c)`, `fr.flagsOf(c)`, and `fr.startsOf`,
+  `endsOf`, `depthsOf`, `tasksOf` decoding into a scratch array), and
+  walks up the parents use the unchecked `fr.parentOf(k)` and
+  `fr.nodeOf(k)`: read one call at a time these views took two to three
+  times as long as with plain arrays. Restoring a snapshot closes the
+  calls open at that moment first: closed later, at the snapshot's
+  earlier count, they ended before they began (negative counts in the
+  Calls tab). The
   timeline layout keeps a 16-bit row and deepest row per frame (32-bit
   only for a run deeper than 32,766 calls) and a head flag. Tests:
   `site/test_frames.mjs` (site job: random pushes, ends, truncations and
@@ -961,7 +971,8 @@ as a colour emoji (also checked once in Firefox and WebKit):
   graph, timeline layout, summary, task names, callers and callees and
   counts against `site/testdata/frames-golden.json`, made before the
   frames moved to typed arrays; at most 36 bytes a frame with a million
-  frames or more).
+  frames or more; and framegold_snapshot: a snapshot saved, stepped on,
+  restored and stepped on again leaves no call ending before its start).
 
   ESP unwinding (default; `?unwind=0` turns it off): every frame records
   the ESP it arrived with (just below its return address for a call).

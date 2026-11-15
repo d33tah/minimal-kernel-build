@@ -66,6 +66,31 @@ const compare = (fr, m, when) => {
 			return;
 		}
 	}
+	// The chunk scans the views use.
+	const S = new Float64Array(FR_SIZE), E = new Float64Array(FR_SIZE), T = new Float64Array(FR_SIZE), D = new Float64Array(FR_SIZE);
+	let seen = 0;
+	for (let c = 0; c < fr.chunkCount(); c++) {
+		fr.startsOf(c, S);
+		fr.endsOf(c, E);
+		fr.tasksOf(c, T);
+		fr.depthsOf(c, D);
+		for (let i = 0; i < fr.chunkLen(c); i++)
+			if (T[i] !== m.task[c * FR_SIZE + i] || D[i] !== m.depth[c * FR_SIZE + i]) {
+				fail(when + ": tasksOf/depthsOf differ at frame " + (c * FR_SIZE + i));
+				return;
+			}
+		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0; i < fr.chunkLen(c); i++, seen++) {
+			const k = c * FR_SIZE + i;
+			if (S[i] !== m.start[k] || E[i] !== m.end[k] || par[i] !== m.parent[k] || nodes[i] !== m.node[k] ||
+			    (fl[i] & 1) !== m.irq[k] || (fl[i] & 2) >> 1 !== m.cont[k] || fr.parentOf(k) !== m.parent[k]) {
+				fail(when + ": chunk scan differs at frame " + k);
+				return;
+			}
+		}
+	}
+	if (seen !== m.start.length)
+		fail(when + ": chunk scans saw " + seen + " frames, want " + m.start.length);
 	for (const k of [-1, m.start.length, m.start.length + 1, FR_SIZE * 3])
 		for (const f of FIELDS)
 			if (fr[f](k) !== undefined)

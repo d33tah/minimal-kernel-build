@@ -247,8 +247,13 @@ class Frames {
 	end(k) {
 		if (!(k >= 0 && k < this.n))
 			return undefined;
-		const e = this.cEnd[k >>> FR_BITS][k & FR_MASK];
-		return e === 0 ? -1 : e !== FR_BIG ? this.start(k) + e - 1 : this.endBig.get(k);
+		const c = k >>> FR_BITS, i = k & FR_MASK, e = this.cEnd[c][i];
+		if (e === 0)
+			return -1;
+		if (e === FR_BIG)
+			return this.endBig.get(k);
+		const d = this.cStart[c][i];
+		return (d !== FR_BIG ? this.base[c] + d : this.startBig.get(k)) + e - 1;
 	}
 
 	// Frame k ends at step t: its end, and its instructions go to its
@@ -301,8 +306,8 @@ class Frames {
 		return k >= 0 && k < this.n ? this.cEsp[k >>> FR_BITS][k & FR_MASK] : undefined;
 	}
 
-	// espOf, nodeOf, irqOf: the stepper's own reads of the frames on its
-	// stacks (k is always a stored frame), without the bounds check.
+	// espOf, nodeOf, parentOf, irqOf: reads of a frame known to be stored
+	// (the stepper's stacks, a walk up the parents), without the bounds check.
 	espOf(k) {
 		return this.cEsp[k >>> FR_BITS][k & FR_MASK];
 	}
@@ -311,8 +316,67 @@ class Frames {
 		return this.cNode[k >>> FR_BITS][k & FR_MASK];
 	}
 
+	parentOf(k) {
+		return this.cParent[k >>> FR_BITS][k & FR_MASK];
+	}
+
 	irqOf(k) {
 		return this.cFlags[k >>> FR_BITS][k & FR_MASK] & FR_IRQ;
+	}
+
+	// Scans over every frame (the Calls views) go chunk by chunk: frames
+	// c * FR_SIZE .. + chunkLen(c) - 1. parentsOf, nodesOf and flagsOf give
+	// the chunk's own arrays (the values as they are; irq is flag & FR_IRQ,
+	// cont is flag & FR_CONT), startsOf and endsOf decode into out (an
+	// array of FR_SIZE numbers), ends -1 while open.
+	chunkCount() {
+		return this.cStart.length;
+	}
+
+	chunkLen(c) {
+		return Math.max(0, Math.min(FR_SIZE, this.n - c * FR_SIZE));
+	}
+
+	parentsOf(c) {
+		return this.cParent[c];
+	}
+
+	nodesOf(c) {
+		return this.cNode[c];
+	}
+
+	flagsOf(c) {
+		return this.cFlags[c];
+	}
+
+	tasksOf(c, out) {
+		const d = this.cTask[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
+		for (let i = 0; i < len; i++)
+			out[i] = d[i] !== FR_BIG16 ? d[i] : this.taskBig.get(k0 + i);
+		return out;
+	}
+
+	depthsOf(c, out) {
+		const d = this.cDepth[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
+		for (let i = 0; i < len; i++)
+			out[i] = d[i] !== FR_BIG16 ? d[i] : this.depthBig.get(k0 + i);
+		return out;
+	}
+
+	startsOf(c, out) {
+		const d = this.cStart[c], base = this.base[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
+		for (let i = 0; i < len; i++)
+			out[i] = d[i] !== FR_BIG ? base + d[i] : this.startBig.get(k0 + i);
+		return out;
+	}
+
+	endsOf(c, out) {
+		const e = this.cEnd[c], d = this.cStart[c], base = this.base[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
+		for (let i = 0; i < len; i++) {
+			const x = e[i];
+			out[i] = x === 0 ? -1 : x !== FR_BIG ? (d[i] !== FR_BIG ? base + d[i] : this.startBig.get(k0 + i)) + x - 1 : this.endBig.get(k0 + i);
+		}
+		return out;
 	}
 
 	node(k) {

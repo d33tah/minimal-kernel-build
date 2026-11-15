@@ -325,10 +325,11 @@ class Frames {
 	}
 
 	// Scans over every frame (the Calls views) go chunk by chunk: frames
-	// c * FR_SIZE .. + chunkLen(c) - 1. parentsOf, nodesOf and flagsOf give
-	// the chunk's own arrays (the values as they are; irq is flag & FR_IRQ,
-	// cont is flag & FR_CONT), startsOf and endsOf decode into out (an
-	// array of FR_SIZE numbers), ends -1 while open.
+	// k = c * FR_SIZE + i, i < chunkLen(c), reading the chunk's own arrays.
+	// parentsOf and nodesOf hold the values; flagsOf the FR_* bits;
+	// startsRaw, endsRaw, depthsRaw and tasksRaw the stored form, which
+	// frStartAt, frEndAt and frSmallAt below turn into the values (only for
+	// the frames a scan uses: most views skip most frames).
 	chunkCount() {
 		return this.cStart.length;
 	}
@@ -349,34 +350,24 @@ class Frames {
 		return this.cFlags[c];
 	}
 
-	tasksOf(c, out) {
-		const d = this.cTask[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
-		for (let i = 0; i < len; i++)
-			out[i] = d[i] !== FR_BIG16 ? d[i] : this.taskBig.get(k0 + i);
-		return out;
+	baseOf(c) {
+		return this.base[c];
 	}
 
-	depthsOf(c, out) {
-		const d = this.cDepth[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
-		for (let i = 0; i < len; i++)
-			out[i] = d[i] !== FR_BIG16 ? d[i] : this.depthBig.get(k0 + i);
-		return out;
+	startsRaw(c) {
+		return this.cStart[c];
 	}
 
-	startsOf(c, out) {
-		const d = this.cStart[c], base = this.base[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
-		for (let i = 0; i < len; i++)
-			out[i] = d[i] !== FR_BIG ? base + d[i] : this.startBig.get(k0 + i);
-		return out;
+	endsRaw(c) {
+		return this.cEnd[c];
 	}
 
-	endsOf(c, out) {
-		const e = this.cEnd[c], d = this.cStart[c], base = this.base[c], len = this.chunkLen(c), k0 = c * FR_SIZE;
-		for (let i = 0; i < len; i++) {
-			const x = e[i];
-			out[i] = x === 0 ? -1 : x !== FR_BIG ? (d[i] !== FR_BIG ? base + d[i] : this.startBig.get(k0 + i)) + x - 1 : this.endBig.get(k0 + i);
-		}
-		return out;
+	depthsRaw(c) {
+		return this.cDepth[c];
+	}
+
+	tasksRaw(c) {
+		return this.cTask[c];
 	}
 
 	node(k) {
@@ -444,6 +435,71 @@ class Frames {
 		for (const m of [this.startBig, this.endBig, this.childBig, this.fromBig, this.depthBig, this.taskBig])
 			big += m.size;
 		return this.cStart.length * FR_SIZE * FR_BYTES + this.base.length * 8 + big * 64;
+	}
+}
+
+// Frame k = c * FR_SIZE + i read from its chunk's stored columns: its start
+// (base = baseOf(c), ds = startsRaw(c)), its end given that start s
+// (de = endsRaw(c); -1 while open), and its depth or task (d = depthsRaw(c)
+// or tasksRaw(c); get: "depth" or "task").
+const frStartAt = (fr, base, ds, i, k) => (ds[i] !== FR_BIG ? base + ds[i] : fr.start(k));
+const frEndAt = (fr, de, i, k, s) => (de[i] === 0 ? -1 : de[i] !== FR_BIG ? s + de[i] - 1 : fr.end(k));
+const frSmallAt = (fr, d, i, k, get) => (d[i] !== FR_BIG16 ? d[i] : fr[get](k));
+
+// A scan of the frames in order (k = 0, 1, ...) with each frame's callers
+// at hand: at[0..len-1] is the path from a root frame down to the frame
+// entered last (at[d] has depth d). A parent comes before its children and
+// is one shallower, so entering the next frame pops a few frames off the
+// path and pushes one; only a frame of another chain (another task's, after
+// a switch) walks up its parents, to the first one on the path. count[node]:
+// frames of that symbol on the path; marked[0..markedLen-1]: the frames on
+// the path pushed as marked (mark(k) for the ones a walk up pushes), nearest
+// last. Replaces a walk up the parents per frame.
+class FramePath {
+	constructor(fr, nodes, mark = null) {
+		const size = fr.maxDepth + 2;
+		this.fr = fr;
+		this.len = 0;
+		this.at = new Int32Array(size);
+		this.nodeAt = new Int32Array(size);
+		this.markAt = new Uint8Array(size);
+		this.count = new Int32Array(nodes);
+		this.mark = mark;
+		this.marked = new Int32Array(size);
+		this.markedLen = 0;
+	}
+
+	popTo(len) {
+		while (this.len > len) {
+			const d = --this.len;
+			this.count[this.nodeAt[d]]--;
+			this.markedLen -= this.markAt[d];
+		}
+	}
+
+	push(k, node, marked) {
+		const d = this.len++;
+		this.at[d] = k;
+		this.nodeAt[d] = node;
+		this.count[node]++;
+		this.markAt[d] = marked;
+		if (marked)
+			this.marked[this.markedLen++] = k;
+	}
+
+	// The path ends at frame p of depth dp (-1: at no frame): the parent of
+	// the frame entered next.
+	toParent(p, dp) {
+		if (p < 0 || (dp < this.len && this.at[dp] === p)) {
+			this.popTo(p < 0 ? 0 : dp + 1);
+			return;
+		}
+		const up = [];
+		for (; p >= 0 && !(dp < this.len && this.at[dp] === p); p = this.fr.parentOf(p), dp--)
+			up.push(p);
+		this.popTo(dp + 1);
+		for (let j = up.length - 1; j >= 0; j--)
+			this.push(up[j], this.fr.nodeOf(up[j]), this.mark ? this.mark(up[j]) : 0);
 	}
 }
 

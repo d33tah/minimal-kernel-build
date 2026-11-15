@@ -64,9 +64,6 @@ function graphReset(st) {
 // The run starts at the kernel entry once it has been reached.
 const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
 const fEnd = (st, k) => { const e = st.fr.end(k); return e < 0 ? recTo(st) : e; };
-// Reusable arrays of one chunk for Frames.startsOf / endsOf in scans.
-const FR_SCRATCH = [];
-const frScratch = (i) => FR_SCRATCH[i] || (FR_SCRATCH[i] = new Float64Array(FR_SIZE));
 // The count the recordings go to: after stepping back (R2) the stepper
 // is behind them, and the timeline still ends there, with now marked.
 const recTo = (st) => (st.behind && st.behind() ? st.ahead : st.steps);
@@ -121,9 +118,10 @@ function frameCounts(st, k) {
 // frames that start at or after the kernel entry. With more than one task
 // the outermost calls sit under a node per task (like perf's --sort comm).
 function buildTree(st) {
-	const start = runStart();
-	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: recTo(st) - start, self: 0, calls: 1, kids: new Map() };
-	const nodeOf = new Map(); // frame -> tree node
+	const start = runStart(), fr = st.fr, now = recTo(st);
+	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: now - start, self: 0, calls: 1, kids: new Map() };
+	// frame -> its tree node, an index into nodes (-1: none)
+	const nodeOf = new Int32Array(fr.n).fill(-1), nodes = [];
 	const tasks = st.taskCount > 1 ? taskInfo(st) : null;
 	const taskNode = (t) => {
 		let x = root.kids.get("@" + t);
@@ -133,32 +131,39 @@ function buildTree(st) {
 		}
 		return x;
 	};
-	for (let k = 0; k < st.fr.n; k++) {
-		if (st.fr.start(k) < start)
-			continue;
-		const p = st.fr.parent(k);
-		const top = !(p >= 0 && nodeOf.has(p));
-		let parent = top ? (tasks ? taskNode(st.fr.task(k)) : root) : nodeOf.get(p);
-		let name = st.nodeName(st.fr.node(k));
-		if (G.fold && st.fr.irq(k)) {
-			if (p >= 0 && st.fr.irq(p) && nodeOf.has(p)) { // inside a folded interrupt: count in it
-				nodeOf.set(k, nodeOf.get(p));
+	for (let c = 0, chunks = fr.chunkCount(); c < chunks; c++) {
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c);
+		const par = fr.parentsOf(c), sym = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
+			const s = frStartAt(fr, base, ds, i, k);
+			if (s < start)
 				continue;
+			const p = par[i], pt = p >= 0 ? nodeOf[p] : -1;
+			const top = pt < 0;
+			let parent = top ? (tasks ? taskNode(fr.task(k)) : root) : nodes[pt];
+			let name = st.nodeName(sym[i]);
+			if (G.fold && (fl[i] & FR_IRQ)) {
+				if (!top && fr.irqOf(p)) { // inside a folded interrupt: count in it
+					nodeOf[k] = pt;
+					continue;
+				}
+				name = "(interrupt and exception handling)";
 			}
-			name = "(interrupt and exception handling)";
+			let t = parent.kids.get(name);
+			if (!t) {
+				t = { key: parent.key + "/" + name, name, node: sym[i], incl: 0, self: 0, calls: 0, kids: new Map(), id: nodes.length };
+				nodes.push(t);
+				parent.kids.set(name, t);
+			}
+			// Inclusive count: open frames up to now (frameCounts).
+			const e = frEndAt(fr, de, i, k, s), incl = (e < 0 ? now : e) - s;
+			t.incl += incl;
+			if (top && tasks)
+				parent.incl += incl;
+			if (!(fl[i] & FR_CONT)) // a continuation is the same call, resumed
+				t.calls++;
+			nodeOf[k] = t.id;
 		}
-		let t = parent.kids.get(name);
-		if (!t) {
-			t = { key: parent.key + "/" + name, name, node: st.fr.node(k), incl: 0, self: 0, calls: 0, kids: new Map() };
-			parent.kids.set(name, t);
-		}
-		const c = frameCounts(st, k);
-		t.incl += c.incl;
-		if (top && tasks)
-			parent.incl += c.incl;
-		if (!st.fr.cont(k)) // a continuation is the same call, resumed
-			t.calls++;
-		nodeOf.set(k, t);
 	}
 	// self = incl - sum of children's incl
 	const fix = (t) => {
@@ -227,8 +232,10 @@ function timelineLayout(st) {
 		}
 	}
 	const chain = new Map(); // head -> names below it
+	const chains = G.chains;
 	for (let c = 0, k = 0; c < chunks; c++) {
 		const par = fr.parentsOf(c), fl = fr.flagsOf(c), len = fr.chunkLen(c);
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c);
 		for (let i = 0; i < len; i++, k++) {
 			if (fl[i] & hide)
 				continue;
@@ -238,10 +245,12 @@ function timelineLayout(st) {
 				isHead[k] = 1;
 				continue;
 			}
-			if (G.chains && kids[p] === 1) {
-				const ep = fr.end(p), ek = fr.end(k);
-				const incl = (ep < 0 ? now : ep) - fr.start(p);
-				const self = incl - fr.child(p) - (ep < 0 || ek < 0 ? (ek < 0 ? now : ek) - fr.start(k) : 0);
+			if (chains && kids[p] === 1) {
+				const pc = p >>> FR_BITS, pi = p & FR_MASK;
+				const sp = frStartAt(fr, fr.baseOf(pc), fr.startsRaw(pc), pi, p), ep = frEndAt(fr, fr.endsRaw(pc), pi, p, sp);
+				const sk = frStartAt(fr, base, ds, i, k), ek = frEndAt(fr, de, i, k, sk);
+				const incl = (ep < 0 ? now : ep) - sp;
+				const self = incl - fr.child(p) - (ep < 0 || ek < 0 ? (ek < 0 ? now : ek) - sk : 0);
 				if (self <= Math.max(2, incl * 0.01)) {
 					row[k] = row[p];
 					// The head of p's box: up through the frames in its chain.
@@ -305,16 +314,13 @@ function taskGuesses(st) {
 	const thunk = /^__x86_indirect_thunk/;
 	const fallback = new Array(st.taskCount).fill("");
 	const setup = /^(sched_setscheduler.*|housekeeping_.*|set_cpus_allowed.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
-	const T = frScratch(0), D = frScratch(1);
-	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
-		st.fr.tasksOf(c, T);
-		st.fr.depthsOf(c, D);
-		const fl = st.fr.flagsOf(c), nodes = st.fr.nodesOf(c);
-		for (let i = 0, len = st.fr.chunkLen(c); i < len; i++) {
-			const t = T[i];
-			if (names[t] || D[i] > 3 || (fl[i] & (FR_CONT | FR_IRQ)) || skip.test(st.nodeName(nodes[i])))
+	const fr = st.fr;
+	for (let c = 0, chunks = fr.chunkCount(); c < chunks; c++) {
+		const dt = fr.tasksRaw(c), dd = fr.depthsRaw(c), fl = fr.flagsOf(c), nodes = fr.nodesOf(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
+			const t = frSmallAt(fr, dt, i, k, "task");
+			if (names[t] || frSmallAt(fr, dd, i, k, "depth") > 3 || (fl[i] & (FR_CONT | FR_IRQ)) || skip.test(st.nodeName(nodes[i])))
 				continue;
-			const k = c * FR_SIZE + i;
 			let p = st.fr.parentOf(k), viaThunk = false;
 			while (p >= 0 && thunk.test(st.nodeName(st.fr.nodeOf(p)))) {
 				p = st.fr.parentOf(p);
@@ -388,15 +394,15 @@ function drawTimeline() {
 	const miniCol = [];
 	for (let r = 0; r <= 5; r++)
 		miniCol.push(new Int32Array(Math.ceil(w) + 1).fill(-1));
-	const now = recTo(st), S = frScratch(0), E = frScratch(1);
-	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
-		st.fr.startsOf(c, S);
-		st.fr.endsOf(c, E);
-		for (let i = 0, k = c * FR_SIZE, len = st.fr.chunkLen(c); i < len; i++, k++) {
+	const now = recTo(st), fr = st.fr, chunks = fr.chunkCount();
+	for (let c = 0; c < chunks; c++) {
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
 			const r = L.row[k] - rowOff;
 			if (r < 0 || r > 5 || !L.isHead[k] || (focus >= 0 && !isUnder(st, k, focus)))
 				continue;
-			const a = Math.max(S[i], t0), b = Math.min(E[i] < 0 ? now : E[i], t1);
+			const s = frStartAt(fr, base, ds, i, k), e = frEndAt(fr, de, i, k, s);
+			const a = Math.max(s, t0), b = Math.min(e < 0 ? now : e, t1);
 			if (b <= a)
 				continue;
 			const x = msx(a), ww = msx(b) - x;
@@ -472,27 +478,36 @@ function drawTimeline() {
 		}
 		return o;
 	};
-	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
-		st.fr.startsOf(c, S);
-		st.fr.endsOf(c, E);
-		for (let i = 0, k = c * FR_SIZE, len = st.fr.chunkLen(c); i < len; i++, k++) {
-			if (!L.isHead[k] || L.row[k] < 0)
+	// Every frame passes here, so the loop calls no function for most of
+	// them (this function is too big for V8 to inline tp, rect, rowCov or
+	// frStartAt into it): start and end decoded in place (as frStartAt and
+	// frEndAt do), tp and rect worked out inline, and the row's coverage
+	// looked up in an array.
+	const row = L.row, isHead = L.isHead, x0 = G.x0, x1 = G.x1, tr = G.transpose, flame = G.flame, xOff = G.xOff, yOff = G.yOff;
+	const covOf = [];
+	for (let c = 0; c < chunks; c++) {
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
+			if (!isHead[k] || row[k] < 0)
 				continue;
-			const r = L.row[k] - rowOff;
+			const r = row[k] - rowOff;
 			if (r < 0 || r > cap)
 				continue;
-			const a = S[i], b = E[i] < 0 ? now : E[i];
-			if (b < G.x0 || a > G.x1)
+			const a = ds[i] !== FR_BIG ? base + ds[i] : fr.start(k), e = de[i];
+			const b = e === 0 ? now : e !== FR_BIG ? a + e - 1 : fr.end(k);
+			if (b < x0 || a > x1)
 				continue;
 			if (focus >= 0 && !isUnder(st, k, focus))
 				continue;
-			const [x, y, rw, rh] = rect(a, b, r);
+			const p0 = Math.max(0, (a - x0) / span * along), p1 = Math.min(along, (b - x0) / span * along);
+			// rect(a, b, r)
+			const x = tr ? r * COL - xOff : p0, rw = tr ? COL - 1 : p1 - p0, rh = tr ? p1 - p0 : ROW - 1;
+			const y = tr ? areaTop + p0 : flame ? areaTop + areaH - (r + 1) * ROW + yOff : areaTop + r * ROW - yOff;
 			if (y + rh < areaTop || y > areaTop + areaH || x + rw < 0 || x > w)
 				continue;
-			const p0 = Math.max(0, tp(a)), p1 = Math.min(along, tp(b));
 			if (p1 - p0 < 1) {
 				// Every column it touches (one or two), counted once.
-				const o = rowCov(r), mid = Math.min(AL - 1, Math.max(0, Math.floor((p0 + p1) / 2)));
+				const o = covOf[r] || (covOf[r] = rowCov(r)), mid = Math.min(AL - 1, Math.max(0, Math.floor((p0 + p1) / 2)));
 				const c0 = Math.min(AL - 1, Math.max(0, Math.floor(p0))), c1 = Math.min(AL - 1, Math.max(c0, Math.ceil(p1) - 1));
 				for (let col = c0; col <= c1; col++) {
 					const ov = Math.max(0, Math.min(p1, col + 1) - Math.max(p0, col));
@@ -1012,6 +1027,69 @@ function drawTree() {
 
 // ---- top N graph ----------------------------------------------------------
 
+// The scans of Top 30, each its own small function so that V8 inlines the
+// FramePath and frStartAt calls into its loop (drawTop is too big for that).
+// Inclusive count per symbol (Map, in the order symbols were first
+// counted), counting only the outermost frame of each symbol on a path
+// (recursion is not counted twice); frames that start before `start` or
+// have a `hide` flag are not counted.
+function topIncl(fr, start, now, hide, symbols) {
+	const sum = new Float64Array(symbols), seen = new Uint8Array(symbols), order = [];
+	const path = new FramePath(fr, symbols);
+	for (let c = 0, chunks = fr.chunkCount(); c < chunks; c++) {
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c), dd = fr.depthsRaw(c);
+		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
+			const node = nodes[i], s = frStartAt(fr, base, ds, i, k);
+			path.toParent(par[i], frSmallAt(fr, dd, i, k, "depth") - 1);
+			if (s >= start && !(fl[i] & hide) && !path.count[node]) {
+				const e = frEndAt(fr, de, i, k, s);
+				if (!seen[node]) {
+					seen[node] = 1;
+					order.push(node);
+				}
+				sum[node] += (e < 0 ? now : e) - s;
+			}
+			path.push(k, node, 0);
+		}
+	}
+	return new Map(order.map((id) => [id, sum[id]]));
+}
+
+// Edges between the shown symbols (Map from * symbols + to -> count): from
+// each shown frame to its nearest shown ancestor; depth: the layer of a
+// symbol, the fewest shown symbols above any of its frames; first: the
+// start of its first frame. The path marks the shown frames (hidden ones
+// are not).
+function topEdges(fr, start, hide, symbols, shown) {
+	const shownNode = new Uint8Array(symbols);
+	for (const id of shown)
+		shownNode[id] = 1;
+	const edges = new Map(), depth = new Map(), first = new Map();
+	const path = new FramePath(fr, symbols, (q) => (shownNode[fr.nodeOf(q)] && !(fr.irqOf(q) && hide) ? 1 : 0));
+	for (let c = 0, chunks = fr.chunkCount(); c < chunks; c++) {
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), dd = fr.depthsRaw(c);
+		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++) {
+			const id = nodes[i], show = shownNode[id] && !(fl[i] & hide) ? 1 : 0;
+			path.toParent(par[i], frSmallAt(fr, dd, i, k, "depth") - 1);
+			const s = show ? frStartAt(fr, base, ds, i, k) : 0;
+			if (show && s >= start) {
+				if (!first.has(id))
+					first.set(id, s);
+				const d = path.markedLen, p = d ? path.marked[d - 1] : -1;
+				if (p >= 0 && fr.nodeOf(p) !== id && !(fl[i] & FR_CONT)) {
+					const key = fr.nodeOf(p) * symbols + id;
+					edges.set(key, (edges.get(key) || 0) + 1);
+				}
+				depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
+			}
+			path.push(k, id, show);
+		}
+	}
+	return { edges, depth, first };
+}
+
 function drawTop() {
 	const st = G.stepper;
 	const c = $("graph_canvas");
@@ -1019,58 +1097,11 @@ function drawTop() {
 		canvasSize(c, 200);
 		return;
 	}
-	const start = runStart();
-	const fr = st.fr, chunks = fr.chunkCount(), now = recTo(st), S = frScratch(0), E = frScratch(1);
+	const start = runStart(), symbols = st.nodeSteps.length;
 	const hide = G.fold ? FR_IRQ : 0; // hiddenFrame: a flag bit
-	// Inclusive count per symbol, counting only the outermost frame of each
-	// symbol on a path (recursion is not counted twice).
-	const incl = new Map();
-	for (let c = 0; c < chunks; c++) {
-		fr.startsOf(c, S);
-		fr.endsOf(c, E);
-		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
-		for (let i = 0, len = fr.chunkLen(c); i < len; i++) {
-			if (S[i] < start || (fl[i] & hide))
-				continue;
-			const node = nodes[i];
-			let p = par[i], rec = false;
-			while (p >= 0) {
-				if (fr.nodeOf(p) === node) { rec = true; break; }
-				p = fr.parentOf(p);
-			}
-			if (!rec)
-				incl.set(node, (incl.get(node) || 0) + (E[i] < 0 ? now : E[i]) - S[i]);
-		}
-	}
+	const incl = topIncl(st.fr, start, recTo(st), hide, symbols);
 	const shown = new Set([...incl].sort((a, b) => b[1] - a[1]).slice(0, 30).map(([id]) => id));
-	const shownFrame = (p) => shown.has(fr.nodeOf(p)) && !(fr.irqOf(p) && hide);
-	// Edges between shown symbols: from each shown frame to its nearest shown
-	// ancestor; the layer of a symbol: the fewest shown symbols above any of
-	// its frames.
-	const edges = new Map(), depth = new Map(), first = new Map();
-	for (let c = 0; c < chunks; c++) {
-		fr.startsOf(c, S);
-		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
-		for (let i = 0, len = fr.chunkLen(c); i < len; i++) {
-			const id = nodes[i];
-			if (S[i] < start || (fl[i] & hide) || !shown.has(id))
-				continue;
-			if (!first.has(id))
-				first.set(id, S[i]);
-			let p = par[i];
-			while (p >= 0 && !shownFrame(p))
-				p = fr.parentOf(p);
-			if (p >= 0 && fr.nodeOf(p) !== id && !(fl[i] & FR_CONT)) {
-				const key = fr.nodeOf(p) + "," + id;
-				edges.set(key, (edges.get(key) || 0) + 1);
-			}
-			let d = 0;
-			for (; p >= 0; p = fr.parentOf(p))
-				if (shownFrame(p))
-					d++;
-			depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
-		}
-	}
+	const { edges, depth, first } = topEdges(st.fr, start, hide, symbols, shown);
 	// Layout: rows by depth, ordered by first call, wrapped to the width.
 	const w = c.clientWidth;
 	const ctxm = c.getContext("2d");
@@ -1105,8 +1136,7 @@ function drawTop() {
 	ctx.textBaseline = "middle";
 	ctx.strokeStyle = muted;
 	for (const [key, count] of edges) {
-		const [a, b] = key.split(",").map(Number);
-		const pa = pos.get(a), pb = pos.get(b);
+		const pa = pos.get(Math.floor(key / symbols)), pb = pos.get(key % symbols);
 		ctx.lineWidth = 0.8 + Math.log2(count) * 0.5;
 		ctx.globalAlpha = pb.y > pa.y ? 0.6 : 0.25; // upward: a symbol also called from deeper down
 		ctx.setLineDash(pb.y > pa.y ? [] : [4, 3]);
@@ -1153,15 +1183,14 @@ function timelineDepth(st) {
 	const step = Math.max(1, Math.floor(n / 200000));
 	const d = [];
 	let max = 0;
-	for (let k = 0; k < n; k += step) {
+	for (let k = 0; k < n; k += step)
 		d.push(st.fr.depth(k));
-		if (st.fr.depth(k) > max) max = st.fr.depth(k);
-	}
-	const D = frScratch(0);
-	for (let c = 0, chunks = st.fr.chunkCount(); c < chunks; c++) {
-		st.fr.depthsOf(c, D);
-		for (let i = 0, len = st.fr.chunkLen(c); i < len; i++)
-			if (D[i] > max) max = D[i];
+	const fr = st.fr;
+	for (let c = 0, chunks = fr.chunkCount(); c < chunks; c++) {
+		const dd = fr.depthsRaw(c);
+		for (let i = 0, k = c * FR_SIZE, len = fr.chunkLen(c); i < len; i++, k++)
+			if (dd[i] > max || dd[i] === FR_BIG16)
+				max = Math.max(max, frSmallAt(fr, dd, i, k, "depth"));
 	}
 	d.sort((a, b) => a - b);
 	G.depthKey = n;

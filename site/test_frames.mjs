@@ -14,8 +14,8 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(path.join(here, "jumps.js"), "utf8") + "\n" +
 	fs.readFileSync(path.join(here, "stepper.js"), "utf8") +
-	"\nthis.T = { Frames, FR_SIZE, FR_BYTES };", ctx);
-const { Frames, FR_SIZE, FR_BYTES } = ctx.T;
+	"\nthis.T = { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath };", ctx);
+const { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath } = ctx.T;
 
 const rounds = Number(process.argv[2] || 40);
 let seed = 4242;
@@ -67,22 +67,14 @@ const compare = (fr, m, when) => {
 		}
 	}
 	// The chunk scans the views use.
-	const S = new Float64Array(FR_SIZE), E = new Float64Array(FR_SIZE), T = new Float64Array(FR_SIZE), D = new Float64Array(FR_SIZE);
 	let seen = 0;
 	for (let c = 0; c < fr.chunkCount(); c++) {
-		fr.startsOf(c, S);
-		fr.endsOf(c, E);
-		fr.tasksOf(c, T);
-		fr.depthsOf(c, D);
-		for (let i = 0; i < fr.chunkLen(c); i++)
-			if (T[i] !== m.task[c * FR_SIZE + i] || D[i] !== m.depth[c * FR_SIZE + i]) {
-				fail(when + ": tasksOf/depthsOf differ at frame " + (c * FR_SIZE + i));
-				return;
-			}
+		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c), dd = fr.depthsRaw(c), dt = fr.tasksRaw(c);
 		const par = fr.parentsOf(c), nodes = fr.nodesOf(c), fl = fr.flagsOf(c);
 		for (let i = 0; i < fr.chunkLen(c); i++, seen++) {
-			const k = c * FR_SIZE + i;
-			if (S[i] !== m.start[k] || E[i] !== m.end[k] || par[i] !== m.parent[k] || nodes[i] !== m.node[k] ||
+			const k = c * FR_SIZE + i, s = frStartAt(fr, base, ds, i, k);
+			if (s !== m.start[k] || frEndAt(fr, de, i, k, s) !== m.end[k] || par[i] !== m.parent[k] || nodes[i] !== m.node[k] ||
+			    frSmallAt(fr, dd, i, k, "depth") !== m.depth[k] || frSmallAt(fr, dt, i, k, "task") !== m.task[k] ||
 			    (fl[i] & 1) !== m.irq[k] || (fl[i] & 2) >> 1 !== m.cont[k] || fr.parentOf(k) !== m.parent[k]) {
 				fail(when + ": chunk scan differs at frame " + k);
 				return;
@@ -91,6 +83,34 @@ const compare = (fr, m, when) => {
 	}
 	if (seen !== m.start.length)
 		fail(when + ": chunk scans saw " + seen + " frames, want " + m.start.length);
+	// FramePath: at each frame, its callers as a walk up the model's parents
+	// sees them (symbols counted, the marked ones nearest last); the walk on
+	// every 97th frame (the chains are thousands deep), length and parent
+	// on all.
+	const mark = (q) => (m.node[q] % 3 === 0 && !m.irq[q] ? 1 : 0);
+	const path = new FramePath(fr, 70000, mark);
+	for (let k = 0; k < m.start.length; k++) {
+		path.toParent(m.parent[k], m.depth[k] - 1);
+		if (path.len !== m.depth[k] || (m.parent[k] >= 0 && path.at[path.len - 1] !== m.parent[k])) {
+			fail(when + ": FramePath at frame " + k + ": length " + path.len + ", want " + m.depth[k]);
+			return;
+		}
+		if (k % 97) {
+			path.push(k, m.node[k], mark(k));
+			continue;
+		}
+		const up = [];
+		for (let p = m.parent[k]; p >= 0; p = m.parent[p])
+			up.push(p);
+		const marked = up.filter((p) => mark(p)).reverse();
+		const same = up.filter((p) => m.node[p] === m.node[k]).length;
+		if (path.len !== up.length || path.count[m.node[k]] !== same || path.markedLen !== marked.length ||
+		    marked.some((p, j) => path.marked[j] !== p) || up.some((p, j) => path.at[up.length - 1 - j] !== p)) {
+			fail(when + ": FramePath differs at frame " + k + " (path " + path.len + ", callers " + up.length + ")");
+			return;
+		}
+		path.push(k, m.node[k], mark(k));
+	}
 	for (const k of [-1, m.start.length, m.start.length + 1, FR_SIZE * 3])
 		for (const f of FIELDS)
 			if (fr[f](k) !== undefined)

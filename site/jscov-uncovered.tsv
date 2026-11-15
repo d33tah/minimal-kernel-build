@@ -173,20 +173,20 @@ genworker.js	93	566a07df	E1 track: an import with more than 20,000 symbols and t
 genworker.js	111	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
 genworker.js	120-121	39d9b74e	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
 genworker.js	152	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
-graph.js	99	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
-graph.js	138	342f9a4d	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
-graph.js	320-322	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
-graph.js	329	9c01859a	sometimes: taskInfo's fallback name (kthread's last other call, without retpolines): a kthread whose thread function is reached neither from ret_from_fork nor through a thunk; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and recorded one in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	361	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
-graph.js	401	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	488	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
-graph.js	620	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	842	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
-graph.js	891	b109a5bb	timelineSummary without a stepper: a test-only helper (graph_check) always called after a run
-graph.js	897	21e02933	timelineSummary's skip of frames that end before the entry: as line 135, there are none
-graph.js	943	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
-graph.js	1019-1021	621631a0	drawTop without a stepper: as line 326
-graph.js	1333-1334	00098c34	"called from unknown" in the Calls info: a frame has no caller address only when the first instruction the stepper ever ran starts it; pages start at the reset vector (BIOS, no symbol) and Run to steps its last instructions, so no shipped flow records one (checked: 0 in a whole minified run, 0 after Run to hello_main and 40 steps)
+graph.js	96	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
+graph.js	140	8cefeadf	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
+graph.js	326-328	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
+graph.js	335	9c01859a	sometimes: taskInfo's fallback name (kthread's last other call, without retpolines): a kthread whose thread function is reached neither from ret_from_fork nor through a thunk; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and recorded one in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	367	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
+graph.js	407	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	501	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
+graph.js	635	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	857	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
+graph.js	906	b109a5bb	timelineSummary without a stepper: a test-only helper (graph_check) always called after a run
+graph.js	912	21e02933	timelineSummary's skip of frames that end before the entry: as line 135, there are none
+graph.js	958	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
+graph.js	1097-1099	621631a0	drawTop without a stepper: as line 326
+graph.js	1362-1363	00098c34	"called from unknown" in the Calls info: a frame has no caller address only when the first instruction the stepper ever ran starts it; pages start at the reset vector (BIOS, no symbol) and Run to steps its last instructions, so no shipped flow records one (checked: 0 in a whole minified run, 0 after Run to hello_main and 40 steps)
 jumps.js	146	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
 jumps.js	576	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
 jumps.js	685-686	70f8592d	a path whose other end has no physical address: every recorded and static transfer of the shipped kernels lands in RAM
@@ -334,30 +334,30 @@ stepper.js	272	ca91f405	Frames.setEnd on a frame whose end is in the overflow Ma
 stepper.js	277-279	4ee87896	sometimes: Frames.setEnd with an end before the frame's start (or a span of 2^32 instructions or more): ran in run 43729203909 in the snapdiff,bookmarks,deltasnap job only, where a snapshot restored at an earlier count left calls open at the later one and they were closed at the earlier count; restoreSnapshot now closes them first (regression check: suite framegold, framegold_snapshot), and no other flow is known to reach it; site/test_frames.mjs runs it
 stepper.js	293-295	4d24a0bd	sometimes: Frames.addChild to a count in the overflow Map: a parent whose children count went out of range (see 300-302) gets another closed child; ran with 277-279; site/test_frames.mjs runs it
 stepper.js	300-302	980f7d95	sometimes: Frames.addChild leaving a children count outside 0 to 2^32 - 2: a child closed before its start (see 277-279) adds a negative count; ran with 277-279; site/test_frames.mjs runs it
-stepper.js	431-432	498e3eb4	sometimes: Frames.truncate dropping overflow entries: needs a frame with a value in an overflow Map (an end before its start, see 277-279, or a start past 2^32, see 204-206) dropped by branch(); not run in any run seen so far; site/test_frames.mjs runs it
-stepper.js	605	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
-stepper.js	660-661	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
-stepper.js	726	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)
-stepper.js	733-735	2832862f	frames stop when the JS heap is 80% full (performance.memory): no shipped kernel's run comes near it
-stepper.js	768	ca2b0f3b	closeStack's loop over a stack outside the lanes: only with ?unwind=0 (no ESP unwinding), which no suite uses
-stepper.js	880-882	e676ab6c	countIn over addresses above the seen bitmap (beyond RAM): the views count only RAM ranges
-stepper.js	944	9b872421	jumpAfter classifying ud2 (0f 0b, 0f b9, 0f ff): executed only on BUG()/WARN() paths, which the shipped kernels do not take while stepped
-stepper.js	955	a26f520d	jumpAfter's into (0xce): the shipped kernels do not execute it while stepped
-stepper.js	1105-1109	ae1d0681	unrewind: a snapshot restored while stepped back with recordings ahead; the snapdiff, deltasnap and reverse suites restore snapshots only when not behind
-stepper.js	1123	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
-stepper.js	1139	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
-stepper.js	1150	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
-stepper.js	1218-1220	ec4eac36	wasm memory grown during record() (typed arrays detached): v86 allocates the guest RAM up front and its memory does not grow while stepping the shipped kernels
-stepper.js	1225-1227	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor 43611610762
-stepper.js	1265-1267	21db661f	sometimes: the wasm memory replaced between two steps (typed arrays detached; as 934-936, after the fetch): the quests suite's Step after go there with the live memory map open ran it on d-claude (the map's write tracking allocates in v86.wasm); other runs do not grow the memory while stepping
-stepper.js	1270	c540c46d	an instruction fetch fault with no pending jump record: not reached while the shipped kernels are stepped
-stepper.js	1297-1299	21db661f	as 927-929, after mkb_run
-stepper.js	1337-1339	892e9009	an instruction above the seen bitmap (beyond RAM): the shipped kernels and the BIOS run nothing there while stepped
-stepper.js	1356	1b095765	as 927-929, at the end of record()
-stepper.js	1389	b61b9bc1	as 927-929, in rerun()
-stepper.js	1403	01be68f7	rerun() reaching a halt while re-running: the reverse suite's re-runs (hello, minified Linux, Debian before its idle loop) contain no hlt
-stepper.js	1415	b61b9bc1	as 927-929, in rerun() after mkb_read_imm8
-stepper.js	1425	b61b9bc1	as 927-929, in rerun() after mkb_run
+stepper.js	422-423	498e3eb4	sometimes: Frames.truncate dropping overflow entries: needs a frame with a value in an overflow Map (an end before its start, see 277-279, or a start past 2^32, see 204-206) dropped by branch(); not run in any run seen so far; site/test_frames.mjs runs it
+stepper.js	661	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
+stepper.js	716-717	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
+stepper.js	782	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)
+stepper.js	789-791	2832862f	frames stop when the JS heap is 80% full (performance.memory): no shipped kernel's run comes near it
+stepper.js	824	ca2b0f3b	closeStack's loop over a stack outside the lanes: only with ?unwind=0 (no ESP unwinding), which no suite uses
+stepper.js	936-938	e676ab6c	countIn over addresses above the seen bitmap (beyond RAM): the views count only RAM ranges
+stepper.js	1000	9b872421	jumpAfter classifying ud2 (0f 0b, 0f b9, 0f ff): executed only on BUG()/WARN() paths, which the shipped kernels do not take while stepped
+stepper.js	1011	a26f520d	jumpAfter's into (0xce): the shipped kernels do not execute it while stepped
+stepper.js	1161-1165	ae1d0681	unrewind: a snapshot restored while stepped back with recordings ahead; the snapdiff, deltasnap and reverse suites restore snapshots only when not behind
+stepper.js	1179	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
+stepper.js	1195	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
+stepper.js	1206	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
+stepper.js	1274-1276	ec4eac36	wasm memory grown during record() (typed arrays detached): v86 allocates the guest RAM up front and its memory does not grow while stepping the shipped kernels
+stepper.js	1281-1283	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor 43611610762
+stepper.js	1321-1323	21db661f	sometimes: the wasm memory replaced between two steps (typed arrays detached; as 934-936, after the fetch): the quests suite's Step after go there with the live memory map open ran it on d-claude (the map's write tracking allocates in v86.wasm); other runs do not grow the memory while stepping
+stepper.js	1326	c540c46d	an instruction fetch fault with no pending jump record: not reached while the shipped kernels are stepped
+stepper.js	1353-1355	21db661f	as 927-929, after mkb_run
+stepper.js	1393-1395	892e9009	an instruction above the seen bitmap (beyond RAM): the shipped kernels and the BIOS run nothing there while stepped
+stepper.js	1412	1b095765	as 927-929, at the end of record()
+stepper.js	1445	b61b9bc1	as 927-929, in rerun()
+stepper.js	1459	01be68f7	rerun() reaching a halt while re-running: the reverse suite's re-runs (hello, minified Linux, Debian before its idle loop) contain no hlt
+stepper.js	1471	b61b9bc1	as 927-929, in rerun() after mkb_read_imm8
+stepper.js	1481	b61b9bc1	as 927-929, in rerun() after mkb_run
 sw.js	163	d154bd52	sometimes: keepPage skips storing when the storage estimate is above 80% of the quota: a test cannot shrink the origin's quota for a service worker, and the quota follows the runner's free disk (ran in run 43628096699)
 symimport.js	44	1ab3716f	parseElf reads only the ranges elfSlices fetched (header, program and section headers, .shstrtab, .symtab and its string table); an invariant check
 symimport.js	386	af4b876c	localStorage throwing while an import is forgotten: storage that throws there is tested elsewhere (the page keeps no data), this catch only logs nothing

@@ -952,13 +952,21 @@ as a colour emoji (also checked once in Firefox and WebKit):
   `fr.start(k)`, `fr.end(k)` (-1 while open), `fr.node(k)`, `fr.depth(k)`,
   `fr.parent(k)`, `fr.irq(k)`, `fr.cont(k)`, `fr.child(k)`, `fr.esp(k)`,
   `fr.task(k)`, `fr.from(k)`; a read past the end gives undefined. Scans
-  over every frame (the timeline layout and drawing, Top 30, task names,
-  depth) go chunk by chunk (`fr.chunkCount()`, `fr.chunkLen(c)`,
-  `fr.parentsOf(c)`, `fr.nodesOf(c)`, `fr.flagsOf(c)`, and `fr.startsOf`,
-  `endsOf`, `depthsOf`, `tasksOf` decoding into a scratch array), and
-  walks up the parents use the unchecked `fr.parentOf(k)` and
-  `fr.nodeOf(k)`: read one call at a time these views took two to three
-  times as long as with plain arrays. Restoring a snapshot closes the
+  over every frame (the timeline layout and drawing, call tree, Top 30,
+  task names, depth) go chunk by chunk (`fr.chunkCount()`,
+  `fr.chunkLen(c)`, `fr.parentsOf(c)`, `fr.nodesOf(c)`, `fr.flagsOf(c)`,
+  and the stored columns `fr.baseOf`, `startsRaw`, `endsRaw`, `depthsRaw`,
+  `tasksRaw`, which `frStartAt`, `frEndAt` and `frSmallAt` turn into
+  values only for the frames a view uses), and walks up the parents use
+  the unchecked `fr.parentOf(k)` and `fr.nodeOf(k)`: read one call at a
+  time these views took two to three times as long as with plain arrays.
+  Top 30 keeps the callers of the frame it scans in a `FramePath` (the
+  path from the root, symbols counted on it, the shown frames on it)
+  instead of walking up the parents of every frame, the call tree maps
+  frames to its nodes in an Int32Array, and the timeline's loop over all
+  frames calls no function per frame (drawTimeline is too big for V8 to
+  inline its helpers): with 2.7 million Debian frames every one of these
+  views is faster than it was with plain arrays. Restoring a snapshot closes the
   calls open at that moment first: closed later, at the snapshot's
   earlier count, they ended before they began (negative counts in the
   Calls tab). The

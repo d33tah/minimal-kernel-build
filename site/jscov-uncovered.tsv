@@ -220,6 +220,7 @@ memevents.js	605	c8b06019	restored() without a log or without a stepper: cpustat
 memevents.js	735	3bff6978	panel() without the #mev element: index.html has it
 memmap.js	230	a33b63c5	a zero-length segment between two equal edges: edges come from a Set, so two consecutive edges never repeat; defensive
 memmap.js	235	601a5d26	not run by the memmap suite yet (M track: a test would need two neighbouring segments named by the same region (a region split by another one inside it that ends where it starts); the shipped machines' regions do not touch that way)
+memmap.js	440-441	065a9f1a	sometimes: only first touch lighting a region for a sample of CPU RAM writes that is the first touch of that region: in the memmap suite whether such a sample is still to be applied after #mm_first is checked depends on the runner's frame timing; ran in run 43672893701 and the runs before it, not in 43682889014 (memmap.js and its suite unchanged in between)
 memmap.js	448	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
 memmap.js	454	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
 memmap.js	462-471	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)

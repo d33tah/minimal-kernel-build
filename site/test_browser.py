@@ -18759,6 +18759,175 @@ def suite_reverse(ctx):
     return reverse_case(ctx.browser, ctx.base, ctx.shots, entries)
 
 
+# ---- framegold: the Calls recordings against a golden (P1b) -----------------------
+# The stepper's call frames and everything the Calls tab derives from them
+# (call tree, the top graph, timeline layout rows, summary, depth, task
+# names, callers/callees, frame counts) on a fixed stepped run: Run to the
+# kernel entry, step to A, step back and branch there (B: the recordings
+# past it are dropped, Stepper.branch), step on (C), and for the minified
+# Linux on past its task switch (D). Runs on the virtual clock repeat
+# exactly (the minified Linux from the reset vector, Debian with the JIT to
+# startup_32). Each part is a hash compared with
+# site/testdata/frames-golden.json: how the frames are stored must not
+# change one number of what is shown. The golden belongs to the kernel it
+# was made with (bzImage SHA-256): a new kernel needs a new golden, written
+# with MKB_FRAMEGOLD_WRITE=1 from code whose Calls output is trusted.
+FRAMEGOLD = SITE / "testdata" / "frames-golden.json"
+# kernel: (URL params, Run to, then counts from there: A, back from A to B,
+# on from B to C, D or 0). The minified Linux's D is past its one task
+# switch, just before its end; its step back stays before ~1.75 M (later
+# checkpoints fail to re-run there: a v86 stack overflow). Debian's A has
+# millions of frames, tens of tasks and hundreds of switches and
+# continuations, some of them dropped by the branch.
+FRAMEGOLD_CASES = {
+    "minified-linux": ("fastforward=0&revk=20000", "0x100000", 300000, 100000, 80000, 722000),
+    "debian-6.1-686": ("", "startup_32", 75000000, 5000000, 3000000, 0),
+}
+FRAMEGOLD_JS = """async () => {
+  const st = stepper, n = st.fStart.length;
+  const hex = (b) => Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, '0')).join('');
+  const sha = async (o) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(o))));
+  // Two 32-bit FNV-1a lanes over the low and high 32 bits of integers.
+  const lanes = () => [0x811c9dc5, 0x2f6b9a1d];
+  const mix = (a, x) => { const lo = x >>> 0, hi = Math.floor(x / 4294967296) | 0;
+    a[0] = Math.imul(a[0] ^ lo, 16777619) >>> 0; a[0] = Math.imul(a[0] ^ hi, 16777619) >>> 0;
+    a[1] = Math.imul(a[1] ^ hi, 16777619) >>> 0; a[1] = Math.imul(a[1] ^ lo, 2246822519) >>> 0; };
+  const fin = (a) => a[0].toString(16).padStart(8, '0') + a[1].toString(16).padStart(8, '0');
+  const COLS = ['start', 'end', 'node', 'depth', 'parent', 'irq', 'cont', 'child', 'esp', 'task', 'from'];
+  const col = (k) => [st.fStart[k], st.fEnd[k], st.fNode[k], st.fDepth[k], st.fParent[k], st.fIrq[k], st.fCont[k], st.fChild[k],
+                      st.fEsp[k], st.fTask[k], st.fFrom[k]];
+  const h = COLS.map(lanes), bad = [];
+  for (let k = 0; k < n; k++) {
+    const v = col(k);
+    for (let c = 0; c < v.length; c++) {
+      const x = v[c];
+      if (typeof x !== 'number' || !Number.isInteger(x)) { if (bad.length < 5) bad.push([k, COLS[c], String(x)]); continue; }
+      mix(h[c], x);
+    }
+  }
+  const out = { steps: st.steps, frames: n, contFrames: st.contFrames, tasks: st.taskCount, task: st.task,
+    switches: st.swStep.length, bad, cols: {} };
+  COLS.forEach((c, i) => { out.cols[c] = fin(h[i]); });
+  out.state = await sha({ stack: st.stack, lanes: [...st.lanes], lane: st.lane, lastTop: st.lastTop, open: st.allOpen(),
+    suspended: [...st.suspended], sw: [st.swStep, st.swTask, st.swIrq], taskOf: [...st.taskOf], taskRegion: st.taskRegion });
+  const saved = [G.fold, G.chains];
+  let rows = 0;
+  for (const fold of [false, true]) {
+    G.fold = fold;
+    G.taskNames = null; G.taskInfo = null; G.depthKey = -1;
+    const d = graphData();
+    out['tree_' + fold] = await sha(d.call_tree);
+    out['graph_' + fold] = await sha([d.steps, d.entry_step, d.nodes, d.edges]);
+    for (const chains of [false, true]) {
+      G.chains = chains; G.layout = null;
+      const L = timelineLayout(st), a = lanes();
+      for (let k = 0; k < n; k++) {
+        mix(a, L.row[k]); mix(a, L.head[k] === k ? 1 : 0); mix(a, L.deepest[k]);
+        if (L.row[k] + 1 > rows) rows = L.row[k] + 1;
+      }
+      out['layout_' + fold + '_' + chains] = fin(a) + ':' + await sha([...L.chain]);
+    }
+    drawTop();
+    out['top_' + fold] = await sha([G.boxes.map((b) => b[0]), document.getElementById('graph_canvas').dataset.edges]);
+    out['summary_' + fold] = await sha([timelineSummary(), timelineDepth(st), taskGuesses(st)]);
+  }
+  [G.fold, G.chains] = saved; G.layout = null; G.taskNames = null; G.taskInfo = null; G.depthKey = -1;
+  out.rows = rows;
+  const top = st.nodeOrder.slice().sort((a, b) => st.nodeSteps[b] - st.nodeSteps[a] || a - b).slice(0, 12);
+  out.sandwich = await sha(top.map((x) => sandwich(st, x)));
+  const counts = [];
+  for (let k = 0; k < n; k += Math.max(1, Math.floor(n / 5000))) counts.push(frameCounts(st, k));
+  for (const k of st.allOpen()) counts.push(frameCounts(st, k));
+  out.counts = await sha(counts);
+  return out; }"""
+FRAMEGOLD_SUMMARY = ("steps", "frames", "contFrames", "tasks", "switches", "rows")
+
+
+def framegold_kernel(browser, base, name, case):
+    """(problems, the digests at A, B, C and D (see FRAMEGOLD_CASES))."""
+    params, first, to, back, more, last = case
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    problems, d = [], {}
+    try:
+        page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10&{params}#debugger", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+            return [f"{name}: did not start paused"], d
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        t0 = time.monotonic()
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", first)
+        page.click("#dbg_runto")
+        want_at = int(first, 16) if first.startswith("0x") else page.evaluate(f"symbols.symbols.find((s) => s.name === '{first}' && s.paddr >= 0x100000).paddr")
+        ok, at, status = run_to_wait(page, {want_at}, 600)
+        if not ok:
+            return [f"{name}: Run to {first} stopped at {at:#x}: {status[:200]}"], d
+        s0 = page.evaluate("stepper.steps")
+        show_tab(page, "calls")
+
+        def at(w, target):
+            if rev_step_to(page, s0 + target) != s0 + target:
+                problems.append(f"{name}: could not step to {target} past {first} for {w} (at {page.evaluate('stepper.steps') - s0})")
+                return False
+            page.evaluate("afterStop()")
+            d[w] = page.evaluate(FRAMEGOLD_JS)
+            return True
+
+        if not at("A", to):
+            return problems, d
+        page.evaluate(f"revStepBack({back})")
+        if not wait_for(lambda: page.evaluate(f"!REV.busy && stepper.steps === {s0 + to - back}"), 120, 0.1):
+            return [f"{name}: Step back {back} from {to} past {first} ended at {page.evaluate('stepper.steps') - s0}: "
+                    f"{page.inner_text('#dbg_status')[:300]!r} {errors[:3]}"], d
+        page.evaluate("revBranch(stepper, 'framegold'); afterStop()")
+        d["B"] = page.evaluate(FRAMEGOLD_JS)
+        if not at("C", to - back + more) or (last and not at("D", last)):
+            return problems, d
+        d["seconds"] = round(time.monotonic() - t0, 1)
+        problems += [f"{name}: page error {e}" for e in errors]
+        return problems, d
+    finally:
+        page.close()
+
+
+def suite_framegold(ctx):
+    write = os.environ.get("MKB_FRAMEGOLD_WRITE") == "1"
+    gold = json.loads(FRAMEGOLD.read_text()) if FRAMEGOLD.exists() else {}
+    failed = False
+    for name, case in FRAMEGOLD_CASES.items():
+        if name not in ctx.entries:
+            continue
+        sha = hashlib.sha256((SITE / ctx.entries[name]["path"]).read_bytes()).hexdigest()
+        problems, d = framegold_kernel(ctx.browser, ctx.base, name, case)
+        parts = [w for w in "ABCD" if w in d]
+        r = {"seconds": d.get("seconds"), **{w: {k: d[w][k] for k in FRAMEGOLD_SUMMARY} for w in parts}}
+        if not problems:
+            for w in parts:
+                if d[w]["bad"]:
+                    problems.append(f"{name} {w}: frame values that are not integers: {d[w]['bad']}")
+            if not d["A"]["frames"] > d["B"]["frames"] < d["C"]["frames"]:
+                problems.append(f"{name}: frames A {d['A']['frames']}, B {d['B']['frames']}, C {d['C']['frames']}: "
+                                "the branch dropped none or the run recorded none after it")
+        if write and not problems:
+            gold[name] = {"bzImage_sha256": sha, "case": list(case), **{w: d[w] for w in parts}}
+        elif not problems:
+            g = gold.get(name)
+            if not g:
+                problems.append(f"{name}: no golden in {FRAMEGOLD.name} (write it with MKB_FRAMEGOLD_WRITE=1)")
+            elif g["bzImage_sha256"] != sha or g["case"] != list(case):
+                problems.append(f"{name}: the golden was made with bzImage {g['bzImage_sha256'][:12]} and case {g['case']}, this is "
+                                f"{sha[:12]} and {list(case)}: write a new golden (MKB_FRAMEGOLD_WRITE=1) from code whose Calls output is trusted")
+            else:
+                for w in parts:
+                    diff = {k: (d[w].get(k), v) for k, v in g[w].items() if d[w].get(k) != v}
+                    if diff:
+                        problems.append(f"{name} {w}: differs from the golden (got, want): {json.dumps(diff)[:1500]}")
+        failed |= report("framegold", problems, r, kernel=name)
+    if write:
+        FRAMEGOLD.write_text(json.dumps(gold, indent=1, sort_keys=True) + "\n")
+    return failed
+
 
 # ---- jitrev: reverse execution at JIT speed (R5) ----------------------------------
 # While the JIT runs on the virtual clock the page keeps checkpoints too (a
@@ -24707,6 +24876,7 @@ SUITES = {
     "exactstop": (suite_exactstop, False),
     "replay": (suite_replay, False),
     "reverse": (suite_reverse, False),
+    "framegold": (suite_framegold, True),
     "jitsnap": (suite_jitsnap, False),
     "jitrev": (suite_jitrev, False),
     "genimport": (suite_genimport, True),

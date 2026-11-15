@@ -819,7 +819,7 @@ jobs:
         - jitdet,guestin,replay
         - jitsnap
         - jitrev
-        - reverse
+        - reverse,framegold
         - exactstop
         - followeip
         - followfuzz

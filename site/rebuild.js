@@ -218,8 +218,9 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const gen = genImport(elfFile, null);
 	rbSync();
 	const sha = (h) => h.slice(0, 12);
+	const s = (x) => (x / 1000).toFixed(1) + " s";
 	const how = r.objects.length + " object" + (r.objects.length === 1 ? "" : "s") + " compiled, " + r.steps.length + " link steps, " +
-		(ms / 1000).toFixed(1) + " s";
+		s(ms) + " (fetching " + s(r.fetchMs) + ", compiling " + s(r.compileMs) + ", linking " + s(r.linkMs) + ")";
 	const which = same ? "identical to CI's build (" + kit.products.map((p) => p[0].replace(/^.*\//, "") + " " + sha(p[1])).join(", ") + ")" +
 		(kit.shipped.differs.length ? "; the page's shipped bzImage is the build without debug info, the same but for its " +
 			kit.shipped.differs.reduce((n, d) => n + d[1], 0) + "-byte build-id" : "") :

@@ -1111,15 +1111,16 @@ jobs:
         site/gen-clang-wasm.sh --check
         "$RUNNER_TEMP/venv/bin/python" site/test_kit.py --browsers chromium,firefox,webkit --out kit-images --boot --json kit.json
 
-    # Rebuild and boot as a user (plan E4, rebuild.js): edit hello in the
-    # page, rebuild, boot, every debug feature of the rebuilt kernel; an
+    # Rebuild and boot as a user (plans E4 and E5, rebuild.js): edit hello
+    # and the minified Linux -O0/-Os in the page, rebuild, boot, every debug
+    # feature of the rebuilt kernel; a header edit compiles its users; an
     # unchanged rebuild of every object gives CI's bytes. Needs the kits and
     # clang.wasm, so it runs here and not in browser-test.
     - name: Rebuild and boot in the page (test_browser.py rebuild)
       if: always()
       env:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
-      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuild --shots rebuild-screenshots'
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuild,rebuild_linux --shots rebuild-screenshots'
 
     - uses: actions/upload-artifact@v4
       if: always()

@@ -2483,7 +2483,31 @@ button, the screen after the rebuild, the Source tab; and a site without
 without hello (the reason names the kernels it has), a new file and a
 deleted file refused by name, and another kernel chosen while the build
 runs (its kit held back): built, not booted. Screenshots light and dark
-of each.
+of each. At 390 px the run state toggle covers no word of the Rebuild and
+boot row with the window scrolled so the row is level with it (on a phone
+the box keeps the toggle's column free, like the listings).
+
+The status line ends with the time of the build and of its phases
+(fetching the kit, compiling, linking). Suite `rebuild_linux` (plan step
+E5, also in job `kit`) does the same clicks on the minified Linux -O0 at
+1280 px (light) and -Os at 390 px (touch, dark), started with
+`speed=full`: open `init/main.c` from the file list, Edit, add a string
+and a `kernel_write` of it to the console in `console_on_rootfs` (printk
+prints nothing in this kernel, /dev/console does), Rebuild and boot. The
+page compiles `init/main.o` (exactly the kit's users of `init/main.c`),
+runs the 44 link steps (the LTO `ld -r`, the boot code, tools/build),
+boots it, and the screen shows the string before /init's `Hello, World!`
+and `Still alive`; the data files are made in the page (symbols,
+disassembly, DWARF, source), `kernel_init` and `console_on_rootfs` have
+the edited file's line numbers in the DWARF, the source the listings read
+and the Source panel are the edited text, the downloaded bzImage holds
+the string. Then an edit of `include/linux/tty_driver.h`: the objects
+compiled are exactly the users of the two edited files in the kit's
+dependency map. Then Revert all and "compile every object": 127 objects
+compiled, vmlinux and bzImage are the kit's bytes and the bzImage is the
+shipped one but for the 20-byte build-id (`kit.shipped.differs`). It
+reports the seconds from the press to the string on the screen and to the
+data files.
 
 ## Testing
 

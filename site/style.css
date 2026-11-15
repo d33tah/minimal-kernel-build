@@ -704,6 +704,9 @@ body { padding-bottom: 60px; }
 @media (max-width: 640px) {
 	.srcpanel:not([hidden]) ~ .runbadge { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
 	#listing, #context { padding-right: 3.4rem; }
+	/* The Rebuild and boot box too: with the Source sheet open its row sits
+	   right above the sheet, where the toggle is. */
+	.rbbox { padding-right: 3.4rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

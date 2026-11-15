@@ -237,7 +237,7 @@ quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the lo
 quests.js	139	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
 quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 rebuild.js	172-173	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
-rebuild.js	241	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
+rebuild.js	242	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	170-172	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	183	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one

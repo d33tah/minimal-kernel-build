@@ -720,11 +720,17 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 	/* The sheet is short: while the switcher is open it takes the room of the notes and the outline. */
 	.srcpanel:has(> #src_switch:not([hidden])) > :is(#src_nav, #src_info, #src_addrs) { display: none; }
 }
+/* The panel takes the right half: the page (header, tabs, every tab's
+   content) keeps to the left of it, nothing runs on under it (E5a). */
+@media (min-width: 641px) {
+	body:has(> .srcpanel:not([hidden])) { padding-right: min(46rem, 50vw); }
+}
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
 	/* The sheet covers the lower 65vh: the page scrolls that much further,
-	   so its end (the listing's last lines) can come up above the sheet. */
-	body:has(> .srcpanel:not([hidden])) { padding-bottom: 65vh; }
+	   so its end (the listing's last lines) can come up above the sheet and
+	   the toggle's bar on it. */
+	body:has(> .srcpanel:not([hidden])) { padding-bottom: calc(65vh + 60px); }
 }
 /* H1: the menu toggle, fixed bottom right on every tab, where the listings'
    lines end (their addresses and the symbol index are on the left), left
@@ -778,12 +784,16 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 .navhist button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .navhist button:disabled { color: var(--muted); }
 body { padding-bottom: 60px; }
+/* On a phone the toggle sits on a bar across the screen (E5a): a row that
+   scrolls down to it goes under the bar whole, never with its right end
+   alone under the toggle. The bar is right above the Source sheet when the
+   sheet is open; the page's end comes up above it either way. */
 @media (max-width: 640px) {
-	.srcpanel:not([hidden]) ~ .runbadge { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
+	.runbadge { left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; background: var(--bg); border-top: 1px solid var(--line);
+		padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)); }
+	.srcpanel:not([hidden]) ~ .runbadge { right: 0; bottom: 65vh; padding-bottom: 6px; }
+	.rbmenu { right: max(8px, env(safe-area-inset-right)); }
 	#listing, #context { padding-right: 3.4rem; }
-	/* The Rebuild and boot box too: with the Source sheet open its row sits
-	   right above the sheet, where the toggle is. */
-	.rbbox { padding-right: 3.4rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

@@ -29,7 +29,7 @@ const RB_SUFFIX = " (rebuilt here)";
 const rbFrom = () => (image ? image.from || image.name : "");
 
 function rbLoadIndex() {
-	return fetch(withV("kits/index.json"))
+	return kitFetch(withV("kits/index.json"))
 		.then((r) => r.ok ? r.json() : Promise.reject(new Error("kits/index.json: " + httpWhy(r))))
 		.then((ix) => { RB.kits = ix.kits; }, (e) => { RB.why = e.message; })
 		.then(rbSync);

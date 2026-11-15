@@ -814,7 +814,7 @@ jobs:
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath,cfi,dwarf_lto,dwarf_forms
         - runstate
         - speedline
-        - speedasm,runbadge,memeip,graphopen,srcfiles,srcedit
+        - speedasm,runbadge,overlap,memeip,graphopen,srcfiles,srcedit
         - snapdiff,bookmarks,deltasnap
         - jitdet,guestin,replay
         - jitsnap

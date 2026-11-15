@@ -205,7 +205,7 @@ kgen.js	636	c8b20a61	a type or partial unit (see 552)
 kgen.js	745-747	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
 kgen.js	767	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
 kgen.js	781	70630452	Node only: module.exports
-kit.js	592	6ebc1b22	Node only: module.exports (test_kit.mjs requires kit.js; the page loads it as a script)
+kit.js	599	6ebc1b22	Node only: module.exports (test_kit.mjs requires kit.js; the page loads it as a script)
 livedis.js	31	14f00310	iced_x86.js without its Node tail: the pinned iced 1.21.0 (fetch-v86.sh, SHA-256) has it
 livedis.js	47-49	639da600	iced failing to load (fetch or instantiate error): the site ships it and no test blocks it
 livedis.js	76	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set

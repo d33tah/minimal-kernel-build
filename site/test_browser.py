@@ -10466,6 +10466,179 @@ def suite_runbadge(ctx):
     return report("runbadge", *runbadge_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries))
 
 
+# ---- overlap: nothing of the page half under the toggle or the panel (E5a) --
+# E5's screenshots: at 390 px the menu toggle (#runbadge, fixed bottom
+# right) lay over the right end of any row scrolled under it (the Machine
+# tab's kernel select, the Rebuild and boot row); at 1280 px with the Source
+# panel open the page ran on under the panel (status and build log lines cut
+# at its edge). Every tab, the window scrolled from top to end: at 390 and
+# 1280 px no word or control is under the toggle while the page beside it shows (at
+# the toggle's left edge or at the word's own start), and at the end of the
+# page its last line comes up above the toggle's bar; the same with the
+# Source sheet open. At 1280 px with the Source panel open no element of the
+# header or the tabs runs past the panel's left edge (inside a scroll box:
+# the box's visible part), and nothing scrolls sideways.
+OVERLAP_TOGGLE_JS = """() => {
+  const t = document.getElementById('runbadge_toggle'), badge = document.getElementById('runbadge');
+  if (!t || !t.getClientRects().length) return null;
+  const b = t.getBoundingClientRect(), inBadge = (e) => !!e && badge.contains(e);
+  const meets = (r) => r.width > 0.5 && r.height > 0.5 && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
+    && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
+  const cand = new Set();
+  for (let x = b.left + 2; x < b.right - 1; x += 5)
+    for (let y = b.top + 2; y < b.bottom - 1; y += 5)
+      for (const e of document.elementsFromPoint(x, y))
+        if (!inBadge(e) && e !== document.body && e !== document.documentElement) cand.add(e);
+  const pieces = [];
+  for (const el of cand) {
+    // Controls by their box (a select, a button); a summary or a link by its words.
+    if (el.matches('button, input, select, textarea'))
+      pieces.push([el.getBoundingClientRect(), '<' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + '>']);
+    for (const n of el.childNodes) {
+      if (n.nodeType !== 3) continue;
+      for (const m of n.data.matchAll(/\\S+/g)) {
+        const g = document.createRange(); g.setStart(n, m.index); g.setEnd(n, m.index + m[0].length);
+        for (const rr of g.getClientRects()) pieces.push([rr, m[0]]);
+      }
+    }
+  }
+  const hits = [];
+  for (const [rr, what] of pieces) {
+    if (!meets(rr)) continue;
+    const y = (Math.max(rr.top, b.top) + Math.min(rr.bottom, b.bottom)) / 2;
+    const left = document.elementFromPoint(Math.max(1, b.left - 3), y), start = document.elementFromPoint(Math.max(1, rr.left + 1), y);
+    if (!inBadge(left) || !inBadge(start)) hits.push(what.slice(0, 40));
+  }
+  const br = badge.getBoundingClientRect(), main = document.querySelector('main').getBoundingClientRect();
+  return { hits: [...new Set(hits)].slice(0, 8), toggle: [b.left, b.top, b.right, b.bottom].map(Math.round),
+           bar: [br.left, br.top, br.right, br.bottom].map(Math.round), mainBottom: Math.round(main.bottom),
+           y: Math.round(scrollY), maxY: Math.round(document.documentElement.scrollHeight - innerHeight), vh: innerHeight,
+           hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }"""
+
+OVERLAP_PANEL_JS = """() => {
+  const p = document.getElementById('src_panel');
+  if (p.hidden || !p.getClientRects().length) return null;
+  const edge = p.getBoundingClientRect().left, hits = [];
+  for (const el of document.querySelectorAll('body > header, body > header *, body > main, body > main *')) {
+    if (!el.getClientRects().length) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 0.5 || r.height < 0.5 || r.right <= edge + 0.5) continue;
+    let lo = r.left, hi = r.right;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement)
+      if (getComputedStyle(a).overflowX !== 'visible') {
+        const ar = a.getBoundingClientRect();
+        lo = Math.max(lo, ar.left); hi = Math.min(hi, ar.right);
+      }
+    if (hi > edge + 0.5 && hi > lo + 0.5 && getComputedStyle(el).visibility !== 'hidden')
+      hits.push((el.id ? '#' + el.id : el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : ''))
+                + ' to ' + Math.round(hi));
+  }
+  return { edge: Math.round(edge), hits: hits.slice(0, 8), n: hits.length, hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }"""
+
+OVERLAP_TABS = ["machine", "memory", "events", "quests", "page", "debugger", "calls", "source", "snapshots", "settings", "about"]
+
+
+def overlap_scroll(page, tag, problems, r):
+    """Scroll the window from the top to the end; at each stop the toggle
+    must not lie over a piece of the page that shows beside it; at the end
+    the page's last line is above the toggle's bar."""
+    page.evaluate("window.scrollTo(0, 0)")
+    time.sleep(0.2)
+    seen, y = [], 0
+    for _ in range(40):
+        got = page.evaluate(OVERLAP_TOGGLE_JS)
+        if not got:
+            problems.append(f"{tag}: no menu toggle shown")
+            return
+        seen.append(got["y"])
+        if got["hits"]:
+            problems.append(f"{tag} at scrollY {got['y']}: the toggle {got['toggle']} lies over {got['hits']} of the page shown beside it")
+            break
+        if got["hscroll"]:
+            problems.append(f"{tag}: the page scrolls sideways")
+            break
+        if got["y"] >= got["maxY"]:
+            if got["mainBottom"] > got["bar"][1] + 1:
+                problems.append(f"{tag}: at the end of the page its last line (bottom {got['mainBottom']}) stays under the toggle's bar {got['bar']}")
+            break
+        y = min(got["maxY"], got["y"] + int(got["vh"] * 0.4))
+        page.evaluate(f"window.scrollTo(0, {y})")
+        time.sleep(0.12)
+    r[tag] = len(seen)
+
+
+def overlap_case(browser, base, shots):
+    problems, r, errors = [], {}, []
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello")
+    if not wait_for(lambda: gate_on_screen(page), 120):
+        ctx.close()
+        return ["390: hello did not boot"], r
+    for tab in OVERLAP_TABS:
+        show_tab(page, tab)
+        time.sleep(0.6)
+        overlap_scroll(page, f"390 {tab}", problems, r)
+    show_tab(page, "machine")
+    page.evaluate("window.scrollTo(0, 0)")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"overlap-390-machine-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    # The Source sheet open (the toggle right above it).
+    page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
+    for tab in ("machine", "source", "page"):
+        show_tab(page, tab)
+        time.sleep(0.6)
+        overlap_scroll(page, f"390 {tab}, Source sheet open", problems, r)
+    page.evaluate("window.scrollTo(0, 0)")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"overlap-390-sheet-{scheme}.png"))
+    ctx.close()
+
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello")
+    if not wait_for(lambda: gate_on_screen(page), 120):
+        ctx.close()
+        return problems + ["1280: hello did not boot"], r
+    for tab in OVERLAP_TABS:
+        show_tab(page, tab)
+        time.sleep(0.6)
+        overlap_scroll(page, f"1280 {tab}", problems, r)
+    page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
+    for tab in OVERLAP_TABS:
+        # A tab under the panel cannot be clicked: the check below names it.
+        page.evaluate("(t) => document.getElementById('tab_' + t).click()", tab)
+        time.sleep(0.6)
+        got = page.evaluate(OVERLAP_PANEL_JS)
+        r[f"1280 {tab} under the panel"] = got and got["n"]
+        if not got:
+            problems.append(f"1280 {tab}: the Source panel is not open")
+        elif got["hits"] or got["hscroll"]:
+            problems.append(f"1280 {tab}: {got['n']} elements run under the Source panel (edge {got['edge']}): {got['hits']}, sideways scroll {got['hscroll']}")
+    page.evaluate("document.getElementById('tab_machine').click()")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"overlap-1280-panel-{scheme}.png"))
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def suite_overlap(ctx):
+    return report("overlap", *overlap_case(ctx.browser, ctx.base, ctx.shots))
+
+
 # ---- memeip: where EIP is in the Memory tab (M1) --------------------------
 # The operator: "na memory view pokazuj eip". The page square holding the
 # next instruction's physical address (paging-aware) carries a mark of its
@@ -23722,27 +23895,16 @@ def rb_shots(page, shots, stem, problems, tag):
 # The run state toggle (#runbadge, fixed bottom right; on a phone with the
 # Source sheet open, right above the sheet) must not cover the Rebuild and
 # boot row: the window is scrolled so the row is level with the toggle (the
-# worst case), then no word of the row may be under it (E4's 390 px
-# screenshot: "compile every object" ended under "halted").
+# worst case), then the toggle may not lie over a word of it while the row
+# beside it shows (E4's 390 px screenshot: "compile every object" ended
+# under "halted"; E5a: the toggle's bar hides the row whole, overlap suite).
 RB_COVER_JS = """() => {
   const t = document.getElementById('runbadge_toggle'), row = document.querySelector('#rb_box .scan');
   if (!t || !t.getClientRects().length || !row.getClientRects().length) return { skip: true };
   let b = t.getBoundingClientRect(), rr = row.getBoundingClientRect();
   window.scrollBy(0, (rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2);
   b = t.getBoundingClientRect(); rr = row.getBoundingClientRect();
-  const hits = [], meets = (r) => r.width > 0.5 && r.height > 0.5 && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
-    && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
-  const tw = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
-  for (let n = tw.nextNode(); n; n = tw.nextNode()) {
-    if (!n.parentElement.getClientRects().length) continue;
-    for (const m of n.data.matchAll(/\\S+/g)) {
-      const g = document.createRange(); g.setStart(n, m.index); g.setEnd(n, m.index + m[0].length);
-      if ([...g.getClientRects()].some(meets)) hits.push(m[0]);
-    }
-  }
-  for (const e of row.querySelectorAll('button, input, .tip'))
-    if (e.getClientRects().length && meets(e.getBoundingClientRect())) hits.push('#' + (e.id || e.className));
-  return { hits, off: Math.round((rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2), y: Math.round(scrollY),
+  return { off: Math.round((rr.top + rr.bottom) / 2 - (b.top + b.bottom) / 2), y: Math.round(scrollY),
            maxY: Math.round(document.documentElement.scrollHeight - innerHeight), badge: [b.left, b.top, b.right, b.bottom].map(Math.round),
            row: [rr.left, rr.top, rr.right, rr.bottom].map(Math.round) }; }"""
 
@@ -23750,6 +23912,8 @@ RB_COVER_JS = """() => {
 def rb_cover(page, tag, problems, r):
     got = page.evaluate(RB_COVER_JS)
     r.setdefault("cover", {})[tag] = got
+    if not got.get("skip"):
+        got["hits"] = (page.evaluate(OVERLAP_TOGGLE_JS) or {"hits": ["no toggle"]})["hits"]
     if got.get("skip"):
         problems.append(f"{tag}: no run state toggle or no Rebuild and boot row to check")
     elif got["hits"]:
@@ -23906,6 +24070,11 @@ def rebuild_run(browser, base, shots, tmp):
         problems.append("the Source panel does not show the edited text")
     rb_shots(page, shots, "rebuild-1280-panel", problems, "1280 Source panel")
     page.emulate_media(color_scheme="light")
+    # E5a: the status and the build log end at the panel's edge.
+    got = page.evaluate(OVERLAP_PANEL_JS)
+    r["under the panel"] = got
+    if not got or got["hits"] or got["hscroll"] or not page.is_visible("#rb_buildlog"):
+        problems.append(f"1280 with the Source panel open, the build log open: {got}, log shown {page.is_visible('#rb_buildlog')}")
 
     # 4. A compile error: clang's message, the running kernel stays.
     rb_press(page, "#src_edit", False)
@@ -24054,6 +24223,33 @@ def rebuild_edges_run(browser, base):
     if st["go"] or st["status"] != "hello has no build kit: the page rebuilds minified-linux.":
         problems.append(f"a kernel without a kit: {st}")
     nc.close()
+    # A server error on kits/index.json is tried again, like the kit's own
+    # files (E5a: on live, right after a deploy, the button stayed disabled):
+    # two 503s, then the list; always 503: the reason after the last try.
+    for fails, want_calls in ((2, 3), (99, 4)):
+        calls = []
+
+        def flaky(fails, calls):
+            def answer(route):
+                calls.append(time.monotonic())
+                if len(calls) <= fails:
+                    route.fulfill(status=503, body="busy")
+                else:
+                    route.continue_()
+            return answer
+        nc = browser.new_context(viewport={"width": 1280, "height": 1000})
+        nc.route("**/kits/index.json*", flaky(fails, calls))
+        page = nc.new_page()
+        page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+        page.goto(f"{base}/index.html?kernel=hello#source")
+        wait_for(lambda: rb_state(page)["go"] or "No build kits" in rb_state(page)["status"], 60)
+        st = rb_state(page)
+        r[f"index.json 503 x{fails}"] = [len(calls), st["status"]]
+        if fails < want_calls and (not st["go"] or len(calls) != want_calls):
+            problems.append(f"kits/index.json answered 503 {fails} times, then the list: {len(calls)} requests, {st}")
+        if fails >= want_calls and (st["go"] or "kits/index.json: HTTP 503" not in st["status"] or len(calls) != want_calls):
+            problems.append(f"kits/index.json always 503: {len(calls)} requests (want {want_calls}), {st}")
+        nc.close()
     ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
     page = ctx.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
@@ -24465,6 +24661,7 @@ SUITES = {
     "speedasm": (suite_speedasm, True),
     "navhist": (suite_navhist, False),
     "runbadge": (suite_runbadge, False),
+    "overlap": (suite_overlap, False),
     "memeip": (suite_memeip, False),
     "graphopen": (suite_graphopen, False),
     "srcfiles": (suite_srcfiles, False),

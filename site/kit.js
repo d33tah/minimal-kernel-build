@@ -69,22 +69,29 @@ function kitConcat(parts) {
 	return out;
 }
 
+// fetch(url), a server error tried again (after 0.5, 1 and 2 s): GitHub
+// Pages answered 503 to one of a build's parallel blob fetches, and to
+// kits/index.json right after a deploy. The last answer is returned, ok or
+// not.
+async function kitFetch(url) {
+	for (let wait = 500; ; wait *= 2) {
+		const r = await fetch(url);
+		if (r.ok || r.status < 500 || wait > 2000)
+			return r;
+		await new Promise((ok) => setTimeout(ok, wait));
+	}
+}
+
 // Where the kits are: base/NAME.json and base/blobs/SHA256.gz (a file or
 // object, gzipped) and SHA256.wasm (a module). Every blob is checked
 // against its SHA-256.
 function kitSource(base) {
 	const at = (p) => new URL(p, new URL(base, location.href)).href;
-	// A server error is tried again (after 0.5, 1 and 2 s): GitHub Pages
-	// answered 503 to one of a build's parallel blob fetches.
 	const fetchOk = async (url) => {
-		for (let wait = 500; ; wait *= 2) {
-			const r = await fetch(url);
-			if (r.ok)
-				return r;
-			if (r.status < 500 || wait > 2000)
-				throw new Error(url + ": HTTP " + r.status);
-			await new Promise((ok) => setTimeout(ok, wait));
-		}
+		const r = await kitFetch(url);
+		if (!r.ok)
+			throw new Error(url + ": HTTP " + r.status);
+		return r;
 	};
 	return {
 		async kit(name) {

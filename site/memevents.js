@@ -32,7 +32,8 @@
 // position order: MEV.query({ from, to, page, initiator, write, region })
 // finds events by time range, page and initiator for the memory map and
 // the quests. A step back (reverse.js) or a restored snapshot drops the
-// events from the restored position on; running on records them again,
+// events from the restored position on (not the emulator's that made the
+// restored state, such as the loader's); running on records them again,
 // the same ones (the test in test_browser.py, suite memevents).
 //
 // Checking mode (?memcheck=N, MEV.checkStart): every N instructions every
@@ -597,12 +598,18 @@ const MEV = {
 
 	// After a restore (cpustate.js v86Restore): the machine is at the
 	// stepper's count; what was recorded from there on is not its past.
+	// The emulator's events at that count that came before the machine
+	// ran on from it are: they made the restored state (the loader's
+	// writes before instruction 0, kept when instruction 0's checkpoint
+	// is restored).
 	restored() {
 		this.restoring = false;
 		if (!this.cols || !this.st)
 			return;
-		const pos = this.st.steps;
-		const k = this.lowerBound(pos);
+		const pos = this.st.steps, c = this.cols, m = this.cap - 1;
+		let k = this.lowerBound(pos);
+		while (k < this.n && c.pos[k & m] === pos && (c.meta[k & m] & 3) === MEV_EMULATOR)
+			k++;
 		for (let i = k; i < this.n; i++)
 			this.counts[this.cols.meta[i & (this.cap - 1)] & 3]--;
 		this.n = k;

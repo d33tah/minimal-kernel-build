@@ -1892,7 +1892,11 @@ first) in position order. `MEV.query({ from, to, page, initiator, write,
 region, limit })` gives the matching indices, `MEV.event(i)` one event.
 A Step back or a restored snapshot drops the events from the restored
 count on (and the observations, so region names are as they were then);
-running on records the same events again.
+running on records the same events again. The emulator's events at that
+count that came before the machine ran on from it stay: they made the
+restored state (the loader's writes before instruction 0 when instruction
+0's checkpoint is restored; suite memtabs checks them in the log and the
+Events table after such a rewind).
 
 The Events tab (M4, below) shows them; it records from its first opening
 on. `?memevents=1` records from the load and opens the tab.

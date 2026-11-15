@@ -425,9 +425,10 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .mev-facts { font-size: 0.875rem; padding-left: 0; list-style: none; }
 .mev-facts li { margin: 0.15rem 0; }
 @media (max-width: 760px) {
-  .mev-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.15rem; }
-  .mev-chip, .mev-chiplabel { flex: 0 0 auto; }
-  .mev-chiplabel { min-width: 3.6rem; }
+  /* the chips wrap under each other, indented past the group's label */
+  .mev-chips { gap: 0.25rem; padding-left: 3.85rem; }
+  .mev-chip { max-width: 100%; padding: 0.1rem 0.55rem; text-align: left; border-radius: 1rem; }
+  .mev-chiplabel { min-width: 3.6rem; width: 3.6rem; margin-left: -3.85rem; }
   .mev-table thead { display: none; }
   .mev-table, .mev-table tbody, .mev-table tr, .mev-table td { display: block; }
   .mev-table tr { border: 1px solid var(--line); border-radius: 6px; margin: 0.45rem 0; padding: 0.3rem 0.5rem; }

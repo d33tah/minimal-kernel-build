@@ -22573,9 +22573,7 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                     rd["border"] == wr["border"] or int(wr["weight"]) <= int(rd["weight"]):
                 problems.append(f"read/write {scheme}: a read row and a write row do not differ in marker, fill, border and weight: {rw}")
             page.screenshot(path=str(shots / f"memtabs-events-1280-{scheme}.png"))
-            # (before the rewind below, which restores instruction 0's state and
-            # with it drops the loader's events at 0)
-            line = page.evaluate("MEV.describe(MEV.event(MEV.query({ initiator: 'emulator' }).find((i) => MEV.event(i).source === 'kernel protected-mode part')))")
+            line =page.evaluate("MEV.describe(MEV.event(MEV.query({ initiator: 'emulator' }).find((i) => MEV.event(i).source === 'kernel protected-mode part')))")
             # filter chips, the search box, grouping
             page.click("#mev_who [data-v=emulator]")
             emu = mt_look(page)["rows"]
@@ -22634,11 +22632,26 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 r[f"actions {scheme}"]["steps"] = [steps, landed]
                 if not landed < steps:
                     problems.append(f"actions {scheme}: rewind from {steps} landed at {landed}")
+                # (M5) the rewind restored instruction 0's checkpoint, whose
+                # state the loader made before the first instruction: its
+                # events at 0 stay in the log and in the table
+                loader = page.evaluate("""() => ({ cp0: REV.cps.length ? REV.cps[0].steps : null,
+                  log: MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MEV.event(i).source) })""")
+                page.click("#mev_who [data-v=emulator]")
+                loader["rows"] = [x["cells"].get("who", "") for x in mt_look(page)["rows"]]
+                page.click("#mev_who [data-v='']")
+                r[f"actions {scheme}"]["loader after rewind"] = loader
+                if loader["cp0"] != 0 or "kernel protected-mode part" not in loader["log"] or \
+                        not any("kernel protected-mode part" in w for w in loader["rows"]):
+                    problems.append(f"actions {scheme}: after a rewind to instruction 0's checkpoint the loader's events are gone: {loader}")
                 # the log was cut there: run to the end again for what follows
                 machine_do(page, "click", "#dbg_continue")
                 wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.3)
                 show_tab(page, "events")
                 time.sleep(0.6)
+                again = page.evaluate("MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MEV.event(i).source)")
+                if again != loader["log"]:
+                    problems.append(f"actions {scheme}: the loader's events at 0 after running on {again}, after the rewind {loader['log']}")
             else:
                 problems.append(f"actions {scheme}: no Hello, World! row")
             if not emu or not all(x["cells"]["who"].startswith("Emulator") for x in emu) or not any("kernel protected-mode part" in x["cells"]["who"] for x in emu):
@@ -22783,6 +22796,16 @@ def mt_phone_case(browser, base, shots, problems, r):
             if not cards or any(w > 390 - 16 or d == "table-row" for w, _, d in cards):
                 problems.append(f"390 {scheme}: the rows are not cards that fit: {cards}")
             mt_readable(page, "#mev_rows td, #mev_rows td *", 13, problems, f"390 {scheme} events")
+            # (M5) every filter chip whole inside its row and the screen: the
+            # rows wrap, none hides chips past its right edge
+            chips = page.evaluate("""() => [...document.querySelectorAll('#panel_events .mev-chip')].filter((b) => b.getClientRects().length).map((b) => {
+              const c = b.getBoundingClientRect(), row = b.closest('.mev-chips').getBoundingClientRect();
+              return [b.textContent.trim().slice(0, 32), Math.round(c.left), Math.round(c.right), Math.round(row.left), Math.round(row.right), b.scrollWidth <= b.clientWidth + 1]; })""")
+            rows = page.evaluate("[...document.querySelectorAll('#panel_events .mev-chips')].map((d) => [d.getAttribute('aria-label'), d.scrollWidth, d.clientWidth])")
+            cut = [c for c in chips if c[1] < c[3] - 1 or c[2] > c[4] + 1 or c[2] > 390 or not c[5]]
+            r[f"390 {scheme} chips"] = {"n": len(chips), "cut": cut, "rows": rows}
+            if len(chips) < 9 or cut or any(sw > cw + 1 for _, sw, cw in rows):
+                problems.append(f"390 {scheme}: filter chips cut at the edge: {r[f'390 {scheme} chips']}")
             page.screenshot(path=str(shots / f"memtabs-events-390-{scheme}.png"))
             page.tap("#tab_quests")
             time.sleep(0.8)

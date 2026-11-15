@@ -185,10 +185,10 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 /* Compact tabs (Settings tab): the emoji only, the name in the tooltip. */
 .compact-tabs .tabbar .tword { display: none; }
 .compact-tabs .tabbar button { padding: 0.25rem 0.3rem; min-width: 40px; }
-/* On a phone the nine emoji share one row (38 px each at 390, 30 at 320). */
+/* On a phone the eleven emoji share one row (about 30 px each at 390). */
 @media (max-width: 400px) {
   .compact-tabs .tabbar { flex: 1 1 100%; }
-  .compact-tabs .tabbar button { flex: 1 1 0; min-width: 30px; padding: 0.25rem 0; }
+  .compact-tabs .tabbar button { flex: 1 1 0; min-width: 0; padding: 0.25rem 0; }
 }
 .panel { padding-top: 0.3rem; }
 .panel[hidden] { display: none; }
@@ -328,18 +328,31 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .qs-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; margin: 0.4rem 0; }
 .qs-meter { flex: 0 1 14rem; min-width: 8rem; height: 0.6rem; border-radius: 0.3rem; background: var(--page-free); overflow: hidden; }
 .qs-meter span { display: block; height: 100%; width: 0; background: var(--qs-won); transition: width 0.6s ease; }
-.qs-progress { font-size: 0.85rem; }
+.qs-progress { font-size: 0.9rem; }
 .qs-list { list-style: none; padding: 0; margin: 0.3rem 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 0.6rem; }
 .qs-card { position: relative; border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.6rem; min-width: 0; overflow-wrap: anywhere; }
-.qs-card[data-state="never"] { opacity: 0.6; }
+.qs-card[data-state="never"] { border-style: dashed; }
 .qs-card[data-state="solved"] { border-color: var(--qs-won); background: var(--qs-won-bg); }
 .qs-top { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
-.qs-top h4 { margin: 0; font-size: 0.9rem; }
+.qs-top h4 { margin: 0; font-size: 1rem; }
 .qs-mark { position: relative; display: inline-block; width: 1.3rem; text-align: center; font-weight: 700; color: var(--muted); }
 .qs-card[data-state="solved"] .qs-mark { color: var(--qs-won); }
-.qs-std { font-size: 0.75rem; color: var(--muted); }
-.qs-task { margin: 0.3rem 0; font-size: 0.85rem; }
-.qs-why, .qs-how { margin: 0.2rem 0; }
+.qs-std { flex: 1 0 100%; font-size: 0.8125rem; color: var(--muted); }
+.qs-chip { font-size: 0.875rem; font-weight: 600; border: 1px solid var(--line); border-radius: 999px; padding: 0 0.5rem; margin-left: auto; white-space: nowrap; }
+.qs-card[data-state="open"] .qs-chip { color: var(--accent); border-color: var(--accent); }
+.qs-card[data-state="solved"] .qs-chip { color: var(--qs-won); border-color: var(--qs-won); }
+.qs-card[data-state="never"] .qs-chip { color: var(--muted); border-style: dashed; }
+.qs-key { font-size: 0.92em; font-weight: 600; padding: 0 0.15em; border-radius: 3px; background: var(--page-free); }
+.qs-layout { display: grid; gap: 0.8rem 1.2rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1100px) {
+  .qs-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 540px); }
+  .qs-layout .qs-list { grid-template-columns: minmax(0, 1fr); }
+  /* the map stays in view beside the cards */
+  .qs-mapslot { position: sticky; top: 5.5rem; max-height: calc(100vh - 6rem); overflow-y: auto; }
+}
+.qs-onlabel { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; margin: 0.2rem 0; }
+.qs-task { margin: 0.4rem 0; font-size: 0.95rem; line-height: 1.45; }
+.qs-why, .qs-how { margin: 0.2rem 0; font-size: 0.875rem; }
 .qs-form { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; margin: 0.3rem 0; }
 .qs-form input { width: 11rem; max-width: 100%; font: inherit; }
 .qs-choices { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.3rem 0; }
@@ -348,11 +361,11 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .qs-fb:empty { display: none; }
 .qs-fb.bad { color: var(--err-fg); }
 .qs-tools { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.3rem 0 0.1rem; }
-.qs-hint { margin: 0.3rem 0; padding: 0.3rem 0.4rem; border-left: 3px solid var(--mm-hint); font-size: 0.85rem; }
+.qs-hint { margin: 0.3rem 0; padding: 0.3rem 0.4rem; border-left: 3px solid var(--mm-hint); font-size: 0.9rem; }
 .qs-learn { margin: 0.3rem 0 0; font-size: 0.85rem; }
 .qs-learn summary { cursor: pointer; color: var(--muted); }
 .qs-learn p { margin: 0.3rem 0; }
-.qs-wontext { margin: 0.3rem 0; font-size: 0.85rem; color: var(--qs-won); font-weight: 600; }
+.qs-wontext { margin: 0.3rem 0; font-size: 0.9rem; color: var(--qs-won); font-weight: 600; }
 .qs-card[data-state="solved"] .qs-form, .qs-card[data-state="solved"] .qs-choices, .qs-card[data-state="solved"] .qs-how { display: none; }
 .qs-card:not([data-state="open"]) .qs-form, .qs-card:not([data-state="open"]) .qs-choices { display: none; }
 .qs-burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
@@ -373,9 +386,54 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 	.qs-card.qs-pop { animation: none; }
 	.qs-meter span { transition: none; }
 }
-#mev { margin: 0.6rem 0; }
-#mev summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-#mev h4 { font-size: 0.85rem; margin: 0.5rem 0 0.2rem; }
+/* The Events tab (M4): a table with one colour per initiator (the live
+   memory map's), filter chips, rows as cards on a phone. */
+.mev-intro, .qs-intro { max-width: 62rem; margin: 0.3rem 0 0.6rem; }
+#panel_events h2, #panel_quests h2 { font-size: 1.15rem; margin: 0.4rem 0; }
+#panel_events h3 { font-size: 1rem; margin: 1rem 0 0.3rem; }
+.mev-bar { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; align-items: center; margin: 0.4rem 0; }
+.mev-search input { width: 17rem; max-width: 100%; font: inherit; margin-left: 0.3rem; }
+.mev-search { display: inline-flex; align-items: center; max-width: 100%; }
+.mev-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; margin: 0.3rem 0; }
+.mev-chipset { display: contents; }
+.mev-chiplabel { font-weight: 600; min-width: 4rem; }
+.mev-chip { border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.875rem; min-height: 30px; }
+.mev-chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; box-shadow: inset 0 0 0 1px var(--accent); }
+.mev-wrap { overflow-x: auto; }
+.mev-table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+.mev-table th { text-align: left; font-weight: 600; border-bottom: 2px solid var(--line); padding: 0.3rem 0.5rem; white-space: nowrap; }
+.mev-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mev-row[data-who="cpu"] td:first-child { box-shadow: inset 4px 0 var(--mm-cpu); }
+.mev-row[data-who="device"] td:first-child { box-shadow: inset 4px 0 var(--mm-dev); }
+.mev-row[data-who="emulator"] td:first-child { box-shadow: inset 4px 0 var(--mm-emu); }
+.mev-table td[data-col="step"], .mev-table td[data-col="size"], .mev-addr, .mev-val { font-family: ui-monospace, monospace; }
+.mev-table td[data-col="step"], .mev-table td[data-col="address"], .mev-table td[data-col="size"], .mev-table td[data-col="access"] { white-space: nowrap; }
+.mev-table .symlink, .mev-table .srclink { font-size: inherit; }
+.mev-table .symlink { border: 0; background: none; padding: 0; text-align: left; min-height: 0; text-decoration: underline dotted; text-underline-offset: 2px; }
+.mev-addr .symlink { font-family: ui-monospace, monospace; }
+.mev-sub { display: block; color: var(--muted); font-size: 0.8125rem; }
+.mev-rw[data-rw="write"] { font-weight: 600; }
+.mev-text { font-size: 0.95rem; font-weight: 600; overflow-wrap: anywhere; }
+.mev-act { font-size: 0.8125rem; padding: 0 0.4rem; margin-left: 0.2rem; }
+.mev-std { color: var(--muted); font-size: 0.8125rem; border-bottom: 1px dotted var(--muted); cursor: help; }
+.mev-regtable td[data-col="addresses"] { white-space: nowrap; }
+.mev-facts { font-size: 0.875rem; padding-left: 0; list-style: none; }
+.mev-facts li { margin: 0.15rem 0; }
+@media (max-width: 760px) {
+  .mev-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.15rem; }
+  .mev-chip, .mev-chiplabel { flex: 0 0 auto; }
+  .mev-chiplabel { min-width: 3.6rem; }
+  .mev-table thead { display: none; }
+  .mev-table, .mev-table tbody, .mev-table tr, .mev-table td { display: block; }
+  .mev-table tr { border: 1px solid var(--line); border-radius: 6px; margin: 0.45rem 0; padding: 0.3rem 0.5rem; }
+  .mev-table td { border: 0; padding: 0.1rem 0; display: flex; gap: 0.6rem; align-items: baseline; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+  .mev-table td::before { content: attr(data-label); flex: 0 0 4.6rem; color: var(--muted); font-size: 0.8125rem; font-family: system-ui, sans-serif; }
+  .mev-row[data-who] td:first-child { box-shadow: none; }
+  .mev-row[data-who="cpu"] { border-left: 4px solid var(--mm-cpu); }
+  .mev-row[data-who="device"] { border-left: 4px solid var(--mm-dev); }
+  .mev-row[data-who="emulator"] { border-left: 4px solid var(--mm-emu); }
+  .mev-table td[data-col="step"], .mev-table td[data-col="address"] { white-space: normal; }
+}
 .mev-list li { margin: 0.1rem 0; padding-left: 1.5em; text-indent: -1.5em; }
 .mev-list { font-size: 0.75rem; max-height: 22rem; overflow-y: auto; margin: 0.2rem 0; padding-left: 0; list-style: none; overflow-wrap: anywhere; white-space: pre-wrap; }
 

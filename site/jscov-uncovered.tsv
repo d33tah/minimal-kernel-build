@@ -14,46 +14,46 @@ app.js	1097	a9e430e6	a yellow line over all-zero memory: needs a kernel whose co
 app.js	1148-1149	4ea716be	the boxed line that had EIP inside it (mid-instruction) is always a yellow line (the relocation stub's shifted bytes); a plain line with EIP inside needs a jump into the middle of an unchanged instruction, which no shipped kernel does in its stepped part
 app.js	1180-1182	3680a74e	inspect of a page past the grid: needs a picked page above a smaller RAM size after Boot, and followEip moves the pick to EIP's page right after every Boot first
 app.js	1219	34977f3b	the live checkbox's timer while the machine runs with a page picked: Live is off by default and no suite turns it on while running
-app.js	1561	7f4f045e	scan without a running machine: the Scan button and the autoscan timer are disabled or stopped while there is none
-app.js	1711-1713	48986f45	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
-app.js	1717	809d7cec	the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
-app.js	1802-1803	e5830e96	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
-app.js	1898	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
-app.js	1903-1906	9354bbed	Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead
-app.js	1912-1914	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue
-app.js	1917	7d7e94f8	switching to stepped while v86's own loop runs (real-time clock at full speed, then a slower speed): the clock change and speed change paths pause first in every suite
-app.js	1934	ca1afe12	resume on the virtual clock while v86's own loop is still running: the clock switch to virtual pauses v86 first
-app.js	1936	809d7cec	the machine replaced (Boot) while resume awaited em.stop(): a race that cannot be forced
-app.js	1946	11100745	pending JIT input slices when switching to v86's own loop: only after typed keys on the virtual clock just before the switch; a timing race
-app.js	1948	809d7cec	the machine replaced while resume awaited jitFlush: a race
-app.js	2006	6385ca18	jitLoop: the machine paused or replaced while it flushed pending inputs: a race
-app.js	2015-2017	1d975bb8	a replay whose next input is a mode change (the recorded run stepped from here) inside the JIT loop: replay files of the suites switch modes only while paused
-app.js	2029	1de27799	jitLoop after jitExactStop reported "gone" (the run paused or replaced during the exact stop): a race
-app.js	2071	52fbcd10	jitExactStop entered with an end already set by the slice that just ran: the slice stops at the end and the loop checks st.dead() before calling it
-app.js	2106	890e28b8	the exact stop's stepper loop finding the run paused or replaced between its slices: a race
-app.js	2113	7f4f045e	pause() without a ready machine: the Pause control is disabled then; a race with Boot
-app.js	2168	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
-app.js	2229-2233	b19cf933	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
-app.js	2265	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
-app.js	2330	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
-app.js	2364	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
-app.js	2401	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
-app.js	2426	c514e459	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
-app.js	2586-2593	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
-app.js	2762-2766	f4b1cd10	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
-app.js	3122	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
-app.js	3423	1d380376	doStep without a stepper or during a reverse step: the Step control is disabled then
-app.js	3426	0b4124ba	doStep when the machine went away while pausing: a race with Boot
-app.js	3457-3459	eafb485c	Step's own 5 s check: stepper.run gets the time left as its own limit and returns "time" first; this only fires when a slice ends by count just after 5 s (the 5 s limit itself is tested: misc panic_text)
-app.js	3508	ac861e5a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
-app.js	3563	1d380376	doRunTo without a stepper or during a reverse step: Run to is disabled then
-app.js	3574	0b4124ba	doRunTo when the machine went away while pausing: a race with Boot
-app.js	3576	56c3d169	a Run to while a replay plays: the replay suite stops replays with Pause and Step only
-app.js	3609-3611	37a65175	a fast Run to aborted (Pause during the JIT to the kernel entry) that did not reach the target: a race between Pause and the fast-forward's last slice
-app.js	3825	e626d78f	showTip on an element without data-tip: every listener is on [data-tip] or tip marks, which always have it
-app.js	3859-3861	9e52f7a0	sometimes: tipReanchor when the redrawn listing no longer has the open popover's mark (the line scrolled out of the drawn page): a listing redrawn at another page while a popover is pinned, a race with stepping; ran in run 43602952211 only (of 43600287802, 43602952211, 43605289270)
-app.js	3978	ad825671	a touch long press cancelled by moving more than 10 px: CDP touch emulation in the suites taps without moving
-app.js	3984	4a771b70	the context menu after a long press on a tip: headless Chromium sends no contextmenu for an emulated long touch
+app.js	1567	7f4f045e	scan without a running machine: the Scan button and the autoscan timer are disabled or stopped while there is none
+app.js	1717-1719	48986f45	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
+app.js	1723	809d7cec	the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
+app.js	1808-1809	e5830e96	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
+app.js	1904	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
+app.js	1909-1912	9354bbed	Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead
+app.js	1918-1920	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue
+app.js	1923	7d7e94f8	switching to stepped while v86's own loop runs (real-time clock at full speed, then a slower speed): the clock change and speed change paths pause first in every suite
+app.js	1940	ca1afe12	resume on the virtual clock while v86's own loop is still running: the clock switch to virtual pauses v86 first
+app.js	1942	809d7cec	the machine replaced (Boot) while resume awaited em.stop(): a race that cannot be forced
+app.js	1952	11100745	pending JIT input slices when switching to v86's own loop: only after typed keys on the virtual clock just before the switch; a timing race
+app.js	1954	809d7cec	the machine replaced while resume awaited jitFlush: a race
+app.js	2012	6385ca18	jitLoop: the machine paused or replaced while it flushed pending inputs: a race
+app.js	2021-2023	1d975bb8	a replay whose next input is a mode change (the recorded run stepped from here) inside the JIT loop: replay files of the suites switch modes only while paused
+app.js	2035	1de27799	jitLoop after jitExactStop reported "gone" (the run paused or replaced during the exact stop): a race
+app.js	2077	52fbcd10	jitExactStop entered with an end already set by the slice that just ran: the slice stops at the end and the loop checks st.dead() before calling it
+app.js	2112	890e28b8	the exact stop's stepper loop finding the run paused or replaced between its slices: a race
+app.js	2119	7f4f045e	pause() without a ready machine: the Pause control is disabled then; a race with Boot
+app.js	2174	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
+app.js	2235-2239	b19cf933	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
+app.js	2271	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
+app.js	2336	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
+app.js	2370	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
+app.js	2407	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
+app.js	2432	c514e459	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
+app.js	2592-2599	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
+app.js	2768-2772	f4b1cd10	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
+app.js	3128	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+app.js	3429	1d380376	doStep without a stepper or during a reverse step: the Step control is disabled then
+app.js	3432	0b4124ba	doStep when the machine went away while pausing: a race with Boot
+app.js	3463-3465	eafb485c	Step's own 5 s check: stepper.run gets the time left as its own limit and returns "time" first; this only fires when a slice ends by count just after 5 s (the 5 s limit itself is tested: misc panic_text)
+app.js	3514	ac861e5a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+app.js	3569	1d380376	doRunTo without a stepper or during a reverse step: Run to is disabled then
+app.js	3580	0b4124ba	doRunTo when the machine went away while pausing: a race with Boot
+app.js	3582	56c3d169	a Run to while a replay plays: the replay suite stops replays with Pause and Step only
+app.js	3615-3617	37a65175	a fast Run to aborted (Pause during the JIT to the kernel entry) that did not reach the target: a race between Pause and the fast-forward's last slice
+app.js	3831	e626d78f	showTip on an element without data-tip: every listener is on [data-tip] or tip marks, which always have it
+app.js	3865-3867	9e52f7a0	sometimes: tipReanchor when the redrawn listing no longer has the open popover's mark (the line scrolled out of the drawn page): a listing redrawn at another page while a popover is pinned, a race with stepping; ran in run 43602952211 only (of 43600287802, 43602952211, 43605289270)
+app.js	3984	ad825671	a touch long press cancelled by moving more than 10 px: CDP touch emulation in the suites taps without moving
+app.js	3990	4a771b70	the context menu after a long press on a tip: headless Chromium sends no contextmenu for an emulated long touch
 asmnames.js	74	f99e340d	sometimes: an operand that ASM_MEM does not parse as memory and that has no parenthesis: the genimport suite (gen-worker job) lists the code where its boot happens to pause, and only some of those listings have such an operand; ran in run 43605289270, not in 43588908776, 43600287802, 43602952211
 asmnames.js	173	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
 asmnames.js	270	a349dd93	module.exports: runs only under Node (test_dwarf.py), which jscov does not measure
@@ -211,33 +211,33 @@ livedis.js	47-49	639da600	iced failing to load (fetch or instantiate error): the
 livedis.js	76	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set
 livedis.js	140	ac623510	run() over an empty range or one past guest RAM: the code symbols and text sections of the shipped kernels lie in RAM with a size
 memevents.js	125	cd4dba2a	install() on a v86.wasm without the memory-event exports (mev_set) or a libv86.js without mem_pending: the site ships only the gen-v86.sh build, which has both
-memevents.js	208	44e02e66	a CPU access reported while recording is off: setOn(false) tells v86.wasm (mev_set) to stop reporting CPU accesses, so only E820 answers come then
-memevents.js	213	c5b13b62	acpiTry from a CPU access at an address no standard names: the memevents suite checks that no CPU event of hello, the minified Linux or Debian is unnamed (0 in every run), so this lookup never fires; mev_tables_case calls acpiTry directly
-memevents.js	286	376e22c8	query() before the first machine made the columns: its callers (the debug list, memmap.js, quests) run after a boot
-memevents.js	408	83b8f4d4	a memory BAR whose base is still 0 when the regions are rebuilt: SeaBIOS assigns every memory BAR of v86's PCI devices before the kernel starts, and the regions are rebuilt only after a write of a base
-memevents.js	591	558ba921	acpiTry finding neither ACPI nor an MP table: it runs at E820 answers, after v86's SeaBIOS has built its MP table, so it always finds that one
-memevents.js	605	c8b06019	restored() without a log or without a stepper: cpustate.js calls it after a restore, which needs a booted machine with both
-memevents.js	735	3bff6978	panel() without the #mev element: index.html has it
-memmap.js	230	a33b63c5	a zero-length segment between two equal edges: edges come from a Set, so two consecutive edges never repeat; defensive
-memmap.js	235	601a5d26	not run by the memmap suite yet (M track: a test would need two neighbouring segments named by the same region (a region split by another one inside it that ends where it starts); the shipped machines' regions do not touch that way)
-memmap.js	440-441	065a9f1a	sometimes: only first touch lighting a region for a sample of CPU RAM writes that is the first touch of that region: in the memmap suite whether such a sample is still to be applied after #mm_first is checked depends on the runner's frame timing; ran in run 43672893701 and the runs before it, not in 43682889014 (memmap.js and its suite unchanged in between)
-memmap.js	448	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
-memmap.js	454	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
-memmap.js	462-471	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
-memmap.js	498-500	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
-memmap.js	675	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
-memmap.js	897	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
-memmap.js	945-947	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
-memmap.js	1091	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
-memmap.js	1127	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
-memmap.js	1147	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
-memmap.js	1170	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
-memmap.js	1181	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
-quests.js	105	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
-quests.js	108-109	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
-quests.js	139	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
-quests.js	209	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
-quests.js	416-417	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
+memevents.js	206	44e02e66	a CPU access reported while recording is off: setOn(false) tells v86.wasm (mev_set) to stop reporting CPU accesses, so only E820 answers come then
+memevents.js	211	c5b13b62	acpiTry from a CPU access at an address no standard names: the memevents suite checks that no CPU event of hello, the minified Linux or Debian is unnamed (0 in every run), so this lookup never fires; mev_tables_case calls acpiTry directly
+memevents.js	284	376e22c8	query() before the first machine made the columns: its callers (the debug list, memmap.js, quests) run after a boot
+memevents.js	406	83b8f4d4	a memory BAR whose base is still 0 when the regions are rebuilt: SeaBIOS assigns every memory BAR of v86's PCI devices before the kernel starts, and the regions are rebuilt only after a write of a base
+memevents.js	589	558ba921	acpiTry finding neither ACPI nor an MP table: it runs at E820 answers, after v86's SeaBIOS has built its MP table, so it always finds that one
+memevents.js	603	c8b06019	restored() without a log or without a stepper: cpustate.js calls it after a restore, which needs a booted machine with both
+memevents.js	707	3bff6978	panel() without the #mev_on box (the Events tab's Record): index.html has it
+memmap.js	240	a33b63c5	a zero-length segment between two equal edges: edges come from a Set, so two consecutive edges never repeat; defensive
+memmap.js	245	601a5d26	not run by the memmap suite yet (M track: a test would need two neighbouring segments named by the same region (a region split by another one inside it that ends where it starts); the shipped machines' regions do not touch that way)
+memmap.js	450-451	065a9f1a	sometimes: only first touch lighting a region for a sample of CPU RAM writes that is the first touch of that region: in the memmap suite whether such a sample is still to be applied after #mm_first is checked depends on the runner's frame timing; ran in run 43672893701 and the runs before it, not in 43682889014 (memmap.js and its suite unchanged in between)
+memmap.js	458	1a59a2ac	not run by the memmap suite yet (M track: a test would need more than 40 animations at once: the suite's views never have that many events in one frame)
+memmap.js	464	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
+memmap.js	472-481	8689a3c1	a device's DMA into RAM: no kernel shipped here uses a disk or a network card, so no device event happens in the e2e runs (the memevents suite makes device writes only through the API in mev_negative_case, with the map closed)
+memmap.js	508-510	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
+memmap.js	685	95447f32	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
+memmap.js	907	fc3ec545	the label of a device pulse from the map's edge: no device event happens in the e2e runs (see 457-466)
+memmap.js	955-957	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
+memmap.js	1101	e7535193	goTo() without a stepper or without reverse.js: the go-there buttons exist only in the cell list of a booted machine, and index.html loads reverse.js
+memmap.js	1137	5ac5e61f	not run by the memmap suite yet (M track: a test would need a cell list opened while paused at a position before a later sample of CPU RAM writes)
+memmap.js	1157	f7d01f15	cellAt() for a pointer outside the map: pointer events on the canvas always lie inside its box
+memmap.js	1180	7dd65a6c	announce() before the segments exist: the cursor moves only on a map that was drawn, which made them
+memmap.js	1191	7dd65a6c	a key on the map before the segments exist: the map gets focus only once it was drawn, which made them
+quests.js	131	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
+quests.js	134-135	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
+quests.js	165	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
+quests.js	235	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
+quests.js	453-454	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
 rebuild.js	262-263	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
 rebuild.js	333	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	100	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send

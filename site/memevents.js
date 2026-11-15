@@ -109,10 +109,10 @@ const MEV = {
 	e820: [],
 	acpi: null,
 	acpiTried: -Infinity,
-	facts: [],     // derived from obs: { pos, kind, text } (the debug list, quests)
+	facts: [],     // derived from obs: { pos, kind, text } (the Events tab, quests)
 	check: null,
 	listTimer: null,
-	needs: new Set(), // who wants the events recorded: "list", "map", "quests", "url"
+	needs: new Set(), // who wants the events recorded: "list" (the Events tab), "map", "quests"
 	since: Infinity,  // recording without a gap from this position on (0: the whole run)
 
 	install(em, st) {
@@ -135,12 +135,10 @@ const MEV = {
 		const every = Number(q.get("memcheck"));
 		if (every > 0)
 			this.checkStart(every);
-		if (q.get("memevents") === "1")
-			this.needs.add("url");
 		this.setOn(this.needs.size > 0 || every > 0);
 	},
 
-	// The debug list or the memory map (memmap.js) is open or closed.
+	// The Events tab records, the memory map (memmap.js) is open, quests are watched.
 	need(who, on) {
 		if (on)
 			this.needs.add(who);
@@ -672,7 +670,7 @@ const MEV = {
 		c.next = st.steps + c.every;
 	},
 
-	// ---- the debug list (Memory tab) ----------------------------------------
+	// ---- one event in a line (tests, checks) ---------------------------------
 
 	describe(e) {
 		const parts = [e.pos.toLocaleString("en-US"), e.initiator, e.write ? "write" : "read", mevHex(e.addr, 8)];
@@ -696,53 +694,377 @@ const MEV = {
 		return parts.join("  ");
 	},
 
-	render() {
-		const box = document.getElementById("mev");
-		if (!box || !box.open)
+	// ---- the Events tab -----------------------------------------------------
+
+	listUser: null,  // the Record box as the user last set it (null: not touched)
+	tabShown: false,
+	drawn: "",       // what the table was drawn from (render skips a redraw of the same)
+	filter: { who: "", rw: "", region: "", text: "" },
+
+	panel() {
+		const box = document.getElementById("mev_on");
+		if (!box)
 			return;
-		const st = document.getElementById("mev_status");
+		box.addEventListener("change", () => {
+			this.listUser = box.checked;
+			this.record(box.checked);
+		});
+		for (const [id, key] of [["mev_who", "who"], ["mev_rw", "rw"], ["mev_regionf", "region"]])
+			document.getElementById(id).addEventListener("click", (ev) => {
+				const b = ev.target.closest("button[data-v]");
+				if (!b)
+					return;
+				this.filter[key] = b.dataset.v;
+				this.render();
+			});
+		document.getElementById("mev_search").addEventListener("input", (ev) => {
+			this.filter.text = ev.target.value.trim().toLowerCase();
+			this.render();
+		});
+		document.getElementById("mev_group").addEventListener("change", () => this.render());
+		if (new URLSearchParams(location.search).get("memevents") === "1")
+			this.record(true);
+	},
+
+	record(on) {
+		document.getElementById("mev_on").checked = on;
+		this.need("list", on);
+		this.render();
+	},
+
+	// app.js showTab: the table is drawn while the Events tab is shown, and
+	// opening it starts recording unless the user cleared Record. Recording
+	// goes on while other tabs are shown.
+	shown(on) {
+		this.tabShown = on;
+		clearInterval(this.listTimer);
+		this.listTimer = on ? setInterval(() => this.render(), 500) : null;
+		if (on && this.listUser !== false && !this.needs.has("list"))
+			this.record(true);
+		else if (on)
+			this.render();
+	},
+
+	// What a standard is, for the popover of a region's "named by".
+	stdText(std) {
+		const t = [
+			["IBM PC memory map", "The address layout of the IBM PC (1981) that every PC keeps below 1 MiB: RAM up to 640 KiB, video memory at 0xA0000-0xBFFFF, ROMs from 0xC0000, the system BIOS at 0xF0000-0xFFFFF."],
+			["E820", "The BIOS's memory map: the OS calls INT 15h with EAX=E820h and gets one address range per call with its type (1 usable RAM, 2 reserved, 3 and 4 ACPI). The page saw these answers."],
+			["PCI configuration", "PCI configuration mechanism #1: the OS reads each device's configuration space through ports 0xCF8 (address) and 0xCFC (data). A Base Address Register says where the device's registers are; writing all ones to it and reading it back gives their size."],
+			["MultiProcessor", "Intel MultiProcessor Specification: a table the BIOS leaves in memory, found by its _MP_ signature, listing the processors and I/O APICs with their addresses."],
+			["ACPI", "ACPI tables the firmware leaves in memory: the MADT lists the interrupt controllers (local APIC, I/O APICs), the HPET table the timer, each with its address."],
+			["IA32_APIC_BASE", "The model-specific register that holds the local APIC's address; at power-up it is 0xFEE00000 (Intel SDM, volume 3)."],
+		].find(([k]) => std.startsWith(k));
+		return t ? t[1] : "No standard the guest used names this address yet.";
+	},
+
+	// A group's key: who, read or write, bulk, region, source or (CPU) the
+	// function of the code.
+	groupKey(k) {
+		const c = this.cols, meta = c.meta[k];
+		let who = c.src[k];
+		if ((meta & 3) === MEV_CPU) {
+			const st = this.st, pa = c.eipPhys[k];
+			who = st && pa >= 0 ? st.symbolOf(pa) : -1;
+			if (who < 0)
+				who = "r" + this.regionOf(pa >>> 0);
+		}
+		return (meta & (3 | MEV_M_WRITE | MEV_M_BULK)) + ":" + c.region[k] + ":" + c.size[k] + ":" + who;
+	},
+
+	// The newest groups of consecutive events with the same key (one event
+	// each without grouping) that the filters let through, newest first.
+	groups(limit) {
+		const f = this.filter, grouping = document.getElementById("mev_group").checked;
+		const q = {};
+		if (f.who)
+			q.initiator = f.who;
+		if (f.rw)
+			q.write = f.rw === "write";
+		if (f.region !== "")
+			q.region = Number(f.region);
+		const idx = this.query(q), m = this.cap - 1, out = [];
+		for (let j = idx.length - 1; j >= 0 && out.length < limit; ) {
+			const k0 = idx[j] & m, key = grouping ? this.groupKey(k0) : null, ev = [idx[j]];
+			for (j--; grouping && j >= 0 && this.groupKey(idx[j] & m) === key; j--)
+				ev.push(idx[j]);
+			const g = this.groupInfo(ev);
+			if (f.text && !g.search.includes(f.text))
+				continue;
+			out.push(g);
+		}
+		return { out, events: idx.length };
+	},
+
+	// newest first: ev
+	groupInfo(ev) {
+		const e = this.event(ev[0]), r = this.nameOf(e.region);
+		const g = { ev, e, n: ev.length, r, from: this.cols.pos[ev[ev.length - 1] & (this.cap - 1)] };
+		let lo = e.addr, hi = e.addr + Math.max(1, e.size);
+		for (const i of ev) {
+			const k = i & (this.cap - 1);
+			lo = Math.min(lo, this.cols.addr[k]);
+			hi = Math.max(hi, this.cols.addr[k] + Math.max(1, this.cols.size[k]));
+		}
+		g.lo = lo;
+		g.hi = hi;
+		g.fn = "";
+		if (e.initiator === "cpu" && this.st && e.eipPhys >= 0) {
+			const s = this.st.symbolOf(e.eipPhys);
+			g.fn = s >= 0 ? this.st.symName[s] : "";
+		}
+		// IBM PC text memory: even bytes are characters, odd ones colours
+		if (e.write && e.bytes === undefined && r.std === "IBM PC memory map" && / text /.test(r.name)) {
+			let s = "";
+			let next = -1;
+			for (let j = ev.length - 1; j >= 0; j--) {
+				const k = ev[j] & (this.cap - 1), a = this.cols.addr[k], v = this.cols.val[k];
+				if (next >= 0 && (a < next || a > next + 1) && s)
+					s += " ⏎ "; // another place on the screen: a new line
+				next = a + this.cols.size[k];
+				for (let b = 0; b < Math.min(4, this.cols.size[k]); b++)
+					if (!((a + b) & 1)) {
+						const ch = (v >>> (8 * b)) & 0xff;
+						s += ch >= 0x20 && ch < 0x7f ? String.fromCharCode(ch) : "·";
+					}
+			}
+			g.blank = !s.trim();
+			g.text = s.length > 160 ? s.slice(0, 160) + "..." : s;
+		}
+		g.who = e.initiator === "cpu" ? "CPU" : e.initiator === "device" ? "Device " + e.source : "Emulator: " + e.source;
+		g.search = [g.who, r.name, r.std || "", g.fn, mevHex(lo), mevHex(hi - 1), g.text || ""].join(" ").toLowerCase();
+		return g;
+	},
+
+	render() {
+		if (!this.tabShown)
+			return;
+		const $ = (id) => document.getElementById(id);
+		const num = (n) => n.toLocaleString("en-US");
+		const st = $("mev_status");
+		const f = this.filter;
+		this.chips(f);
 		if (this.missing || !this.cols) {
 			st.textContent = this.missing ? "This v86 build reports no memory events." : "Boot a kernel to record its memory events.";
+			$("mev_rows").replaceChildren();
+			this.drawn = "";
 			return;
 		}
 		const lost = this.first();
-		st.textContent = (this.on ? "Recording. " : "Not recording. ") + (this.n - lost).toLocaleString("en-US") + " events kept" +
-			(lost ? " (the oldest " + lost.toLocaleString("en-US") + " dropped)" : "") + ": cpu " + this.counts[0].toLocaleString("en-US") +
-			", device " + this.counts[1].toLocaleString("en-US") + ", emulator " + this.counts[2].toLocaleString("en-US") +
-			(this.check ? "; check every " + this.check.every.toLocaleString("en-US") + " instructions: " + this.check.checks + " done, " +
+		st.textContent = (this.on ? "Recording" : "Not recording (tick Record)") + ": " + num(this.n - lost) + " events" +
+			(lost ? " kept, the oldest " + num(lost) + " dropped" : "") + "; " + num(this.counts[0]) + " by the CPU, " +
+			num(this.counts[1]) + " by devices, " + num(this.counts[2]) + " by the emulator" +
+			(this.check ? "; check every " + num(this.check.every) + " instructions: " + this.check.checks + " done, " +
 				this.check.failures.length + " pages changed without an author" : "") + ".";
-		const list = document.getElementById("mev_list");
-		list.replaceChildren(...this.query({ limit: 100 }).reverse().map((i) => {
-			const li = document.createElement("li");
-			li.textContent = this.describe(this.event(i));
-			return li;
+		const sig = [this.gen, this.n, f.who, f.rw, f.region, f.text, $("mev_group").checked, this.active.length, this.facts.length].join("|");
+		if (sig === this.drawn && !this.linesPending)
+			return;
+		this.drawn = sig;
+		this.linesPending = false;
+		const { out, events } = this.groups(100);
+		$("mev_rows").replaceChildren(...out.map((g) => this.row(g)));
+		$("mev_more").textContent = !out.length ? (events ? "No event matches the search." : "No events match these filters yet.") :
+			"Showing the newest " + num(out.length) + " rows of " + num(events) + " events that match; filter or search to see others.";
+		const regs = this.active.slice().sort((a, b) => a.lo - b.lo || a.hi - b.hi);
+		$("mev_regions").replaceChildren(...regs.map((r) => {
+			const tr = document.createElement("tr");
+			tr.append(this.td("addresses", "Addresses", this.addrLinks(r.lo, r.hi)), this.td("region", "Region", this.regionEl(r)),
+				this.td("std", "Named by", this.stdEl(r.std)));
+			return tr;
 		}));
-		const regs = document.getElementById("mev_regions");
-		regs.replaceChildren(...this.active.map((r) => {
+		$("mev_facts").replaceChildren(...this.facts.slice(-50).map((x) => {
 			const li = document.createElement("li");
-			li.textContent = mevHex(r.lo, 8) + "-" + mevHex(r.hi - 1, 8) + " " + r.name + (r.std ? " (" + r.std + ")" : "");
-			return li;
-		}), ...this.facts.slice(-50).map((f) => {
-			const li = document.createElement("li");
-			li.textContent = f.pos.toLocaleString("en-US") + " " + f.text;
+			const b = document.createElement("b");
+			b.textContent = num(x.pos);
+			li.append(b, " ", x.text);
 			return li;
 		}));
 	},
 
-	panel() {
-		const box = document.getElementById("mev");
-		if (!box)
-			return;
-		const q = new URLSearchParams(location.search);
-		if (q.get("memevents") === "1" || Number(q.get("memcheck")) > 0)
+	// The filter chips: which is on; the region chips are the regions in the log.
+	chips(f) {
+		for (const [id, v] of [["mev_who", f.who], ["mev_rw", f.rw]])
+			for (const b of document.getElementById(id).querySelectorAll("button"))
+				b.setAttribute("aria-pressed", String(b.dataset.v === v));
+		const box = document.getElementById("mev_regionf");
+		const seen = new Set();
+		if (this.cols)
+			for (let i = this.first(); i < this.n; i++)
+				seen.add(this.cols.region[i & (this.cap - 1)]);
+		const ids = [...seen].sort((a, b) => this.nameOf(a).lo - this.nameOf(b).lo);
+		const key = ids.join(",");
+		if (box.dataset.key !== key) {
+			box.dataset.key = key;
+			const any = document.createElement("button");
+			any.type = "button";
+			any.dataset.v = "";
+			any.className = "mev-chip";
+			any.textContent = "any region";
+			box.replaceChildren(any, ...ids.map((id) => {
+				const r = this.nameOf(id), b = document.createElement("button");
+				b.type = "button";
+				b.className = "mev-chip";
+				b.dataset.v = String(id);
+				const sw = document.createElement("span");
+				sw.className = "sw mm-sw mm-k-" + (r.kind || "none");
+				b.append(sw, " " + r.name);
+				return b;
+			}));
+		}
+		for (const b of box.querySelectorAll("button"))
+			b.setAttribute("aria-pressed", String(b.dataset.v === f.region));
+	},
+
+	td(col, label, ...kids) {
+		const td = document.createElement("td");
+		td.dataset.col = col;
+		td.dataset.label = label;
+		td.append(...kids);
+		return td;
+	},
+
+	small(text) {
+		const s = document.createElement("span");
+		s.className = "mev-sub";
+		s.textContent = text;
+		return s;
+	},
+
+	btn(text, tip, fn, cls = "symlink") {
+		const b = document.createElement("button");
+		b.type = "button";
+		b.className = cls;
+		b.textContent = text;
+		b.title = tip;
+		b.addEventListener("click", fn);
+		return b;
+	},
+
+	// An address range: the Page tab for RAM, and the map.
+	addrLinks(lo, hi) {
+		const span = document.createElement("span");
+		span.className = "mev-addr";
+		const text = hi - lo > 1 ? mevHex(lo) + "-" + mevHex(hi - 1) : mevHex(lo);
+		const ram = this.cpu ? this.cpu.memory_size[0] >>> 0 : 0;
+		if (lo < ram && typeof selectPage === "function")
+			span.append(this.btn(text, "Open page " + mevHex(lo >>> 12 << 12) + " in the Page tab (hex and code)", () => selectPage(lo >>> 12)));
+		else
+			span.append(text);
+		span.append(" ", this.btn("map", "Show " + mevHex(lo) + " on the live memory map (Memory tab)", () => this.showOnMap(lo), "mev-act"));
+		return span;
+	},
+
+	showOnMap(addr) {
+		if (typeof showTab === "function")
+			showTab("memory");
+		const box = document.getElementById("mm");
+		if (!box.open)
 			box.open = true;
-		const sync = () => {
-			this.need("list", box.open);
-			clearInterval(this.listTimer);
-			this.listTimer = box.open ? setInterval(() => this.render(), 500) : null;
-			this.render();
+		// a map just opened lays its regions out in its first frame
+		const go = (k) => {
+			if (MMAP.segs.length) {
+				MMAP.showCell(MMAP.cellOf(addr));
+				document.getElementById("mm_map").scrollIntoView({ block: "center" });
+			} else if (k < 60) {
+				requestAnimationFrame(() => go(k + 1));
+			}
 		};
-		box.addEventListener("toggle", sync);
-		sync();
+		go(0);
+	},
+
+	regionEl(r) {
+		const span = document.createElement("span");
+		const sw = document.createElement("span");
+		sw.className = "sw mm-sw mm-k-" + (r.kind || "none");
+		span.append(sw, " ", this.btn(r.name, "Show this region on the live memory map (Memory tab)", () => this.showOnMap(r.lo || 0)));
+		return span;
+	},
+
+	stdEl(std) {
+		const s = document.createElement("span");
+		s.className = "mev-std tipmark";
+		s.tabIndex = 0;
+		s.setAttribute("role", "button");
+		s.textContent = std || "no standard yet";
+		s.dataset.tip = this.stdText(std || "");
+		return s;
+	},
+
+	row(g) {
+		const num = (n) => n.toLocaleString("en-US");
+		const e = g.e, tr = document.createElement("tr");
+		tr.className = "mev-row";
+		tr.dataset.who = e.initiator;
+		tr.dataset.n = String(g.n);
+		// Step: the newest; a group's first below; rewind
+		const step = document.createElement("span");
+		step.append(num(e.pos));
+		if (g.n > 1)
+			step.append(this.small(g.from === e.pos ? "one instruction" : "from " + num(g.from)));
+		const cells = [this.td("step", "Step", step)];
+		if (this.st && e.pos < this.st.steps && typeof revStepBack === "function")
+			cells[0].append(" ", this.btn("rewind", "Step back to instruction " + num(e.pos) + ", the one that did this (reverse history)",
+				() => revStepBack(this.st.steps - e.pos), "mev-act"));
+		const who = document.createElement("span");
+		who.className = "mev-who";
+		const sw = document.createElement("span");
+		sw.className = "sw mm-sw mm-l" + MEV_INITIATORS.indexOf(e.initiator);
+		const w = document.createElement("b");
+		w.textContent = e.initiator === "cpu" ? "CPU" : e.initiator === "device" ? "Device" : "Emulator";
+		who.append(sw, " ", w);
+		if (e.initiator !== "cpu") {
+			// a PCI device by its class, as the guest read it
+			const d = e.pci !== null && e.pci !== undefined && this.pci ? this.pci.get(e.pci) : null;
+			who.append(this.small((e.source || "") + (d ? ", " + pciClassName(d.cfg[0xb], d.cfg[0xa]) : "")));
+		}
+		cells.push(this.td("who", "Who", who));
+		const acc = document.createElement("span");
+		acc.className = "mev-rw";
+		acc.dataset.rw = e.write ? "write" : "read";
+		acc.textContent = (g.n > 1 ? num(g.n) + " " : "") + (e.write ? "write" : "read") + (g.n > 1 ? "s" : "");
+		cells.push(this.td("access", "Access", acc));
+		cells.push(this.td("address", "Address", this.addrLinks(g.lo, g.hi)));
+		cells.push(this.td("size", "Size", e.bytes !== undefined ? num(e.bytes) + " bytes" : (g.n > 1 ? num(g.n) + " × " : "") + e.size + (e.size === 1 ? " byte" : " bytes")));
+		const val = document.createElement("span");
+		val.className = "mev-val";
+		if (g.text !== undefined && g.blank) {
+			val.append("blank (spaces)");
+		} else if (g.text !== undefined) {
+			const q = document.createElement("q");
+			q.className = "mev-text";
+			q.textContent = g.text;
+			val.append(q);
+			if (g.n === 1)
+				val.append(this.small(mevHex(e.value, e.size * 2)));
+		} else if (e.bytes !== undefined) {
+			val.append(e.hash !== null ? this.small("checksum " + mevHex(e.hash, 8).slice(2)) : "");
+		} else {
+			val.append(e.size === 8 ? "0x" + e.value.toString(16) : mevHex(e.value, e.size * 2));
+			if (g.n > 1)
+				val.append(this.small("the newest"));
+		}
+		cells.push(this.td("value", "Value", val));
+		const reg = this.regionEl(g.r);
+		reg.append(" ", this.stdEl(g.r.std));
+		cells.push(this.td("region", "Region", reg));
+		const code = document.createElement("span");
+		if (e.initiator === "cpu") {
+			if (g.fn) {
+				const b = document.createElement("b");
+				b.textContent = g.fn;
+				code.append(b, " ");
+			}
+			const fr = typeof dbgFrames === "function" && e.eipPhys >= 0 ? dbgFrames(e.eipPhys) : null;
+			if (fr && fr.state === "loading")
+				this.linesPending = true;
+			if (fr && fr.state === "ok" && fr.frames[0].file && typeof srcLinkEl === "function")
+				code.append(srcLinkEl(fr.frames[0].file, fr.frames[0].line, null, e.eipPhys), " ");
+			if (!g.fn && e.eipPhys >= 0)
+				code.append("code in " + this.nameOf(this.regionOf(e.eipPhys >>> 0)).name + " ");
+			code.append(this.small("EIP " + mevHex(e.eip)));
+		}
+		cells.push(this.td("code", "Code", code));
+		tr.append(...cells);
+		return tr;
 	},
 };

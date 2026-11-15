@@ -24,6 +24,11 @@ site = Path(__file__).resolve().parent
 CHROME = {
     "controls": "labels of the controls above the screen (muted)",
     "mm-map": "the frame around the live memory map (a grey border)",
+    "mev-chip": "the Events tab's filter chips (the link colour when on)",
+    "mev-row": "an Events row's left edge: its initiator's colour, the swatches of the Live memory map legend (mm-l0 to mm-l2)",
+    "mev-std": "the standard under an Events region (muted, dotted: its popover says what the standard is)",
+    "mev-sub": "secondary text in an Events cell (muted)",
+    "mev-table": "the Events tables' lines and their links",
     "runbar": "labels of the run controls (muted)",
     "srcpick": "labels of the source picker (muted)",
     "note": "notes under controls (muted text)",

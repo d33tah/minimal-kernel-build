@@ -141,7 +141,8 @@ const MMAP = {
 		});
 		map.addEventListener("blur", () => { this.dirtyAll = true; });
 		document.addEventListener("visibilitychange", () => this.schedule());
-		new MutationObserver(() => this.schedule()).observe($("panel_memory"), { attributes: true, attributeFilter: ["hidden"] });
+		for (const p of ["panel_memory", "panel_quests"])
+			new MutationObserver(() => this.schedule()).observe($(p), { attributes: true, attributeFilter: ["hidden"] });
 		this.drawKey();
 		this.setOpen(box.open, false);
 	},
@@ -196,7 +197,16 @@ const MMAP = {
 	},
 
 	visible() {
-		return this.open && !$("panel_memory").hidden && document.visibilityState !== "hidden";
+		return this.open && !$("mm").closest("[role=tabpanel]").hidden && document.visibilityState !== "hidden";
+	},
+
+	// The map is in the Memory tab and goes with the Quests tab while that
+	// is shown (its quests are answered on it); app.js showTab.
+	place(tab) {
+		const box = $("mm"), slot = $(tab === "quests" ? "qs_mapslot" : "mm_home");
+		if (box.parentElement !== slot)
+			slot.append(box);
+		this.schedule();
 	},
 
 	schedule() {

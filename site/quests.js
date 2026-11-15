@@ -27,6 +27,32 @@ const QS_TEXT_LO = 0xb8000, QS_TEXT_HI = 0xc0000;
 const qsHex = (n) => "0x" + (n >>> 0).toString(16);
 const qsNum = (n) => n.toLocaleString("en-US");
 
+// Text with its key values (addresses, numbers with a unit, register and
+// interrupt names, signatures) set off as <code>.
+const QS_KEY_RE = /(0x[0-9A-Fa-f]+(?:-0x[0-9A-Fa-f]+)?|\b\d[\d,]*(?: bytes| KiB| MiB)|INT 15h|EAX=E820h|_MP_|0x55 0xAA)/;
+
+function qsRich(el, text) {
+	el.replaceChildren(...String(text).split(QS_KEY_RE).map((part, k) => {
+		if (!(k & 1))
+			return part;
+		const c = document.createElement("code");
+		c.className = "qs-key";
+		c.textContent = part;
+		return c;
+	}));
+}
+
+// A card's state in words.
+function qsChip(s) {
+	switch (s.state) {
+	case "open": return "To do";
+	case "solved": return "Solved";
+	case "boot": return "Boot again first";
+	case "never": return /Debian/.test(s.why || "") ? "Needs Debian" : "Not on this kernel";
+	default: return "Waiting for the run";
+	}
+}
+
 // "187,136", "187136 bytes", "0x2db00", "35.5 KiB", "2 MiB" -> a number;
 // anything else NaN.
 function qsParse(text) {
@@ -372,24 +398,35 @@ const QUESTS = {
 	active: null,     // the id of the quest whose card had the focus last
 	wins: 0,          // celebrations shown (the tests read it)
 
+	user: null,       // the "Watch this run" box as the user last set it (null: not touched)
+
 	init() {
 		this.load();
-		const box = $("qs");
+		const box = $("qs_on");
 		const q = new URLSearchParams(location.search);
 		let remembered = false;
 		try {
 			remembered = localStorage.getItem(QS_OPEN_KEY) === "1";
-		} catch (e) { /* no storage: closed */ }
-		if (q.get("quests") === "1" || (remembered && q.get("quests") !== "0"))
-			box.open = true;
-		box.addEventListener("toggle", () => this.setOpen(box.open, true));
+		} catch (e) { /* no storage: off */ }
+		box.addEventListener("change", () => {
+			this.user = box.checked;
+			this.setOpen(box.checked, true);
+		});
 		$("qs_reset").addEventListener("click", () => this.reset());
-		this.setOpen(box.open, false);
+		this.setOpen(q.get("quests") === "1" || (remembered && q.get("quests") !== "0"), false);
 		this.timer = setInterval(() => this.tick(), QS_TICK_MS);
+	},
+
+	// app.js showTab: opening the Quests tab watches the run (remembered),
+	// unless the user cleared the box; it goes on while other tabs are shown.
+	shown(on) {
+		if (on && !this.open && this.user !== false)
+			this.setOpen(true, true);
 	},
 
 	setOpen(open, remember) {
 		this.open = open;
+		$("qs_on").checked = open;
 		if (remember) {
 			try {
 				localStorage.setItem(QS_OPEN_KEY, open ? "1" : "0");
@@ -463,10 +500,12 @@ const QUESTS = {
 			const std = document.createElement("span");
 			std.className = "qs-std";
 			std.textContent = q.std;
-			top.append(mark, h, std);
+			const chip = document.createElement("span");
+			chip.className = "qs-chip";
+			top.append(mark, h, chip, std);
 			const task = document.createElement("p");
 			task.className = "qs-task";
-			task.textContent = q.task;
+			qsRich(task, q.task);
 			const why = document.createElement("p");
 			why.className = "note qs-why";
 			const fb = document.createElement("p");
@@ -475,7 +514,7 @@ const QUESTS = {
 			const won = document.createElement("p");
 			won.className = "qs-wontext";
 			won.hidden = true;
-			const card = { li, q, mark, task, why, fb, won, state: "" };
+			const card = { li, q, mark, chip, task, why, fb, won, state: "" };
 			li.append(top, task, why);
 			if (q.kind === "number" || q.kind === "address") {
 				const form = document.createElement("form");
@@ -521,7 +560,8 @@ const QUESTS = {
 			const hb = document.createElement("button");
 			hb.type = "button";
 			hb.className = "qs-hintbtn";
-			hb.textContent = "Hint";
+			hb.textContent = "Show me";
+			hb.title = "A hint, and the place blinks on the live memory map";
 			hb.addEventListener("click", () => this.hint(card));
 			tools.append(hb);
 			if (q.page !== undefined) {
@@ -543,7 +583,7 @@ const QUESTS = {
 			const hint = document.createElement("p");
 			hint.className = "qs-hint";
 			hint.hidden = true;
-			hint.textContent = q.hint;
+			qsRich(hint, q.hint);
 			card.hintText = hint;
 			const learn = document.createElement("details");
 			learn.className = "qs-learn";
@@ -597,9 +637,13 @@ const QUESTS = {
 
 	show(card, s) {
 		const q = card.q, li = card.li;
-		if (q.taskEnd)
-			card.task.textContent = q.task + q.taskEnd(this.run);
+		if (q.taskEnd) {
+			const t = q.task + q.taskEnd(this.run);
+			if (card.task.textContent !== t)
+				qsRich(card.task, t);
+		}
 		li.dataset.state = s.state;
+		card.chip.textContent = qsChip(s);
 		card.why.textContent = s.state === "open" || s.state === "solved" ? "" : s.why || "";
 		card.why.hidden = !card.why.textContent;
 		card.boot.hidden = s.state !== "boot";
@@ -607,7 +651,7 @@ const QUESTS = {
 		// what was found: from this run once it has it, else when it was solved
 		const info = !!(this.run && this.run[q.id]);
 		if (s.state === "solved" && (card.state !== "solved" || (info && !card.wonInfo))) {
-			card.won.textContent = info ? q.won(this.run) : "Solved in this browser on " + new Date(this.solvedHere()[q.id]).toLocaleString("en-GB") + ".";
+			qsRich(card.won, info ? q.won(this.run) : "Solved in this browser on " + new Date(this.solvedHere()[q.id]).toLocaleString("en-GB") + ".");
 			card.wonInfo = info;
 			card.won.hidden = false;
 			card.fb.textContent = "";

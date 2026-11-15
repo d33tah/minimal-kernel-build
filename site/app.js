@@ -1222,7 +1222,7 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "settings", "about"];
+const TABS = ["machine", "memory", "events", "quests", "page", "debugger", "calls", "source", "snapshots", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
 // The Machine tab first: it holds the VM's screen and run controls.
@@ -1271,6 +1271,9 @@ function showTab(name) {
 		renderContext();
 	if (tab === "settings")
 		renderSettings();
+	MMAP.place(tab); // memmap.js: the live memory map goes with the Quests tab
+	MEV.shown(tab === "events"); // memevents.js
+	QUESTS.shown(tab === "quests"); // quests.js
 	graphShow(tab === "calls");
 	covShow(tab === "source");
 }
@@ -1340,8 +1343,11 @@ function readHash() {
 		h = h.slice(0, at);
 	}
 	let [name, addr] = h.split("/");
-	if (!name && !navBuilt)
-		name = new URLSearchParams(location.search).get("tab"); // ?tab=calls when the URL has no hash
+	if (!name && !navBuilt) {
+		// ?tab=calls when the URL has no hash; ?quests=1, ?memevents=1 open their tabs
+		const q = new URLSearchParams(location.search);
+		name = q.get("tab") || (q.get("quests") === "1" ? "quests" : q.get("memevents") === "1" ? "events" : null);
+	}
 	if (addr) {
 		const a = parseInt(addr, 16);
 		if (Number.isFinite(a))

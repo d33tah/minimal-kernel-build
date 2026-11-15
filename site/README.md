@@ -1894,9 +1894,8 @@ A Step back or a restored snapshot drops the events from the restored
 count on (and the observations, so region names are as they were then);
 running on records the same events again.
 
-The Memory tab's "Memory events" list (closed by default) records while it
-is open: the newest 100 events, the regions known now and the last
-observations. `?memevents=1` opens it at load.
+The Events tab (M4, below) shows them; it records from its first opening
+on. `?memevents=1` records from the load and opens the tab.
 
 **Checking mode** (`?memcheck=N`): every N instructions every 4 KiB RAM page
 is hashed (`mev_hash_pages`, in wasm). A page that changed with no CPU
@@ -1962,7 +1961,7 @@ characters glow).
 
 ## Quests (M3)
 
-The Memory tab's "Quests" (`quests.js`, closed by default, remembered;
+The Quests tab (`quests.js`, M4: before that a panel of the Memory tab;
 `?quests=1` opens it) are seven challenges about the standards a PC boots
 with. The page checks each one itself, from the memory events
 (`memevents.js`), the machine's state and the live memory map:
@@ -1985,7 +1984,7 @@ paragraph on its standard with a link to the specification or a
 reputable page, a progress bar per kernel, a burst and a short note when
 one is solved, and Start over. Solved quests are stored per kernel in
 `localStorage` (`mkb-quests`); without storage they are kept until the
-page is closed and a note says so. While the panel is open the page
+page is closed and a note says so. While the run is watched for quests the page
 records memory events; `MEV.since` says from which instruction the log
 has no gap, and "First paint" offers Boot again when it is not 0. No DMA
 quest: no kernel here makes a device write RAM.
@@ -2000,6 +1999,59 @@ on the map, the celebration, the reload, Start over, a late opening with
 Boot again, no storage, 390 px light and dark; on Debian the PCI class (a
 wrong choice first), the first BAR the OS sized and the I/O APIC (its hint
 blinks the MP table's pointer).
+
+## Events and Quests tabs (M4)
+
+Operator 2026-11-15: "quests powinien być nową zakładką, events też i jest
+nieczytelne". The memory events and the quests have tabs of their own
+(📋 Events, 🎯 Quests, after Memory, which keeps the page grid and the live
+memory map). `#events`, `#quests`, `?tab=events`, `?tab=quests` open them;
+without a hash `?quests=1` opens Quests and `?memevents=1` Events (a hash
+wins). While the Quests tab is shown the live memory map moves beside its
+cards (`MMAP.place`; sticky at 1100 px and wider), since its quests are
+answered on the map, and goes back to the Memory tab after.
+
+Opening the Events tab starts recording (`MEV.need("list")`, the Record
+box); it goes on while other tabs are shown, until the user clears Record,
+which then stays cleared. Opening the Quests tab turns on "Watch this run
+for quests" (remembered, as the open panel was before). The table is drawn
+only while its tab is shown, and only when the log, the filters or the
+debug info changed.
+
+The events table (`memevents.js`, `MEV.render`): columns Step, Who,
+Access, Address, Size, Value, Region (named by), Code. Each row's left edge
+and its Who swatch have the initiator's colour of the live memory map, each
+region the map's region-kind swatch. Consecutive events with the same
+initiator, access, size, region and source (the CPU's: the function of the
+code, or the region the code runs from) are one row with their count;
+writes into the IBM PC text memory are spelled out as text (⏎ where the
+writes move to another place on the screen). Filter chips by initiator,
+read/write and region (the regions in the log), a search box (function,
+region, standard, address, text), and "group repeats". Every address opens
+its page in the Page tab, "map" shows it on the live memory map, "rewind"
+steps back to the instruction; the standard under each region has a
+popover saying what that standard is. Below: the regions the guest's
+standards name (table) and what the guest learned. At 760 px and less the
+rows become cards with their column names, the chips one scrolling row
+per filter.
+
+Quest cards say their state in words (To do, Solved, Needs Debian, Boot
+again first, Waiting for the run), a card this kernel cannot give is
+dashed at full contrast, the key values in the texts are set off as code,
+and the hint button is "Show me".
+
+The test (`test_browser.py`, suite `memtabs`): the deep links above with
+the map's place; the hash of a tab click; recording while the Machine tab
+is shown (hello paused, then run to its end with the Events tab hidden),
+Record cleared stays cleared; column names, a grouped CPU row spelling
+"Hello, World! ⏎ Still alive" from `put_line hello.c:17`, the chips, the
+search, ungrouped rows; the address to the Page tab, map to the cell in
+the text memory, rewind; a kernel switch to the minified Linux (a new log
+with "Still alive", the quests counted for it, its cards for Debian with
+their chip at full opacity); every text cell 13 px or more (quest texts
+14 px) with a WCAG contrast of 4.5 or more in light and dark; at 390 px the
+eleven emoji in one row of 30 px buttons, rows as cards, no horizontal
+scroll, light and dark.
 
 
 ## Debug info: help, sizes, times and tests

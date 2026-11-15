@@ -30,7 +30,8 @@ SHA-256), since wasi-libc does not install it.
 
 nasm: the release tarball pinned by SHA-256, configured for
 wasm32-wasip1 and stripped; the result is pinned too and checked after
-the build and by --check. The pin is the build in debian:trixie (the
+the build and by --check. SOURCE_DATE_EPOCH=0 fixes the __DATE__ that
+nasm -v prints. The pin is the build in debian:trixie (the
 kernels job's container; the same bytes from CI and from d-claude). A
 Debian 13 host outside that container made other bytes (962,038 B
 against 1,448,940 B, other data and a target_features section), so the
@@ -64,7 +65,7 @@ NASM_VERSION = "2.16.03"
 NASM_URL = f"https://www.nasm.us/pub/nasm/releasebuilds/{NASM_VERSION}/nasm-{NASM_VERSION}.tar.xz"
 NASM_TAR_SHA256 = "1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148"
 NASM_SUMS = {
-    "nasm.wasm": "8d3f3afd8df4de90c78d9acdd9652152747a0a36ee1d8de2ac3c77443510a4b3",
+    "nasm.wasm": "0b0afa818c430f4914a8e9c3cc1067b5af4e74cf95219e123abad42707862447",
     "LICENSE.nasm": "1563996c52e220e15ef2418e67d39488255aa8c28c89e617074d3afe3ee329e0",
 }
 
@@ -204,10 +205,14 @@ def build_nasm(w, out):
             t.extractall(tmp, filter="data")
         src = pathlib.Path(tmp) / f"nasm-{NASM_VERSION}"
         cc = " ".join(w.cc)
+        # nasm -v prints __DATE__: without a fixed date the pin held for
+        # one day only (2026-11-14; run 43656763884 on the 15th made
+        # other bytes). clang takes __DATE__ and __TIME__ from it.
+        env = dict(os.environ, SOURCE_DATE_EPOCH="0")
         subprocess.run(["./configure", "--host=wasm32-wasip1", f"CC={cc}", "CFLAGS=-O2",
                         "LDFLAGS=-Wl,--strip-all", f"AR={w.sdk}/bin/llvm-ar", f"RANLIB={w.sdk}/bin/llvm-ranlib"],
-                       cwd=src, check=True, stdout=subprocess.DEVNULL)
-        subprocess.run(["make", f"-j{os.cpu_count() or 1}", "nasm"], cwd=src, check=True, stdout=subprocess.DEVNULL)
+                       cwd=src, check=True, stdout=subprocess.DEVNULL, env=env)
+        subprocess.run(["make", f"-j{os.cpu_count() or 1}", "nasm"], cwd=src, check=True, stdout=subprocess.DEVNULL, env=env)
         shutil.copy(src / "nasm", out / "nasm.wasm")
         shutil.copy(src / "LICENSE", out / "LICENSE.nasm")
     print(f"nasm {NASM_VERSION} -> {out / 'nasm.wasm'} ({(out / 'nasm.wasm').stat().st_size} B)")

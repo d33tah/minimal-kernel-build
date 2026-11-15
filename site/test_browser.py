@@ -18866,8 +18866,7 @@ def suite_reverse(ctx):
 FRAMEGOLD = SITE / "testdata" / "frames-golden.json"
 # kernel: (URL params, Run to, then counts from there: A, back from A to B,
 # on from B to C, D or 0). The minified Linux's D is past its one task
-# switch, just before its end; its step back stays before ~1.75 M (later
-# checkpoints fail to re-run there: a v86 stack overflow). Debian's A has
+# switch, just before its end. Debian's A has
 # millions of frames, tens of tasks and hundreds of switches and
 # continuations, some of them dropped by the branch.
 FRAMEGOLD_CASES = {

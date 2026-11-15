@@ -343,17 +343,22 @@ function revFind(target) {
 }
 
 // The checkpoint's chain, the full one first, as the Worker takes it.
+// A checkpoint's base is known only once it is packed (B1: stepping goes
+// on while the Worker packs, so Step back right after stepping met the
+// newest checkpoints still packing, read no base and restored a delta's
+// few pages as the whole RAM).
 async function revBlob(cp) {
 	const list = [cp];
-	for (let x = cp; x.base;) {
+	for (let x = cp; ;) {
 		await x.ready;
+		if (!x.base)
+			break;
 		const b = REV.cps.find((c) => c.key === x.base);
 		if (!b)
 			throw new Error("checkpoint " + x.key + " lost its base");
 		list.unshift(b);
 		x = b;
 	}
-	await Promise.all(list.map((c) => c.ready));
 	const one = (c) => ({ key: c.key, blob: c.data, codec: "lz4", size: c.size });
 	return { ...one(cp), chain: list.slice(0, -1).map(one) };
 }

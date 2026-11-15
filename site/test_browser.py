@@ -606,8 +606,8 @@ def timeline_views(page, problems, shots, tag, r):
     """Focus, sandwich, search, depth cap, transposed and flame views."""
     timeline_pan(page, problems, r)
     k = page.evaluate("""() => { const st = G.stepper; let best = -1, w = -1;
-        for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'start_kernel') {
-            const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k]; if (e > w) { w = e; best = k; } }
+        for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'start_kernel') {
+            const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k); if (e > w) { w = e; best = k; } }
         return best; }""")
     page.evaluate(f"G.selected = {k}; renderGraphInfo()")
     r["sandwich"] = [page.get_attribute("#graph_info", "data-callers"), page.get_attribute("#graph_info", "data-callees")]
@@ -671,7 +671,7 @@ def graph_check(page, name, problems, shots, tag):
         if "start_kernel" not in names[:6]:
             problems.append(f"start_kernel is not among the top frames: {names[:6]}")
         ki = page.evaluate("""() => { const st = G.stepper; let incl = 0;
-            for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'kernel_init') incl += (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k];
+            for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'kernel_init') incl += (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k);
             return incl; }""")
         r["kernel_init_incl"] = ki
         if not 0 < ki < summ["total"]:
@@ -682,10 +682,10 @@ def graph_check(page, name, problems, shots, tag):
     # Tap the widest box at depth 0.
     xy = page.evaluate("""() => { const st = G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
         let best = -1, w = -1;
-        for (let k = 0; k < st.fStart.length; k++) if (st.fDepth[k] === 0 && !hiddenFrame(st, k)) {
-            const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - Math.max(st.fStart[k], runStart()); if (e > w) { w = e; best = k; } }
-        const a = Math.max(st.fStart[best], G.x0), b = Math.min(st.fEnd[best] < 0 ? st.steps : st.fEnd[best], G.x1);
-        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + G.areaTop + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
+        for (let k = 0; k < st.fr.n; k++) if (st.fr.depth(k) === 0 && !hiddenFrame(st, k)) {
+            const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), runStart()); if (e > w) { w = e; best = k; } }
+        const a = Math.max(st.fr.start(best), G.x0), b = Math.min(st.fr.end(best) < 0 ? st.steps : st.fr.end(best), G.x1);
+        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + G.areaTop + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fr.node(best))]; }""")
     page.mouse.click(xy[0], xy[1])
     if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
         problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
@@ -843,9 +843,9 @@ def import_case(browser, base, shots):
         page.set_input_files("#symfile", str(path))
         wait_for(lambda: page.evaluate("stepper && stepper !== window.oldStepper && !!stepper.end"), 60)
         sk_frame = page.evaluate("""() => { const st = G.stepper; let best = null;
-            for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'start_kernel') {
-                const incl = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k];
-                if (!best || incl > best.incl) best = { incl, depth: st.fDepth[k] }; }
+            for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'start_kernel') {
+                const incl = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k);
+                if (!best || incl > best.incl) best = { incl, depth: st.fr.depth(k) }; }
             return best && { ...best, total: st.steps - runStart() }; }""")
         r[path.name + "_start_kernel"] = sk_frame
         if not sk_frame or sk_frame["incl"] < sk_frame["total"] / 2:
@@ -1662,17 +1662,17 @@ def follow_case(browser, base, shots):
     return problems, r
 
 
-TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fStart.length, name = (k) => st.nodeName(st.fNode[k]);
+TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fr.n, name = (k) => st.nodeName(st.fr.node(k));
     const iv = [], bySym = {}, perTask = {}; let roots = 0, cont = 0;
-    for (let k = 0; k < n; k++) if (st.fParent[k] < 0 && st.fStart[k] >= s0) {
-        iv.push([st.fStart[k], st.fEnd[k] < 0 ? st.steps : st.fEnd[k]]);
-        if (st.fCont[k]) { cont++; continue; }
-        if (st.fIrq[k]) continue;
-        roots++; bySym[name(k)] = (bySym[name(k)] || 0) + 1; perTask[st.fTask[k]] = (perTask[st.fTask[k]] || 0) + 1; }
+    for (let k = 0; k < n; k++) if (st.fr.parent(k) < 0 && st.fr.start(k) >= s0) {
+        iv.push([st.fr.start(k), st.fr.end(k) < 0 ? st.steps : st.fr.end(k)]);
+        if (st.fr.cont(k)) { cont++; continue; }
+        if (st.fr.irq(k)) continue;
+        roots++; bySym[name(k)] = (bySym[name(k)] || 0) + 1; perTask[st.fr.task(k)] = (perTask[st.fr.task(k)] || 0) + 1; }
     iv.sort((a, b) => a[0] - b[0]); let last = s0, overlap = 0;
     for (const [a, b] of iv) { if (a < last) overlap += Math.min(b, last) - a; if (b > last) last = b; }
     const te = []; for (let k = 0; k < n; k++) if (name(k) === '__trace_early_add_event_dirs') {
-        let under = false; for (let p = st.fParent[k]; p >= 0; p = st.fParent[p]) if (name(p) === 'event_trace_init') under = true;
+        let under = false; for (let p = st.fr.parent(k); p >= 0; p = st.fr.parent(p)) if (name(p) === 'event_trace_init') under = true;
         te.push(under); }
     return { tasks: st.taskCount, roots, contRoots: cont, overlap, maxRootsPerTask: Math.max(0, ...Object.values(perTask)),
         sched: ['__schedule', '__switch_to', '__switch_to_asm', '__cond_resched', 'schedule'].filter((x) => bySym[x]),
@@ -1680,7 +1680,7 @@ TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fStart.leng
         switches: st.swStep.length, visibleSwitches: st.swStep.filter((t, i) => !(G.fold && st.swIrq[i])).length,
         markers: Number(document.getElementById('graph_canvas').dataset.switchMarkers),
         labels: Number(document.getElementById('graph_canvas').dataset.switchLabels),
-        rows: G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: st.fDepth.reduce((a, b) => Math.max(a, b), 0) }; }"""
+        rows: G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: (() => { let m = 0; for (let k = 0; k < n; k++) m = Math.max(m, st.fr.depth(k)); return m; })() }; }"""
 
 
 # Covered pixel columns per timeline row: the whole run at once vs the
@@ -1956,7 +1956,7 @@ def graph_controls(page, name, shots, r):
         pad = (m["t1"] - m["t0"]) * 0.05
         info = page.inner_text("#graph_info")
         boxes = page.evaluate("""([t0, t1, row]) => G.rects.filter(([k]) => G.layout.row[k] === row &&
-            G.stepper.fStart[k] >= t0 && G.stepper.fStart[k] < t1).length""", [m["t0"], m["t1"], m["row"]])
+            G.stepper.fr.start(k) >= t0 && G.stepper.fr.start(k) < t1).length""", [m["t0"], m["t1"], m["row"]])
         r["merged"] = [m["n"], m["row"], boxes, info[:80]]
         if abs(x0 - (m["t0"] - pad)) > 1e-6 * x1 or abs(x1 - (m["t1"] + pad)) > 1e-6 * x1 or \
                 not info.startswith(f"{m['n']:,} calls in this range") or "zoomed in" not in info or boxes < 1:
@@ -2036,8 +2036,8 @@ def graph_controls(page, name, shots, r):
     time.sleep(0.3)
     texts = page.evaluate(GRAPH_DRAW_JS)
     want = page.evaluate("""() => { const st = G.stepper, L = G.layout, tm = (G.x0 + G.x1) / 2;
-        for (let k = 0; k < st.fStart.length; k++) if (L.head[k] === k && L.row[k] === 0 && st.fStart[k] <= tm && fEnd(st, k) > tm)
-            return st.nodeName(st.fNode[k]); return null; }""")
+        for (let k = 0; k < st.fr.n; k++) if (L.isHead[k] && L.row[k] === 0 && st.fr.start(k) <= tm && fEnd(st, k) > tm)
+            return st.nodeName(st.fr.node(k)); return null; }""")
     sticky = [t for t, x, y in texts if t.startswith("↑ ")]
     r["sticky"] = [page.evaluate("G.yOff"), want, sticky[:1]]
     if page.evaluate("G.yOff") != 60 or not want or not sticky or not sticky[0].startswith("↑ " + want):
@@ -2076,13 +2076,13 @@ def graph_controls(page, name, shots, r):
 
     # "hide interrupts" off: the interrupt frames are drawn; the selection goes.
     page.evaluate("G.selected = 0; renderGraphInfo()")
-    n_on = page.evaluate("G.rects.filter(([k]) => G.stepper.fIrq[k]).length")
+    n_on = page.evaluate("G.rects.filter(([k]) => G.stepper.fr.irq(k)).length")
     page.uncheck("#graph_fold")
     time.sleep(0.3)
-    n_off, sel = page.evaluate("[G.rects.filter(([k]) => G.stepper.fIrq[k]).length, G.selected]")
+    n_off, sel = page.evaluate("[G.rects.filter(([k]) => G.stepper.fr.irq(k)).length, G.selected]")
     page.check("#graph_fold")
     time.sleep(0.3)
-    n_back = page.evaluate("G.rects.filter(([k]) => G.stepper.fIrq[k]).length")
+    n_back = page.evaluate("G.rects.filter(([k]) => G.stepper.fr.irq(k)).length")
     r["irq boxes"] = [n_on, n_off, n_back]
     if n_on or not n_off or n_back or sel != -1:
         problems.append(f"{name}: interrupt boxes with hide interrupts on/off/on {r['irq boxes']}, selection after the toggle {sel}")
@@ -3052,7 +3052,7 @@ def src_colour_check(page, name, phys, inl_phys, problems, r, shots):
         page.click("#src_close")
         show_tab(page, "calls")
         page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-            G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+            G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
         got["Graph detail"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Graph detail"]))
         show_tab(page, "debugger")
         for view, (_, text) in SRC_COLOUR_VIEWS.items():
@@ -3114,7 +3114,7 @@ def dwarf_case(browser, base, shots, name):
     # Calls tab: the detail of the innermost open frame names its call site and entry with file:line.
     show_tab(page, "calls")
     page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
     wait_for(lambda: "reading DWARF" not in (page.evaluate("(document.getElementById('graph_src') || {}).innerText") or ""), 15)
     r["graph_detail"] = page.evaluate("(document.getElementById('graph_src') || {}).innerText")
     if not r["graph_detail"] or not ("called from 0x" in r["graph_detail"] and re.search(r"\.[chS]:\d+", r["graph_detail"])):
@@ -5429,11 +5429,11 @@ def fnfacts_case(browser, base, shots, name):
         time.sleep(0.5)
         xy = page.evaluate("""() => { const st = G.stepper;
             let best = -1, w = -1;
-            for (let k = 0; k < st.fStart.length; k++) if (!hiddenFrame(st, k) && (() => { const x = dbgFnFacts(st.nodeName(st.fNode[k])); return x.state === 'ok' && x.fns.length; })()) {
-                const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - Math.max(st.fStart[k], runStart()); if (e > w) { w = e; best = k; } }
+            for (let k = 0; k < st.fr.n; k++) if (!hiddenFrame(st, k) && (() => { const x = dbgFnFacts(st.nodeName(st.fr.node(k))); return x.state === 'ok' && x.fns.length; })()) {
+                const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), runStart()); if (e > w) { w = e; best = k; } }
             if (best < 0) return null;
             G.selected = best; renderGraphInfo();
-            return [0, 0, st.nodeName(st.fNode[best])]; }""")
+            return [0, 0, st.nodeName(st.fr.node(best))]; }""")
         if not xy:
             problems.append(f"{name}: no Graph frame of a DWARF function")
         else:
@@ -7078,7 +7078,7 @@ def srclinks_case(browser, base, shots):
         page.click("#src_close")
     show_tab(page, "calls")
     page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
     wait_for(lambda: page.locator("#graph_src .srclink").count() > 0, 20)
     want, p = srclink_opens(page, "#graph_src")
     r["Graph detail"] = want
@@ -11122,7 +11122,7 @@ def graph_box_xy(page, fn, view="timeline"):
         let best = null;
         if (view === 'timeline') {
             for (const [k, x, y, w, h] of G.rects)
-                if (st.nodeName(st.fNode[k]) === fn && (!best || w > best[3])) best = [k, x, y, w, h];
+                if (st.nodeName(st.fr.node(k)) === fn && (!best || w > best[3])) best = [k, x, y, w, h];
         } else
             for (const [n, x, y, w, h] of G.boxes) if (st.nodeName(n) === fn) best = [n, x, y, w, h];
         if (!best) return null;
@@ -11380,7 +11380,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
         page.focus("#graph_canvas")
         page.keyboard.press("ArrowDown")
         time.sleep(0.3)
-        down = page.evaluate("[G.selected >= 0 ? G.stepper.fParent[G.selected] : -2, G.selected]")
+        down = page.evaluate("[G.selected >= 0 ? G.stepper.fr.parent(G.selected) : -2, G.selected]")
         page.keyboard.press("ArrowUp")
         time.sleep(0.3)
         up = page.evaluate("G.selected")
@@ -18342,7 +18342,7 @@ REV_STATE_JS = """async () => { const st = stepper, c = st.cpu, m = c.mem8.slice
     icount: c.instruction_counter[0] >>> 0, clock: CLOCK.now(), irq0: st.irq0, hlt: c.in_hlt[0], ram: sha, vga: runScreenHash(st) }; }"""
 REV_SAME = ("steps", "phys", "eip", "regs", "sregs", "eflags", "cr", "icount", "clock", "irq0", "hlt", "ram", "vga")
 REV_REC_JS = """() => { const st = stepper; let ns = 0; for (const x of st.nodeSteps) ns += x;
-  return { unique: st.unique, uniqueKernel: st.uniqueKernel, jumps: st.jumpCount, jumpKeys: st.jumps.size, frames: st.fStart.length,
+  return { unique: st.unique, uniqueKernel: st.uniqueKernel, jumps: st.jumpCount, jumpKeys: st.jumps.size, frames: st.fr.n,
     nodeSteps: ns, edges: st.edges.size, history: st.history.length, switches: st.swStep.length,
     end: st.end ? st.end.steps : null, milestones: st.milestones.map((m) => m.found ? m.found.steps : null) }; }"""
 # One pass over [steps, to) stopping at every function's first instruction:
@@ -18593,7 +18593,7 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
             page.click("#dbg_stepn")
             time.sleep(0.5)
             b = page.evaluate("[stepper.behind(), stepper.future.length, INPUT.redo.length, REV.cps.every((c) => c.steps <= %d),"
-                              " stepper.fStart.every((s) => s <= stepper.steps), INPUT.log.filter((e) => e.keys).length]" % now)
+                              " Array.from({ length: stepper.fr.n }, (_, k) => stepper.fr.start(k)).every((s) => s <= stepper.steps), INPUT.log.filter((e) => e.keys).length]" % now)
             r["branch"] = b
             if b[0] or b[1] or b[2] or not b[3] or not b[4] or not b[5]:
                 problems.append(f"{tag}: after a key typed while stepped back: behind {b[0]}, future {b[1]}, redo {b[2]}, "
@@ -18784,7 +18784,7 @@ FRAMEGOLD_CASES = {
     "debian-6.1-686": ("", "startup_32", 75000000, 5000000, 3000000, 0),
 }
 FRAMEGOLD_JS = """async () => {
-  const st = stepper, n = st.fStart.length;
+  const st = stepper, n = st.fr.n;
   const hex = (b) => Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, '0')).join('');
   const sha = async (o) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(o))));
   // Two 32-bit FNV-1a lanes over the low and high 32 bits of integers.
@@ -18794,8 +18794,8 @@ FRAMEGOLD_JS = """async () => {
     a[1] = Math.imul(a[1] ^ hi, 16777619) >>> 0; a[1] = Math.imul(a[1] ^ lo, 2246822519) >>> 0; };
   const fin = (a) => a[0].toString(16).padStart(8, '0') + a[1].toString(16).padStart(8, '0');
   const COLS = ['start', 'end', 'node', 'depth', 'parent', 'irq', 'cont', 'child', 'esp', 'task', 'from'];
-  const col = (k) => [st.fStart[k], st.fEnd[k], st.fNode[k], st.fDepth[k], st.fParent[k], st.fIrq[k], st.fCont[k], st.fChild[k],
-                      st.fEsp[k], st.fTask[k], st.fFrom[k]];
+  const col = (k) => [st.fr.start(k), st.fr.end(k), st.fr.node(k), st.fr.depth(k), st.fr.parent(k), st.fr.irq(k), st.fr.cont(k), st.fr.child(k),
+                      st.fr.esp(k), st.fr.task(k), st.fr.from(k)];
   const h = COLS.map(lanes), bad = [];
   for (let k = 0; k < n; k++) {
     const v = col(k);
@@ -18806,7 +18806,8 @@ FRAMEGOLD_JS = """async () => {
     }
   }
   const out = { steps: st.steps, frames: n, contFrames: st.contFrames, tasks: st.taskCount, task: st.task,
-    switches: st.swStep.length, bad, cols: {} };
+    switches: st.swStep.length, bad, cols: {}, frameBytes: st.fr.bytes(),
+    pastEnd: COLS.filter((c) => st.fr[c](n) !== undefined || st.fr[c](-1) !== undefined) };
   COLS.forEach((c, i) => { out.cols[c] = fin(h[i]); });
   out.state = await sha({ stack: st.stack, lanes: [...st.lanes], lane: st.lane, lastTop: st.lastTop, open: st.allOpen(),
     suspended: [...st.suspended], sw: [st.swStep, st.swTask, st.swIrq], taskOf: [...st.taskOf], taskRegion: st.taskRegion });
@@ -18822,7 +18823,7 @@ FRAMEGOLD_JS = """async () => {
       G.chains = chains; G.layout = null;
       const L = timelineLayout(st), a = lanes();
       for (let k = 0; k < n; k++) {
-        mix(a, L.row[k]); mix(a, L.head[k] === k ? 1 : 0); mix(a, L.deepest[k]);
+        mix(a, L.row[k]); mix(a, L.isHead[k] ? 1 : 0); mix(a, L.deepest[k]);
         if (L.row[k] + 1 > rows) rows = L.row[k] + 1;
       }
       out['layout_' + fold + '_' + chains] = fin(a) + ':' + await sha([...L.chain]);
@@ -18841,6 +18842,10 @@ FRAMEGOLD_JS = """async () => {
   out.counts = await sha(counts);
   return out; }"""
 FRAMEGOLD_SUMMARY = ("steps", "frames", "contFrames", "tasks", "switches", "rows")
+# Stepper.fr.bytes() per frame with a million frames or more: the columns
+# (FR_BYTES in stepper.js) plus the unfilled part of the last chunk (plain
+# JS arrays of the same fields take about 60, and twice that while growing).
+FRAMEGOLD_BYTES_PER_FRAME = 36
 
 
 def framegold_kernel(browser, base, name, case):
@@ -18901,11 +18906,18 @@ def suite_framegold(ctx):
         sha = hashlib.sha256((SITE / ctx.entries[name]["path"]).read_bytes()).hexdigest()
         problems, d = framegold_kernel(ctx.browser, ctx.base, name, case)
         parts = [w for w in "ABCD" if w in d]
-        r = {"seconds": d.get("seconds"), **{w: {k: d[w][k] for k in FRAMEGOLD_SUMMARY} for w in parts}}
+        # Memory of the frames (not in the golden: storage may change, the numbers may not).
+        per = {w: round(d[w].pop("frameBytes") / max(1, d[w]["frames"]), 1) for w in parts}
+        past = {w: d[w].pop("pastEnd") for w in parts}
+        r = {"seconds": d.get("seconds"), "bytes per frame": per, **{w: {k: d[w][k] for k in FRAMEGOLD_SUMMARY} for w in parts}}
         if not problems:
             for w in parts:
                 if d[w]["bad"]:
                     problems.append(f"{name} {w}: frame values that are not integers: {d[w]['bad']}")
+                if past[w]:
+                    problems.append(f"{name} {w}: reads past the last frame or before the first give values (want undefined): {past[w]}")
+                if d[w]["frames"] >= 1000000 and per[w] > FRAMEGOLD_BYTES_PER_FRAME:
+                    problems.append(f"{name} {w}: {per[w]} bytes per frame for {d[w]['frames']} frames, want <= {FRAMEGOLD_BYTES_PER_FRAME}")
             if not d["A"]["frames"] > d["B"]["frames"] < d["C"]["frames"]:
                 problems.append(f"{name}: frames A {d['A']['frames']}, B {d['B']['frames']}, C {d['C']['frames']}: "
                                 "the branch dropped none or the run recorded none after it")

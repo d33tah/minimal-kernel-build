@@ -63,11 +63,11 @@ function graphReset(st) {
 
 // The run starts at the kernel entry once it has been reached.
 const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
-const fEnd = (st, k) => (st.fEnd[k] < 0 ? recTo(st) : st.fEnd[k]);
+const fEnd = (st, k) => (st.fr.end(k) < 0 ? recTo(st) : st.fr.end(k));
 // The count the recordings go to: after stepping back (R2) the stepper
 // is behind them, and the timeline still ends there, with now marked.
 const recTo = (st) => (st.behind && st.behind() ? st.ahead : st.steps);
-const hiddenFrame = (st, k) => G.fold && st.fIrq[k];
+const hiddenFrame = (st, k) => G.fold && st.fr.irq(k);
 
 // Subsystem of a symbol: the top directory of the source file its first
 // instruction comes from (DWARF, only where already loaded: colouring
@@ -100,17 +100,17 @@ function subsystem(st, node) {
 }
 
 function frameColour(st, k) {
-	return st.fIrq[k] ? IRQ_COLOUR : PALETTE[subsystem(st, st.fNode[k])];
+	return st.fr.irq(k) ? IRQ_COLOUR : PALETTE[subsystem(st, st.fr.node(k))];
 }
 
 // Inclusive / self counts of a frame (open frames up to now).
 function frameCounts(st, k) {
-	const incl = fEnd(st, k) - st.fStart[k];
-	let child = st.fChild[k];
+	const incl = fEnd(st, k) - st.fr.start(k);
+	let child = st.fr.child(k);
 	// Open children are not in fChild yet.
 	for (const o of st.allOpen())
-		if (st.fParent[o] === k)
-			child += recTo(st) - st.fStart[o];
+		if (st.fr.parent(o) === k)
+			child += recTo(st) - st.fr.start(o);
 	return { incl, self: incl - child };
 }
 
@@ -130,15 +130,15 @@ function buildTree(st) {
 		}
 		return x;
 	};
-	for (let k = 0; k < st.fStart.length; k++) {
-		if (st.fStart[k] < start)
+	for (let k = 0; k < st.fr.n; k++) {
+		if (st.fr.start(k) < start)
 			continue;
-		const p = st.fParent[k];
+		const p = st.fr.parent(k);
 		const top = !(p >= 0 && nodeOf.has(p));
-		let parent = top ? (tasks ? taskNode(st.fTask[k]) : root) : nodeOf.get(p);
-		let name = st.nodeName(st.fNode[k]);
-		if (G.fold && st.fIrq[k]) {
-			if (p >= 0 && st.fIrq[p] && nodeOf.has(p)) { // inside a folded interrupt: count in it
+		let parent = top ? (tasks ? taskNode(st.fr.task(k)) : root) : nodeOf.get(p);
+		let name = st.nodeName(st.fr.node(k));
+		if (G.fold && st.fr.irq(k)) {
+			if (p >= 0 && st.fr.irq(p) && nodeOf.has(p)) { // inside a folded interrupt: count in it
 				nodeOf.set(k, nodeOf.get(p));
 				continue;
 			}
@@ -146,14 +146,14 @@ function buildTree(st) {
 		}
 		let t = parent.kids.get(name);
 		if (!t) {
-			t = { key: parent.key + "/" + name, name, node: st.fNode[k], incl: 0, self: 0, calls: 0, kids: new Map() };
+			t = { key: parent.key + "/" + name, name, node: st.fr.node(k), incl: 0, self: 0, calls: 0, kids: new Map() };
 			parent.kids.set(name, t);
 		}
 		const c = frameCounts(st, k);
 		t.incl += c.incl;
 		if (top && tasks)
 			parent.incl += c.incl;
-		if (!st.fCont[k]) // a continuation is the same call, resumed
+		if (!st.fr.cont(k)) // a continuation is the same call, resumed
 			t.calls++;
 		nodeOf.set(k, t);
 	}
@@ -200,47 +200,56 @@ function fitLabel(ctx, text, w) {
 // Display rows of the frames: interrupt frames hidden (when folded), and
 // single-child chains whose parent has almost no self time drawn as one
 // box "a > b > c" (when compressing). Cached until frames or settings change.
+// Per frame: row (-1 hidden), isHead (1: the frame starts its box; the
+// others are in chain under their head) and deepest (the deepest row below
+// it). A row is at most the frame's depth, so 16 bits hold it unless a
+// frame was deeper than that.
 function timelineLayout(st) {
-	const n = st.fStart.length;
+	const fr = st.fr, n = fr.n;
 	const key = n + "," + G.fold + "," + G.chains + "," + st.steps;
 	if (G.layout && G.layout.key === key)
 		return G.layout;
-	const kids = new Int32Array(n), row = new Int32Array(n).fill(-1), head = new Int32Array(n);
+	const Row = fr.maxDepth < 0x7fff ? Int16Array : Int32Array;
+	// Children shown per frame, counted up to 2 (only "exactly one" matters).
+	const kids = new Uint8Array(n), row = new Row(n).fill(-1), isHead = new Uint8Array(n);
 	for (let k = 0; k < n; k++) {
-		const p = st.fParent[k];
-		if (p >= 0 && !hiddenFrame(st, k))
+		const p = fr.parent(k);
+		if (p >= 0 && kids[p] < 2 && !hiddenFrame(st, k))
 			kids[p]++;
 	}
 	const chain = new Map(); // head -> names below it
 	for (let k = 0; k < n; k++) {
 		if (hiddenFrame(st, k))
 			continue;
-		const p = st.fParent[k];
+		const p = fr.parent(k);
 		if (p < 0 || row[p] < 0) {
 			row[k] = 0;
-			head[k] = k;
+			isHead[k] = 1;
 			continue;
 		}
-		const incl = fEnd(st, p) - st.fStart[p];
-		const self = incl - st.fChild[p] - (st.fEnd[p] < 0 || st.fEnd[k] < 0 ? fEnd(st, k) - st.fStart[k] : 0);
+		const incl = fEnd(st, p) - fr.start(p);
+		const self = incl - fr.child(p) - (fr.end(p) < 0 || fr.end(k) < 0 ? fEnd(st, k) - fr.start(k) : 0);
 		if (G.chains && kids[p] === 1 && self <= Math.max(2, incl * 0.01)) {
 			row[k] = row[p];
-			head[k] = head[p];
-			if (!chain.has(head[k]))
-				chain.set(head[k], []);
-			chain.get(head[k]).push(k);
+			// The head of p's box: up through the frames in its chain.
+			let h = p;
+			while (!isHead[h])
+				h = fr.parent(h);
+			if (!chain.has(h))
+				chain.set(h, []);
+			chain.get(h).push(k);
 		} else {
 			row[k] = row[p] + 1;
-			head[k] = k;
+			isHead[k] = 1;
 		}
 	}
-	const deepest = Int32Array.from(row);
+	const deepest = row.slice();
 	for (let k = n - 1; k >= 0; k--) {
-		const p = st.fParent[k];
+		const p = fr.parent(k);
 		if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
 			deepest[p] = deepest[k];
 	}
-	G.layout = { key, row, head, chain, deepest };
+	G.layout = { key, row, isHead, chain, deepest };
 	return G.layout;
 }
 
@@ -248,7 +257,7 @@ function timelineLayout(st) {
 // task_struct where vars.js varsTasks can read it, else a guess (taskGuesses).
 function taskInfo(st) {
 	const types = dbgHas() ? dbgTypes().state : "none";
-	const key = st.fStart.length + ":" + st.steps + ":" + st.taskCount + ":" + types + ":" + runState;
+	const key = st.fr.n + ":" + st.steps + ":" + st.taskCount + ":" + types + ":" + runState;
 	if (G.taskInfo && G.taskInfo.key === key)
 		return G.taskInfo.list;
 	const guess = taskGuesses(st);
@@ -266,7 +275,7 @@ function taskNames(st) {
 
 // Task names without task_struct: the boot task, then each task's thread function.
 function taskGuesses(st) {
-	const n = st.fStart.length;
+	const n = st.fr.n;
 	if (G.taskNames && G.taskNames.n === n)
 		return G.taskNames.names;
 	const names = new Array(st.taskCount).fill("");
@@ -278,21 +287,21 @@ function taskGuesses(st) {
 	const fallback = new Array(st.taskCount).fill("");
 	const setup = /^(sched_setscheduler.*|housekeeping_.*|set_cpus_allowed.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
 	for (let k = 0; k < n; k++) {
-		const t = st.fTask[k];
-		if (names[t] || st.fDepth[k] > 3 || st.fCont[k] || st.fIrq[k] || skip.test(st.nodeName(st.fNode[k])))
+		const t = st.fr.task(k);
+		if (names[t] || st.fr.depth(k) > 3 || st.fr.cont(k) || st.fr.irq(k) || skip.test(st.nodeName(st.fr.node(k))))
 			continue;
-		let p = st.fParent[k], viaThunk = false;
-		while (p >= 0 && thunk.test(st.nodeName(st.fNode[p]))) {
-			p = st.fParent[p];
+		let p = st.fr.parent(k), viaThunk = false;
+		while (p >= 0 && thunk.test(st.nodeName(st.fr.node(p)))) {
+			p = st.fr.parent(p);
 			viaThunk = true;
 		}
 		// kthread calls the thread function through a function pointer
 		// (a retpoline thunk on Debian), after setup calls of its own.
-		const pn = p >= 0 ? st.nodeName(st.fNode[p]) : "";
+		const pn = p >= 0 ? st.nodeName(st.fr.node(p)) : "";
 		if (/^ret_from_fork/.test(pn) || (pn === "kthread" && viaThunk))
-			names[t] = st.nodeName(st.fNode[k]);
-		else if (pn === "kthread" && !setup.test(st.nodeName(st.fNode[k])))
-			fallback[t] = st.nodeName(st.fNode[k]); // without retpolines: kthread's last other call
+			names[t] = st.nodeName(st.fr.node(k));
+		else if (pn === "kthread" && !setup.test(st.nodeName(st.fr.node(k))))
+			fallback[t] = st.nodeName(st.fr.node(k)); // without retpolines: kthread's last other call
 	}
 	for (let t = 1; t < names.length; t++)
 		names[t] = names[t] || fallback[t];
@@ -303,14 +312,14 @@ function taskGuesses(st) {
 }
 
 function frameLabel(st, L, k) {
-	const names = [st.nodeName(st.fNode[k])];
+	const names = [st.nodeName(st.fr.node(k))];
 	for (const c of L.chain.get(k) || [])
-		names.push(st.nodeName(st.fNode[c]));
+		names.push(st.nodeName(st.fr.node(c)));
 	return names.join(" › ");
 }
 
 function isUnder(st, k, f) {
-	for (let p = k; p >= 0; p = st.fParent[p])
+	for (let p = k; p >= 0; p = st.fr.parent(p))
 		if (p === f)
 			return true;
 	return false;
@@ -329,8 +338,8 @@ function drawTimeline() {
 	const line = css.getPropertyValue("--line").trim();
 	const bg = css.getPropertyValue("--bg").trim();
 	const L = timelineLayout(st);
-	const focus = G.focus >= 0 && G.focus < st.fStart.length ? G.focus : -1;
-	const t0 = focus >= 0 ? st.fStart[focus] : runStart();
+	const focus = G.focus >= 0 && G.focus < st.fr.n ? G.focus : -1;
+	const t0 = focus >= 0 ? st.fr.start(focus) : runStart();
 	const t1 = Math.max(t0 + 1, focus >= 0 ? fEnd(st, focus) : recTo(st));
 	if (!G.userMoved) {
 		G.x0 = t0;
@@ -346,7 +355,7 @@ function drawTimeline() {
 	const q = G.view === "timeline" ? $("graph_search").value.trim().toLowerCase() : "";
 	ctx.font = "11px system-ui, sans-serif";
 	ctx.textBaseline = "middle";
-	const n = st.fStart.length;
+	const n = st.fr.n;
 	// Minimap strip: the whole run (or the focused frame), shallow rows.
 	const msx = (t) => (t - t0) / (t1 - t0) * w;
 	// Calls narrower than a pixel mark their pixel column instead of being
@@ -356,9 +365,9 @@ function drawTimeline() {
 		miniCol.push(new Int32Array(Math.ceil(w) + 1).fill(-1));
 	for (let k = 0; k < n; k++) {
 		const r = L.row[k] - rowOff;
-		if (r < 0 || r > 5 || L.head[k] !== k || (focus >= 0 && !isUnder(st, k, focus)))
+		if (r < 0 || r > 5 || !L.isHead[k] || (focus >= 0 && !isUnder(st, k, focus)))
 			continue;
-		const a = Math.max(st.fStart[k], t0), b = Math.min(fEnd(st, k), t1);
+		const a = Math.max(st.fr.start(k), t0), b = Math.min(fEnd(st, k), t1);
 		if (b <= a)
 			continue;
 		const x = msx(a), ww = msx(b) - x;
@@ -434,12 +443,12 @@ function drawTimeline() {
 		return o;
 	};
 	for (let k = 0; k < n; k++) {
-		if (L.head[k] !== k || L.row[k] < 0)
+		if (!L.isHead[k] || L.row[k] < 0)
 			continue;
 		const r = L.row[k] - rowOff;
 		if (r < 0 || r > cap)
 			continue;
-		const a = st.fStart[k], b = fEnd(st, k);
+		const a = st.fr.start(k), b = fEnd(st, k);
 		if (b < G.x0 || a > G.x1)
 			continue;
 		if (focus >= 0 && !isUnder(st, k, focus))
@@ -472,7 +481,7 @@ function drawTimeline() {
 				o.full[col] = 1;
 		}
 		// A bookmarked function (K1): ★ before its name.
-		const bm = st.fNode[k] < st.symName.length && bmFnNames(st.symStart[st.fNode[k]]);
+		const bm = st.fr.node(k) < st.symName.length && bmFnNames(st.symStart[st.fr.node(k)]);
 		if (bm)
 			bmarked++;
 		const label = (bm ? "\u2605 " : "") + frameLabel(st, L, k);
@@ -480,7 +489,7 @@ function drawTimeline() {
 		if (hit)
 			matches++;
 		ctx.fillStyle = frameColour(st, k);
-		ctx.globalAlpha = q ? (hit ? 1 : 0.18) : st.fIrq[k] ? 0.6 : 0.9;
+		ctx.globalAlpha = q ? (hit ? 1 : 0.18) : st.fr.irq(k) ? 0.6 : 0.9;
 		ctx.fillRect(x, y, Math.max(rw - 0.5, 0.5), Math.max(rh - 0.5, 0.5));
 		ctx.globalAlpha = 1;
 		if (k === G.selected) {
@@ -603,9 +612,9 @@ function drawTimeline() {
 	if (!G.transpose && G.yOff > 0) {
 		const tm = (G.x0 + G.x1) / 2, hidden = [];
 		for (let k = 0; k < n; k++)
-			if (L.head[k] === k && L.row[k] >= rowOff && st.fStart[k] <= tm && fEnd(st, k) > tm &&
+			if (L.isHead[k] && L.row[k] >= rowOff && st.fr.start(k) <= tm && fEnd(st, k) > tm &&
 				(focus < 0 || isUnder(st, k, focus))) {
-				const [, y] = rect(st.fStart[k], fEnd(st, k), L.row[k] - rowOff);
+				const [, y] = rect(st.fr.start(k), fEnd(st, k), L.row[k] - rowOff);
 				if (G.flame ? y > areaTop + areaH : y < areaTop)
 					hidden.push([L.row[k], frameLabel(st, L, k)]);
 			}
@@ -658,12 +667,12 @@ function drawTimeline() {
 		const cur = st.stack[st.stack.length - 1];
 		const r = L.row[cur] - rowOff;
 		if (L.row[cur] >= 0 && r >= 0) {
-			const [x, y, rw, rh] = rect(st.fStart[cur], recTo(st), Math.min(r, cap));
+			const [x, y, rw, rh] = rect(st.fr.start(cur), recTo(st), Math.min(r, cap));
 			c.dataset.curRow = r;
 			c.dataset.curVisible = G.transpose ? (x >= 0 && x + rw <= w) : (y >= areaTop && y + rh <= areaTop + areaH);
 		}
 	}
-	c.dataset.focus = focus >= 0 ? st.nodeName(st.fNode[focus]) : "";
+	c.dataset.focus = focus >= 0 ? st.nodeName(st.fr.node(focus)) : "";
 	renderCrumbs(st);
 }
 
@@ -671,7 +680,7 @@ function drawTimeline() {
 function renderCrumbs(st) {
 	const el = $("graph_crumbs");
 	const f = G.focus;
-	const key = f + "," + (st ? st.fStart.length : 0);
+	const key = f + "," + (st ? st.fr.n : 0);
 	if (el.dataset.key === key)
 		return;
 	el.dataset.key = key;
@@ -682,7 +691,7 @@ function renderCrumbs(st) {
 	}
 	el.hidden = false;
 	const chain = [];
-	for (let p = f; p >= 0; p = st.fParent[p])
+	for (let p = f; p >= 0; p = st.fr.parent(p))
 		chain.unshift(p);
 	const btn = (text, k) => {
 		const b = document.createElement("button");
@@ -694,7 +703,7 @@ function renderCrumbs(st) {
 	};
 	el.append(btn("root", -1));
 	for (const k of chain.slice(-8))
-		el.append(" › ", btn(st.nodeName(st.fNode[k]), k));
+		el.append(" › ", btn(st.nodeName(st.fr.node(k)), k));
 }
 
 function focusFrame(k) {
@@ -743,7 +752,7 @@ function graphOpen(node) {
 }
 
 // The function node of the selected box (timeline frame or Top 30 node).
-const selectedNode = () => (G.selected < 0 || !G.stepper ? -1 : G.view === "timeline" ? G.stepper.fNode[G.selected] : G.view === "top" ? G.selected : -1);
+const selectedNode = () => (G.selected < 0 || !G.stepper ? -1 : G.view === "timeline" ? G.stepper.fr.node(G.selected) : G.view === "top" ? G.selected : -1);
 
 // Arrow keys on the timeline: Up the caller, Down the widest drawn callee,
 // Left and Right the next drawn box in the same row.
@@ -761,7 +770,7 @@ function timelineArrow(key) {
 				best = r;
 		next = best[0];
 	} else if (key === "ArrowUp") {
-		for (let p = st.fParent[k]; p >= 0 && next < 0; p = st.fParent[p])
+		for (let p = st.fr.parent(k); p >= 0 && next < 0; p = st.fr.parent(p))
 			if (drawn.has(p))
 				next = p;
 	} else if (key === "ArrowDown") {
@@ -812,7 +821,7 @@ function graphSelName(v) {
 	const st = v && v.st;
 	if (!st || v.selected < 0)
 		return "";
-	return st.nodeName(v.view === "timeline" ? st.fNode[v.selected] ?? -1 : v.selected);
+	return st.nodeName(v.view === "timeline" ? st.fr.node(v.selected) ?? -1 : v.selected);
 }
 
 // The function node of the box at client point (x, y), or -1 (a bookmark's target, K1).
@@ -822,7 +831,7 @@ function graphNodeAt(x, y) {
 	let node = -1;
 	if (st && G.view === "timeline") {
 		const k = timelineFrameAt(px, py);
-		node = k >= 0 ? st.fNode[k] : -1;
+		node = k >= 0 ? st.fr.node(k) : -1;
 	} else if (st && G.view === "top") {
 		const hit = G.boxes.find(([, bx, by, bw, bh]) => px >= bx && px <= bx + bw && py >= by && py <= by + bh);
 		node = hit ? hit[0] : -1;
@@ -849,18 +858,18 @@ function timelineSummary() {
 	const start = runStart();
 	let rootSum = 0;
 	const big = [];
-	for (let k = 0; k < st.fStart.length; k++) {
-		if (st.fStart[k] < start && fEnd(st, k) <= start)
+	for (let k = 0; k < st.fr.n; k++) {
+		if (st.fr.start(k) < start && fEnd(st, k) <= start)
 			continue;
-		const incl = fEnd(st, k) - Math.max(st.fStart[k], start);
-		if (st.fParent[k] < 0)
+		const incl = fEnd(st, k) - Math.max(st.fr.start(k), start);
+		if (st.fr.parent(k) < 0)
 			rootSum += incl;
-		if (st.fDepth[k] <= 3)
-			big.push({ name: st.nodeName(st.fNode[k]), depth: st.fDepth[k], incl, irq: !!st.fIrq[k] });
+		if (st.fr.depth(k) <= 3)
+			big.push({ name: st.nodeName(st.fr.node(k)), depth: st.fr.depth(k), incl, irq: !!st.fr.irq(k) });
 	}
 	big.sort((a, b) => b.incl - a.incl);
-	const d = st.fDepth.slice().sort((a, b) => a - b);
-	return { total: recTo(st) - start, rootSum, frames: st.fStart.length, top: big.slice(0, 25),
+	const d = Float64Array.from({ length: st.fr.n }, (_, k) => st.fr.depth(k)).sort();
+	return { total: recTo(st) - start, rootSum, frames: st.fr.n, top: big.slice(0, 25),
 		maxDepth: d.length ? d[d.length - 1] : 0, p99Depth: d.length ? d[Math.floor(d.length * 0.99)] : 0 };
 }
 
@@ -875,16 +884,16 @@ function sandwich(st, node) {
 		v.incl += incl;
 		m.set(id, v);
 	};
-	for (let k = 0; k < st.fStart.length; k++) {
-		const p = st.fParent[k];
+	for (let k = 0; k < st.fr.n; k++) {
+		const p = st.fr.parent(k);
 		if (p < 0)
 			continue;
-		const incl = fEnd(st, k) - st.fStart[k];
-		cont = st.fCont[k];
-		if (st.fNode[k] === node && st.fNode[p] !== node)
-			add(callers, st.fNode[p], incl);
-		if (st.fNode[p] === node && st.fNode[k] !== node)
-			add(callees, st.fNode[k], incl);
+		const incl = fEnd(st, k) - st.fr.start(k);
+		cont = st.fr.cont(k);
+		if (st.fr.node(k) === node && st.fr.node(p) !== node)
+			add(callers, st.fr.node(p), incl);
+		if (st.fr.node(p) === node && st.fr.node(k) !== node)
+			add(callees, st.fr.node(k), incl);
 	}
 	const sorted = (m) => [...m].sort((a, b) => b[1].incl - a[1].incl);
 	return { callers: sorted(callers), callees: sorted(callees) };
@@ -980,44 +989,44 @@ function drawTop() {
 	// Inclusive count per symbol, counting only the outermost frame of each
 	// symbol on a path (recursion is not counted twice).
 	const incl = new Map();
-	const n = st.fStart.length;
+	const n = st.fr.n;
 	for (let k = 0; k < n; k++) {
-		if (st.fStart[k] < start || hiddenFrame(st, k))
+		if (st.fr.start(k) < start || hiddenFrame(st, k))
 			continue;
-		let p = st.fParent[k], rec = false;
+		let p = st.fr.parent(k), rec = false;
 		while (p >= 0) {
-			if (st.fNode[p] === st.fNode[k]) { rec = true; break; }
-			p = st.fParent[p];
+			if (st.fr.node(p) === st.fr.node(k)) { rec = true; break; }
+			p = st.fr.parent(p);
 		}
 		if (!rec)
-			incl.set(st.fNode[k], (incl.get(st.fNode[k]) || 0) + fEnd(st, k) - st.fStart[k]);
+			incl.set(st.fr.node(k), (incl.get(st.fr.node(k)) || 0) + fEnd(st, k) - st.fr.start(k));
 	}
 	const shown = new Set([...incl].sort((a, b) => b[1] - a[1]).slice(0, 30).map(([id]) => id));
 	// Edges between shown symbols: from each shown frame to its nearest shown ancestor.
 	const edges = new Map(), depth = new Map(), first = new Map();
 	for (let k = 0; k < n; k++) {
-		if (st.fStart[k] < start || hiddenFrame(st, k) || !shown.has(st.fNode[k]))
+		if (st.fr.start(k) < start || hiddenFrame(st, k) || !shown.has(st.fr.node(k)))
 			continue;
-		const id = st.fNode[k];
+		const id = st.fr.node(k);
 		if (!first.has(id))
-			first.set(id, st.fStart[k]);
-		let p = st.fParent[k];
-		while (p >= 0 && !(shown.has(st.fNode[p]) && !hiddenFrame(st, p)))
-			p = st.fParent[p];
-		if (p >= 0 && st.fNode[p] !== id && !st.fCont[k]) {
-			const key = st.fNode[p] + "," + id;
+			first.set(id, st.fr.start(k));
+		let p = st.fr.parent(k);
+		while (p >= 0 && !(shown.has(st.fr.node(p)) && !hiddenFrame(st, p)))
+			p = st.fr.parent(p);
+		if (p >= 0 && st.fr.node(p) !== id && !st.fr.cont(k)) {
+			const key = st.fr.node(p) + "," + id;
 			edges.set(key, (edges.get(key) || 0) + 1);
 		}
 	}
 	// Layer of a symbol: the fewest shown symbols above any of its frames.
 	for (let k = 0; k < n; k++) {
-		if (st.fStart[k] < start || hiddenFrame(st, k) || !shown.has(st.fNode[k]))
+		if (st.fr.start(k) < start || hiddenFrame(st, k) || !shown.has(st.fr.node(k)))
 			continue;
 		let d = 0;
-		for (let q = st.fParent[k]; q >= 0; q = st.fParent[q])
-			if (shown.has(st.fNode[q]) && !hiddenFrame(st, q))
+		for (let q = st.fr.parent(k); q >= 0; q = st.fr.parent(q))
+			if (shown.has(st.fr.node(q)) && !hiddenFrame(st, q))
 				d++;
-		const id = st.fNode[k];
+		const id = st.fr.node(k);
 		depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
 	}
 	// Layout: rows by depth, ordered by first call, wrapped to the width.
@@ -1094,7 +1103,7 @@ const pct0 = (v, total) => (100 * v / Math.max(1, total)).toFixed(1) + "%";
 
 // Max and 99th-percentile call depth (sampled for big runs).
 function timelineDepth(st) {
-	const n = st.fDepth.length;
+	const n = st.fr.n;
 	if (!n)
 		return null;
 	if (G.depthKey === n)
@@ -1103,11 +1112,11 @@ function timelineDepth(st) {
 	const d = [];
 	let max = 0;
 	for (let k = 0; k < n; k += step) {
-		d.push(st.fDepth[k]);
-		if (st.fDepth[k] > max) max = st.fDepth[k];
+		d.push(st.fr.depth(k));
+		if (st.fr.depth(k) > max) max = st.fr.depth(k);
 	}
 	for (let k = 0; k < n; k++)
-		if (st.fDepth[k] > max) max = st.fDepth[k];
+		if (st.fr.depth(k) > max) max = st.fr.depth(k);
 	d.sort((a, b) => a - b);
 	G.depthKey = n;
 	G.depthVal = { max, p99: d[Math.floor(d.length * 0.99)] };
@@ -1120,10 +1129,10 @@ function graphStatus() {
 	const nodes = st ? st.nodeOrder.length : 0, edges = st ? st.edges.size : 0;
 	el.dataset.nodes = nodes;
 	el.dataset.edges = edges;
-	el.dataset.frames = st ? st.fStart.length : 0;
+	el.dataset.frames = st ? st.fr.n : 0;
 	const depth = st ? timelineDepth(st) : null;
 	el.textContent = !st ? "No stepper for this kernel." :
-		num(st.fStart.length - st.contFrames) + " calls" +
+		num(st.fr.n - st.contFrames) + " calls" +
 		(st.contFrames ? " (plus " + num(st.contFrames) + " continuations of calls resumed after a task switch, in " + st.taskCount + " tasks)" : "") +
 		", " + nodes + " symbols, " + edges + " transitions recorded" +
 		(depth ? "; call depth max " + depth.max + ", p99 " + depth.p99 + (st.espUnwind ? " (ESP unwinding)" : "") : "") +
@@ -1184,11 +1193,11 @@ function graphShow(visible) {
 // Hover text of a timeline frame: its name, where it was called from and
 // its entry, with DWARF file:line and inlined-at chains.
 function frameTitle(st, k) {
-	const node = st.fNode[k];
+	const node = st.fr.node(k);
 	const name = st.nodeName(node);
-	const p = st.fParent[k];
-	const from = st.fFrom[k];
-	return name + "\ncalled from " + (from >= 0 ? hex(from) + ": " + dbgTitle(from, p >= 0 ? st.nodeName(st.fNode[p]) : null).replace(/\n/g, "\n  ") : "unknown") +
+	const p = st.fr.parent(k);
+	const from = st.fr.from(k);
+	return name + "\ncalled from " + (from >= 0 ? hex(from) + ": " + dbgTitle(from, p >= 0 ? st.nodeName(st.fr.node(p)) : null).replace(/\n/g, "\n  ") : "unknown") +
 		(node < st.symName.length ? "\nentry " + hex(st.symStart[node]) + ": " + dbgTitle(st.symStart[node], name).replace(/\n/g, "\n  ") : "");
 }
 
@@ -1221,17 +1230,17 @@ function renderGraphInfo() {
 	let node;
 	if (G.view === "timeline") {
 		const k = G.selected;
-		node = st.fNode[k];
+		node = st.fr.node(k);
 		const c = frameCounts(st, k);
 		b.textContent = st.nodeName(node);
 		const path = [];
-		for (let p = st.fParent[k]; p >= 0 && path.length < 8; p = st.fParent[p])
-			path.push(st.nodeName(st.fNode[p]));
+		for (let p = st.fr.parent(k); p >= 0 && path.length < 8; p = st.fr.parent(p))
+			path.push(st.nodeName(st.fr.node(p)));
 		head.append(b, " inclusive " + num(c.incl) + ", self " + num(c.self) + " instructions; steps " +
-			num(st.fStart[k] - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
-			(st.fIrq[k] ? "; in an interrupt" : "") +
-			(st.fCont[k] ? "; continues a call suspended by a task switch" : "") +
-			(st.taskCount > 1 ? "; task " + st.fTask[k] + " (" + taskNames(st)[st.fTask[k]] + ")" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
+			num(st.fr.start(k) - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
+			(st.fr.irq(k) ? "; in an interrupt" : "") +
+			(st.fr.cont(k) ? "; continues a call suspended by a task switch" : "") +
+			(st.taskCount > 1 ? "; task " + st.fr.task(k) + " (" + taskNames(st)[st.fr.task(k)] + ")" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
 		const fb = document.createElement("button");
 		fb.type = "button";
 		fb.id = "graph_focus";
@@ -1239,7 +1248,7 @@ function renderGraphInfo() {
 		fb.title = "Re-root the timeline at this call";
 		fb.addEventListener("click", () => focusFrame(k));
 		head.append(fb, " ");
-		el.dataset.from = st.fFrom[k];
+		el.dataset.from = st.fr.from(k);
 	} else {
 		node = G.selected;
 		b.textContent = st.nodeName(node);
@@ -1279,9 +1288,9 @@ function renderGraphInfo() {
 				s.textContent = "unknown";
 			src.append(t, " ", s, " ");
 		};
-		const parent = st.fParent[k];
-		add(st.fIrq[k] && st.entryKind[node] ? "interrupted at" : "called from", st.fFrom[k],
-			parent >= 0 ? st.nodeName(st.fNode[parent]) : null);
+		const parent = st.fr.parent(k);
+		add(st.fr.irq(k) && st.entryKind[node] ? "interrupted at" : "called from", st.fr.from(k),
+			parent >= 0 ? st.nodeName(st.fr.node(parent)) : null);
 		if (node < st.symName.length)
 			add("entry", st.symStart[node], st.symName[node]);
 		el.append(src);
@@ -1477,8 +1486,8 @@ function initGraph() {
 		const f = sw || m ? -1 : timelineFrameAt(x, y);
 		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] + "\n" + taskInfo(st)[st.swTask[sw[0]]].how :
 			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
-			f >= 0 ? frameTitle(st, f) + (st.fNode[f] < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." +
-				(bmFnNames(st.symStart[st.fNode[f]]) ? "\n\u2605 " + bmTip(bmFnNames(st.symStart[st.fNode[f]])) : "") : "") : "";
+			f >= 0 ? frameTitle(st, f) + (st.fr.node(f) < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." +
+				(bmFnNames(st.symStart[st.fr.node(f)]) ? "\n\u2605 " + bmTip(bmFnNames(st.symStart[st.fr.node(f)])) : "") : "") : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {
@@ -1502,7 +1511,7 @@ function initGraph() {
 		if (G.view === "timeline") {
 			const k = timelineFrameAt(x, y);
 			if (k >= 0)
-				graphOpen(G.stepper.fNode[k]);
+				graphOpen(G.stepper.fr.node(k));
 		} else if (G.view === "top") {
 			const hit = G.boxes.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
 			if (hit)

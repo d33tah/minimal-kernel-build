@@ -2645,8 +2645,8 @@ function unwindHere() {
 			return esp;
 		const i = st.symbolOf(insnStart(pa));
 		for (const k of st.allOpen())
-			if (st.fNode[k] === i && st.fEsp[k] >= esp && st.fEsp[k] >>> 13 === esp >>> 13 && !st.fCont[k])
-				return st.fEsp[k];
+			if (st.fr.node(k) === i && st.fr.esp(k) >= esp && st.fr.esp(k) >>> 13 === esp >>> 13 && !st.fr.cont(k))
+				return st.fr.esp(k);
 		return undefined;
 	};
 	return dbgUnwind(st.regs(), read32, toPhys, symAt, entryEsp);
@@ -2677,17 +2677,17 @@ function renderCallStack(box, phys) {
 	// call about to run, e.g. after Run to): that symbol on top, its caller
 	// at the instruction that ran last.
 	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
-	if (!behind && cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fNode[top] !== cur)) {
+	if (!behind && cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fr.node(top) !== cur)) {
 		rec.push([-1, phys, cur]);
 		at = st.lastPhys;
 	}
-	for (let k = top; k >= 0 && rec.length < 24; k = st.fParent[k]) {
-		rec.push([k, at, st.fNode[k]]);
-		at = st.fFrom[k];
+	for (let k = top; k >= 0 && rec.length < 24; k = st.fr.parent(k)) {
+		rec.push([k, at, st.fr.node(k)]);
+		at = st.fr.from(k);
 	}
 	// [pc, node, method, extra title, cfa, registers known in the frame,
 	// virtual EIP or return address, label of a frame that is no code here]
-	let frames = rec.map(([k, pc, node]) => [pc, node, "recorded", k >= 0 && st.fIrq[k] ? ", in an interrupt" : "", undefined]);
+	let frames = rec.map(([k, pc, node]) => [pc, node, "recorded", k >= 0 && st.fr.irq(k) ? ", in an interrupt" : "", undefined]);
 	const uw = runState === "paused" || runState === "stepped" ? unwindHere() : { frames: [], state: "none", why: "" };
 	if (uw.frames.length) {
 		frames = uw.frames.map((f) => f.user ? [-1, -1, f.method, "user space: EIP 0x" + (f.pc >>> 0).toString(16) +
@@ -2700,12 +2700,12 @@ function renderCallStack(box, phys) {
 			// entered at or above its ESP on the same stack, minus itself.
 			const last = uw.frames[uw.frames.length - 1];
 			const esp = last.regs[4];
-			let j = esp === undefined ? -1 : rec.findIndex(([k]) => k >= 0 && st.fEsp[k] >>> 13 === esp >>> 13 && st.fEsp[k] >= esp);
+			let j = esp === undefined ? -1 : rec.findIndex(([k]) => k >= 0 && st.fr.esp(k) >>> 13 === esp >>> 13 && st.fr.esp(k) >= esp);
 			if (j >= 0 && rec[j][2] === st.symbolOf(last.lookup))
 				j++;
 			if (j >= 0)
 				for (const [k, pc, node] of rec.slice(j))
-					frames.push([pc, node, "recorded", st.fIrq[k] ? ", in an interrupt" : "", undefined]);
+					frames.push([pc, node, "recorded", st.fr.irq(k) ? ", in an interrupt" : "", undefined]);
 		}
 	}
 	if (!frames.length)

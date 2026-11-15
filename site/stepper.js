@@ -137,6 +137,227 @@ for (const b of [0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65, 0x66, 0x67, 0xf0, 0xf2, 0xf
 // further away than that (or before it) raised an exception.
 const INSN_MAX = 15;
 
+// Call frames of the Calls timeline (Stepper.fr). One column per field,
+// each a list of typed-array chunks of FR_SIZE frames: frame k is slot
+// k & FR_MASK of chunk k >>> FR_BITS, so growing adds a chunk and never
+// copies what is recorded (a run records millions of frames). A value that
+// does not fit its column (a count past 2^32, a depth past 2^16) is kept
+// in that column's overflow Map and its slot holds the column's sentinel:
+// every value reads back exactly as it was stored. Reads past the end give
+// undefined, as an array's would.
+const FR_BITS = 16, FR_SIZE = 1 << FR_BITS, FR_MASK = FR_SIZE - 1;
+const FR_BIG = 0xffffffff, FR_BIG16 = 0xffff;
+// Flag bits: in an interrupt or exception; a continuation of a call
+// suspended by a task switch; entered from no known instruction (-1);
+// entered from an address that is no 32-bit number (in fromBig).
+const FR_IRQ = 1, FR_CONT = 2, FR_NOFROM = 4, FR_BIGFROM = 8;
+// Bytes per frame of the columns below.
+const FR_BYTES = 4 * 7 + 2 * 2 + 1;
+
+class Frames {
+	constructor() {
+		this.n = 0;
+		this.maxDepth = 0;   // the deepest frame stored (not lowered by truncate)
+		this.base = [];      // per chunk: the start of its first frame
+		this.cStart = [];    // Uint32: start - base of the chunk
+		this.cEnd = [];      // Uint32: 0 while open, else end - start + 1
+		this.cChild = [];    // Uint32: instructions spent in its closed children
+		this.cEsp = [];      // Uint32: ESP on arrival
+		this.cNode = [];     // Int32: symbol index
+		this.cParent = [];   // Int32: parent frame, -1 for none
+		this.cFrom = [];     // Uint32: physical address of the instruction that entered it
+		this.cDepth = [];    // Uint16
+		this.cTask = [];     // Uint16
+		this.cFlags = [];    // Uint8: FR_* bits
+		this.startBig = new Map();
+		this.endBig = new Map();
+		this.childBig = new Map();
+		this.fromBig = new Map();
+		this.depthBig = new Map();
+		this.taskBig = new Map();
+	}
+
+	grow(start) {
+		this.base.push(start);
+		this.cStart.push(new Uint32Array(FR_SIZE));
+		this.cEnd.push(new Uint32Array(FR_SIZE));
+		this.cChild.push(new Uint32Array(FR_SIZE));
+		this.cEsp.push(new Uint32Array(FR_SIZE));
+		this.cNode.push(new Int32Array(FR_SIZE));
+		this.cParent.push(new Int32Array(FR_SIZE));
+		this.cFrom.push(new Uint32Array(FR_SIZE));
+		this.cDepth.push(new Uint16Array(FR_SIZE));
+		this.cTask.push(new Uint16Array(FR_SIZE));
+		this.cFlags.push(new Uint8Array(FR_SIZE));
+	}
+
+	// A new open frame; its depth is its parent's + 1. Returns its index.
+	push(start, node, parent, irq, cont, task, from, esp) {
+		const k = this.n, c = k >>> FR_BITS, i = k & FR_MASK;
+		if (c === this.cStart.length)
+			this.grow(start);
+		this.n = k + 1;
+		const d = start - this.base[c];
+		if (d >>> 0 === d && d !== FR_BIG) {
+			this.cStart[c][i] = d;
+		} else {
+			this.cStart[c][i] = FR_BIG;
+			this.startBig.set(k, start);
+		}
+		this.cEnd[c][i] = 0;
+		this.cChild[c][i] = 0;
+		this.cEsp[c][i] = esp;
+		this.cNode[c][i] = node;
+		this.cParent[c][i] = parent;
+		const depth = parent >= 0 ? this.depth(parent) + 1 : 0;
+		if (depth > this.maxDepth)
+			this.maxDepth = depth;
+		if (depth < FR_BIG16) {
+			this.cDepth[c][i] = depth;
+		} else {
+			this.cDepth[c][i] = FR_BIG16;
+			this.depthBig.set(k, depth);
+		}
+		if (task >>> 0 === task && task < FR_BIG16) {
+			this.cTask[c][i] = task;
+		} else {
+			this.cTask[c][i] = FR_BIG16;
+			this.taskBig.set(k, task);
+		}
+		let f = (irq ? FR_IRQ : 0) | (cont ? FR_CONT : 0) | (from === -1 ? FR_NOFROM : 0);
+		if (from >>> 0 === from || from === -1) {
+			this.cFrom[c][i] = from;
+		} else {
+			f |= FR_BIGFROM;
+			this.fromBig.set(k, from);
+		}
+		this.cFlags[c][i] = f;
+		return k;
+	}
+
+	start(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const c = k >>> FR_BITS, d = this.cStart[c][k & FR_MASK];
+		return d !== FR_BIG ? this.base[c] + d : this.startBig.get(k);
+	}
+
+	// The step after its last instruction, -1 while open.
+	end(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const e = this.cEnd[k >>> FR_BITS][k & FR_MASK];
+		return e === 0 ? -1 : e !== FR_BIG ? this.start(k) + e - 1 : this.endBig.get(k);
+	}
+
+	setEnd(k, t) {
+		const c = this.cEnd[k >>> FR_BITS], i = k & FR_MASK;
+		if (c[i] === FR_BIG)
+			this.endBig.delete(k);
+		const v = t - this.start(k) + 1;
+		if (v >>> 0 === v && v !== 0 && v !== FR_BIG) {
+			c[i] = v;
+		} else {
+			c[i] = FR_BIG;
+			this.endBig.set(k, t);
+		}
+	}
+
+	child(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const x = this.cChild[k >>> FR_BITS][k & FR_MASK];
+		return x !== FR_BIG ? x : this.childBig.get(k);
+	}
+
+	addChild(k, d) {
+		const c = this.cChild[k >>> FR_BITS], i = k & FR_MASK;
+		let v = c[i];
+		if (v === FR_BIG) {
+			v = this.childBig.get(k);
+			this.childBig.delete(k);
+		}
+		v += d;
+		if (v >>> 0 === v && v !== FR_BIG) {
+			c[i] = v;
+		} else {
+			c[i] = FR_BIG;
+			this.childBig.set(k, v);
+		}
+	}
+
+	esp(k) {
+		return k >= 0 && k < this.n ? this.cEsp[k >>> FR_BITS][k & FR_MASK] : undefined;
+	}
+
+	node(k) {
+		return k >= 0 && k < this.n ? this.cNode[k >>> FR_BITS][k & FR_MASK] : undefined;
+	}
+
+	parent(k) {
+		return k >= 0 && k < this.n ? this.cParent[k >>> FR_BITS][k & FR_MASK] : undefined;
+	}
+
+	depth(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const x = this.cDepth[k >>> FR_BITS][k & FR_MASK];
+		return x !== FR_BIG16 ? x : this.depthBig.get(k);
+	}
+
+	task(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const x = this.cTask[k >>> FR_BITS][k & FR_MASK];
+		return x !== FR_BIG16 ? x : this.taskBig.get(k);
+	}
+
+	// 1 inside an interrupt or exception, else 0.
+	irq(k) {
+		return k >= 0 && k < this.n ? this.cFlags[k >>> FR_BITS][k & FR_MASK] & FR_IRQ : undefined;
+	}
+
+	// 1: continuation of a call suspended by a task switch, else 0.
+	cont(k) {
+		return k >= 0 && k < this.n ? (this.cFlags[k >>> FR_BITS][k & FR_MASK] & FR_CONT) >> 1 : undefined;
+	}
+
+	// Physical address of the instruction that entered it (in the caller), -1 unknown.
+	from(k) {
+		if (!(k >= 0 && k < this.n))
+			return undefined;
+		const c = k >>> FR_BITS, i = k & FR_MASK, f = this.cFlags[c][i];
+		return f & FR_NOFROM ? -1 : f & FR_BIGFROM ? this.fromBig.get(k) : this.cFrom[c][i];
+	}
+
+	// Keep the first n frames.
+	truncate(n) {
+		n = this.n = Math.min(n, this.n);
+		const chunks = (n + FR_MASK) >>> FR_BITS;
+		for (const a of [this.base, this.cStart, this.cEnd, this.cChild, this.cEsp, this.cNode, this.cParent, this.cFrom,
+			this.cDepth, this.cTask, this.cFlags])
+			a.length = chunks;
+		for (const m of [this.startBig, this.endBig, this.childBig, this.fromBig, this.depthBig, this.taskBig])
+			for (const k of m.keys())
+				if (k >= n)
+					m.delete(k);
+	}
+
+	clearChildren() {
+		for (const c of this.cChild)
+			c.fill(0);
+		this.childBig.clear();
+	}
+
+	// Bytes held: the chunks, and an estimate for the overflow entries.
+	bytes() {
+		let big = 0;
+		for (const m of [this.startBig, this.endBig, this.childBig, this.fromBig, this.depthBig, this.taskBig])
+			big += m.size;
+		return this.cStart.length * FR_SIZE * FR_BYTES + this.base.length * 8 + big * 64;
+	}
+}
+
 // Drives a stopped v86 instance one instruction at a time and counts.
 const POPCOUNT8 = Uint8Array.from({ length: 256 }, (_, b) => { let n = 0; for (; b; b &= b - 1) n++; return n; });
 
@@ -231,17 +452,12 @@ class Stepper {
 		for (let k = 0; k < this.symName.length; k++)
 			if (/^(irq_entries_start|asm_|entry_INT80|nmi_stub)/.test(this.symName[k]))
 				this.entryKind[k] = 1;
-		this.fStart = [];   // per frame: first instruction (step index)
-		this.fEnd = [];     // step index after its last instruction, -1 while open
-		this.fNode = [];
-		this.fDepth = [];
-		this.fParent = [];
-		this.fIrq = [];     // 1 inside an interrupt or exception
-		this.fChild = [];   // instructions spent in its children (closed ones)
-		this.fEsp = [];     // ESP on arrival at the frame's first instruction
-		this.fCont = [];    // 1: continuation of a call suspended by a task switch
-		this.fTask = [];    // task (see taskOf) the frame runs in
-		this.fFrom = [];    // physical address of the instruction that entered it (in the caller)
+		// Per frame (Frames): first instruction (step index), the step after
+		// its last one (-1 while open), symbol node, depth, parent frame,
+		// interrupt flag, instructions in its closed children, ESP on arrival
+		// at its first instruction, continuation flag, task (see taskOf), the
+		// physical address of the instruction that entered it.
+		this.fr = new Frames();
 		// Tasks: a task is identified by the kernel stack it switches away
 		// on (ESP >> 13, THREAD_SIZE is 8 KiB on i386). Task 0 is the boot
 		// task (swapper: the boot stack, then init_task's own stack).
@@ -283,44 +499,23 @@ class Stepper {
 	}
 
 	pushFrame(node, t, irq, esp) {
-		const k = this.fStart.length;
+		const fr = this.fr;
 		const parent = this.stack.length ? this.stack[this.stack.length - 1] : this.lastTop;
-		this.fEsp.push(esp);
-		this.fStart.push(t);
-		this.fEnd.push(-1);
-		this.fNode.push(node);
-		this.fDepth.push(parent >= 0 ? this.fDepth[parent] + 1 : 0);
-		this.fParent.push(parent);
-		this.fIrq.push(irq || (parent >= 0 ? this.fIrq[parent] : 0));
-		this.fChild.push(0);
-		this.fCont.push(0);
-		this.fTask.push(this.task);
-		this.fFrom.push(this.lastPhys);
-		this.stack.push(k);
+		this.stack.push(fr.push(t, node, parent, irq || (parent >= 0 ? fr.irq(parent) : 0), 0, this.task, this.lastPhys, esp));
 	}
 
 	// Resume a task: reopen its suspended call chain as continuation frames
 	// (same symbols, ESPs and stack lanes as the calls they continue), so
 	// what it runs next gets its real callers.
 	resumeTask(chain, t) {
+		const fr = this.fr;
 		let parent = -1;
 		for (const f of chain) {
-			const k = this.fStart.length;
-			const region = this.fEsp[f] >>> 13;
+			const esp = fr.esp(f), region = esp >>> 13;
 			if (!this.lanes.has(region))
 				this.lanes.set(region, []);
-			this.fEsp.push(this.fEsp[f]);
-			this.fStart.push(t);
-			this.fEnd.push(-1);
-			this.fNode.push(this.fNode[f]);
-			this.fDepth.push(parent >= 0 ? this.fDepth[parent] + 1 : 0);
-			this.fParent.push(parent);
-			this.fIrq.push(this.fIrq[f]);
-			this.fChild.push(0);
-			this.fCont.push(1);
+			const k = fr.push(t, fr.node(f), parent, fr.irq(f), 1, this.task, fr.from(f), esp);
 			this.contFrames++;
-			this.fTask.push(this.task);
-			this.fFrom.push(this.fFrom[f]);
 			this.lanes.get(region).push(k);
 			parent = k;
 		}
@@ -328,11 +523,11 @@ class Stepper {
 	}
 
 	popFrame(t) {
-		const k = this.stack.pop();
-		this.fEnd[k] = t;
-		const parent = this.fParent[k];
+		const k = this.stack.pop(), fr = this.fr;
+		fr.setEnd(k, t);
+		const parent = fr.parent(k);
 		if (parent >= 0)
-			this.fChild[parent] += t - this.fStart[k];
+			fr.addChild(parent, t - fr.start(k));
 	}
 
 	// A transition into `node` at step index t: a call when it lands on the
@@ -367,10 +562,10 @@ class Stepper {
 				// too, so nothing overlaps the next task in the timeline.
 				if (!nested) {
 					const chain = [];
-					for (let p = top; p >= 0; p = this.fParent[p])
+					for (let p = top; p >= 0; p = this.fr.parent(p))
 						chain.push(p);
 					chain.reverse();
-					const dead = chain.some((f) => /^do_task_dead$/.test(this.symName[this.fNode[f]]));
+					const dead = chain.some((f) => /^do_task_dead$/.test(this.symName[this.fr.node(f)]));
 					if (this.lane >= 0) {
 						this.taskRegion[this.task] = this.lane;
 						const seen = this.onTaskLeave ? this.onTaskLeave(this.task, t, dead) : null;
@@ -399,7 +594,7 @@ class Stepper {
 					this.task = task;
 					this.swStep.push(t);
 					this.swTask.push(task);
-					this.swIrq.push(top >= 0 ? this.fIrq[top] : 0);
+					this.swIrq.push(top >= 0 ? this.fr.irq(top) : 0);
 					const saved = this.suspended.get(task);
 					if (saved) {
 						this.suspended.delete(task);
@@ -420,7 +615,7 @@ class Stepper {
 			const st = this.stack;
 			const call = isCall || this.entryKind[node];
 			let i = 0;
-			while (i < st.length && (this.fEsp[st[i]] > esp || (!call && this.fEsp[st[i]] === esp)))
+			while (i < st.length && (this.fr.esp(st[i]) > esp || (!call && this.fr.esp(st[i]) === esp)))
 				i++;
 			while (st.length > i)
 				this.popFrame(t);
@@ -440,14 +635,15 @@ class Stepper {
 			this.freshTask = false;
 			this.tailEsp = -1;
 		}
-		const nf = this.fStart.length;
+		const nf = this.fr.n;
 		if (nf >= 2000000000 || this.framesFull)
 			return;
 		// No fixed cap below 2 billion frames, but stop recording before the
-		// tab runs out of JavaScript heap (Chrome's performance.memory): the
+		// tab runs out of JavaScript heap (Chrome's performance.memory; the
+		// frames' typed arrays live outside it and count on top): the
 		// counters keep counting, only the flame timeline stops growing.
 		if ((nf & 0xffff) === 0 && nf && typeof performance !== "undefined" && performance.memory &&
-		    performance.memory.usedJSHeapSize > 0.8 * performance.memory.jsHeapSizeLimit) {
+		    performance.memory.usedJSHeapSize + this.fr.bytes() > 0.8 * performance.memory.jsHeapSizeLimit) {
 			this.framesFull = nf;
 			return;
 		}
@@ -458,7 +654,7 @@ class Stepper {
 		}
 		const st = this.stack;
 		let k = st.length - 1;
-		while (k >= 0 && this.fNode[st[k]] !== node)
+		while (k >= 0 && this.fr.node(st[k]) !== node)
 			k--;
 		if (k >= 0) {
 			while (st.length - 1 > k)
@@ -470,7 +666,7 @@ class Stepper {
 		// is code it reached by a jump (a cold path, a function that falls
 		// through into the next symbol), so the new frame goes below it.
 		// Otherwise (no ESP, or the top is at our level) it replaces the top.
-		if (st.length && !(this.espUnwind && this.fEsp[st[st.length - 1]] > esp))
+		if (st.length && !(this.espUnwind && this.fr.esp(st[st.length - 1]) > esp))
 			this.popFrame(t);
 		this.pushFrame(node, t, 0, esp);
 	}
@@ -858,27 +1054,29 @@ class Stepper {
 		const t = this.steps;
 		this.future = [];
 		this.ahead = 0;
-		let k = this.fStart.length;
-		while (k > 0 && this.fStart[k - 1] > t)
+		const fr = this.fr;
+		let k = fr.n;
+		while (k > 0 && fr.start(k - 1) > t)
 			k--;
-		for (const a of [this.fStart, this.fEnd, this.fNode, this.fDepth, this.fParent, this.fIrq, this.fChild, this.fEsp,
-			this.fCont, this.fTask, this.fFrom])
-			a.length = k;
+		fr.truncate(k);
 		let s = this.swStep.length;
 		while (s > 0 && this.swStep[s - 1] > t)
 			s--;
 		this.swStep.length = this.swTask.length = this.swIrq.length = s;
 		this.task = s ? this.swTask[s - 1] : 0;
 		this.contFrames = 0;
-		this.fChild.fill(0);
+		fr.clearChildren();
 		for (let f = 0; f < k; f++) {
-			if (this.fEnd[f] < 0 || this.fEnd[f] > t)
-				this.fEnd[f] = t;
-			this.contFrames += this.fCont[f];
+			const e = fr.end(f);
+			if (e < 0 || e > t)
+				fr.setEnd(f, t);
+			this.contFrames += fr.cont(f);
 		}
-		for (let f = 0; f < k; f++)
-			if (this.fParent[f] >= 0)
-				this.fChild[this.fParent[f]] += this.fEnd[f] - this.fStart[f];
+		for (let f = 0; f < k; f++) {
+			const p = fr.parent(f);
+			if (p >= 0)
+				fr.addChild(p, fr.end(f) - fr.start(f));
+		}
 		this.stack = [];
 		this.lanes = new Map();
 		this.lane = -1;

@@ -681,6 +681,8 @@ jobs:
         site/check-legend.py
         # The source editor's diff, patch writer and patch reader against git.
         node site/test_srcedit.mjs
+        # The Calls frames' typed-array store against a plain-array model.
+        node site/test_frames.mjs
         # site/jscov-uncovered.tsv still on the code it explains (rows that
         # moved with lines added above them: `node site/jscov/relist.js`).
         node site/jscov/relist.js --check

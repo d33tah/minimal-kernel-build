@@ -938,6 +938,31 @@ as a colour emoji (also checked once in Firefox and WebKit):
   relocation stub) gets no frame; its instructions count to the caller's
   self time.
 
+  The frames are kept in typed-array columns (`Frames` in stepper.js,
+  `stepper.fr`), in chunks of 65,536 frames: start as a 32-bit offset
+  from its chunk's first frame, end as a 32-bit offset from the start,
+  instructions in closed children, ESP, symbol, parent, entry address,
+  16-bit depth and task, and one byte of flags (interrupt, continuation,
+  no entry address): 33 bytes a frame, and growing adds a chunk instead
+  of copying (plain arrays took about 60 bytes a frame and twice that
+  while one grew: 398 MB for Debian's 6.6 million frames). A value that
+  does not fit its column (a count past 2^32, a depth past 2^16) is kept
+  in an overflow map, so every value reads back as it was recorded. All
+  readers (Calls, call stack, unwinder, tests) use `fr.n` and
+  `fr.start(k)`, `fr.end(k)` (-1 while open), `fr.node(k)`, `fr.depth(k)`,
+  `fr.parent(k)`, `fr.irq(k)`, `fr.cont(k)`, `fr.child(k)`, `fr.esp(k)`,
+  `fr.task(k)`, `fr.from(k)`; a read past the end gives undefined. The
+  timeline layout keeps a 16-bit row and deepest row per frame (32-bit
+  only for a run deeper than 32,766 calls) and a head flag. Tests:
+  `site/test_frames.mjs` (site job: random pushes, ends, truncations and
+  overflow values against a plain-array model, and 33 bytes a frame) and
+  suite framegold (fixed runs of the minified Linux and Debian, then a
+  step back and branch, then on: the frames and the call tree, top
+  graph, timeline layout, summary, task names, callers and callees and
+  counts against `site/testdata/frames-golden.json`, made before the
+  frames moved to typed arrays; at most 36 bytes a frame with a million
+  frames or more).
+
   ESP unwinding (default; `?unwind=0` turns it off): every frame records
   the ESP it arrived with (just below its return address for a call).
   At each transition, the outermost frame of the current stack whose ESP

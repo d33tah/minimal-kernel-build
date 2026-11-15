@@ -18948,7 +18948,66 @@ def suite_framegold(ctx):
         failed |= report("framegold", problems, r, kernel=name)
     if write:
         FRAMEGOLD.write_text(json.dumps(gold, indent=1, sort_keys=True) + "\n")
+    if "minified-linux" in ctx.entries:
+        failed |= report("framegold_snapshot", *framegold_snapshot(ctx.browser, ctx.base))
     return failed
+
+
+# Every recorded frame after a snapshot restore: an end at or after its
+# start, children counts not negative.
+FRAMES_SANE_JS = """() => { const fr = stepper.fr, bad = [];
+  for (let k = 0; k < fr.n; k++) {
+    const s = fr.start(k), e = fr.end(k), c = fr.child(k);
+    if ((e !== -1 && e < s) || c < 0) { if (bad.length < 5) bad.push([k, stepper.nodeName(fr.node(k)), s, e, c]); bad.n = (bad.n || 0) + 1; }
+  }
+  return { frames: fr.n, steps: stepper.steps, bad, nBad: bad.n || 0 }; }"""
+
+
+def framegold_snapshot(browser, base):
+    """The minified Linux stepped past its entry, a snapshot saved, stepped on
+    (frames open at the later count), the snapshot restored: the count goes
+    back, and the frames open then must not end before they started (an end
+    before the start gave negative inclusive and children counts in Calls)."""
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    problems, r = [], {}
+    try:
+        page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&mips=10&fastforward=0#debugger", timeout=120000)
+        if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+            return ["did not start paused"], r
+        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        page.fill("#dbg_addr", "0x100000")
+        page.click("#dbg_runto")
+        ok, at, status = run_to_wait(page, {0x100000}, 600)
+        if not ok:
+            return [f"Run to 0x100000 stopped at {at:#x}: {status[:200]}"], r
+        s0 = page.evaluate("stepper.steps")
+        rev_step_to(page, s0 + 100000)
+        page.evaluate("saveSnapshot()")
+        if not wait_for(lambda: page.evaluate("snapshots.length > 0"), 60):
+            return [f"no snapshot saved: {page.inner_text('#snap_status')[:200]!r}"], r
+        rev_step_to(page, s0 + 300000)
+        r["before"] = page.evaluate(FRAMES_SANE_JS)
+        r["open before"] = page.evaluate("stepper.allOpen().length")
+        page.evaluate("restoreSnapshot(snapshots[snapshots.length - 1])")
+        wait_for(lambda: page.evaluate("stepper.steps < %d" % (s0 + 300000)), 30)
+        page.evaluate("pauseAll()")
+        # On from the snapshot: stepped (the open calls unwind) and a stretch of the JIT (markGap).
+        rev_step_to(page, page.evaluate("stepper.steps") + 20000)
+        page.evaluate("stepper.markGap()")
+        r["after"] = page.evaluate(FRAMES_SANE_JS)
+        if not r["open before"]:
+            problems.append("no frame open before the restore (test setup)")
+        if r["after"]["steps"] >= s0 + 300000:
+            problems.append(f"the restore did not take the count back: {r['after']['steps']}")
+        if r["after"]["nBad"]:
+            problems.append(f"{r['after']['nBad']} frames end before their start or have negative children counts after "
+                            f"the snapshot restore: {r['after']['bad']} ([frame, function, start, end, children])")
+        problems += [f"page error {e}" for e in errors]
+        return problems, r
+    finally:
+        page.close()
 
 
 # ---- jitrev: reverse execution at JIT speed (R5) ----------------------------------

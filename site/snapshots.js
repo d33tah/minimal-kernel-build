@@ -341,8 +341,13 @@ async function restoreSnapshot(s) {
 	try {
 		// Another timeline: the reverse history (R2) starts anew from the
 		// snapshot, with the recordings as they were.
-		if (stepper)
+		// The calls open now end where this timeline stops (the furthest
+		// count, also when stepped back): closed later, at the snapshot's
+		// earlier count, they would end before they began.
+		if (stepper) {
+			stepper.closeStack(stepper.behind() ? stepper.ahead : stepper.steps);
 			stepper.unrewind();
+		}
 		INPUT.redo = [];
 		revReset("a snapshot was restored");
 		// A delta comes back as a full state, rebuilt in the Worker, with

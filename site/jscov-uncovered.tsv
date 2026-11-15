@@ -275,7 +275,7 @@ reverse.js	673	1d380376	Back to without a machine or while busy: the button is d
 snapshots.js	183-184	a011c5cc	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
 snapshots.js	202-204	42034536	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause
 snapshots.js	255	4bf395d6	Save snapshot with no machine, before it is ready or during a reverse operation: the button is disabled in these states, only a click racing the change reaches it
-snapshots.js	271	56e9e0b3	a save while compiled JIT blocks are queued: blocks compile synchronously (fastforward.js jitDetInstall), so the queue is empty between the slices where a click lands; only a browser refusing synchronous compiles leaves them pending
+snapshots.js	271	56e9e0b3	sometimes: a save while compiled JIT blocks are queued: blocks compile synchronously (fastforward.js jitDetInstall), so the queue is usually empty between the slices where a click lands; under coverage the jitsnap suite's save once found blocks pending (run 43718121755)
 snapshots.js	273	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
 snapshots.js	324-325	9c3279f9	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
 snapshots.js	333	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race

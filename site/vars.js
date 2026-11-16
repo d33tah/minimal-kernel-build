@@ -598,7 +598,7 @@ function watchSuggest() {
 
 // ---- parameters and locals of the call frames -------------------------------
 //
-// At a pause, every frame the call stack unwound (app.js unwindHere: EIP
+// At a pause, every frame the call stack unwound (symview.js unwindHere: EIP
 // for the innermost, the call instruction for the others) gets the
 // parameters and locals the DWARF has there (dbginfo.js dbgLocals: the
 // scopes around that address, inlined calls as frames of their own, like

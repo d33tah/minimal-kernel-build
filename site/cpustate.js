@@ -253,7 +253,7 @@ const CPU_SECTIONS = [
 					(pit.counter_reload[i] ? " (" + (1193182 / pit.counter_reload[i]).toFixed(1) + " Hz)" : "") +
 					" count at its last load/latch " + pit.counter_start_value[i] + (pit.counter_enabled[i] ? "" : " (disabled)"),
 					"v86 computes the current count from the elapsed time when read; shown: the value it started from"]);
-		// app.js starts v86 without acpi: true, so it has no LAPIC or IOAPIC
+		// boot.js starts v86 without acpi: true, so it has no LAPIC or IOAPIC
 		// (acpi_enabled is 0 and not part of a saved state).
 		rows.push(["APIC, IOAPIC", "not enabled (v86 runs this machine without ACPI)"]);
 		const rtc = c.devices.rtc;

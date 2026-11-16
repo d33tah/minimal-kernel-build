@@ -1,7 +1,7 @@
 "use strict";
 // The Snapshots tab (S1): v86 save_state() snapshots with names, kept in
 // IndexedDB per kernel across reloads, and the diff of two of them (or one
-// and now). Uses app.js's globals (emulator, image, initrd, stepper, ...).
+// and now). Uses the page's state and API (page.js: emulator, image, initrd, stepper, ...).
 //
 // A snapshot: { id, seq, name, time, kernel, kernelKey, ram, raw, size,
 //   codec, level, saveMs, packMs, meta, data: Blob, where: "stored" | "memory" }.

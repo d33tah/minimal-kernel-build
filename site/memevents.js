@@ -744,7 +744,7 @@ const MEV = {
 		this.render();
 	},
 
-	// app.js showTab: the table is drawn while the Events tab is shown, and
+	// tabs.js showTab: the table is drawn while the Events tab is shown, and
 	// opening it starts recording unless the user cleared Record. Recording
 	// goes on while other tabs are shown.
 	shown(on) {

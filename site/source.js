@@ -918,7 +918,7 @@ function srcFileCounts(info) {
 }
 
 // The files of the call stack at a pause: EIP's inline chain and every
-// unwound frame's (app.js unwindHere), innermost first.
+// unwound frame's (symview.js unwindHere), innermost first.
 function srcStackFiles() {
 	const out = [];
 	if (!stepper || (runState !== "paused" && runState !== "stepped"))

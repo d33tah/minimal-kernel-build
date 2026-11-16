@@ -243,7 +243,7 @@ function jumpPaths(S, st, pa) {
 
 // ---- the page: counts per instruction, arcs, the list of paths ----------
 //
-// Browser only (app.js globals: disasm, symbols, stepper, jumpTo, ...).
+// Browser only (page.js: disasm, symbols, stepper, api.show.jumpTo, ...).
 
 // Kinds whose targets only the run shows: "→?" until one is observed.
 const JK_LATE = new Set([JK.ret, JK.iret, JK.ijmp, JK.icall, JK.lret, JK.sys, JK.ljmp, JK.lcall]);

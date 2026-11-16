@@ -1,5 +1,5 @@
 "use strict";
-// Record and replay guest input (J4). Uses app.js's globals (stepper,
+// Record and replay guest input (J4). Uses the page's state and API (page.js: stepper,
 // emulator, image, runState, resume, pause, ...).
 //
 // On the virtual clock a run repeats exactly (J1, J2, J3) until someone

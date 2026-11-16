@@ -902,7 +902,7 @@ class Stepper {
 		this.graphEnter(i, phys);
 		// Entering panic() is a milestone, not the end: a printk kernel
 		// still prints "---[ end Kernel panic ...", which ends the run
-		// (app.js), as does a halt with interrupts off or panicBudget more
+		// (debugui.js), as does a halt with interrupts off or panicBudget more
 		// instructions without either.
 		if (i === this.panicSym && i >= 0 && !this.panicEntered)
 			this.panicEntered = this.snapshot(phys);

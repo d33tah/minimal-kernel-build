@@ -35,12 +35,26 @@ import * as kit from "./kit.js";
 import * as genimport from "./genimport.js";
 import * as rebuild from "./rebuild.js";
 import * as pwa from "./pwa.js";
+import * as header from "./header.js";
+import * as scan from "./scan.js";
+import * as memview from "./memview.js";
+import * as listing from "./listing.js";
+import * as debugui from "./debugui.js";
+import * as tabs from "./tabs.js";
+import * as nav from "./nav.js";
+import * as symview from "./symview.js";
+import * as run from "./run.js";
+import * as runto from "./runto.js";
+import * as boot from "./boot.js";
+import * as tips from "./tips.js";
+import * as kernel from "./kernel.js";
 import * as page from "./page.js";
 
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, stepper, graph, dwarf, unwind, asmnames, dbginfo, source, srcedit, coverage,
 	symimport, livedis, fastforward, cpustate, memevents, memmap, quests, vars, fnfacts, settings, snapshots, replay,
-	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, page];
+	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview,
+	run, runto, boot, tips, kernel, page];
 
 function exposeMKB(app) {
 	const mkb = {};

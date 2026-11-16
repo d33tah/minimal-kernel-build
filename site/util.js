@@ -2,7 +2,7 @@
 // app.js so the modules below it can import them).
 
 // Where v86 0.5.471 puts a bzImage's 32-bit part (src/kernel.js,
-// load_kernel): at 1 MiB whatever loadflags/code32_start say; app.js has
+// load_kernel): at 1 MiB whatever loadflags/code32_start say; header.js has
 // the other addresses.
 const V86_KERNEL_ADDR = 0x100000;
 const PAGE = 4096;

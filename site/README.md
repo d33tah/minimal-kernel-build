@@ -18,10 +18,28 @@ modules below it, in this order, so there is no import cycle:
     util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
     clang jumps stepper dbginfo source memevents fastforward cpustate
     symimport livedis vars srcedit fnfacts genimport graph settings rebuild
-    memmap quests replay reverse snapshots bookmarks coverage pwa | debug app
+    memmap quests replay reverse snapshots bookmarks coverage pwa | header
+    scan memview listing debugui tabs nav symview run runto boot tips kernel
+    | debug app
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
+- What was app.js (4,200 lines until R2), by concern: `header.js` (the
+  bzImage's boot header, the status line, the guest's RAM), `scan.js`
+  (which pages hold data and changed), `memview.js` (the Memory tab: map,
+  legend, page grid, the EIP's page), `listing.js` (the Page tab's
+  listing, the yellow lines), `debugui.js` (the Debugger's drawing: code
+  at EIP, registers, counters, clock and speed, the end, the run badge),
+  `tabs.js` (tabs and the URL hash), `nav.js` (the jump history),
+  `symview.js` (following EIP, jumpTo, openFunction, the symbols and call
+  stack panels), `run.js` (the count from reset, v86's JIT loop, the
+  stepping driver, pause and resume), `runto.js` (Step, Run to, the
+  Debugger's controls), `boot.js`, `tips.js` (popovers), `kernel.js`
+  (loading a kernel and its symbols.json and disasm.json). `app.js` is
+  the entry: `init()` wires the page's controls and loads the first
+  kernel. A call to a module above the caller goes through the page API
+  (`api.show.jumpTo`); state that a module below its owner reads or
+  changes (the count, Run to, the scan's pages) is in `page.js`'s store.
 - `debug.js`: `window.MKB`, the page's one global of its own. The tests
   and the browser's console read any module's export through it, live
   (`MKB.stepper.steps`, `MKB.runState`, `MKB.G.layout`, `MKB.state`,
@@ -65,8 +83,12 @@ State: `state` is a `Store` (`store.js`) of the page's values: the kernel
 list and the loaded `image`, `initrd`, `symbols`, `disasm`; the
 `emulator`, its RAM and readiness; the `stepper` and `runState`; the
 shown `tab`, `selectedPage` and the Memory tab's `grid` and `pageClass`;
-the count's `counting` and `countNote`; `startPaused`, `prefSpeed`,
-`vmHasKeys`; and `machine` (below). For each, `page.js` exports a binding
+the count (`counting`, `countNote`, `countMs`, `countSteps`,
+`entryPhase`, `refSaved`), Run to (`runTo`, `runToLabel`, `runToFrom`,
+`runToMoved`), the scan's `usedPages` and `changedPages`,
+`wasmPatchError`, `jitLoopId`; `startPaused`, `prefSpeed`, `vmHasKeys`;
+a few values of the drawing and the jump history (`prevRegs`, `flashes`,
+`navBuilt`, `openFnWant`); and `machine` (below). For each, `page.js` exports a binding
 (`stepper`, `runState`: modules read it as a variable, at no cost) and a
 setter (`setStepper(s)`, not `stepper = s`, since an imported binding is
 read-only). The setter changes the binding and the store, and the store
@@ -1498,7 +1520,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
 **Yellow lines.** An instruction line in Code at EIP or the Page listing
 is yellow when guest memory holds other bytes there than the build's
 disassembly (disasm.json). Its bytes are a mark with a popover (hover,
-tap, Enter) that names the case, decided in `diffTip` (app.js):
+tap, Enter) that names the case, decided in `diffTip` (listing.js):
 vmlinux is not in place yet: the minified Linux's bzImage loads a
 121-byte relocation stub at 0x100000 with vmlinux right after it, and
 the stub moves vmlinux down over itself right after the kernel entry,

@@ -809,7 +809,7 @@ function focusFrame(k) {
 }
 
 // Open a box's function in the code browser (G1): the Page tab at its
-// first instruction and the Source panel at its line (app.js openFunction,
+// first instruction and the Source panel at its line (symview.js openFunction,
 // one history entry: Back returns here as it was). Boxes with no symbol
 // (BIOS, setup, kernel code without a symbol) do nothing: false.
 // One double click or tap can ask twice (the canvas's dblclick and the
@@ -890,7 +890,7 @@ function timelineArrow(key) {
 	return true;
 }
 
-// The view as Back must restore it (app.js navCapture/navRestore).
+// The view as Back must restore it (nav.js navCapture/navRestore).
 function graphCapture() {
 	return { st: G.stepper, view: G.view, x0: G.x0, x1: G.x1, yOff: G.yOff, xOff: G.xOff, userMoved: G.userMoved,
 		follow: G.follow, selected: G.selected, selSwitch: G.selSwitch, focus: G.focus, flame: G.flame, transpose: G.transpose };

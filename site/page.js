@@ -37,9 +37,34 @@ let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
 let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
 let machine = 0;         // publishMachine() calls so far
+// The page scan (scan.js), which the Memory tab's grid draws.
+let usedPages = null;    // per page: 1 when the latest scan saw a non-zero byte
+let changedPages = null; // per page: 1 when it differs between the last two scans
+// v86.wasm with two internal functions exported for stepping (stepper.js).
+// If the patch fails the page still boots, without the debugger.
+let wasmPatchError = null;
+// The count from reset (run.js) and Run to (runto.js).
+let countStart = 0;      // realNow() when the count began
+let countMs = 0;         // stepping time spent counting
+let countSteps = 0;      // instructions stepped in that time
+let runTo = null;        // Set of physical addresses "Run to" stops at, or null
+let runToLabel = "";     // what they are ("0x1234", "init/main.c:1000")
+let runToFrom = -1;      // where the Run to started (it steps past a target there once)
+let runToMoved = false;  // an instruction has run since
+let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
+let refSaved = null;     // the "Still alive" milestone whose count is remembered
+let jitLoopId = 0;       // v86's loop that runs (draws the screen), 0 for none
+// The Debugger's drawing (debugui.js, symview.js).
+let prevRegs = null;     // the registers as last drawn (changed ones are highlighted)
+let flashes = 0;         // frames whose scan saw changed pages (the grid flashes them)
+// The jump history (nav.js) and opening a function (symview.js).
+let navBuilt = false;    // the history's first entry is made
+let openFnWant = null;   // the function whose source opens when its DWARF arrives
 
 const state = new Store({ kernels, image, initrd, emulator, emuRam, emuReady, symbols, disasm, pageClass, grid,
-	selectedPage, tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine });
+	selectedPage, tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine,
+	usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo, runToLabel, runToFrom,
+	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant });
 
 const setKernels = (v) => { kernels = v; state.set("kernels", v); };
 const setImage = (v) => { image = v; state.set("image", v); };
@@ -60,6 +85,23 @@ const setCounting = (v) => { counting = v; state.set("counting", v); };
 const setCountNote = (v) => { countNote = v; state.set("countNote", v); };
 const setStartPaused = (v) => { startPaused = v; state.set("startPaused", v); };
 const setPrefSpeed = (v) => { prefSpeed = v; state.set("prefSpeed", v); };
+const setUsedPages = (v) => { usedPages = v; state.set("usedPages", v); };
+const setChangedPages = (v) => { changedPages = v; state.set("changedPages", v); };
+const setWasmPatchError = (v) => { wasmPatchError = v; state.set("wasmPatchError", v); };
+const setCountStart = (v) => { countStart = v; state.set("countStart", v); };
+const setCountMs = (v) => { countMs = v; state.set("countMs", v); }; // the tests too: MKB.countMs = ...
+const setCountSteps = (v) => { countSteps = v; state.set("countSteps", v); };
+const setRunTo = (v) => { runTo = v; state.set("runTo", v); };
+const setRunToLabel = (v) => { runToLabel = v; state.set("runToLabel", v); };
+const setRunToFrom = (v) => { runToFrom = v; state.set("runToFrom", v); };
+const setRunToMoved = (v) => { runToMoved = v; state.set("runToMoved", v); };
+const setEntryPhase = (v) => { entryPhase = v; state.set("entryPhase", v); };
+const setRefSaved = (v) => { refSaved = v; state.set("refSaved", v); };
+const setJitLoopId = (v) => { jitLoopId = v; state.set("jitLoopId", v); };
+const setPrevRegs = (v) => { prevRegs = v; state.set("prevRegs", v); };
+const setFlashes = (v) => { flashes = v; state.set("flashes", v); };
+const setNavBuilt = (v) => { navBuilt = v; state.set("navBuilt", v); };
+const setOpenFnWant = (v) => { openFnWant = v; state.set("openFnWant", v); };
 // The machine's state was drawn anew (registers, counters, screen): views
 // that show it may read it again.
 const publishMachine = () => { machine++; state.set("machine", machine); };
@@ -85,13 +127,14 @@ const API_ENTRIES = {
 	// Memory events (the Events tab).
 	events: ["MEV"],
 	// Run, pause, step, Run to, and reverse execution (rewind).
-	step: ["pause", "resume", "pauseAll", "afterStop", "runToTargets", "runToLine", "speedReset", "REF_KEY",
-		"revMark", "revStepBack", "revJit", "revBranch", "REV", "REV_JIT_MS_PER_INSN", "REV_JIT_MS_PER_CALL"],
+	step: ["pause", "resume", "pauseAll", "afterStop", "runToTargets", "runToLine", "runToStopped", "speedReset",
+		"REF_KEY", "revMark", "revStepBack", "revJit", "revBranch", "REV", "REV_JIT_MS_PER_INSN", "REV_JIT_MS_PER_CALL"],
 	// What the page shows: tabs, the page listing, jumps, the status line,
 	// bookmarks, popovers.
-	show: ["setStatus", "showTab", "selectPage", "inspect", "renderContext", "updateDebugUi", "navJump", "jumpTo",
-		"openFunction", "writeHash", "listingHold", "listingKeep", "navListingAnchor", "setLive", "setCompactTabs",
-		"compactDefault", "hideTip", "runBadgeOpen", "renderRunBadgePwa", "bmLineStar", "bmFnNames", "bmTip"],
+	show: ["setStatus", "showTab", "selectPage", "inspect", "renderPage", "renderContext", "renderSymbols",
+		"updateDebugUi", "navJump", "jumpTo", "openFunction", "writeHash", "listingHold", "listingKeep",
+		"navListingAnchor", "setLive", "setCompactTabs", "compactDefault", "hideTip", "runBadgeOpen",
+		"renderRunBadgePwa", "bmLineStar", "bmFnNames", "bmTip"],
 };
 const api = {};
 const apiGroup = new Map();
@@ -116,4 +159,8 @@ export { state, kernels, image, initrd, emulator, emuRam, emuReady, symbols, dis
 	tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine, setKernels, setImage,
 	setInitrd, setEmulator, setEmuRam, setEmuReady, setSymbols, setDisasm, setPageClass, setGrid,
 	setSelectedPage, setTab, setVmHasKeys, setStepper, setRunState, setCounting, setCountNote, setStartPaused,
-	setPrefSpeed, publishMachine, api, provide };
+	setPrefSpeed, publishMachine, usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo,
+	runToLabel, runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant,
+	setUsedPages, setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo,
+	setRunToLabel, setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes,
+	setNavBuilt, setOpenFnWant, api, provide };

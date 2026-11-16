@@ -422,7 +422,7 @@ const QUESTS = {
 		this.timer = setInterval(() => this.tick(), QS_TICK_MS);
 	},
 
-	// app.js showTab: opening the Quests tab watches the run (remembered),
+	// tabs.js showTab: opening the Quests tab watches the run (remembered),
 	// unless the user cleared the box; it goes on while other tabs are shown.
 	shown(on) {
 		if (on && !this.open && this.user !== false)
@@ -582,7 +582,7 @@ const QUESTS = {
 			again.className = "qs-boot";
 			again.textContent = "Boot again";
 			again.hidden = true;
-			again.addEventListener("click", () => api.machine.boot()); // app.js
+			again.addEventListener("click", () => api.machine.boot()); // boot.js
 			tools.append(again);
 			card.boot = again;
 			const hint = document.createElement("p");

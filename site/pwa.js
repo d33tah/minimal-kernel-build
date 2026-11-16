@@ -32,7 +32,7 @@ function pwaNotes() {
 			" not available offline yet (a file is kept for offline use once the page has fetched it online).";
 		el.append(div);
 	}
-	// The menu toggle (app.js) shows the new version on every tab.
+	// The menu toggle (debugui.js) shows the new version on every tab.
 	api.show.renderRunBadgePwa();
 }
 

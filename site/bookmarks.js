@@ -1,6 +1,6 @@
 "use strict";
 // Bookmarks (K1): named places the user adds from many views and jumps
-// back to. Uses app.js's globals (stepper, symbols, srcPanel, tab, ...) and
+// back to. Uses the page's state and API (page.js: stepper, symbols, srcPanel, tab, ...) and
 // S1's kernel identity (snapshots.js snapKernelKey).
 //
 // A bookmark: { id, name, kind, t, kernel, kernelKey, created, from }.

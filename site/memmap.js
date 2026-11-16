@@ -208,7 +208,7 @@ const MMAP = {
 	},
 
 	// The map is in the Memory tab and goes with the Quests tab while that
-	// is shown (its quests are answered on it); app.js showTab.
+	// is shown (its quests are answered on it); tabs.js showTab.
 	place(tab) {
 		const box = $("mm"), slot = $(tab === "quests" ? "qs_mapslot" : "mm_home");
 		if (box.parentElement !== slot)

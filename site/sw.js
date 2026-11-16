@@ -23,7 +23,8 @@ const PRECACHE_PLAIN = ["index.html", "manifest.webmanifest", "icons/icon-192.pn
 const PRECACHE_STAMPED = [
 	"style.css", "util.js", "store.js", "page.js", "debug.js", "clock.js", "v86/libv86.js", "jumps.js", "stepper.js", "graph.js", "dwarf.js", "unwind.js", "asmnames.js",
 	"dbginfo.js", "source.js", "srcedit.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "memevents.js", "memmap.js", "quests.js", "vars.js",
-	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "kit.js", "genimport.js", "rebuild.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
+	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "kit.js", "genimport.js", "rebuild.js", "header.js", "scan.js", "memview.js", "listing.js", "debugui.js", "tabs.js", "nav.js",
+	"symview.js", "run.js", "runto.js", "boot.js", "tips.js", "kernel.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
 ];
 const PRECACHE_KERNELS = [
 	"kernels/hello/bzImage", "kernels/hello/symbols.json", "kernels/hello/disasm.json",
@@ -32,7 +33,7 @@ const PRECACHE_KERNELS = [
 	"kernels/minified-linux-os/bzImage", "kernels/minified-linux-os/symbols.json", "kernels/minified-linux-os/disasm.json",
 ];
 
-// The URL the page fetches: withV() in app.js adds the same ?v=.
+// The URL the page fetches: withV() in util.js adds the same ?v=.
 const stamped = (path) => (V === "dev" ? path : path + "?v=" + V);
 const scopeUrl = (path) => new URL(path, self.registration.scope).href;
 

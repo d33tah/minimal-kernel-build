@@ -1,5 +1,5 @@
 "use strict";
-// Reverse execution, stepped (R2) and at JIT speed (R5). Uses app.js's globals (emulator,
+// Reverse execution, stepped (R2) and at JIT speed (R5). Uses the page's state and API (page.js: emulator,
 // stepper, runState, pauseAll, afterStop, ...), snapshots.js's Worker
 // (snapWorker: R1's page hashes, deltas and LZ4) and replay.js's input log.
 //

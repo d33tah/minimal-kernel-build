@@ -11,7 +11,7 @@
 // count: now = base + steps / (mips * 1000) ms, so a timer tick arrives
 // every so many instructions whatever the stepping speed; when the CPU
 // halts, the stepper jumps the clock to the next timer event. At full JIT
-// speed the page runs v86's main_loop itself (app.js jitLoop) and the clock
+// speed the page runs v86's main_loop itself (run.js jitLoop) and the clock
 // follows v86's instruction counter (fastforward.js jitChunk); with the
 // "real" clock v86's own loop runs on real time.
 // The page's own timing uses realNow().

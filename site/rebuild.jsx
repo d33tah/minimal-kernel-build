@@ -100,9 +100,6 @@ function rbSync() {
 	RB.can = can;
 	RB.title = can.ok ? "Build " + rbFrom() + " again in this browser" + (n ? " with your " + n + " changed file" + (n === 1 ? "" : "s") : " (no edits: CI's bytes)") +
 		" and boot it" : can.why;
-	// The Source panel's button (not a component yet).
-	$("rb_go_panel").disabled = !can.ok;
-	$("rb_go_panel").title = RB.title;
 	// A result belongs to the kernel it was shown for.
 	if (!RB.busy && RB.shownFor !== image) {
 		RB.state = "";
@@ -116,15 +113,12 @@ function rbSync() {
 	RB.changed();
 }
 
-// The status line, the progress bar and the panel button's label.
+// The status line, the progress bar and the panel button's label (RB).
 function rbShow(text, state, frac) {
 	RB.status = text;
 	RB.state = state || "";
 	RB.shownFor = image;
 	RB.progress = frac === undefined ? null : frac;
-	$("rb_go_panel").querySelector(".rblabel").textContent = state === "running" ?
-		"Rebuilding… " + Math.round((frac || 0) * 100) + "%" : "Rebuild and boot";
-	$("rb_go_panel").setAttribute("aria-busy", state === "running");
 	RB.changed();
 }
 
@@ -393,7 +387,6 @@ function rbDownload(what) {
 }
 
 function initRebuild() {
-	$("rb_go_panel").addEventListener("click", rbRun);
 	dbgOnChange(rbSync);
 	rbLoadIndex();
 }
@@ -424,5 +417,19 @@ function RebuildPanel() {
 	);
 }
 
+// The Source panel's Rebuild and boot button (in the editor's bar): the
+// same build as the box's button, its label the progress while it runs.
+function RebuildPanelButton() {
+	useSyncExternalStore(RB.subscribe, () => RB.rev);
+	const running = RB.state === "running";
+	return (
+		<button id="rb_go_panel" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title || undefined}
+			aria-busy={RB.shownFor ? String(running) : undefined} onClick={rbRun}>
+			<span aria-hidden="true">⟳</span>{" "}<span className="rblabel">{running ? "Rebuilding… " + Math.round((RB.progress || 0) * 100) + "%" :
+				"Rebuild and boot"}</span>
+		</button>
+	);
+}
+
 provide({ rbSync });
-export { rbSync, initRebuild, RB, RebuildPanel };
+export { rbSync, initRebuild, RB, RebuildPanel, RebuildPanelButton };

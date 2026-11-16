@@ -12,7 +12,7 @@
 // way the Source panel counts it (dwarf.js dwarfEachLine).
 
 import { $, num, hex } from "./util.js";
-import { stepper, image, api, provide } from "./page.js";
+import { stepper, image, api, provide, state, tab } from "./page.js";
 import { download } from "./graph.js";
 import { dwarfEachLine } from "./dwarf.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
@@ -373,15 +373,15 @@ function covExport() {
 	$("cov_export_status").textContent = "lcov: " + F.files.length + " files" + (st ? "" : " (nothing recorded: every line 0)");
 }
 
-function covShow(visible) {
-	if (visible)
-		covRender();
-}
-
 function initCoverage() {
 	$("cov_filter").addEventListener("input", () => { COV.q = $("cov_filter").value.trim(); covRender(); });
 	$("cov_sort").addEventListener("change", () => { COV.sort = $("cov_sort").value; covRender(); });
 	$("cov_export").addEventListener("click", covExport);
+	// The tree is drawn when the Source tab is shown (showTab).
+	state.subscribe(() => {
+		if (tab === "source")
+			covRender();
+	}, ["tabShows"]);
 	dbgOnChange(() => {
 		COV.tree = COV.tree && DBG.files === COV.tree.F ? COV.tree : null;
 		if (COV.exporting)
@@ -402,4 +402,4 @@ function initCoverage() {
 }
 
 provide({ covRun, covRender });
-export { COV, covTree, covRun, covRender, covShow, initCoverage };
+export { COV, covTree, covRun, covRender, initCoverage };

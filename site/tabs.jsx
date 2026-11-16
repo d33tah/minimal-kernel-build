@@ -8,7 +8,6 @@ import { hex, PAGE, $ } from "./util.js";
 import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, markTabShown, provide } from "./page.js";
 import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
-import { covShow } from "./coverage.js";
 import { bmFromHash } from "./bookmarks.js";
 import { useStore } from "./ui.jsx";
 
@@ -90,7 +89,6 @@ function showTab(name) {
 
 function showViews() {
 	graphShow(tab === "calls");
-	covShow(tab === "source");
 }
 
 // The VM's screen is in the Machine tab and is hidden (it keeps changing)

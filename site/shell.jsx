@@ -9,24 +9,26 @@ import { TabBar } from "./tabs.jsx";
 import { SettingsPanel } from "./settings.jsx";
 import { QuestsPanel } from "./quests.jsx";
 import { EventsPanel } from "./events.jsx";
-import { RebuildPanel } from "./rebuild.jsx";
 import { AboutPanel } from "./about.jsx";
 import { SnapshotsPanel } from "./snapshotspanel.jsx";
 import { PagePanel } from "./pagepanel.jsx";
 import { MemoryPanel } from "./memorypanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
+import { SourceTabPanel } from "./sourcepanel.jsx";
+import { SourceAside } from "./sourceaside.jsx";
 
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
 	mount($("panel_settings"), <SettingsPanel />);
 	mount($("panel_quests"), <QuestsPanel />);
 	mount($("panel_events"), <EventsPanel />);
-	mount($("rb_box"), <RebuildPanel />);
 	mount($("panel_about"), <AboutPanel />);
 	mount($("panel_snapshots"), <SnapshotsPanel />);
 	mount($("panel_page"), <PagePanel />);
 	mount($("panel_memory"), <MemoryPanel />);
 	mount($("panel_debugger"), <DebuggerPanel />);
+	mount($("panel_source"), <SourceTabPanel />);
+	mount($("src_panel"), <SourceAside />);
 }
 
 export { mountShell };

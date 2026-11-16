@@ -10,7 +10,6 @@ import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { covShow } from "./coverage.js";
 import { bmFromHash } from "./bookmarks.js";
-import { renderContext } from "./debugui.js";
 import { useStore } from "./ui.jsx";
 
 // ---- tabs -----------------------------------------------------------------
@@ -90,8 +89,6 @@ function showTab(name) {
 }
 
 function showViews() {
-	if (tab === "debugger")
-		renderContext();
 	graphShow(tab === "calls");
 	covShow(tab === "source");
 }

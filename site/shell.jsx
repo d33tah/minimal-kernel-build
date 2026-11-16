@@ -14,6 +14,7 @@ import { AboutPanel } from "./about.jsx";
 import { SnapshotsPanel } from "./snapshotspanel.jsx";
 import { PagePanel } from "./pagepanel.jsx";
 import { MemoryPanel } from "./memorypanel.jsx";
+import { DebuggerPanel } from "./debuggerpanel.jsx";
 
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
@@ -25,6 +26,7 @@ function mountShell() {
 	mount($("panel_snapshots"), <SnapshotsPanel />);
 	mount($("panel_page"), <PagePanel />);
 	mount($("panel_memory"), <MemoryPanel />);
+	mount($("panel_debugger"), <DebuggerPanel />);
 }
 
 export { mountShell };

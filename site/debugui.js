@@ -726,6 +726,12 @@ function drawDebugUi() {
 		renderContext();
 }
 
+// Code at EIP is drawn again each time the Debugger tab is shown (showTab).
+state.subscribe(() => {
+	if (tab === "debugger")
+		renderContext();
+}, ["tabShows"]);
+
 // The page API's entries of this module (page.js).
 provide({ currentPhys, renderContext, speedReset, updateDebugUi, syncSrcToggle, REF_KEY, clockMips,
 	flushScreen, FLAG_BITS, runBadgeOpen, renderRunBadgePwa });

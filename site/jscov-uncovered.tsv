@@ -17,6 +17,7 @@ listing.js	575	34977f3b	the live checkbox's timer while the machine runs with a 
 scan.js	32	7f4f045e	scan without a running machine: the Scan button and the autoscan timer are disabled or stopped while there is none
 boot.js	119-121	48986f45	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
 boot.js	125	809d7cec	the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
+boot.js	196	78e4297b	sometimes: a replay that starts paused at the reset vector goes on (resume): counted as run in every unbundled run up to e98964413, not run in the first run of the bundled page (R3, 43891051176)
 boot.js	210-211	e5830e96	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
 run.js	66	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
 run.js	71-74	9354bbed	sometimes: Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead; ran in run 43703770298 only (not in 43697771460 nor the runs before), where a Continue came while the stepper was behind the JIT's run, a timing of the run state
@@ -56,6 +57,7 @@ tips.js	208	ad825671	a touch long press cancelled by moving more than 10 px: CDP
 tips.js	214	4a771b70	the context menu after a long press on a tip: headless Chromium sends no contextmenu for an emulated long touch
 asmnames.js	74	f99e340d	sometimes: an operand that ASM_MEM does not parse as memory and that has no parenthesis: the genimport suite (gen-worker job) lists the code where its boot happens to pause, and only some of those listings have such an operand; ran in run 43605289270, not in 43588908776, 43600287802, 43602952211
 asmnames.js	173	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
+asmnames.js	211	091bc534	sometimes: a memory operand with a 16-bit (or other non-32-bit) base or index register named: counted as run in every unbundled run up to e98964413, not run in the first run of the bundled page (R3, 43891051176; the same suites, the page's code now in app.bundle.js and measured through its source map)
 bookmarks.js	126	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
 bookmarks.js	153	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
 bookmarks.js	170	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
@@ -144,6 +146,7 @@ dwarfworker.js	81	c8b20a61	a type unit (DW_UT_type/split_type, -fdebug-types-sec
 fastforward.js	44	b3a1b191	a kernel without startup_32: every shipped kernel's symbols have it; only an imported symbol file lacking it reaches the _text fallback
 fastforward.js	94-95	7d40bae1	new WebAssembly.Module() refused for a JIT block: Chromium compiles modules of this size synchronously on the main thread; the fallback is for browsers with a smaller synchronous limit
 fastforward.js	107-109	ba5085bf	waiting for an asynchronously compiled block: only after the fallback at 83
+fastforward.js	111	626deafb	sometimes: a JIT request flushed by another caller while this one waited: a race; counted as run up to e98964413, not run in the first run of the bundled page (R3, 43891051176)
 fastforward.js	114-116	61b53f45	a JIT block that fails to compile: v86 emits valid wasm
 fastforward.js	142	4d0a6c19	jitChunk with its budget already reached: callers pass an until past the current count
 fastforward.js	172	6160cc7f	both panic lines written within one JIT slice before the exact stop: the J3 budget stops at the instruction writing the last line, so the exact end is found first
@@ -362,7 +365,16 @@ unwind.js	135	cfa47dfe	FDEs with different virtual-physical offsets: the page ma
 unwind.js	193	9b04b2a3	a CFI shard that is not MKBC 1: written by gen-dwarf.js in CI; only a corrupt download
 unwind.js	246	f78b1ae4	the stop callback while running a CIE's initial instructions with an advance in them: CIEs' initial instructions never advance the location
 unwind.js	280	4000e2b6	DW_CFA_set_loc in a table with mixed offsets: see line 134, not possible for an import or the shipped kernels
+unwind.js	312	6d8154f8	sometimes: DW_CFA_GNU_args_size in a CIE/FDE program: counted as run up to e98964413, not run in the first run of the bundled page (R3, 43891051176; the CFI is read in the dwarf Worker and in the page, both counted)
 unwind.js	352	23eef0ba	cfiFrameInfo's row callback past the FDE's end: the program stops at the FDE's end; only a DW_CFA_set_loc beyond it, which no assembler writes
+unwind.js	415	6f295308	sometimes: skipping an 8-byte constant (DW_OP_const8u/s) in a location expression: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	418	80ea1294	sometimes: skipping a bregx/bit_piece/regval_type op in a location expression: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	533	301056fb	sometimes: DW_OP_dup in a location Debian's or the minified Linux's DWARF evaluates: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	535-536	b8503632	sometimes: DW_OP_over and DW_OP_pick: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	555	d468d8e0	sometimes: the comparison ops (DW_OP_eq ... DW_OP_ne) in an evaluated location: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	570	055c2524	sometimes: DW_OP_nop / DW_OP_GNU_uninit in an evaluated location: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	590	c3aaec52	sometimes: DW_OP_deref_type in an evaluated location: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
+unwind.js	593	6ee26849	sometimes: DW_OP_entry_value in an evaluated location: counted as run up to e98964413, not in the first bundled run (R3, 43891051176)
 unwind.js	882	de0946db	a register rule of an unknown kind: cfiRow only makes the kinds the switch lists
 vars.js	64	7b17ac77	varsRead of a cell (a local's bytes) past its end: varsRow reads a cell only at its own start with the local's type size, the size the cell was made with, so no read runs past it
 vars.js	67	64c2336b	varsRead of a cell with a byte not known: a local made of pieces with a part the DWARF does not describe (dwLocation known[k] 0); no local of the shipped kernels at the frames the CI suites unwind has such a partial location (the dwarf_forms fixtures that have one need GCC builds CI does not run with coverage)

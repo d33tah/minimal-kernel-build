@@ -125,15 +125,25 @@ async function main() {
 	// The map's sources are relative to the site: as file URLs they come
 	// out as the same paths as the scripts run unbundled (dwarf.js in a
 	// Worker and in the bundle is one file of the report).
-	if (bundle)
+	// Their text as here: stamped like the scripts the Workers ran (the
+	// bundle was built before the stamp; a stamp changes only the import
+	// lines' specifiers, so the map's lines still fit), so a file's two
+	// entries are one source.
+	if (bundle) {
 		bundle.map.sourceRoot = pathToFileURL(src).href + "/";
+		bundle.map.sourcesContent = bundle.map.sources.map((p, k) => (p in sources ? sources[p] : bundle.map.sourcesContent[k]));
+	}
 	const lengthOf = (f) => (f in sources ? sources[f].length : f === BUNDLE && bundle ? bundle.source.length : -1);
 
 	// Group the records by file; a record of a file whose length differs
 	// from the source here ran another version of it (a test's modified
-	// copy): counted, not used.
+	// copy): counted, not used. The one exception: the bundle with a deploy
+	// marker appended (test_browser.py's pwa deploys put
+	// `window.deployMarker = "B";` after it, stamped as here): the bundle's
+	// own code is the same bytes, so its ranges are kept, cut at its end.
+	const MARKER = ['\nwindow.deployMarker = "x";\n'.length, '\nwindow.deployMarker = "12345678";\n'.length];
 	const byFile = {}, foreign = {};
-	let records = 0;
+	let records = 0, marked = 0;
 	const files = rawFiles(a.raw);
 	for (const f of files) {
 		for (const line of fs.readFileSync(f, "utf8").split("\n")) {
@@ -142,6 +152,13 @@ async function main() {
 			const r = JSON.parse(line);
 			records++;
 			const n = lengthOf(r.file);
+			if (r.file === BUNDLE && bundle && r.len - n >= MARKER[0] && r.len - n <= MARKER[1]) {
+				marked++;
+				r.len = n;
+				for (const fn of r.functions)
+					fn.ranges = fn.ranges.filter((x) => x.startOffset < n).map((x) => ({ ...x, endOffset: Math.min(x.endOffset, n) }));
+				r.functions = r.functions.filter((fn) => fn.ranges.length);
+			}
 			if (r.len !== undefined ? n !== r.len : !(r.end <= n)) {
 				foreign[r.file] = (foreign[r.file] || 0) + 1;
 				continue;
@@ -168,7 +185,7 @@ async function main() {
 				ran.add(p);
 	}
 	console.log(`${files.length} raw files, ${records} records, ${ran.size} of ${names.length} scripts ran` +
-		(byFile[BUNDLE] ? ` (${BUNDLE}: ${byFile[BUNDLE].length} records)` : ""));
+		(byFile[BUNDLE] ? ` (${BUNDLE}: ${byFile[BUNDLE].length} records, ${marked} of them with a deploy marker after it)` : ""));
 	if (Object.keys(foreign).length)
 		console.log("records of other versions (ignored):", JSON.stringify(foreign));
 

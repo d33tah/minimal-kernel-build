@@ -22,7 +22,7 @@ import { initImport, initInitrd, setCmdlineFromUrl, showImported, restoreImporte
 import { liveDecode, loadIced } from "./livedis.js";
 import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
-import { QUESTS } from "./quests.js";
+import { QUESTS } from "./quests.jsx";
 import { setupVars } from "./vars.js";
 import { initSnapshots } from "./snapshots.js";
 import { initReplay } from "./replay.js";

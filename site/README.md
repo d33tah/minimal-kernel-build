@@ -31,7 +31,7 @@ modules below it, in this order, so there is no import cycle:
     util store page ui | unwind dwarf clock asmnames wasi kgen lz4frame kit
     clang jumps stepper dbginfo source memevents fastforward cpustate
     symimport livedis vars srcedit fnfacts genimport graph rebuild
-    memmap quests replay reverse snapshots bookmarks coverage pwa | header
+    memmap quests events replay reverse snapshots bookmarks coverage pwa | header
     scan memview listing debugui tabs settings nav symview run runto boot
     tips kernel | debug shell app
 
@@ -156,8 +156,20 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `index.html` (the element stays there, empty: `#tabrow`, `#panel_settings`);
 `app.js` mounts it first thing in `init()`, synchronously (`flushSync`),
 so the controls exist before the modules that are not components yet look
-them up. Mounted so far: the tab bar (`TabBar`, tabs.jsx) and the Settings
-tab (`SettingsPanel`, settings.jsx).
+them up. Mounted so far: the tab bar (`TabBar`, tabs.jsx), the Settings
+tab (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
+quests.jsx) and the Events tab (`EventsPanel`, events.jsx).
+
+A view whose state lives in a controller object (`QUESTS`, `MEV`) keeps
+it there: the controller computes what the tab shows (the quests' cards,
+`MEV.view` with the table's rows) and calls its `changed()`, which bumps
+`rev` and draws at once (`flushSync`: a test or a handler reads the DOM
+right after `MEV.render()` or an answer); the component reads it through
+`useSyncExternalStore(QUESTS.subscribe, () => QUESTS.rev)`. Quests
+redraws only when what it shows differs from what was drawn
+(`QUESTS.look()`), the Events table only when the log or a filter changed
+(as before). Both follow the store's `tab` (`state.subscribe(..., ["tab"])`)
+instead of being told by `showTab`.
 
 A component reads the store with `useStore(key)` (`ui.jsx`:
 `useSyncExternalStore` over `state.subscribe(fn, [key])` and

@@ -22,7 +22,7 @@ import * as fastforward from "./fastforward.js";
 import * as cpustate from "./cpustate.js";
 import * as memevents from "./memevents.js";
 import * as memmap from "./memmap.js";
-import * as quests from "./quests.js";
+import * as quests from "./quests.jsx";
 import * as vars from "./vars.js";
 import * as fnfacts from "./fnfacts.js";
 import * as settings from "./settings.jsx";

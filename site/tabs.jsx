@@ -9,9 +9,7 @@ import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelecte
 import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { covShow } from "./coverage.js";
-import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
-import { QUESTS } from "./quests.js";
 import { bmFromHash } from "./bookmarks.js";
 import { drawGrid } from "./memview.js";
 import { inspect } from "./listing.js";
@@ -79,9 +77,9 @@ function writeHash() {
 	hashOwn = location.hash;
 }
 
-// The tab bar and the Settings tab follow `tab` (React); the panels not yet
-// components are shown and hidden here, and the views drawn on demand are
-// told.
+// The tab bar, Settings, Quests and Events follow `tab` (React, the store); the
+// panels are shown and hidden here, and the views not yet components that
+// draw on demand are told.
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
 	setTab(TABS.includes(name) ? name : "machine");
@@ -96,8 +94,6 @@ function showTab(name) {
 	if (tab === "debugger")
 		renderContext();
 	MMAP.place(tab); // memmap.js: the live memory map goes with the Quests tab
-	MEV.shown(tab === "events"); // memevents.js
-	QUESTS.shown(tab === "quests"); // quests.js
 	graphShow(tab === "calls");
 	covShow(tab === "source");
 }

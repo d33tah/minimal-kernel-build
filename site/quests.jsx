@@ -17,11 +17,19 @@
 // first E820 call: the BIOS makes none), the MultiProcessor table's I/O
 // APIC and the CPU's accesses to it. A quest the kernel cannot give says
 // so once the run has ended ("try Debian"); before that it waits.
+//
+// The tab is a React component (R3): QuestsPanel draws QUESTS's state
+// (the cards' view state in QUESTS.cards, the counts, the toast) and draws
+// again when QUESTS says it changed (QUESTS.changed(), at once: a test
+// reads a card right after answering). QUESTS follows the store's `tab`.
 
+import { useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { $ } from "./util.js";
-import { stepper, runState, image, api } from "./page.js";
+import { stepper, runState, image, tab, state, api } from "./page.js";
 import { PCI_CLASSES, MEV, MEV_CPU, MEV_M_WRITE, pciBdf, pciClassName } from "./memevents.js";
 import { MMAP } from "./memmap.js";
+import { Tip } from "./ui.jsx";
 
 const QS_KEY = "mkb-quests";           // { kernel name: { quest id: time solved } }
 const QS_OPEN_KEY = "mkb-quests-open";
@@ -36,15 +44,8 @@ const qsNum = (n) => n.toLocaleString("en-US");
 // interrupt names, signatures) set off as <code>.
 const QS_KEY_RE = /(0x[0-9A-Fa-f]+(?:-0x[0-9A-Fa-f]+)?|\b\d[\d,]*(?: bytes| KiB| MiB)|INT 15h|EAX=E820h|_MP_|0x55 0xAA)/;
 
-function qsRich(el, text) {
-	el.replaceChildren(...String(text).split(QS_KEY_RE).map((part, k) => {
-		if (!(k & 1))
-			return part;
-		const c = document.createElement("code");
-		c.className = "qs-key";
-		c.textContent = part;
-		return c;
-	}));
+function QsRich({ text }) {
+	return String(text).split(QS_KEY_RE).map((part, k) => (k & 1 ? <code key={k} className="qs-key">{part}</code> : part));
 }
 
 // A card's state in words.
@@ -397,33 +398,55 @@ const QUESTS = {
 	stored: true,     // localStorage works
 	kernel: null,     // the kernel the cards are drawn for
 	run: null,        // what the quests found in this run: { gen, scan, os, <id>: ... }
-	cards: new Map(), // id -> { li, state, ... }
+	cards: new Map(), // id -> a card's view state: { q, key, state, chip, why, task, fb, ... }
+	drawn: 0,         // card sets made (a new kernel's cards are new elements)
 	timer: 0,
 	lastPick: -1,
 	active: null,     // the id of the quest whose card had the focus last
 	wins: 0,          // celebrations shown (the tests read it)
+	toast: "",
 
 	user: null,       // the "Watch this run" box as the user last set it (null: not touched)
 
+	// The component's subscription (useSyncExternalStore): rev counts the
+	// changes; changed() draws them at once.
+	rev: 0,
+	subs: new Set(),
+	subscribe(fn) {
+		QUESTS.subs.add(fn);
+		return () => QUESTS.subs.delete(fn);
+	},
+	drawnLook: "",    // look() when last drawn
+	changed() {
+		this.drawnLook = this.look();
+		this.rev++;
+		flushSync(() => {
+			for (const fn of this.subs)
+				fn();
+		});
+	},
+
 	init() {
 		this.load();
-		const box = $("qs_on");
 		const q = new URLSearchParams(location.search);
 		let remembered = false;
 		try {
 			remembered = localStorage.getItem(QS_OPEN_KEY) === "1";
 		} catch (e) { /* no storage: off */ }
-		box.addEventListener("change", () => {
-			this.user = box.checked;
-			this.setOpen(box.checked, true);
-		});
-		$("qs_reset").addEventListener("click", () => this.reset());
 		this.setOpen(q.get("quests") === "1" || (remembered && q.get("quests") !== "0"), false);
 		this.timer = setInterval(() => this.tick(), QS_TICK_MS);
+		state.subscribe(() => this.shown(tab === "quests"), ["tab"]);
 	},
 
-	// tabs.js showTab: opening the Quests tab watches the run (remembered),
-	// unless the user cleared the box; it goes on while other tabs are shown.
+	// The box "Watch this run for quests".
+	choose(on) {
+		this.user = on;
+		this.setOpen(on, true);
+	},
+
+	// The Quests tab shown (the store's `tab`): opening it watches the run
+	// (remembered), unless the user cleared the box; it goes on while other
+	// tabs are shown.
 	shown(on) {
 		if (on && !this.open && this.user !== false)
 			this.setOpen(true, true);
@@ -431,7 +454,6 @@ const QUESTS = {
 
 	setOpen(open, remember) {
 		this.open = open;
-		$("qs_on").checked = open;
 		if (remember) {
 			try {
 				localStorage.setItem(QS_OPEN_KEY, open ? "1" : "0");
@@ -484,129 +506,15 @@ const QUESTS = {
 
 	// ---- cards ---------------------------------------------------------------
 
+	// The cards anew (a kernel's first look, Start over): each one's view
+	// state, which update() fills from the run.
 	render() {
-		const ol = $("qs_list");
-		this.cards.clear();
-		ol.replaceChildren(...QUEST_LIST.map((q, n) => {
-			const li = document.createElement("li");
-			li.className = "qs-card";
-			li.dataset.q = q.id;
-			li.dataset.state = "wait";
-			// the quest played last: a map pick's "not that one" goes to it only
-			li.addEventListener("focusin", () => { this.active = q.id; });
-			li.addEventListener("pointerdown", () => { this.active = q.id; });
-			const top = document.createElement("div");
-			top.className = "qs-top";
-			const mark = document.createElement("span");
-			mark.className = "qs-mark";
-			mark.textContent = String(n + 1);
-			const h = document.createElement("h4");
-			h.textContent = q.title;
-			const std = document.createElement("span");
-			std.className = "qs-std";
-			std.textContent = q.std;
-			const chip = document.createElement("span");
-			chip.className = "qs-chip";
-			top.append(mark, h, chip, std);
-			const task = document.createElement("p");
-			task.className = "qs-task";
-			qsRich(task, q.task);
-			const why = document.createElement("p");
-			why.className = "note qs-why";
-			const fb = document.createElement("p");
-			fb.className = "qs-fb";
-			fb.setAttribute("aria-live", "polite");
-			const won = document.createElement("p");
-			won.className = "qs-wontext";
-			won.hidden = true;
-			const card = { li, q, mark, chip, task, why, fb, won, state: "" };
-			li.append(top, task, why);
-			if (q.kind === "number" || q.kind === "address") {
-				const form = document.createElement("form");
-				form.className = "qs-form";
-				const input = document.createElement("input");
-				input.type = "text";
-				input.inputMode = q.kind === "number" ? "numeric" : "text";
-				input.autocomplete = "off";
-				input.placeholder = q.kind === "number" ? "bytes" : "0x...";
-				input.setAttribute("aria-label", "Answer to " + q.title);
-				const go = document.createElement("button");
-				go.type = "submit";
-				go.textContent = "Check";
-				form.append(input, go);
-				form.addEventListener("submit", (ev) => {
-					ev.preventDefault();
-					this.answer(card, qsParse(input.value));
-				});
-				li.append(form);
-				card.input = input;
-			} else if (q.kind === "choice") {
-				const g = document.createElement("div");
-				g.className = "qs-choices";
-				g.setAttribute("role", "group");
-				g.setAttribute("aria-label", "Answers to " + q.title);
-				for (const k of q.choices) {
-					const b = document.createElement("button");
-					b.type = "button";
-					b.textContent = q.choiceText(k);
-					b.dataset.choice = String(k);
-					b.addEventListener("click", () => this.answer(card, k));
-					g.append(b);
-				}
-				li.append(g);
-			} else {
-				const how = document.createElement("p");
-				how.className = "note qs-how";
-				how.textContent = q.how;
-				li.append(how);
-			}
-			const tools = document.createElement("div");
-			tools.className = "qs-tools";
-			const hb = document.createElement("button");
-			hb.type = "button";
-			hb.className = "qs-hintbtn";
-			hb.textContent = "Show me";
-			hb.title = "A hint, and the place blinks on the live memory map";
-			hb.addEventListener("click", () => this.hint(card));
-			tools.append(hb);
-			if (q.page !== undefined) {
-				const pb = document.createElement("button");
-				pb.type = "button";
-				pb.className = "qs-page";
-				pb.textContent = "Open " + qsHex(q.page * 4096) + " in the Page tab";
-				pb.addEventListener("click", () => api.show.selectPage(q.page));
-				tools.append(pb);
-			}
-			const again = document.createElement("button");
-			again.type = "button";
-			again.className = "qs-boot";
-			again.textContent = "Boot again";
-			again.hidden = true;
-			again.addEventListener("click", () => api.machine.boot()); // boot.js
-			tools.append(again);
-			card.boot = again;
-			const hint = document.createElement("p");
-			hint.className = "qs-hint";
-			hint.hidden = true;
-			qsRich(hint, q.hint);
-			card.hintText = hint;
-			const learn = document.createElement("details");
-			learn.className = "qs-learn";
-			const ls = document.createElement("summary");
-			ls.textContent = "The standard: " + q.std;
-			const lp = document.createElement("p");
-			const a = document.createElement("a");
-			a.href = q.link[0];
-			a.target = "_blank";
-			a.rel = "noopener";
-			a.textContent = q.link[1];
-			lp.append(q.learn + " Source: ", a, ".");
-			learn.append(ls, lp);
-			li.append(fb, tools, hint, won, learn);
-			this.cards.set(q.id, card);
-			return li;
-		}));
-		this.progress();
+		this.drawn++;
+		this.cards = new Map(QUEST_LIST.map((q) => [q.id, {
+			q, key: q.id + ":" + this.drawn, state: "", chip: "", why: "", task: q.task, boot: false, fb: "", bad: false,
+			hint: false, won: "", wonInfo: false, burst: false,
+		}]));
+		this.changed();
 	},
 
 	// Each quest's state from the run; a solved one stays solved.
@@ -632,7 +540,16 @@ const QUESTS = {
 			this.show(card, solved[q.id] ? { state: "solved" } : s);
 		}
 		this.lastPick = MMAP.pick;
-		this.progress();
+		if (this.look() !== this.drawnLook)
+			this.changed();
+	},
+
+	// What the tab shows, in a line: update() draws only when it differs from
+	// what was drawn.
+	look() {
+		const cards = [...this.cards.values()].map((c) => [c.key, c.state, c.chip, c.why, c.task, c.boot, c.fb, c.bad, c.hint, c.won,
+			c.burst].join("\u0001"));
+		return [this.open, this.kernel, this.stored, this.toast, JSON.stringify(this.done), ...cards].join("\u0002");
 	},
 
 	pickText() {
@@ -641,34 +558,28 @@ const QUESTS = {
 	},
 
 	show(card, s) {
-		const q = card.q, li = card.li;
-		if (q.taskEnd) {
-			const t = q.task + q.taskEnd(this.run);
-			if (card.task.textContent !== t)
-				qsRich(card.task, t);
-		}
-		li.dataset.state = s.state;
-		card.chip.textContent = qsChip(s);
-		card.why.textContent = s.state === "open" || s.state === "solved" ? "" : s.why || "";
-		card.why.hidden = !card.why.textContent;
-		card.boot.hidden = s.state !== "boot";
-		card.mark.textContent = s.state === "solved" ? "★" : String(QUEST_LIST.indexOf(q) + 1);
+		const q = card.q;
+		if (q.taskEnd)
+			card.task = q.task + q.taskEnd(this.run);
+		card.chip = qsChip(s);
+		card.why = s.state === "open" || s.state === "solved" ? "" : s.why || "";
+		card.boot = s.state === "boot";
 		// what was found: from this run once it has it, else when it was solved
 		const info = !!(this.run && this.run[q.id]);
 		if (s.state === "solved" && (card.state !== "solved" || (info && !card.wonInfo))) {
-			qsRich(card.won, info ? q.won(this.run) : "Solved in this browser on " + new Date(this.solvedHere()[q.id]).toLocaleString("en-GB") + ".");
+			card.won = info ? q.won(this.run) : "Solved in this browser on " + new Date(this.solvedHere()[q.id]).toLocaleString("en-GB") + ".";
 			card.wonInfo = info;
-			card.won.hidden = false;
-			card.fb.textContent = "";
+			card.fb = "";
 		} else if (s.state !== "solved") {
-			card.won.hidden = true;
+			card.won = "";
 		}
 		card.state = s.state;
 	},
 
 	feedback(card, text, bad) {
-		card.fb.textContent = text;
-		card.fb.classList.toggle("bad", !!bad);
+		card.fb = text;
+		card.bad = !!bad;
+		this.changed();
 	},
 
 	answer(card, v) {
@@ -693,7 +604,6 @@ const QUESTS = {
 		this.done[this.kernel][q.id] = Date.now();
 		this.save();
 		this.show(card, { state: "solved" });
-		this.progress();
 		this.celebrate(card);
 	},
 
@@ -701,31 +611,25 @@ const QUESTS = {
 	// a short note.
 	celebrate(card) {
 		this.wins++;
-		const burst = document.createElement("span");
-		burst.className = "qs-burst";
-		burst.setAttribute("aria-hidden", "true");
-		for (let k = 0; k < 16; k++) {
-			const i = document.createElement("i"), a = k / 16 * 2 * Math.PI, r = 40 + (k % 3) * 18;
-			i.style.setProperty("--dx", Math.round(Math.cos(a) * r) + "px");
-			i.style.setProperty("--dy", Math.round(Math.sin(a) * r) + "px");
-			burst.append(i);
-		}
-		card.mark.append(burst);
-		this.burstBits = burst.children.length;
-		card.li.classList.add("qs-pop");
+		card.burst = true;
+		this.burstBits = QS_BURST.length;
 		setTimeout(() => {
-			burst.remove();
-			card.li.classList.remove("qs-pop");
+			card.burst = false;
+			this.changed();
 		}, 1500);
 		const [n, of] = this.counts();
-		const t = $("qs_toast");
-		t.textContent = "Quest solved: " + card.q.title + ". " + n + " of " + of + " on this kernel" + (n === of ? ": all of them!" : ".");
+		this.toast = "Quest solved: " + card.q.title + ". " + n + " of " + of + " on this kernel" + (n === of ? ": all of them!" : ".");
 		clearTimeout(this.toastTimer);
-		this.toastTimer = setTimeout(() => { t.textContent = ""; }, 4000);
+		this.toastTimer = setTimeout(() => {
+			this.toast = "";
+			this.changed();
+		}, 4000);
+		this.changed();
 	},
 
 	hint(card) {
-		card.hintText.hidden = false;
+		card.hint = true;
+		this.changed();
 		const q = card.q, run = this.run;
 		if (card.state === "open" || card.state === "solved")
 			MMAP.hint(q.ranges(run).filter(([lo, hi]) => hi > lo), q.hintLabel);
@@ -743,18 +647,95 @@ const QUESTS = {
 		}
 		return [n, of];
 	},
-
-	progress() {
-		const [n, of] = this.counts();
-		const meter = $("qs_meter");
-		meter.setAttribute("aria-valuemax", String(of));
-		meter.setAttribute("aria-valuenow", String(n));
-		$("qs_fill").style.width = of ? (100 * n / of).toFixed(1) + "%" : "0";
-		const all = Object.values(this.done).reduce((a, d) => a + Object.keys(d).length, 0);
-		$("qs_progress").textContent = this.kernel ? n + " of " + of + " solved on " + this.kernel + (all > n ? " (" + all + " on all kernels)" : "") + "." : "Boot a kernel to start.";
-		$("qs_badge").textContent = this.kernel ? "★ " + n + "/" + of : "";
-		$("qs_note").textContent = this.stored ? "" : "This browser does not let the page store anything: what you solve is kept until the page is closed.";
-	},
 };
 
-export { QUESTS };
+// The burst's bits: where each flies to.
+const QS_BURST = Array.from({ length: 16 }, (_, k) => {
+	const a = k / 16 * 2 * Math.PI, r = 40 + (k % 3) * 18;
+	return { "--dx": Math.round(Math.cos(a) * r) + "px", "--dy": Math.round(Math.sin(a) * r) + "px" };
+});
+
+// One quest's card.
+function QuestCard({ card, n }) {
+	const q = card.q;
+	const play = () => { QUESTS.active = q.id; }; // the quest played last: a map pick's "not that one" goes to it only
+	const submit = (ev) => {
+		ev.preventDefault();
+		QUESTS.answer(card, qsParse(new FormData(ev.currentTarget).get("answer")));
+	};
+	return (
+		<li className={"qs-card" + (card.burst ? " qs-pop" : "")} data-q={q.id} data-state={card.state || "wait"} onFocus={play}
+			onPointerDown={play}>
+			<div className="qs-top">
+				<span className="qs-mark">{card.state === "solved" ? "★" : String(n)}{card.burst &&
+					<span className="qs-burst" aria-hidden="true">{QS_BURST.map((style, k) => <i key={k} style={style} />)}</span>}</span>
+				<h4>{q.title}</h4>
+				<span className="qs-chip">{card.chip}</span>
+				<span className="qs-std">{q.std}</span>
+			</div>
+			<p className="qs-task"><QsRich text={card.task} /></p>
+			<p className="note qs-why" hidden={!card.why}>{card.why}</p>
+			{q.kind === "number" || q.kind === "address" ? (
+				<form className="qs-form" onSubmit={submit}>
+					<input type="text" name="answer" inputMode={q.kind === "number" ? "numeric" : "text"} autoComplete="off"
+						placeholder={q.kind === "number" ? "bytes" : "0x..."} aria-label={"Answer to " + q.title} />
+					<button type="submit">Check</button>
+				</form>
+			) : q.kind === "choice" ? (
+				<div className="qs-choices" role="group" aria-label={"Answers to " + q.title}>
+					{q.choices.map((k) => <button key={k} type="button" data-choice={String(k)}
+						onClick={() => QUESTS.answer(card, k)}>{q.choiceText(k)}</button>)}
+				</div>
+			) : (
+				<p className="note qs-how">{q.how}</p>
+			)}
+			<p className={"qs-fb" + (card.bad ? " bad" : "")} aria-live="polite">{card.fb}</p>
+			<div className="qs-tools">
+				<button type="button" className="qs-hintbtn" title="A hint, and the place blinks on the live memory map"
+					onClick={() => QUESTS.hint(card)}>Show me</button>
+				{q.page !== undefined && <button type="button" className="qs-page"
+					onClick={() => api.show.selectPage(q.page)}>{"Open " + qsHex(q.page * 4096) + " in the Page tab"}</button>}
+				<button type="button" className="qs-boot" hidden={!card.boot} onClick={() => api.machine.boot()}>Boot again</button>
+			</div>
+			<p className="qs-hint" hidden={!card.hint}><QsRich text={q.hint} /></p>
+			<p className="qs-wontext" hidden={!card.won}><QsRich text={card.won} /></p>
+			<details className="qs-learn">
+				<summary>{"The standard: " + q.std}</summary>
+				<p>{q.learn + " Source: "}<a href={q.link[0]} target="_blank" rel="noopener">{q.link[1]}</a>.</p>
+			</details>
+		</li>
+	);
+}
+
+// The Quests tab; the live memory map comes into #qs_mapslot (memmap.js,
+// MMAP.place) while the tab is shown.
+function QuestsPanel() {
+	useSyncExternalStore(QUESTS.subscribe, () => QUESTS.rev);
+	const [n, of] = QUESTS.counts();
+	const k = QUESTS.kernel;
+	const all = Object.values(QUESTS.done).reduce((a, d) => a + Object.keys(d).length, 0);
+	return (
+		<div className="qs-layout">
+			<div id="qs" className="qs">
+				<h2>Quests <span id="qs_badge" className="qs-badge">{k ? "★ " + n + "/" + of : ""}</span> <Tip text="Challenges about the standards a PC boots with: the boot protocol, the BIOS's memory map, text mode memory, option ROMs, PCI configuration, the MultiProcessor table. The page checks each one by itself from the memory events and the machine's state: answer in the box, click the right cell on the live memory map, or step back to the right instruction. A hint makes the relevant region blink on the map. What you solved is remembered in this browser, per kernel. While the run is watched for quests the page records memory events (as the Events tab does); some quests need them from the first instruction." /></h2>
+				<p className="qs-intro">Challenges about the standards a PC boots with. The page checks each answer itself from what the machine does: type it in the box, click the right cell on the live memory map, or stop the machine on the right instruction. A hint makes the place blink on the map.</p>
+				<label className="qs-onlabel"><input type="checkbox" id="qs_on" checked={QUESTS.open}
+					onChange={(e) => QUESTS.choose(e.target.checked)} /> Watch this run for quests<Tip text="Opening this tab turns it on and the page remembers it; while it is on, memory events are recorded (as in the Events tab) and the quests are checked, also while other tabs are shown. Some quests need the events from the first instruction: then Boot again." /></label>
+				<div className="qs-head">
+					<div className="qs-meter" id="qs_meter" role="progressbar" aria-label="Quests solved on this kernel" aria-valuemin="0"
+						aria-valuemax={String(of)} aria-valuenow={String(n)}><span id="qs_fill" style={{ width: of ? (100 * n / of).toFixed(1) + "%" : "0" }} /></div>
+					{" "}<span id="qs_progress" className="qs-progress">{k ? n + " of " + of + " solved on " + k + (all > n ? " (" + all + " on all kernels)" : "") + "." : "Boot a kernel to start."}</span>
+					{" "}<button id="qs_reset" type="button" onClick={() => QUESTS.reset()}>Start over</button>
+				</div>
+				<p className="note" id="qs_note">{QUESTS.stored ? "" : "This browser does not let the page store anything: what you solve is kept until the page is closed."}</p>
+				<ol className="qs-list" id="qs_list">
+					{[...QUESTS.cards.values()].map((card, i) => <QuestCard key={card.key} card={card} n={i + 1} />)}
+				</ol>
+				<p className="qs-toast" id="qs_toast" role="status" aria-live="polite">{QUESTS.toast}</p>
+			</div>
+			<div id="qs_mapslot" className="qs-mapslot"></div>
+		</div>
+	);
+}
+
+export { QUESTS, QuestsPanel };

@@ -10,6 +10,7 @@ import { useCallback, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { state } from "./page.js";
+import { srcName, srcLinkTitle } from "./source.js";
 
 // One value of page.js's store.
 function useStore(key) {
@@ -32,4 +33,11 @@ function Tip({ text }) {
 		aria-controls="tip_pop">?</span>;
 }
 
-export { useStore, mount, Tip };
+// A file:line link to the Source panel, as source.js's srcLinkEl makes
+// them (its click is source.js's, by the data attributes).
+function SrcLink({ file, line, text, pa = -1 }) {
+	return <button type="button" className="srcloc srclink" data-tip={srcLinkTitle(file, line)} data-file={file} data-line={line}
+		data-pa={pa}>{text || srcName({ file, line })}</button>;
+}
+
+export { useStore, mount, Tip, SrcLink };

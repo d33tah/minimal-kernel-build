@@ -1428,4 +1428,4 @@ provide({ srcLinkHtml, srcLinkEl });
 export { SRC, srcPanel, setSrcPanel, srcFresh, srcUseShipped, srcChanged, srcFile, srcText, srcStatements,
 	srcLinkEl, srcLinkHtml, srcFocusKeep, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
 	openSourceLine, fileLines, renderSourcePanel, srcKernelKey, srcSwClose, renderSourceRows, closeSource,
-	initSource };
+	initSource, srcName, srcLinkTitle };

@@ -33,7 +33,7 @@ import * as bookmarks from "./bookmarks.js";
 import * as clang from "./clang.js";
 import * as kit from "./kit.js";
 import * as genimport from "./genimport.js";
-import * as rebuild from "./rebuild.js";
+import * as rebuild from "./rebuild.jsx";
 import * as pwa from "./pwa.js";
 import * as header from "./header.js";
 import * as scan from "./scan.js";

@@ -14,7 +14,13 @@
 // (rebuilt here)"; image.edits holds the text of each file it was built
 // from. Nothing is kept across a reload: the kernel list loads the shipped
 // one.
+//
+// The box in the Source tab is a React component (R3, RebuildPanel): RB
+// holds what it shows and RB.changed() draws it at once; the build log is
+// its <pre>, written line by line as the build runs.
 
+import { useCallback, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { withV, httpWhy, $, kib } from "./util.js";
 import { image, setDisasm, kernels, api, provide } from "./page.js";
 import { download } from "./graph.js";
@@ -25,6 +31,7 @@ import { parseSymbolFile, applySymbols } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
+import { Tip } from "./ui.jsx";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -33,6 +40,34 @@ const RB = {
 	last: null,      // the last build booted: { from, bytes (bzImage), elf, elfName, same, text }
 	shownFor: null,  // the kernel (image) the status line and the build log are about
 	logCmds: 0,      // commands in the build log
+	// What RebuildPanel draws (R3): the button, the status line and its
+	// state, the progress (a fraction, or null), the compiler's messages, the
+	// build log's box and summary, the download buttons.
+	can: { ok: false, why: "" },
+	title: "",
+	status: "",
+	state: "",
+	progress: null,
+	errors: null,    // the failed step's messages, or null
+	logShown: false,
+	logSum: "Build log",
+	files: false,
+	all: false,      // "compile every object"
+	copied: "",      // "Copied", "Selected: copy it" for a moment
+	logEl: null,     // the build log's <pre>: written as the build runs (not drawn by React)
+	rev: 0,
+	subs: new Set(),
+	subscribe(fn) {
+		RB.subs.add(fn);
+		return () => RB.subs.delete(fn);
+	},
+	changed() {
+		this.rev++;
+		flushSync(() => {
+			for (const fn of this.subs)
+				fn();
+		});
+	},
 };
 
 const RB_SUFFIX = " (rebuilt here)";
@@ -62,36 +97,35 @@ function rbCan() {
 function rbSync() {
 	const can = rbCan();
 	const n = can.ok ? srcOverlay.paths().length : 0;
-	for (const id of ["rb_go", "rb_go_panel"]) {
-		$(id).disabled = !can.ok;
-		$(id).title = can.ok ? "Build " + rbFrom() + " again in this browser" + (n ? " with your " + n + " changed file" + (n === 1 ? "" : "s") : " (no edits: CI's bytes)") +
-			" and boot it" : can.why;
-	}
-	$("rb_back").hidden = !(image && image.from) || RB.busy;
-	const st = $("rb_status");
+	RB.can = can;
+	RB.title = can.ok ? "Build " + rbFrom() + " again in this browser" + (n ? " with your " + n + " changed file" + (n === 1 ? "" : "s") : " (no edits: CI's bytes)") +
+		" and boot it" : can.why;
+	// The Source panel's button (not a component yet).
+	$("rb_go_panel").disabled = !can.ok;
+	$("rb_go_panel").title = RB.title;
 	// A result belongs to the kernel it was shown for.
 	if (!RB.busy && RB.shownFor !== image) {
-		st.dataset.state = "";
-		$("rb_log").hidden = $("rb_files").hidden = $("rb_progress").hidden = $("rb_buildlog_box").hidden = true;
+		RB.state = "";
+		RB.errors = null;
+		RB.files = RB.logShown = false;
+		RB.progress = null;
 	}
-	if (!RB.busy && !st.dataset.state)
-		st.textContent = can.ok ? "Rebuild and boot builds " + rbFrom() + " in this browser" +
+	if (!RB.busy && !RB.state)
+		RB.status = can.ok ? "Rebuild and boot builds " + rbFrom() + " in this browser" +
 			(n ? " with your " + n + " changed file" + (n === 1 ? "" : "s") : ", with no edit: CI's bytes") + ", then boots it." : can.why;
+	RB.changed();
 }
 
 // The status line, the progress bar and the panel button's label.
 function rbShow(text, state, frac) {
-	const st = $("rb_status");
-	st.textContent = text;
-	st.dataset.state = state || "";
+	RB.status = text;
+	RB.state = state || "";
 	RB.shownFor = image;
-	const bar = $("rb_progress");
-	bar.hidden = frac === undefined;
-	if (frac !== undefined)
-		bar.value = frac;
+	RB.progress = frac === undefined ? null : frac;
 	$("rb_go_panel").querySelector(".rblabel").textContent = state === "running" ?
 		"Rebuilding… " + Math.round((frac || 0) * 100) + "%" : "Rebuild and boot";
 	$("rb_go_panel").setAttribute("aria-busy", state === "running");
+	RB.changed();
 }
 
 // The progress of kitBuild's onstep events as [text, fraction]: loading
@@ -110,7 +144,8 @@ function rbStepText(e) {
 // Every command the build runs, written as a shell would take it, then its
 // exit code, its time and its output; "# " lines are the page's notes. It
 // fills while the build runs, follows its end while it is scrolled to the
-// end (or closed), and stays until the next build.
+// end (or closed), and stays until the next build. Written into its <pre>
+// as it comes (thousands of lines: no React drawing per line).
 
 // One argument as a POSIX shell word.
 function rbWord(a) {
@@ -119,18 +154,19 @@ function rbWord(a) {
 
 function rbLogStart() {
 	RB.logCmds = 0;
-	$("rb_buildlog").textContent = "";
-	$("rb_buildlog_box").hidden = false;
+	RB.logEl.textContent = "";
+	RB.logShown = true;
 	rbLogSum(true);
 }
 
 function rbLogSum(running) {
-	$("rb_buildlog_sum").textContent = "Build log (" + RB.logCmds + " command" + (RB.logCmds === 1 ? "" : "s") + (running ? ", running" : "") + ")";
+	RB.logSum = "Build log (" + RB.logCmds + " command" + (RB.logCmds === 1 ? "" : "s") + (running ? ", running" : "") + ")";
+	RB.changed();
 }
 
 // Text added at the end, in a span of class cls (none: plain).
 function rbLogAdd(text, cls) {
-	const log = $("rb_buildlog");
+	const log = RB.logEl;
 	const atEnd = log.scrollHeight - log.clientHeight - log.scrollTop <= 4;
 	const n = cls ? document.createElement("span") : document.createTextNode(text);
 	if (cls) {
@@ -164,14 +200,18 @@ function rbLogEvent(e) {
 }
 
 function rbLogCopy() {
-	const text = $("rb_buildlog").textContent, b = $("rb_buildlog_copy");
+	const text = RB.logEl.textContent;
 	const said = (t) => {
-		b.textContent = t;
-		setTimeout(() => { b.textContent = "Copy the log"; }, 1500);
+		RB.copied = t;
+		RB.changed();
+		setTimeout(() => {
+			RB.copied = "";
+			RB.changed();
+		}, 1500);
 	};
 	(navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject(new Error("no clipboard"))).then(() => said("Copied"), () => {
 		// No clipboard access: the text selected, for the user to copy.
-		getSelection().selectAllChildren($("rb_buildlog"));
+		getSelection().selectAllChildren(RB.logEl);
 		said("Selected: copy it");
 	});
 }
@@ -214,11 +254,11 @@ async function rbRun() {
 	edFlush(); // what was typed last
 	const from = rbFrom(), shown = image, t0 = kitNow();
 	RB.busy = true;
-	$("rb_log").hidden = true;
-	$("rb_files").hidden = true;
+	RB.errors = null;
+	RB.files = false;
 	rbSync();
 	rbShow("Reading the build kit of " + from + "…", "running", 0);
-	const all = $("rb_all").checked;
+	const all = RB.all;
 	rbLogStart();
 	rbLogNote("Rebuild of " + from + " in this browser, " + (all ? "every object compiled" : "the objects that include an edited file compiled") + ".");
 	const cc = new ClangWorker();
@@ -279,8 +319,7 @@ function rbFailed(from, e) {
 	const m = /^(.*?) exited with (\d+): ([\s\S]*)$/.exec(e.message);
 	rbShow(m ? "Not built: " + m[1] + " failed (its messages below). The machine still runs " + image.name + "." :
 		"Not built: " + e.message + ". The machine still runs " + image.name + ".", "failed");
-	$("rb_log").textContent = m ? m[3] : "";
-	$("rb_log").hidden = !m;
+	RB.errors = m ? m[3] : null;
 	rbSync();
 	// Where it says why: the Source tab (also when the editor's button was pressed).
 	api.show.showTab("source");
@@ -330,8 +369,8 @@ async function rbBoot(from, kit, edits, r, ms) {
 		", CI's is " + sha(kit.shipped.sha256);
 	RB.last.text = "Booted " + image.name + ": " + kib(bytes.length) + " bzImage " + which + "; " + how + ".";
 	rbShow(RB.last.text + " Making its data files (symbols, disassembly, DWARF, source)…", "booted", 0.97);
-	$("rb_files").hidden = false;
-	$("rb_dl_elf").textContent = "Download " + elfName;
+	RB.files = true;
+	RB.changed();
 	// The screen: in the Machine tab, under the Source panel's sheet on a phone.
 	api.show.showTab("machine");
 	if (srcPanel && matchMedia("(max-width: 640px)").matches)
@@ -354,15 +393,36 @@ function rbDownload(what) {
 }
 
 function initRebuild() {
-	$("rb_go").addEventListener("click", rbRun);
 	$("rb_go_panel").addEventListener("click", rbRun);
-	$("rb_back").addEventListener("click", () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => api.show.setStatus(String(e))));
-	$("rb_dl_image").addEventListener("click", () => rbDownload("image"));
-	$("rb_dl_elf").addEventListener("click", () => rbDownload("elf"));
-	$("rb_buildlog_copy").addEventListener("click", rbLogCopy);
 	dbgOnChange(rbSync);
 	rbLoadIndex();
 }
 
+const rbBack = () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => api.show.setStatus(String(e)));
+
+// The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
+function RebuildPanel() {
+	useSyncExternalStore(RB.subscribe, () => RB.rev);
+	const keepLog = useCallback((el) => { RB.logEl = el; }, []);
+	return (
+		<>
+			<div className="scan"><button id="rb_go" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title}
+				onClick={rbRun}><span aria-hidden="true">⟳</span> Rebuild and boot</button>{" "}<label className="rball"><input id="rb_all"
+				type="checkbox" checked={RB.all} onChange={(e) => { RB.all = e.target.checked; RB.changed(); }} /> compile every object</label>
+			<Tip text="Builds this kernel again in this browser, with your edits, and boots it: the build kit CI made for it (its objects, sources, headers and the link steps) is fetched, the objects that include a file you changed are compiled by clang.wasm (the page's clang 22.1.0, fetched once, 77 MB), the others are CI's, and the link steps (ld.lld, objcopy, the kernel's own tools as wasm) make the bzImage and the ELF with debug info. The kernel boots at once; its symbols, disassembly, DWARF (lines, types, locals, call frames) and the C source of your edited tree are then made in this browser, so the listings, the Source panel, the Debugger and the coverage follow the edit. With no edit the bzImage and the ELF are CI's bytes, which the status checks. Compile every object: compile all of them from the sources, not only the changed ones. Nothing is uploaded." />
+			{" "}<button id="rb_back" type="button" hidden={!(image && image.from) || RB.busy} onClick={rbBack}>Back to the shipped kernel</button></div>
+			<progress id="rb_progress" max="1" value={RB.progress || 0} hidden={RB.progress === null}></progress>
+			<p id="rb_status" className="note" role="status" data-state={RB.state}>{RB.status}</p>
+			<pre id="rb_log" className="rblog" hidden={RB.errors === null}>{RB.errors}</pre>
+			<details id="rb_buildlog_box" className="rblogbox" hidden={!RB.logShown}><summary id="rb_buildlog_sum">{RB.logSum}</summary>
+				<div className="scan"><button id="rb_buildlog_copy" type="button" onClick={rbLogCopy}>{RB.copied || "Copy the log"}</button>
+					<Tip text="Every command of the build as it runs: the compiles (clang.wasm) and the link steps (ld.lld, objcopy, the kernel's own tools as wasm, and sed and cat done by the page), each with its exit code, its time and what it printed. Lines starting with # are the page's own notes (fetching the kit, the phases' times). It stays after the build, also after an error, until the next build." /></div>
+				<pre id="rb_buildlog" className="rbbuildlog" tabIndex={0} aria-label="Build log" ref={keepLog}></pre></details>
+			<div id="rb_files" className="scan" hidden={!RB.files}><button id="rb_dl_image" type="button" onClick={() => rbDownload("image")}>Download bzImage</button>{" "}
+				<button id="rb_dl_elf" type="button" onClick={() => rbDownload("elf")}>{"Download " + (RB.last ? RB.last.elfName : "ELF")}</button></div>
+		</>
+	);
+}
+
 provide({ rbSync });
-export { rbSync, initRebuild };
+export { rbSync, initRebuild, RB, RebuildPanel };

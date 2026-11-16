@@ -28,7 +28,7 @@ import { initSnapshots } from "./snapshots.js";
 import { initReplay } from "./replay.js";
 import { initReverse } from "./reverse.js";
 import { initBookmarks } from "./bookmarks.js";
-import { initRebuild } from "./rebuild.js";
+import { initRebuild } from "./rebuild.jsx";
 import { showHeader, setStatus } from "./header.js";
 import { setAutoscan, scan } from "./scan.js";
 import { initLegend, drawMaps, gridRam, pageAt, showHover } from "./memview.js";

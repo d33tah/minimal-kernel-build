@@ -28,8 +28,8 @@ not run are those of the source files, not of the bundle. The Workers load
 their modules themselves, unbundled. A module imports only from
 modules below it, in this order, so there is no import cycle:
 
-    util store page ui | unwind dwarf clock asmnames wasi kgen lz4frame kit
-    clang jumps stepper dbginfo source memevents fastforward cpustate
+    util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
+    clang jumps stepper dbginfo source ui memevents fastforward cpustate
     symimport livedis vars srcedit fnfacts genimport graph rebuild
     memmap quests events replay reverse snapshots bookmarks coverage pwa | header
     scan memview listing debugui tabs settings nav symview run runto boot
@@ -158,9 +158,12 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 so the controls exist before the modules that are not components yet look
 them up. Mounted so far: the tab bar (`TabBar`, tabs.jsx), the Settings
 tab (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
-quests.jsx) and the Events tab (`EventsPanel`, events.jsx).
+quests.jsx), the Events tab (`EventsPanel`, events.jsx) and the Source
+tab's Rebuild and boot box with its build log (`RebuildPanel`,
+rebuild.jsx, in `#rb_box`; the build log's `<pre>` is written line by
+line as the build runs, from a ref, not drawn by React per line).
 
-A view whose state lives in a controller object (`QUESTS`, `MEV`) keeps
+A view whose state lives in a controller object (`QUESTS`, `MEV`, `RB`) keeps
 it there: the controller computes what the tab shows (the quests' cards,
 `MEV.view` with the table's rows) and calls its `changed()`, which bumps
 `rev` and draws at once (`flushSync`: a test or a handler reads the DOM

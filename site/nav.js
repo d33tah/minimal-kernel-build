@@ -14,7 +14,7 @@ import { kernelSymLookup } from "./livedis.js";
 import { pageSnapView, setPageSnapView } from "./snapshots.js";
 import { drawGrid } from "./memview.js";
 import { navScrollWant, listingLineAt, setNavScrollWant, setLive } from "./listing.js";
-import { navHashNow, hashOwn, setHashOwn, showTab, writeHash } from "./tabs.js";
+import { navHashNow, hashOwn, setHashOwn, showTab, writeHash } from "./tabs.jsx";
 
 // ---- jump history ---------------------------------------------------------
 

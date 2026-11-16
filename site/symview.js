@@ -20,7 +20,7 @@ import { drawGrid, symDesc } from "./memview.js";
 import { inspect, listingFollow, navScrollWant, setNavScrollWant, listingLineAt, scrollListingTo, sheetBand,
 	insnIndex } from "./listing.js";
 import { fastStepping, updateDebugUi, renderContext } from "./debugui.js";
-import { writeHash, showTab } from "./tabs.js";
+import { writeHash, showTab } from "./tabs.jsx";
 import { navJump, NAV_SCROLL_MS, navAt, navDepth, setNavDepth } from "./nav.js";
 
 // Live view while stepping: grid flashes, asm view follows EIP. Drawn

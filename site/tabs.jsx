@@ -1,26 +1,57 @@
 "use strict";
 
-// Tabs, the URL hash, compact tab labels.
+// Tabs, the URL hash, compact tab labels. The tab bar is a React component
+// (R3) on page.js's `tab` and `compactTabs`.
 
+import { useLayoutEffect } from "react";
 import { hex, PAGE, $ } from "./util.js";
-import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, provide } from "./page.js";
+import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, provide } from "./page.js";
 import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { covShow } from "./coverage.js";
 import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { QUESTS } from "./quests.js";
-import { renderSettings } from "./settings.js";
 import { bmFromHash } from "./bookmarks.js";
 import { drawGrid } from "./memview.js";
 import { inspect } from "./listing.js";
 import { renderContext } from "./debugui.js";
+import { useStore } from "./ui.jsx";
 
 // ---- tabs -----------------------------------------------------------------
 
 const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "events", "quests", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
+// Each tab's button: its emoji and its name.
+const TAB_LOOK = {
+	machine: ["🖥️", "Machine"], memory: ["🗺️", "Memory"], page: ["🔢", "Page"], debugger: ["🐞", "Debugger"],
+	calls: ["📊", "Calls"], source: ["📝", "Source"], snapshots: ["💾", "Snapshots"], events: ["📋", "Events"],
+	quests: ["🎯", "Quests"], settings: ["⚙️", "Settings"], about: ["ℹ️", "About"],
+};
+
+// The tab bar. Compact (Settings): the buttons show only their emoji, the
+// name is their tooltip and stays their accessible name.
+function TabBar() {
+	const shown = useStore("tab");
+	const compact = useStore("compactTabs");
+	useLayoutEffect(() => {
+		document.body.classList.toggle("compact-tabs", compact);
+	}, [compact]);
+	return (
+		<nav className="tabbar" role="tablist" aria-label="Views">
+			{TABS.map((t) => {
+				const [emoji, word] = TAB_LOOK[t];
+				return (
+					<button key={t} role="tab" type="button" id={"tab_" + t} data-tab={t} aria-label={word}
+						aria-selected={t === shown} data-tip={compact ? word : undefined} onClick={() => showTab(t)}>
+						<span className="temo" aria-hidden="true">{emoji}</span> <span className="tword">{word}</span>
+					</button>
+				);
+			})}
+		</nav>
+	);
+}
 
 // Hash: #memory, #page/0x100000, #debugger, ...; with the Source panel open
 // its file and line after ~src= (#debugger~src=init/main.c:1000), so a
@@ -48,13 +79,14 @@ function writeHash() {
 	hashOwn = location.hash;
 }
 
+// The tab bar and the Settings tab follow `tab` (React); the panels not yet
+// components are shown and hidden here, and the views drawn on demand are
+// told.
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
 	setTab(TABS.includes(name) ? name : "machine");
-	for (const t of TABS) {
+	for (const t of TABS)
 		$("panel_" + t).hidden = t !== tab;
-		$("tab_" + t).setAttribute("aria-selected", t === tab);
-	}
 	vmKeys();
 	writeHash();
 	if (tab === "page")
@@ -63,8 +95,6 @@ function showTab(name) {
 		drawGrid();
 	if (tab === "debugger")
 		renderContext();
-	if (tab === "settings")
-		renderSettings();
 	MMAP.place(tab); // memmap.js: the live memory map goes with the Quests tab
 	MEV.shown(tab === "events"); // memevents.js
 	QUESTS.shown(tab === "quests"); // quests.js
@@ -82,23 +112,10 @@ function vmKeys() {
 		emulator.keyboard_set_status(tab === "machine");
 }
 
-// Compact tabs (Settings tab): the tab buttons show only their emoji, the
-// name is their tooltip and stays their accessible name.
+// Compact tabs (Settings tab), remembered in this browser.
 const COMPACT_KEY = "mkb-compact-tabs";
 // Default on a phone: at 400 px and less the names take three rows.
 const compactDefault = () => window.matchMedia("(max-width: 400px)").matches;
-
-function setCompactTabs(on) {
-	document.body.classList.toggle("compact-tabs", on);
-	$("compact_tabs").checked = on;
-	for (const t of TABS) {
-		const b = $("tab_" + t);
-		if (on)
-			b.dataset.tip = b.getAttribute("aria-label");
-		else
-			delete b.dataset.tip;
-	}
-}
 
 function initCompactTabs() {
 	let saved = null;
@@ -108,14 +125,16 @@ function initCompactTabs() {
 		// no storage: the default
 	}
 	setCompactTabs(saved === null ? compactDefault() : saved === "1");
-	$("compact_tabs").addEventListener("change", () => {
-		setCompactTabs($("compact_tabs").checked);
-		try {
-			localStorage.setItem(COMPACT_KEY, $("compact_tabs").checked ? "1" : "0");
-		} catch (e) {
-			// no storage: until reload
-		}
-	});
+}
+
+// The Settings tab's box: on or off, and remembered.
+function chooseCompactTabs(on) {
+	setCompactTabs(on);
+	try {
+		localStorage.setItem(COMPACT_KEY, on ? "1" : "0");
+	} catch (e) {
+		// no storage: until reload
+	}
 }
 
 // A hash change (typed, or a link) opens that tab and page. Going back
@@ -157,7 +176,7 @@ function readHash() {
 const setHashOwn = (v) => { hashOwn = v; };
 
 // The page API's entries of this module (page.js).
-provide({ showTab, writeHash, setCompactTabs, compactDefault });
+provide({ showTab, writeHash });
 
 export { navHashNow, hashOwn, showTab, writeHash, vmKeys, initCompactTabs, readHash, TABS, compactDefault,
-	setCompactTabs, setHashOwn };
+	chooseCompactTabs, setHashOwn, TabBar };

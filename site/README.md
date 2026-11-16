@@ -28,12 +28,12 @@ not run are those of the source files, not of the bundle. The Workers load
 their modules themselves, unbundled. A module imports only from
 modules below it, in this order, so there is no import cycle:
 
-    util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
+    util store page ui | unwind dwarf clock asmnames wasi kgen lz4frame kit
     clang jumps stepper dbginfo source memevents fastforward cpustate
-    symimport livedis vars srcedit fnfacts genimport graph settings rebuild
+    symimport livedis vars srcedit fnfacts genimport graph rebuild
     memmap quests replay reverse snapshots bookmarks coverage pwa | header
-    scan memview listing debugui tabs nav symview run runto boot tips kernel
-    | debug app
+    scan memview listing debugui tabs settings nav symview run runto boot
+    tips kernel | debug shell app
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
@@ -43,7 +43,7 @@ modules below it, in this order, so there is no import cycle:
   legend, page grid, the EIP's page), `listing.js` (the Page tab's
   listing, the yellow lines), `debugui.js` (the Debugger's drawing: code
   at EIP, registers, counters, clock and speed, the end, the run badge),
-  `tabs.js` (tabs and the URL hash), `nav.js` (the jump history),
+  `tabs.jsx` (the tab bar, tabs and the URL hash), `nav.js` (the jump history),
   `symview.js` (following EIP, jumpTo, openFunction, the symbols and call
   stack panels), `run.js` (the count from reset, v86's JIT loop, the
   stepping driver, pause and resume), `runto.js` (Step, Run to, the
@@ -147,6 +147,32 @@ it). The misc suite's `store` case checks the snapshot, the
 subscriptions, `publishMachine` after a step, that unknown keys and
 entries throw, and that every entry is provided after a boot;
 `test_store.mjs` (the site job) checks `store.js` alone.
+
+## React shell
+
+The views move to React components (R3), one at a time; a component file
+is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
+`shell.jsx` says which component takes over which element of
+`index.html` (the element stays there, empty: `#tabrow`, `#panel_settings`);
+`app.js` mounts it first thing in `init()`, synchronously (`flushSync`),
+so the controls exist before the modules that are not components yet look
+them up. Mounted so far: the tab bar (`TabBar`, tabs.jsx) and the Settings
+tab (`SettingsPanel`, settings.jsx).
+
+A component reads the store with `useStore(key)` (`ui.jsx`:
+`useSyncExternalStore` over `state.subscribe(fn, [key])` and
+`state.get(key)`), so it renders again only when that key changes: the tab
+bar on `tab` and `compactTabs`, Settings on `tab`, `compactTabs` and
+`prefSpeed`. Nothing per instruction writes the store and `machine`
+changes at most once per drawn frame, so the stepper's hot path never
+reaches React. The canvases (the screen, the memory grid and map, the
+Calls chart) stay canvases drawn from their modules.
+
+React (`react`, `react-dom` 19.2.9) comes from npm through
+`package-lock.json` into the bundle, production build, no CDN; it adds
+no global (the misc suite's `globals` case). ESLint runs
+`eslint-plugin-react-hooks` (rules of hooks, exhaustive deps and the
+React Compiler's checks) on the `*.jsx` files.
 
 ## Kernels and RAM
 

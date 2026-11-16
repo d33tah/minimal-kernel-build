@@ -18,7 +18,7 @@ import { scan } from "./scan.js";
 import { insnIndex } from "./listing.js";
 import { endText, updateDebugUi, finishEntry, speed, SPEED_KEY, renderClock, MIPS_KEY, clockMips,
 	renderCounters, COUNT_KEY } from "./debugui.js";
-import { showTab } from "./tabs.js";
+import { showTab } from "./tabs.jsx";
 import { navJump } from "./nav.js";
 import { afterStop, jumpTo } from "./symview.js";
 import { pause, resume } from "./run.js";

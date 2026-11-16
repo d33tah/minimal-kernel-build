@@ -24,7 +24,6 @@ import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { QUESTS } from "./quests.js";
 import { setupVars } from "./vars.js";
-import { initSettings } from "./settings.js";
 import { initSnapshots } from "./snapshots.js";
 import { initReplay } from "./replay.js";
 import { initReverse } from "./reverse.js";
@@ -36,7 +35,7 @@ import { initLegend, drawMaps, gridRam, pageAt, showHover } from "./memview.js";
 import { inspect, setLive, selectPage } from "./listing.js";
 import { watchPanicText, watchJitEnd, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, updateDebugUi, initRunBadge,
 	SPEED_KEY, MIPS_KEY, renderContext, COUNT_KEY, syncSrcToggle } from "./debugui.js";
-import { initCompactTabs, readHash, TABS, showTab } from "./tabs.js";
+import { initCompactTabs, readHash } from "./tabs.jsx";
 import { initNav } from "./nav.js";
 import { listingStale } from "./symview.js";
 import { onVisibility } from "./run.js";
@@ -44,8 +43,11 @@ import { initDebugger } from "./runto.js";
 import { boot } from "./boot.js";
 import { initTips } from "./tips.js";
 import { loadKernel, useImage } from "./kernel.js";
+import { mountShell } from "./shell.jsx";
 
 async function init() {
+	// The React components first (shell.jsx): their controls exist from here on.
+	mountShell();
 	const params = new URLSearchParams(location.search);
 	MEV.panel();
 	MMAP.init(); // memmap.js
@@ -118,9 +120,6 @@ async function init() {
 	});
 	updateDebugUi();
 	initCompactTabs();
-	initSettings();
-	for (const t of TABS)
-		$("tab_" + t).addEventListener("click", () => showTab(t));
 	initBookmarks(); // before the menu: its keys in the dialog first
 	initRunBadge();
 	window.addEventListener("hashchange", readHash);

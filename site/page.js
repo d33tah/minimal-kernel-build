@@ -60,11 +60,13 @@ let flashes = 0;         // frames whose scan saw changed pages (the grid flashe
 // The jump history (nav.js) and opening a function (symview.js).
 let navBuilt = false;    // the history's first entry is made
 let openFnWant = null;   // the function whose source opens when its DWARF arrives
+// Compact tabs (Settings): the tab bar shows only the emoji (tabs.jsx).
+let compactTabs = false;
 
 const state = new Store({ kernels, image, initrd, emulator, emuRam, emuReady, symbols, disasm, pageClass, grid,
 	selectedPage, tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine,
 	usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo, runToLabel, runToFrom,
-	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant });
+	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, compactTabs });
 
 const setKernels = (v) => { kernels = v; state.set("kernels", v); };
 const setImage = (v) => { image = v; state.set("image", v); };
@@ -102,6 +104,7 @@ const setPrevRegs = (v) => { prevRegs = v; state.set("prevRegs", v); };
 const setFlashes = (v) => { flashes = v; state.set("flashes", v); };
 const setNavBuilt = (v) => { navBuilt = v; state.set("navBuilt", v); };
 const setOpenFnWant = (v) => { openFnWant = v; state.set("openFnWant", v); };
+const setCompactTabs = (v) => { compactTabs = v; state.set("compactTabs", v); };
 // The machine's state was drawn anew (registers, counters, screen): views
 // that show it may read it again.
 const publishMachine = () => { machine++; state.set("machine", machine); };
@@ -133,7 +136,7 @@ const API_ENTRIES = {
 	// bookmarks, popovers.
 	show: ["setStatus", "showTab", "selectPage", "inspect", "renderPage", "renderContext", "renderSymbols",
 		"updateDebugUi", "navJump", "jumpTo", "openFunction", "writeHash", "listingHold", "listingKeep",
-		"navListingAnchor", "setLive", "setCompactTabs", "compactDefault", "hideTip", "runBadgeOpen",
+		"navListingAnchor", "setLive", "hideTip", "runBadgeOpen",
 		"renderRunBadgePwa", "bmLineStar", "bmFnNames", "bmTip"],
 };
 const api = {};
@@ -163,4 +166,4 @@ export { state, kernels, image, initrd, emulator, emuRam, emuReady, symbols, dis
 	runToLabel, runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant,
 	setUsedPages, setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo,
 	setRunToLabel, setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes,
-	setNavBuilt, setOpenFnWant, api, provide };
+	setNavBuilt, setOpenFnWant, compactTabs, setCompactTabs, api, provide };

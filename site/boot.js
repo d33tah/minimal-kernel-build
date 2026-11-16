@@ -22,7 +22,7 @@ import { scanCopy, setScanCopy, setAutoscan } from "./scan.js";
 import { computePageClasses, drawGrid } from "./memview.js";
 import { setLive, inspect, insnIndex } from "./listing.js";
 import { updateDebugUi, clockMips, finishEntry } from "./debugui.js";
-import { vmKeys } from "./tabs.js";
+import { vmKeys } from "./tabs.jsx";
 import { codeSymbols, afterStop } from "./symview.js";
 import { stopDriver, resetCounters, resume } from "./run.js";
 

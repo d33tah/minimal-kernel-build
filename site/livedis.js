@@ -9,7 +9,7 @@
 // needs it.
 
 import { withV, V86_KERNEL_ADDR, PAGE } from "./util.js";
-import { provideLivedis, inspect, renderContext, symbols, stepper, emulator, emuReady, emuRam } from "./page.js";
+import { symbols, stepper, emulator, emuReady, emuRam, api, provide } from "./page.js";
 import { asmSymLookup, asmBranchTarget, asmTargetName } from "./asmnames.js";
 
 // The "live decode" toggle (Page tab): decode guest memory even where
@@ -51,10 +51,10 @@ function loadIced() {
 				icedError = String(e);
 				console.warn("iced-x86:", e);
 			}
-			if (typeof inspect === "function")
-				inspect(); // redraw the listing that asked for it
-			if (typeof renderContext === "function")
-				renderContext();
+			if (typeof api.show.inspect === "function")
+				api.show.inspect(); // redraw the listing that asked for it
+			if (typeof api.show.renderContext === "function")
+				api.show.renderContext();
 			return iced;
 		})();
 	return icedLoading;
@@ -166,6 +166,6 @@ function liveInsnsForPage(p) {
 	return { insns, misaligned, bits };
 }
 
-provideLivedis({ kernelSymLookup });
+provide({ kernelSymLookup });
 export { liveDecode, iced, icedError, loadIced, kernelSymLookup, decodeLive, virtOffset, bitnessAt,
 	liveInsnsForPage };

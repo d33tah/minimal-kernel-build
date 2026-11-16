@@ -9,8 +9,7 @@
 // physical + the kernel's offset (0xC0000000 for i386 Linux).
 
 import { V86_KERNEL_ADDR, hex, $, escHtml } from "./util.js";
-import { emulator, emuReady, emuRam, currentPhys, stepper, symbols, symbolAt, symButton, image, tab, runState,
-	insnStart, FRAME_METHODS, navJump, showTab, jumpTo } from "./page.js";
+import { emulator, emuReady, emuRam, stepper, symbols, image, tab, runState, api } from "./page.js";
 import { DWT, dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLocAt, dwarfScopesAt } from "./dwarf.js";
 import { dwSetFrameBase, dwLocation } from "./unwind.js";
 import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
@@ -80,7 +79,7 @@ const varsMissing = (pa) => varsCellAt(pa) ? "<optimized out>" : "(not in RAM)";
 // outside its symbols (BIOS, setup, decompressor) and its C entry never
 // stepped. Its variables then hold whatever RAM holds there.
 function varsNotStarted() {
-	const eip = typeof currentPhys === "function" ? currentPhys() : -1;
+	const eip = typeof api.machine.currentPhys === "function" ? api.machine.currentPhys() : -1;
 	if (!stepper || !symbols || eip < 0)
 		return false;
 	const entry = symbols.symbols.find((s) => s.name === "start_kernel" || s.name === "hello_main");
@@ -296,7 +295,7 @@ function varsPointee(T, va) {
 	// At a variable's start: its name (its first member is there too).
 	if (w)
 		return pa === w.var[1] ? w.var[0] : w.path + (w.offset ? "+" + w.offset : "");
-	const s = symbols && pa >= 0 ? symbolAt(symbols.symbols, pa) : null;
+	const s = symbols && pa >= 0 ? api.symbols.symbolAt(symbols.symbols, pa) : null;
 	return s ? s.name + (pa > s.paddr ? "+0x" + (pa - s.paddr).toString(16) : "") : "";
 }
 
@@ -422,7 +421,7 @@ function varsRow(T, label, type, pa, bits, key, depth) {
 			const to = sc.ptr - varsOffset();
 			if (to >= 0 && to < emuRam) {
 				val.textContent = "";
-				const b = symButton(sc.text, to, "Open the Page tab at " + hex(sc.ptr) + " (physical " + hex(to) + ")");
+				const b = api.symbols.symButton(sc.text, to, "Open the Page tab at " + hex(sc.ptr) + " (physical " + hex(to) + ")");
 				b.classList.add("wptr");
 				val.append(b);
 			}
@@ -788,10 +787,10 @@ function renderLocals(uw) {
 		det.className = "lframe";
 		det.dataset.n = n;
 		det.dataset.pc = f.lookup;
-		const name = stepper ? stepper.symName[stepper.symbolOf(insnStart(f.lookup))] || "" : "";
+		const name = stepper ? stepper.symName[stepper.symbolOf(api.symbols.insnStart(f.lookup))] || "" : "";
 		const k = String(n);
 		const sum = document.createElement("summary");
-		const m = FRAME_METHODS[f.method] || ["?"];
+		const m = api.symbols.FRAME_METHODS[f.method] || ["?"];
 		sum.append("#" + n + " " + (name || hex(f.lookup)) + " ");
 		const tag = document.createElement("span");
 		tag.className = "fmeth";
@@ -862,7 +861,7 @@ function opEnv() {
 	};
 	const env = { off: varsOffset(), T, sym: kernelSymLookup(), row, scopes, cur: null, sameFrame: null,
 		loading: ty && ty.state === "loading" ? ty.why : "" };
-	const eip = currentPhys();
+	const eip = api.machine.currentPhys();
 	if (eip >= 0 && stepper) {
 		const r = stepper.regs();
 		const v = [r.eax, r.ecx, r.edx, r.ebx, r.esp, r.ebp, r.esi, r.edi];
@@ -1166,7 +1165,7 @@ function showVarInfo(pa, pinned) {
 		b.textContent = "Watch " + r.path;
 		b.addEventListener("click", () => {
 			watchAdd(r.path);
-			navJump(() => showTab("debugger"));
+			api.show.navJump(() => api.show.showTab("debugger"));
 		});
 		el.append(" ", b);
 	}
@@ -1203,7 +1202,7 @@ function setupVars() {
 		const b = ev.target.closest ? ev.target.closest(".brt") : null;
 		if (b) {
 			ev.stopPropagation();
-			jumpTo(Number(b.dataset.pa));
+			api.show.jumpTo(Number(b.dataset.pa));
 		}
 	}, true);
 	const listing = $("listing");

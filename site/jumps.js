@@ -15,7 +15,7 @@
 // nothing.
 
 import { hex, escHtml, $ } from "./util.js";
-import { disasm, symbols, kernelSymLookup, stepper, dbgHas, dbgFrames, srcLinkHtml, srcLinkEl, navJump, jumpTo } from "./page.js";
+import { disasm, symbols, stepper, api } from "./page.js";
 import { asmTargetName } from "./asmnames.js";
 
 // Kinds, as stored by the stepper (a bit per kind in a path's mask).
@@ -269,7 +269,7 @@ function jumpsFor(list) {
 			jumpsKernel = [disasm, symbols, jumpsStubArrays(jumpsStatic(disasm.insns, toPhys(), disasm.taken), jumpStubSyms())];
 		return jumpsKernel[2];
 	}
-	const entries = [], look = symbols ? kernelSymLookup() : null;
+	const entries = [], look = symbols ? api.symbols.kernelSymLookup() : null;
 	if (look)
 		for (const [pa] of list) {
 			const s = look(pa);
@@ -323,7 +323,7 @@ function jumpsJitNote() {
 function jumpName(at, va) {
 	if (at === -2)
 		return hex(va) + " (outside the kernel image)";
-	const name = typeof kernelSymLookup === "function" ? asmTargetName(at, kernelSymLookup()) : "";
+	const name = typeof api.symbols.kernelSymLookup === "function" ? asmTargetName(at, api.symbols.kernelSymLookup()) : "";
 	return name ? name + " (" + hex(at) + ")" : hex(at);
 }
 
@@ -437,10 +437,10 @@ function jumpEndHtml(S, e, pa, dir, inView, lookup) {
 	const label = (JUMP_GLYPH[where] ? JUMP_GLYPH[where] + "\u2009" : "") + name;
 	h += e.at >= 0 ? '<button type="button" class="jto" data-go="' + e.at + '" data-tip="' + escHtml(name + " (" + hex(e.at) + "), " +
 		JUMP_WHERE_TEXT[where] + ": go there in the Page tab") + '">' + escHtml(label) + "</button>" : escHtml(label);
-	if (e.at >= 0 && typeof dbgHas === "function" && dbgHas()) {
-		const r = dbgFrames(e.at);
+	if (e.at >= 0 && typeof api.symbols.dbgHas === "function" && api.symbols.dbgHas()) {
+		const r = api.symbols.dbgFrames(e.at);
 		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
-			h += " " + srcLinkHtml(r.frames[0].file, r.frames[0].line, "", e.at);
+			h += " " + api.source.srcLinkHtml(r.frames[0].file, r.frames[0].line, "", e.at);
 	}
 	if (e.count)
 		h += " ×" + e.count.toLocaleString("en");
@@ -453,7 +453,7 @@ function jumpEndHtml(S, e, pa, dir, inView, lookup) {
 // it ("" if no path comes in), dst: after it, sin and sout: the ways of
 // its ends out of view (for the gutter stubs) }.
 function jumpInlineHtml(S, P, pa, inView, max) {
-	const lookup = typeof kernelSymLookup === "function" ? kernelSymLookup() : null;
+	const lookup = typeof api.symbols.kernelSymLookup === "function" ? api.symbols.kernelSymLookup() : null;
 	const r = { src: "", dst: "", sin: "", sout: "" };
 	const ways = (list) => [...new Set(list.map((e) => jumpWhere(pa, e.at, inView, lookup)).filter((w) => w !== "view"))].join(" ");
 	const more = (n, dir) => '<button type="button" class="jmore" data-pa="' + pa + '" data-dir="' + dir + '" data-tip="All ' + n +
@@ -692,10 +692,10 @@ function jumpPopShow(btn) {
 		else
 			go.disabled = true;
 		li.append(jumpKindsText(e.mask) + (dir === "in" ? " from " : " to "), go);
-		if (e.at >= 0 && typeof dbgHas === "function" && dbgHas()) {
-			const r = dbgFrames(e.at);
+		if (e.at >= 0 && typeof api.symbols.dbgHas === "function" && api.symbols.dbgHas()) {
+			const r = api.symbols.dbgFrames(e.at);
 			if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
-				li.append(" ", srcLinkEl(r.frames[0].file, r.frames[0].line, "", e.at));
+				li.append(" ", api.source.srcLinkEl(r.frames[0].file, r.frames[0].line, "", e.at));
 		}
 		li.append(", " + jumpCountText(e));
 		ul.append(li);
@@ -737,10 +737,10 @@ function jumpPopShow(btn) {
 
 // "go there": the Page tab at pa, its line marked.
 function jumpGo(pa) {
-	navJump(() => {
+	api.show.navJump(() => {
 		jumpHit = pa;
 		jumpHitScroll = true;
-		jumpTo(pa);
+		api.show.jumpTo(pa);
 	});
 }
 

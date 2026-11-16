@@ -11,7 +11,7 @@
 // What v86 does not keep is shown as "not emulated" or "not kept".
 
 import { $ } from "./util.js";
-import { provideCpustate, stepper, symbols, REV } from "./page.js";
+import { stepper, symbols, api, provide } from "./page.js";
 import { jitPending, jitFlush } from "./fastforward.js";
 import { MEV } from "./memevents.js";
 
@@ -560,8 +560,8 @@ function v86ResetHidden(em, where) {
 		throw new Error("this v86.wasm has no jit_reset_hidden (not the gen-v86.sh build)");
 	f(where === "restore" ? 1 : 0);
 	// R5: the JIT checkpoints' spacing counts from the last reset.
-	if (typeof REV === "object")
-		REV.jitMs = 0;
+	if (typeof api.step.REV === "object")
+		api.step.REV.jitMs = 0;
 }
 
 // emulator.restore_state() with the v86 0.5.471 restore bugs worked
@@ -576,5 +576,5 @@ async function v86Restore(em, state) {
 	MEV.restored(); // memevents.js: the events from the stepper's count on are gone
 }
 
-provideCpustate({ v86Restore });
+provide({ v86Restore });
 export { phys32, pageWalk, renderCpuState, v86ResetHidden, v86Restore };

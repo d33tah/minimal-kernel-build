@@ -7,8 +7,7 @@
 // { source, offset, offsetHow }.
 
 import { V86_KERNEL_ADDR, hex, $, kib, V86_INITRD_ADDR } from "./util.js";
-import { image, setSymbols, symbols, setDisasm, syncSrcToggle, disasm, genImport, boot, genRestore, kernels,
-	loadKernel, setStatus, initrd, ram, setInitrd, showHeader, drawMaps, useImage } from "./page.js";
+import { image, setSymbols, symbols, setDisasm, disasm, kernels, initrd, setInitrd, api } from "./page.js";
 import { dbgFresh, dbgHas, DBG, dbgImport, dbgRestore, dbgForget } from "./dbginfo.js";
 import { srcFresh } from "./source.js";
 
@@ -313,7 +312,7 @@ function applySymbols(map) {
 	srcFresh(null, "no C source shipped for imported symbols");
 	if (map.source !== "ELF")
 		dbgFresh(null, "a System.map has no debug info: import the unstripped vmlinux for file:line");
-	syncSrcToggle();
+	api.source.syncSrcToggle();
 	$("symbol_index").dataset.page = "";
 	showImported();
 }
@@ -353,9 +352,9 @@ async function importSymbols(file) {
 	// The files CI makes for a shipped kernel, made here (genimport.js):
 	// they place code by the ELF's PT_LOAD, so not with an offset by hand.
 	if (map.source === "ELF" && /^(auto)?$/.test($("sym_offset").value.trim().toLowerCase()))
-		genImport(file, key);
+		api.source.genImport(file, key);
 	if (image)
-		await boot();
+		await api.machine.boot();
 	return true;
 }
 
@@ -371,7 +370,7 @@ async function restoreImported() {
 				await dbgRestore(key);
 			$("sym_status").textContent += " (remembered for this bzImage)";
 			if (map.source === "ELF")
-				await genRestore(key);
+				await api.source.genRestore(key);
 			return true;
 		}
 	} catch (e) {
@@ -392,11 +391,11 @@ async function forgetImported() {
 	}
 	const k = kernels.find((x) => x.name === (image && image.name));
 	if (k)
-		loadKernel(k).catch((e) => setStatus(String(e)));
+		api.machine.loadKernel(k).catch((e) => api.show.setStatus(String(e)));
 	else {
 		setSymbols(null);
 		showImported();
-		boot();
+		api.machine.boot();
 	}
 }
 
@@ -588,7 +587,7 @@ function ramForInitrd() {
 	if (!initrd)
 		return;
 	const need = V86_INITRD_ADDR + initrd.bytes.length;
-	if (ram() > need)
+	if (api.memory.ram() > need)
 		return;
 	const opt = [...$("memory").options].map((o) => Number(o.value)).filter((v) => v > need).sort((a, b) => a - b)[0];
 	if (opt)
@@ -605,23 +604,23 @@ function initInitrd() {
 		$("initrd_file").value = "";
 		ramForInitrd();
 		initrdNote();
-		showHeader();
-		drawMaps();
-		await boot();
+		api.machine.showHeader();
+		api.memory.drawMaps();
+		await api.machine.boot();
 	});
 	$("initrd_clear").addEventListener("click", async () => {
 		setInitrd(null);
 		initrdNote();
-		showHeader();
-		drawMaps();
-		await boot();
+		api.machine.showHeader();
+		api.memory.drawMaps();
+		await api.machine.boot();
 	});
 	$("cmdline").addEventListener("input", () => { $("cmdline").dataset.typed = "1"; });
 	$("cmdline").addEventListener("change", saveCmdline);
 	$("cmdline").addEventListener("keydown", (ev) => {
 		if (ev.key === "Enter") {
 			saveCmdline();
-			boot();
+			api.machine.boot();
 		}
 	});
 }
@@ -651,15 +650,15 @@ function initImport() {
 			setDisasm(null);
 			srcFresh(null, "no C source for a bzImage from disk");
 			dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
-			syncSrcToggle();
-			useImage(files[k].name, await files[k].arrayBuffer());
+			api.source.syncSrcToggle();
+			api.machine.useImage(files[k].name, await files[k].arrayBuffer());
 		}
 		const m = files.findIndex((_, i) => i !== k);
 		if (m >= 0)
 			await importSymbols(files[m]);
 		else if (k >= 0) {
 			await restoreImported();
-			await boot();
+			await api.machine.boot();
 		}
 	});
 }

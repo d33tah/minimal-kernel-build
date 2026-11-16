@@ -18,8 +18,7 @@
 
 import { CLOCK, realNow, GUEST } from "./clock.js";
 import { V86_KERNEL_ADDR, PAGE } from "./util.js";
-import { symbols, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, stepper, emulator, speedReset,
-	updateDebugUi, v86Restore, disasm, insnIndex } from "./page.js";
+import { symbols, stepper, emulator, disasm, api } from "./page.js";
 import { STEP_CONST } from "./stepper.js";
 import { MEV } from "./memevents.js";
 
@@ -129,13 +128,13 @@ async function jitFlush(st) {
 // (jitPending), await jitFlush(st) first, or they stay out of this slice.
 function jitChunk(st, beforeEntry = false, until = Infinity) {
 	const cpu = st.cpu;
-	revJit(st); // the reverse history goes on with the JIT, or starts anew (R5)
+	api.step.revJit(st); // the reverse history goes on with the JIT, or starts anew (R5)
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
-		REV.inJit++;
+		api.step.REV.inJit++;
 		try {
 			st.run(1, -1, 50);
 		} finally {
-			REV.inJit--;
+			api.step.REV.inJit--;
 		}
 		return 0;
 	}
@@ -156,8 +155,8 @@ function jitChunk(st, beforeEntry = false, until = Infinity) {
 	const ran = (ffCounter(st) - c0) >>> 0;
 	// The JIT checkpoints' spacing (reverse.js), run again too: from a
 	// checkpoint it adds up as it did the first time.
-	REV.jitMs += ran * REV_JIT_MS_PER_INSN + (ex.jit_stats(1) - calls0) * REV_JIT_MS_PER_CALL;
-	if (ran && REV.rerun) {
+	api.step.REV.jitMs += ran * api.step.REV_JIT_MS_PER_INSN + (ex.jit_stats(1) - calls0) * api.step.REV_JIT_MS_PER_CALL;
+	if (ran && api.step.REV.rerun) {
 		st.jumpForget(); // run again (reverse.js): noted the first time
 	} else if (ran) {
 		st.noteJit(beforeEntry);
@@ -204,8 +203,8 @@ async function fastForward(target, name) {
 	ffActive = true;
 	ffAbort = false;
 	ffInfo = { target, name, steps: 0, ms: 0, slices: 0, restores: 0, start: st.steps };
-	speedReset();
-	updateDebugUi();
+	api.step.speedReset();
+	api.show.updateDebugUi();
 	let reached = inside();
 	try {
 		// The BIOS is stepped (about 1.4 M instructions, a fraction of a
@@ -220,7 +219,7 @@ async function fastForward(target, name) {
 			}
 			if (inside())
 				break;
-			updateDebugUi(); // the count of the stepped BIOS part, live
+			api.show.updateDebugUi(); // the count of the stepped BIOS part, live
 			await ffYield();
 		}
 		ffInfo.stepped = st.steps - ffInfo.start;
@@ -267,7 +266,7 @@ async function fastForward(target, name) {
 				CLOCK.baseSteps = at.baseSteps;
 				GUEST.rng = at.rng;
 				try {
-					await v86Restore(em, snap);
+					await api.machine.v86Restore(em, snap);
 				} catch (e) {
 					Object.assign(CLOCK, { base: ranTo.base, baseSteps: ranTo.baseSteps });
 					st.steps = ranTo.steps;
@@ -290,7 +289,7 @@ async function fastForward(target, name) {
 			}
 			ffInfo.steps = st.steps - ffInfo.start;
 			ffInfo.ms = realNow() - t0;
-			updateDebugUi();
+			api.show.updateDebugUi();
 			await ffYield();
 		}
 	} finally {
@@ -322,9 +321,9 @@ async function fastForward(target, name) {
 // instruction has run, the interrupt came just before it.
 // The build's bytes of the instruction at phys (disasm.json), or null.
 function expectedBytes(phys) {
-	if (!disasm || !disasm.insns || typeof insnIndex !== "function")
+	if (!disasm || !disasm.insns || typeof api.symbols.insnIndex !== "function")
 		return null;
-	const i = insnIndex(phys), ins = disasm.insns[i];
+	const i = api.symbols.insnIndex(phys), ins = disasm.insns[i];
 	if (!ins || ins[0] !== phys)
 		return null;
 	const hexs = ins[1];
@@ -347,7 +346,7 @@ async function fastRunTo(targets, label) {
 	ffActive = true;
 	ffAbort = false;
 	ffInfo = Object.assign(ffInfo || {}, { runTo: label });
-	speedReset();
+	api.step.speedReset();
 	// The breakpoints go in only once the targets hold the build's code.
 	// Before that the bytes there can be something else that the kernel
 	// moves into place later: the minified Linux's bzImage is loaded at
@@ -416,7 +415,7 @@ async function fastRunTo(targets, label) {
 			}
 			arm();
 			if (++n % 50 === 0) {
-				updateDebugUi();
+				api.show.updateDebugUi();
 				await ffYield();
 			}
 		}

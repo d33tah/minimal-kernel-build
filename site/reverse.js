@@ -49,8 +49,7 @@
 
 import { CLOCK, realNow, GUEST } from "./clock.js";
 import { num, $, hex, kib } from "./util.js";
-import { provideReverse, stepper, emulator, emuReady, snapWorker, pauseAll, updateDebugUi, afterStop,
-	speedReset, flushScreen, runState, runToTargets } from "./page.js";
+import { stepper, emulator, emuReady, runState, api, provide } from "./page.js";
 import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
 import { INPUT, inputReset, replayActive, inputRewind, inputRedo, inputRoom, replayStop } from "./replay.js";
@@ -204,7 +203,7 @@ function revCapture(st, jit = false) {
 				base = null;
 			}
 		}
-		const r = await snapWorker({ op: "pack", raw, base }, [raw]);
+		const r = await api.machine.snapWorker({ op: "pack", raw, base }, [raw]);
 		cp.data = new Blob([r.data]);
 		cp.size = r.rawLen;
 		cp.stored = r.data.byteLength;
@@ -374,7 +373,7 @@ async function revBlob(cp) {
 // Put the machine back to checkpoint cp, coming from count from.
 async function revRestore(st, cp, from) {
 	if (!REV.cache || REV.cache.key !== cp.key)
-		REV.cache = { key: cp.key, raw: (await snapWorker({ op: "unpack", s: await revBlob(cp) })).raw };
+		REV.cache = { key: cp.key, raw: (await api.machine.snapWorker({ op: "unpack", s: await revBlob(cp) })).raw };
 	const raw = REV.cache.raw.slice(0); // v86 reads the copy
 	if (st !== stepper)
 		throw new Error("the machine was replaced");
@@ -487,30 +486,30 @@ function revStatus(text, state, ms) {
 async function revRun(what, fn) {
 	if (!stepper || REV.busy)
 		return;
-	await pauseAll();
+	await api.step.pauseAll();
 	const st = stepper;
 	if (!st || REV.st !== st || !REV.cps.length) {
 		revStatus(what + ": " + revNoneText() + ".", "none");
-		updateDebugUi();
+		api.show.updateDebugUi();
 		return;
 	}
 	if (replayActive())
 		replayStop("stopped by " + what);
 	REV.busy = true;
 	const t0 = realNow();
-	updateDebugUi();
+	api.show.updateDebugUi();
 	try {
 		const text = await fn(st);
 		const ms = realNow() - t0;
 		REV.last = { what, ms: Math.round(ms), steps: st.steps };
-		speedReset();
-		flushScreen(); // v86 draws the screen only while it runs
+		api.step.speedReset();
+		api.machine.flushScreen(); // v86 draws the screen only while it runs
 		revStatus(text + " (" + Math.round(ms) + " ms)", "done", ms);
 	} catch (e) {
 		revStatus(what + " failed: " + ((e && e.message) || e), "error");
 	}
 	REV.busy = false;
-	afterStop();
+	api.step.afterStop();
 	revRender();
 }
 
@@ -684,10 +683,10 @@ function initReverse() {
 	$("dbg_backto").addEventListener("click", async () => {
 		if (!stepper || REV.busy)
 			return;
-		const want = await runToTargets($("dbg_addr").value.trim());
+		const want = await api.step.runToTargets($("dbg_addr").value.trim());
 		if (!want.targets) {
 			$("dbg_status").textContent = want.why.replace(/\bRun to\b/g, "Back to");
-			updateDebugUi();
+			api.show.updateDebugUi();
 			return;
 		}
 		revBackTo(want.targets, want.label);
@@ -695,7 +694,7 @@ function initReverse() {
 	revRender();
 }
 
-provideReverse({ revMark, revStepBack, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
+provide({ revMark, revStepBack, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
 export { REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, REV, revReset, revRate, revTick, revRoom, revMark,
 	revStepRoom, revJitTick, revJit, revFind, revBlob, revStepBack, revStepTo, revNeedsJit, revBranch, revRender,
 	initReverse };

@@ -12,7 +12,7 @@
 // Loaded before app.js; its functions run after app.js has set up.
 
 import { num, $ } from "./util.js";
-import { image, REF_KEY, prefSpeed, setCompactTabs, compactDefault } from "./page.js";
+import { image, prefSpeed, api } from "./page.js";
 import { dbgIdbOp, dbgForget } from "./dbginfo.js";
 import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
 import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
@@ -71,8 +71,8 @@ function setDescribe(k) {
 		}
 		return "Watch expressions for " + k.slice(WATCH_KEY.length) + " in the Debugger tab: " + (w.join(", ") || "none") + ".";
 	}
-	if (k.startsWith(REF_KEY)) {
-		const rest = k.slice(REF_KEY.length);
+	if (k.startsWith(api.step.REF_KEY)) {
+		const rest = k.slice(api.step.REF_KEY.length);
 		const i = rest.lastIndexOf("-");
 		const clock = rest.slice(i + 1);
 		return "Instructions from the kernel entry to Still alive measured for " + rest.slice(0, i) + " with the " +
@@ -183,7 +183,7 @@ function setMirror(from, to, prop) {
 
 async function resetSettings() {
 	// The defaults first (their handlers remember them), then forget all.
-	setCompactTabs(compactDefault());
+	api.show.setCompactTabs(api.show.compactDefault());
 	$("dbg_speed").value = "1000";
 	$("dbg_speed").dispatchEvent(new Event("change"));
 	$("clock_mips").value = "10";

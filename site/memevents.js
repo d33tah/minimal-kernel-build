@@ -42,7 +42,7 @@
 // device or emulator event is reported in MEV.check.failures.
 
 import { CLOCK } from "./clock.js";
-import { provideMemevents, selectPage, showTab, MMAP, revStepBack } from "./page.js";
+import { api, provide } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 
@@ -958,8 +958,8 @@ const MEV = {
 		span.className = "mev-addr";
 		const text = hi - lo > 1 ? mevHex(lo) + "-" + mevHex(hi - 1) : mevHex(lo);
 		const ram = this.cpu ? this.cpu.memory_size[0] >>> 0 : 0;
-		if (lo < ram && typeof selectPage === "function")
-			span.append(this.btn(text, "Open page " + mevHex(lo >>> 12 << 12) + " in the Page tab (hex and code)", () => selectPage(lo >>> 12)));
+		if (lo < ram && typeof api.show.selectPage === "function")
+			span.append(this.btn(text, "Open page " + mevHex(lo >>> 12 << 12) + " in the Page tab (hex and code)", () => api.show.selectPage(lo >>> 12)));
 		else
 			span.append(text);
 		span.append(" ", this.btn("map", "Show " + mevHex(lo) + " on the live memory map (Memory tab)", () => this.showOnMap(lo), "mev-act"));
@@ -967,15 +967,15 @@ const MEV = {
 	},
 
 	showOnMap(addr) {
-		if (typeof showTab === "function")
-			showTab("memory");
+		if (typeof api.show.showTab === "function")
+			api.show.showTab("memory");
 		const box = document.getElementById("mm");
 		if (!box.open)
 			box.open = true;
 		// a map just opened lays its regions out in its first frame
 		const go = (k) => {
-			if (MMAP.segs.length) {
-				MMAP.showCell(MMAP.cellOf(addr));
+			if (api.memory.MMAP.segs.length) {
+				api.memory.MMAP.showCell(api.memory.MMAP.cellOf(addr));
 				document.getElementById("mm_map").scrollIntoView({ block: "center" });
 			} else if (k < 60) {
 				requestAnimationFrame(() => go(k + 1));
@@ -1016,9 +1016,9 @@ const MEV = {
 		if (g.n > 1)
 			step.append(this.small(g.from === e.pos ? "one instruction" : "from " + num(g.from)));
 		const cells = [this.td("step", "Step", step)];
-		if (this.st && e.pos < this.st.steps && typeof revStepBack === "function")
+		if (this.st && e.pos < this.st.steps && typeof api.step.revStepBack === "function")
 			cells[0].append(" ", this.btn("rewind", "Step back to instruction " + num(e.pos) + ", the one that did this (reverse history)",
-				() => revStepBack(this.st.steps - e.pos), "mev-act"));
+				() => api.step.revStepBack(this.st.steps - e.pos), "mev-act"));
 		const who = document.createElement("span");
 		who.className = "mev-who";
 		const sw = document.createElement("span");
@@ -1090,5 +1090,5 @@ const MEV = {
 	},
 };
 
-provideMemevents({ MEV });
+provide({ MEV });
 export { MEV_CPU, MEV_ISA_DMA, MEV_M_WRITE, MEV_M_BULK, PCI_CLASSES, pciBdf, pciClassName, MEV };

@@ -12,7 +12,7 @@
 
 import { realNow } from "./clock.js";
 import { $, hex, num } from "./util.js";
-import { runState, bmFnNames, openFunction, jumpTo, tab, image, bmTip } from "./page.js";
+import { runState, tab, image, api } from "./page.js";
 import { STEP_CONST, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes, dbgTitle } from "./dbginfo.js";
 import { srcChainNodes } from "./source.js";
@@ -573,7 +573,7 @@ function drawTimeline() {
 					o.full[col] = 1;
 			}
 			// A bookmarked function (K1): ★ before its name.
-			const bm = st.fr.node(k) < st.symName.length && bmFnNames(st.symStart[st.fr.node(k)]);
+			const bm = st.fr.node(k) < st.symName.length && api.show.bmFnNames(st.symStart[st.fr.node(k)]);
 			if (bm)
 				bmarked++;
 			const label = (bm ? "\u2605 " : "") + frameLabel(st, L, k);
@@ -835,7 +835,7 @@ function graphOpen(node) {
 	};
 	for (const t of ["click", "dblclick"])
 		document.addEventListener(t, swallow, true);
-	openFunction(st.symStart[node], st.symName[node]);
+	api.show.openFunction(st.symStart[node], st.symName[node]);
 	G.openedAt = realNow();
 	setTimeout(() => {
 		for (const t of ["click", "dblclick"])
@@ -1055,7 +1055,7 @@ function drawTree() {
 			name.title = "Task " + t.task + ": " + t.name.replace(/^task \d+: /, "") + "\n" + t.how;
 		}
 		if (t.node !== undefined && t.node < st.symName.length) {
-			name.addEventListener("click", () => jumpTo(st.symStart[t.node]));
+			name.addEventListener("click", () => api.show.jumpTo(st.symStart[t.node]));
 			name.addEventListener("mouseenter", () => { name.title = "entry " + hex(st.symStart[t.node]) + ": " + dbgTitle(st.symStart[t.node], t.name); });
 		}
 		row.append(tog, nums, name);
@@ -1194,7 +1194,7 @@ function drawTop() {
 	G.boxes = [];
 	let bmarked = 0;
 	for (const [id, p] of pos) {
-		const bm = id < st.symName.length && bmFnNames(st.symStart[id]);
+		const bm = id < st.symName.length && api.show.bmFnNames(st.symStart[id]);
 		if (bm)
 			bmarked++;
 		ctx.fillStyle = PALETTE[subsystem(st, id)];
@@ -1377,7 +1377,7 @@ function renderGraphInfo() {
 		const open = document.createElement("button");
 		open.type = "button";
 		open.textContent = "Page tab";
-		open.addEventListener("click", () => jumpTo(st.symStart[node]));
+		open.addEventListener("click", () => api.show.jumpTo(st.symStart[node]));
 		head.append(open, " ");
 		const how = document.createElement("span");
 		how.className = "note";
@@ -1606,7 +1606,7 @@ function initGraph() {
 		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] + "\n" + taskInfo(st)[st.swTask[sw[0]]].how :
 			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
 			f >= 0 ? frameTitle(st, f) + (st.fr.node(f) < st.symName.length ? "\nDouble-click (double tap) to open it in the Page tab and the Source panel." +
-				(bmFnNames(st.symStart[st.fr.node(f)]) ? "\n\u2605 " + bmTip(bmFnNames(st.symStart[st.fr.node(f)])) : "") : "") : "";
+				(api.show.bmFnNames(st.symStart[st.fr.node(f)]) ? "\n\u2605 " + api.show.bmTip(api.show.bmFnNames(st.symStart[st.fr.node(f)])) : "") : "") : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {

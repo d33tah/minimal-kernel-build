@@ -15,7 +15,7 @@
 // ELF's PT_LOAD addresses.
 
 import { withV, $ } from "./util.js";
-import { provideGenimport, image, symbols, setSymbols, setDisasm, disasm, syncSrcToggle, drawMaps, drawGrid } from "./page.js";
+import { image, symbols, setSymbols, setDisasm, disasm, api, provide } from "./page.js";
 import { dbgIdbOp, dbgUseShards, dbgChanged } from "./dbginfo.js";
 import { srcUseShipped, SRC } from "./source.js";
 import { MAP_KEY, showImported } from "./symimport.js";
@@ -130,10 +130,10 @@ function genApply() {
 		(GEN.why && GEN.why.dwarf ? " " + GEN.why.dwarf + "." : "");
 	genStatus();
 	$("symbol_index").dataset.page = "";
-	syncSrcToggle();
+	api.source.syncSrcToggle();
 	showImported();
-	drawMaps();
-	drawGrid();
+	api.memory.drawMaps();
+	api.memory.drawGrid();
 	dbgChanged();
 	// rebuild.js waits for it (GEN.srcDone) before it says the kernel is ready.
 	if (SRC.mode === "picked" && SRC.entries)
@@ -174,5 +174,5 @@ function genSrcMade(mine, pick, r) {
 	genKeep();
 }
 
-provideGenimport({ kfetch, genSrcPicked, genImport, genRestore });
+provide({ kfetch, genSrcPicked, genImport, genRestore });
 export { GEN, kfetch, genImport, genRestore, genSrcPicked };

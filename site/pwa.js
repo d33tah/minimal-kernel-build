@@ -6,7 +6,7 @@
 // README.md, "Offline and installing".
 
 import { $, VERSION } from "./util.js";
-import { renderRunBadgePwa } from "./page.js";
+import { api } from "./page.js";
 
 const PWA = { reg: null, reloading: false, newer: null, misses: [] };
 const PWA_CHECK_MS = 5 * 60 * 1000;
@@ -33,7 +33,7 @@ function pwaNotes() {
 		el.append(div);
 	}
 	// The menu toggle (app.js) shows the new version on every tab.
-	renderRunBadgePwa();
+	api.show.renderRunBadgePwa();
 }
 
 // A file the service worker could not get (offline, never cached).

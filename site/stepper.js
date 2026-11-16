@@ -17,7 +17,7 @@
 //   previous_ip = eip; op = read_imm8(); run(op | is_32 << 8); counter++.
 
 import * as clock from "./clock.js";
-import { revMark, MEV } from "./page.js";
+import { api } from "./page.js";
 import * as jumps from "./jumps.js";
 
 // A module's imported and exported bindings are cells: optimized code loads
@@ -1254,11 +1254,11 @@ class Stepper {
 	// budgetMs. Returns a reason: "count", "addr", "hlt", "milestone",
 	// "end", "prompt", "time".
 	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
-		if (typeof revMark === "function")
-			revMark(this, "step"); // R5: the run goes on stepped from here
+		if (typeof api.step.revMark === "function")
+			api.step.revMark(this, "step"); // R5: the run goes on stepped from here
 		const r = this.runOn(n, stopPhys, budgetMs, leave);
-		if (typeof MEV === "object")
-			MEV.tick(this); // memevents.js checking mode
+		if (typeof api.events.MEV === "object")
+			api.events.MEV.tick(this); // memevents.js checking mode
 		return r;
 	}
 

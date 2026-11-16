@@ -23,9 +23,8 @@
 
 import { realNow } from "./clock.js";
 import { hex, PAGE, num, $, escHtml } from "./util.js";
-import { provideBookmarks, image, symbols, pageLabel, pageClass, stepper, emulator, runState, pageAt, tab,
-	selectedPage, navListingAnchor, grid, memCellStyle, hideTip, runBadgeOpen, navJump, selectPage, openFunction,
-	jumpTo, kernels, loadKernel, setStatus, emuReady, emuRam, inspect, renderContext, covRender, vmHasKeys } from "./page.js";
+import { image, symbols, pageClass, stepper, emulator, runState, tab, selectedPage, grid, kernels, emuReady,
+	emuRam, vmHasKeys, api, provide } from "./page.js";
 import { jumpHit, setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { graphNodeAt, selectedNode, download, G, graphTick } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
@@ -133,7 +132,7 @@ function bmDraftCode(pa) {
 }
 
 function bmDraftPage(p) {
-	const label = typeof pageLabel === "function" && pageClass.length ? pageLabel(p) : "";
+	const label = typeof api.memory.pageLabel === "function" && pageClass.length ? api.memory.pageLabel(p) : "";
 	return { kind: "page", t: { page: p }, name: "page " + hex(p) + (label ? " " + label : "") };
 }
 
@@ -196,7 +195,7 @@ function bmDraftAt(t, x, y) {
 	if (e)
 		return bmDraftFn(Number(e.dataset.fnpa), e.dataset.fn);
 	if (t.closest("#pages")) {
-		const p = pageAt({ clientX: x, clientY: y });
+		const p = api.memory.pageAt({ clientX: x, clientY: y });
 		return p >= 0 ? bmDraftPage(p) : null;
 	}
 	if (t.closest("#graph_canvas")) {
@@ -229,7 +228,7 @@ function bmDraftHere(where) {
 	if (where === "page" || (where === "tab" && tab === "page")) {
 		if (selectedPage < 0)
 			return null;
-		const at = jumpHit >= 0 && Math.floor(jumpHit / PAGE) === selectedPage ? jumpHit : navListingAnchor();
+		const at = jumpHit >= 0 && Math.floor(jumpHit / PAGE) === selectedPage ? jumpHit : api.show.navListingAnchor();
 		return at >= 0 ? bmDraftCode(at) : bmDraftPage(selectedPage);
 	}
 	if (where === "mem" || (where === "tab" && tab === "memory")) {
@@ -330,7 +329,7 @@ function bmRenderPages() {
 		const s = bmStarEl(names);
 		s.classList.add("bmpage");
 		s.dataset.page = p;
-		memCellStyle(s, p, rows);
+		api.memory.memCellStyle(s, p, rows);
 		box.append(s);
 	}
 }
@@ -342,9 +341,9 @@ function bmAsk(draft) {
 		bmNote("Nothing to bookmark here: pick a line, a page, a box or a frame first.");
 		return;
 	}
-	if (typeof hideTip === "function")
-		hideTip();
-	runBadgeOpen(false);
+	if (typeof api.show.hideTip === "function")
+		api.show.hideTip();
+	api.show.runBadgeOpen(false);
 	BM.draft = draft;
 	const d = $("bm_dialog");
 	d.dataset.kind = draft.kind;
@@ -399,19 +398,19 @@ function bmGo(b) {
 		bmSwitch(b);
 		return;
 	}
-	runBadgeOpen(false);
+	api.show.runBadgeOpen(false);
 	const t = b.t;
 	switch (b.kind) {
 	case "code":
 	case "pos":
-		navJump(() => {
+		api.show.navJump(() => {
 			setJumpHit(t.pa);
 			setJumpHitScroll(true);
-			jumpTo(t.pa);
+			api.show.jumpTo(t.pa);
 		});
 		break;
 	case "page":
-		selectPage(t.page);
+		api.show.selectPage(t.page);
 		break;
 	case "line":
 		openSourceLine(t.path, t.line);
@@ -420,7 +419,7 @@ function bmGo(b) {
 		openSourceFile(t.path);
 		break;
 	case "fn":
-		openFunction(t.pa, t.name, true);
+		api.show.openFunction(t.pa, t.name, true);
 		break;
 	}
 	bmNote("At “" + b.name + "” (" + bmTargetText(b) + ").");
@@ -436,8 +435,8 @@ function bmSwitch(b) {
 	BM.pending = { b, until: realNow() + 120000 };
 	$("kernel").value = k.name;
 	bmNote("Switching to " + k.name + " for “" + b.name + "”...");
-	loadKernel(k).catch((e) => {
-		setStatus(String(e));
+	api.machine.loadKernel(k).catch((e) => {
+		api.show.setStatus(String(e));
 		if (BM.pending && BM.pending.b === b)
 			BM.pending = null;
 		bmNote("Switching to " + k.name + " for “" + b.name + "” failed: " + ((e && e.message) || e) + ".");
@@ -664,7 +663,7 @@ function bmRowEl(b, group) {
 		p.title = "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
 			b.t.run.end.at.toLocaleString("en") + " instructions";
 		p.addEventListener("click", () => {
-			runBadgeOpen(false);
+			api.show.runBadgeOpen(false);
 			replayRun(b.t.run).catch((e) => runStatus("Replay failed: " + e, "error"));
 		});
 		acts.append(p);
@@ -748,14 +747,14 @@ function bmChanged() {
 	BM.marks = null;
 	bmRender();
 	bmRenderPages();
-	if (typeof inspect === "function" && tab === "page" && selectedPage >= 0)
-		inspect();
+	if (typeof api.show.inspect === "function" && tab === "page" && selectedPage >= 0)
+		api.show.inspect();
 	if (tab === "debugger")
-		renderContext();
+		api.show.renderContext();
 	if (srcPanel && !$("src_panel").hidden)
 		renderSourcePanel();
 	if (tab === "source")
-		covRender();
+		api.source.covRender();
 	if (typeof G !== "undefined") {
 		G.dirty = true;
 		if (tab === "calls")
@@ -920,6 +919,6 @@ function initBookmarks() {
 	bmRender();
 }
 
-provideBookmarks({ bmLineStar, bmFnNames, bmTip });
+provide({ bmLineStar, bmFnNames, bmTip });
 export { BM, bmDraftFn, bmDraftLine, bmMarks, bmTip, bmStarEl, bmCodeStar, bmFnStar, bmLineStar, bmFnNames,
 	bmAddButton, bmRenderPages, bmFromHash, bmMenuFit, initBookmarks };

@@ -33,7 +33,7 @@
 
 import { realNow } from "./clock.js";
 import { $ } from "./util.js";
-import { provideMemmap, revStepBack } from "./page.js";
+import { api, provide } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
@@ -1104,10 +1104,10 @@ const MMAP = {
 	},
 
 	goTo(pos) {
-		if (!MEV.st || typeof revStepBack !== "function")
+		if (!MEV.st || typeof api.step.revStepBack !== "function")
 			return;
 		if (pos < MEV.st.steps)
-			revStepBack(MEV.st.steps - pos);
+			api.step.revStepBack(MEV.st.steps - pos);
 	},
 
 	showCell(d) {
@@ -1229,5 +1229,5 @@ const MMAP = {
 	},
 };
 
-provideMemmap({ MMAP });
+provide({ MMAP });
 export { MMAP };

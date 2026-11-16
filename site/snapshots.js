@@ -29,9 +29,8 @@
 
 import { CLOCK, GUEST, realNow } from "./clock.js";
 import { kib, hex, $, withV, h4, h8, PAGE, esc, asciiOf } from "./util.js";
-import { provideSnapshots, image, initrd, stepper, emulator, emuReady, emuRam, speedReset, counting, runState,
-	afterStop, selectedPage, inspect, setCounting, setCountNote, tab, kernels, loadKernel, setStatus, FLAG_BITS,
-	pageLabel, symbolsInPage, navJump, setSelectedPage, drawGrid, setLive, showTab } from "./page.js";
+import { image, initrd, stepper, emulator, emuReady, emuRam, counting, runState, selectedPage, setCounting,
+	setCountNote, tab, kernels, setSelectedPage, api, provide } from "./page.js";
 import { jitPending, jitFlush } from "./fastforward.js";
 import { pageWalk, v86ResetHidden, v86Restore } from "./cpustate.js";
 import { runNow, inputReset, INPUT, inputRestore, replayRun, runStatus } from "./replay.js";
@@ -409,7 +408,7 @@ async function restoreSnapshot(s) {
 			stepper.restoreStops(s.meta.steps, s.meta.stop);
 		// The run goes on from the snapshot's input log (J4).
 		inputRestore(s.meta);
-		speedReset();
+		api.step.speedReset();
 		if (stepper)
 			stepper.jumpForget();
 		if (counting || (stepper && stepper.steps)) {
@@ -421,11 +420,11 @@ async function restoreSnapshot(s) {
 		// vector.", a Run to): now it is here because of the Restore.
 		$("dbg_status").textContent = "Restored the snapshot “" + s.name + "”.";
 		if (runState === "paused" || runState === "stepped")
-			afterStop();
+			api.step.afterStop();
 		$("snap_status").textContent = "Restored “" + s.name + "” (" + s.kernel + ").";
 		$("snap_status").dataset.restored = s.id;
 		if (selectedPage >= 0)
-			inspect();
+			api.show.inspect();
 	} catch (e) {
 		$("snap_status").textContent = "restore_state failed: " + e;
 	}
@@ -503,7 +502,7 @@ async function snapRename(s, name) {
 		if (pageSnapView.againstId === s.id)
 			pageSnapView.against = "“" + name + "”";
 		if (tab === "page")
-			inspect();
+			api.show.inspect();
 	}
 }
 
@@ -588,8 +587,8 @@ function snapSwitch(s) {
 	if (![...$("memory").options].some((o) => o.value === String(s.ram)))
 		$("memory").add(new Option(kib(s.ram), String(s.ram)));
 	$("snap_status").textContent = "Switching to " + k.name + " with " + kib(s.ram) + "...";
-	loadKernel(k, String(s.ram)).catch((e) => {
-		setStatus(String(e));
+	api.machine.loadKernel(k, String(s.ram)).catch((e) => {
+		api.show.setStatus(String(e));
 		$("snap_status").textContent = "Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".";
 	});
 }
@@ -774,7 +773,7 @@ function snapWorker(msg, transfer) {
 // it through page.js too).
 const setSnapWorker = (f) => {
 	snapWorker = f;
-	provideSnapshots({ snapKernelKey, snapWorker });
+	provide({ snapKernelKey, snapWorker });
 };
 
 const snapById = (id) => snapshots.find((s) => s.id === id) || null;
@@ -838,7 +837,7 @@ function snapRegText(n, v) {
 		return "0x" + h4(v);
 	let t = "0x" + h8(v);
 	if (n === "EFLAGS")
-		t += " " + FLAG_BITS.filter(([b]) => v & (1 << b)).map(([, f]) => f).join(" ");
+		t += " " + api.machine.FLAG_BITS.filter(([b]) => v & (1 << b)).map(([, f]) => f).join(" ");
 	return t;
 }
 
@@ -925,7 +924,7 @@ function renderSnapPages() {
 	}
 	const groups = new Map();
 	for (const [p, n] of d.pages) {
-		const g = p * PAGE < emuRam ? pageLabel(p) || "RAM" : "beyond this machine's RAM";
+		const g = p * PAGE < emuRam ? api.memory.pageLabel(p) || "RAM" : "beyond this machine's RAM";
 		if (!groups.has(g))
 			groups.set(g, []);
 		groups.get(g).push([p, n]);
@@ -941,7 +940,7 @@ function renderSnapPages() {
 			const row = document.createElement("div");
 			row.className = "snappg";
 			Object.assign(row.dataset, { page: p, bytes: n });
-			const syms = symbolsInPage(p);
+			const syms = api.memory.symbolsInPage(p);
 			const addr = document.createElement("code");
 			addr.textContent = "0x" + h8(p * PAGE);
 			row.append(addr, " " + n.toLocaleString("en") + " byte" + (n === 1 ? "" : "s") +
@@ -991,7 +990,7 @@ function renderSnapHex() {
 	let nChg = 0;
 	for (let i = 0; i < PAGE; i++)
 		nChg += h.a[i] !== h.b[i];
-	head.append("Page 0x" + h8(h.p * PAGE) + " (" + pageLabel(h.p) + "): " + nChg + " bytes differ, marked yellow" +
+	head.append("Page 0x" + h8(h.p * PAGE) + " (" + api.memory.pageLabel(h.p) + "): " + nChg + " bytes differ, marked yellow" +
 		(h.all ? "." : "; rows without a change are left out. "));
 	if (!h.all)
 		head.append(snapButton("all rows", "", "Show all " + PAGE / per + " rows", () => {
@@ -1046,13 +1045,13 @@ async function snapOpenPage(p, which) {
 	const label = (x) => (x.id === "now" ? "now (when diffed)" : "“" + x.name + "”");
 	const view = { page: p, bytes: which === "a" ? r.a : r.b, base: which === "a" ? r.b : r.a,
 		id: me.id, name: label(me), againstId: other.id, against: label(other), cur: me.meta.phys };
-	navJump(() => {
+	api.show.navJump(() => {
 		pageSnapView = view;
 		setSelectedPage(p);
-		drawGrid();
-		setLive();
-		showTab("page");
-		inspect();
+		api.memory.drawGrid();
+		api.show.setLive();
+		api.show.showTab("page");
+		api.show.inspect();
 	});
 }
 
@@ -1073,14 +1072,14 @@ function initSnapshots() {
 	$("snap_diff").addEventListener("click", snapRunDiff);
 	for (const id of ["snap_a", "snap_b"])
 		$(id).addEventListener("change", () => ($(id).dataset.picked = "1"));
-	$("page_snap_live").addEventListener("click", () => navJump(() => {
+	$("page_snap_live").addEventListener("click", () => api.show.navJump(() => {
 		pageSnapView = null;
-		inspect();
+		api.show.inspect();
 	}));
 	snapLoad();
 }
 
-provideSnapshots({ snapKernelKey, snapWorker });
+provide({ snapKernelKey, snapWorker });
 export { snapshots, pageSnapView, setSnapDiff, setPageSnapView, snapKernelKey, snapKernelName, snapTx,
 	snapRecord, saveSnapshot, restoreSnapshot, snapUnpack, renderSnapshots, snapWorker, setSnapWorker, snapById,
 	renderSnapDiff, snapPages, pageSnapBanner, initSnapshots };

@@ -9,7 +9,7 @@
 // fnFactsText says the same in one line for symbol tooltips.
 
 import { hex } from "./util.js";
-import { provideFnfacts, stepper, symbols, symbolAt, symButton } from "./page.js";
+import { stepper, symbols, api, provide } from "./page.js";
 import { dwFuncProto } from "./dwarf.js";
 import { cfiFrameText } from "./unwind.js";
 import { dbgCfiFrame, dbgFrames, dbgFnFactsAt, dbgFnFactsFor, dbgHas, dbgFnHolds } from "./dbginfo.js";
@@ -48,7 +48,7 @@ function fnSymAt(pa) {
 		const i = st.symbolOf(pa);
 		return i >= 0 ? st.symName[i] + (pa > st.symStart[i] ? "+0x" + (pa - st.symStart[i]).toString(16) : "") : "";
 	}
-	const s = typeof symbols !== "undefined" && symbols ? symbolAt(symbols.symbols, pa) : null;
+	const s = typeof symbols !== "undefined" && symbols ? api.symbols.symbolAt(symbols.symbols, pa) : null;
 	return s ? s.name + (pa > s.paddr ? "+0x" + (pa - s.paddr).toString(16) : "") : "";
 }
 
@@ -113,7 +113,7 @@ function fnFactsEl(x, T, key) {
 		const line = document.createElement("div");
 		line.append(parts.length > 1 ? "out-of-line copy " + (k + 1) + ": " : "code: ");
 		p.forEach(([lo, len], j) => {
-			const b = symButton(hex(lo), lo, "Show this code in the Page tab");
+			const b = api.symbols.symButton(hex(lo), lo, "Show this code in the Page tab");
 			b.dataset.addr = lo;
 			line.append(j ? "; " + (/\.cold$/.test(fnSymAt(lo).replace(/\+.*/, "")) ? "cold part " : "part ") : "", b,
 				" " + fnSymAt(lo) + " (" + len.toLocaleString("en") + " bytes)");
@@ -157,7 +157,7 @@ function fnFactsEl(x, T, key) {
 		const ul = document.createElement("ul");
 		for (const c of e[8].slice(0, FN_COPIES_SHOWN)) {
 			const li = document.createElement("li");
-			const b = symButton(hex(c), c, "Show this inlined copy in the Page tab");
+			const b = api.symbols.symButton(hex(c), c, "Show this inlined copy in the Page tab");
 			b.dataset.addr = c;
 			li.append(b, " in " + (fnSymAt(c) || "code without a symbol"));
 			ul.append(li);
@@ -252,5 +252,5 @@ function fnLabelOf(sym) {
 	return fnBare(r.f.e) ? null : { proto: dwFuncProto(r.T, r.f.e), title: fnFactsText(r.f, r.T) };
 }
 
-provideFnfacts({ fnFactsText });
+provide({ fnFactsText });
 export { fnSymAt, fnFactsText, renderFnRows, fnDetailEl, fnLabelOf };

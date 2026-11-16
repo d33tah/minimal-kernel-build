@@ -33,9 +33,8 @@
 
 import { CLOCK, GUEST } from "./clock.js";
 import { $, VERSION, kib } from "./util.js";
-import { emulator, stepper, runState, revBranch, image, initrd, emuRam, clockMips, prefSpeed, startPaused,
-	snapKernelKey, kernels, setPrefSpeed, setStartPaused, showHeader, drawMaps, boot, loadKernel, setCounting,
-	pause, resume } from "./page.js";
+import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPaused, kernels, setPrefSpeed,
+	setStartPaused, setCounting, api } from "./page.js";
 import { setCmdlineFromUrl } from "./symimport.js";
 import { ffEnabled } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
@@ -139,7 +138,7 @@ function inputFlush(st) {
 	if (INPUT.pending.length && CLOCK.virtual) {
 		// Typed after stepping back: the run goes another way from here.
 		if (st.behind() || INPUT.redo.length)
-			revBranch(st, "keys were typed at instruction " + st.steps.toLocaleString("en") + " after stepping back");
+			api.step.revBranch(st, "keys were typed at instruction " + st.steps.toLocaleString("en") + " after stepping back");
 		const keys = INPUT.pending.splice(0);
 		for (const c of keys)
 			INPUT.send(c);
@@ -233,7 +232,7 @@ function runSettings() {
 	const p = new URLSearchParams(location.search);
 	return {
 		kernel: image ? image.name : "", initrd: initrd ? initrd.name : null, ram: emuRam, cmdline: $("cmdline").value,
-		clock: clockMips() ? String(clockMips()) : "real", speed: prefSpeed, count: $("count").checked, paused: startPaused,
+		clock: api.machine.clockMips() ? String(api.machine.clockMips()) : "real", speed: prefSpeed, count: $("count").checked, paused: startPaused,
 		fastforward: ffEnabled(), rtc: new Date(GUEST.rtcStart).toISOString(), seed: GUEST.seed,
 		panicbudget: p.get("panicbudget") || null,
 	};
@@ -316,7 +315,7 @@ function runNow() {
 		return null;
 	return {
 		format: RUN_FORMAT, version: RUN_VERSION, build: VERSION || "", ...INPUT.settings,
-		kernelKey: typeof snapKernelKey === "function" ? snapKernelKey() : null,
+		kernelKey: typeof api.machine.snapKernelKey === "function" ? api.machine.snapKernelKey() : null,
 		log: INPUT.log.map((e) => ({ ...e })), taint: INPUT.taint, end: runEnd(stepper),
 	};
 }
@@ -389,12 +388,12 @@ async function replayRun(run) {
 	runStatus("Booting " + run.kernel + " to replay it...", "running");
 	if (same) {
 		$("memory").value = mem;
-		showHeader();
-		drawMaps();
-		await boot();
+		api.machine.showHeader();
+		api.memory.drawMaps();
+		await api.machine.boot();
 	} else {
 		$("kernel").value = entry.name;
-		await loadKernel(entry, mem);
+		await api.machine.loadKernel(entry, mem);
 	}
 }
 
@@ -407,7 +406,7 @@ function replayFinish() {
 	const want = rp.run.end, got = runEnd(st);
 	const names = { at: "instruction count", t: "virtual clock", icount: "v86's counter", eip: "EIP", ram: "RAM", screen: "screen" };
 	const diff = Object.keys(names).filter((k) => got[k] !== want[k]);
-	const key = typeof snapKernelKey === "function" ? snapKernelKey() : null;
+	const key = typeof api.machine.snapKernelKey === "function" ? api.machine.snapKernelKey() : null;
 	if (rp.run.kernelKey && key && rp.run.kernelKey !== key)
 		diff.unshift("kernel");
 	rp.ok = diff.length === 0 && rp.late.length === 0;
@@ -421,7 +420,7 @@ function replayFinish() {
 	runStatus(text + (rp.ignored ? " " + rp.ignored + " scancode" + (rp.ignored === 1 ? "" : "s") + " typed during the replay were ignored." : ""),
 		rp.ok ? "match" : "differ");
 	setCounting(false);
-	pause(rp.ok ? "Replay finished: the same state as recorded." : "Replay finished: differs from the recording (" + rp.why + ").");
+	api.step.pause(rp.ok ? "Replay finished: the same state as recorded." : "Replay finished: differs from the recording (" + rp.why + ").");
 }
 
 // The replay stops following its run (a Step, Run to, Restore, a clock
@@ -447,7 +446,7 @@ function replayAfterStop() {
 		replayFinish();
 		return;
 	}
-	resume(true);
+	api.step.resume(true);
 }
 
 // ---- the page ----------------------------------------------------------------------

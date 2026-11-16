@@ -15,26 +15,19 @@ classic script: the global `V86`) and `app.js`, which imports the rest
 (`clock.js` again: one module, run once). A module imports only from
 modules below it, in this order, so there is no import cycle:
 
-    util page | unwind dwarf clock asmnames wasi kgen lz4frame kit clang
-    jumps stepper dbginfo source memevents fastforward cpustate symimport
-    livedis vars srcedit fnfacts genimport graph settings rebuild memmap
-    quests replay reverse snapshots bookmarks coverage pwa | debug app
+    util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
+    clang jumps stepper dbginfo source memevents fastforward cpustate
+    symimport livedis vars srcedit fnfacts genimport graph settings rebuild
+    memmap quests replay reverse snapshots bookmarks coverage pwa | debug app
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
-- `page.js`: what the modules share without a cycle. app.js's state that
-  others read (`stepper`, `symbols`, `runState`, `tab`...), each with a
-  setter, since an imported binding is read-only (`setStepper(s)`, not
-  `stepper = s`); and the functions a module calls in one above it
-  (app.js's `jumpTo`, `setStatus`..., reverse.js's `revMark` for
-  stepper.js): their module hands them over when it loads
-  (`provideApp({ ... })` before `init()` runs, `provideReverse` and so on
-  at the end of the others), and the module below calls them at run time.
+- `store.js` and `page.js`: the page's state store and API, below.
 - `debug.js`: `window.MKB`, the page's one global of its own. The tests
   and the browser's console read any module's export through it, live
-  (`MKB.stepper.steps`, `MKB.runState`, `MKB.G.layout`); `MKB.foo = x`
-  calls the module's `setFoo` and throws when there is none (the tests
-  put stand-ins in that way: `MKB.snapWorker = ...`). Nothing in the page
-  reads it.
+  (`MKB.stepper.steps`, `MKB.runState`, `MKB.G.layout`, `MKB.state`,
+  `MKB.api.show.showTab`); `MKB.foo = x` calls the module's `setFoo` and
+  throws when there is none (the tests put stand-ins in that way:
+  `MKB.snapWorker = ...`). Nothing in the page reads it.
 - The Workers (`dwarfworker.js`, `genworker.js`, `clangworker.js`,
   `snapworker.js`) are module Workers; `sw.js`, the service worker, is a
   classic script in its own global scope.
@@ -52,6 +45,71 @@ modules below it, in this order, so there is no import cycle:
   outside `debug.js`, and `import/no-cycle`. Locally: `cd site && npm ci &&
   npx eslint .`. The misc suite checks the page's own globals after a boot
   are exactly `MKB` and `V86`, and that index.html loads only those three scripts.
+- Code that runs per instruction (stepper.js's `Stepper.record`,
+  `jumpAfter`, the `Frames` methods) reads only private consts: V8 folds
+  a module's private `const` into optimized code, but loads an exported or
+  imported binding through its cell on every use (a small method reading
+  an exported const ran 3x slower than one reading a private one). So
+  stepper.js exports its constants as one object, `STEP_CONST`, and a
+  module that uses them copies them into its own consts
+  (`const { FR_BITS } = STEP_CONST`), as stepper.js does with `JK` and
+  `realNow`. Before this, R1's modules cost the Debian kernel ~3% of its
+  step rate.
+
+## Page state and API
+
+`page.js` holds what the page's modules share, so that no module reaches
+into another one above it (R2; the React shell of R3 builds on it).
+
+State: `state` is a `Store` (`store.js`) of the page's values: the kernel
+list and the loaded `image`, `initrd`, `symbols`, `disasm`; the
+`emulator`, its RAM and readiness; the `stepper` and `runState`; the
+shown `tab`, `selectedPage` and the Memory tab's `grid` and `pageClass`;
+the count's `counting` and `countNote`; `startPaused`, `prefSpeed`,
+`vmHasKeys`; and `machine` (below). For each, `page.js` exports a binding
+(`stepper`, `runState`: modules read it as a variable, at no cost) and a
+setter (`setStepper(s)`, not `stepper = s`, since an imported binding is
+read-only). The setter changes the binding and the store, and the store
+tells its listeners at once:
+
+    const off = state.subscribe(renderRunBadge, ["machine"]); // fn(key)
+    state.getSnapshot().runState  // a frozen object, the same one until a value changes
+    off();                        // unsubscribe
+
+`subscribe` and `getSnapshot` are what React's `useSyncExternalStore`
+takes, unchanged. A listener that throws does not stop the others or the
+setter; the error is reported after.
+
+The machine's own state (registers, counters, the screen, memory)
+changes per instruction and is not copied into the store: nothing per
+instruction writes it. When the Debugger is drawn (`drawDebugUi`, at most
+once per frame while running, and after each stop) the page calls
+`publishMachine()`, which bumps `machine`; the views that show the
+machine subscribe to that key and read the stepper and the emulator then.
+The run badge (H1) and the EIP's page in the Memory tab (M1) do.
+
+API: `api` holds the functions (and a few shared objects) that a module
+calls in a module above it in the import order, grouped by concern:
+
+| group | entries (examples) |
+|---|---|
+| `api.machine` | `boot`, `loadKernel`, `useImage`, `currentPhys`, `clockMips`, `FLAG_BITS`, `v86Restore`, snapshots' `snapWorker` |
+| `api.memory` | `ram`, `drawMaps`, `drawGrid`, `pageAt`, `pageLabel`, `symbolsInPage`, `MMAP` |
+| `api.symbols` | `symbolAt`, `symButton`, `insnIndex`, `insnStart`, `unwindHere`, `kernelSymLookup`, `dbgHas`, `dbgFrames` |
+| `api.source` | `srcLinkHtml`, `srcLinkEl`, `coverageFor`, `kfetch`, `genImport`, `covRun`, `rbSync` |
+| `api.events` | `MEV` (memory events) |
+| `api.step` | `pause`, `resume`, `pauseAll`, `runToTargets`, `runToLine`, `afterStop`, `revMark`, `revStepBack`, `REV` |
+| `api.show` | `setStatus`, `showTab`, `selectPage`, `inspect`, `navJump`, `jumpTo`, `openFunction`, `writeHash`, `updateDebugUi`, bookmarks' `bmTip` |
+
+`page.js` lists every entry (`API_ENTRIES`); the module that has one
+provides it when it loads (`provide({ jumpTo, openFunction })`, which
+throws for a name the list does not have), and the caller calls it at run
+time (`api.show.showTab("source")`). A test's stand-in is provided the
+same way (`MKB.openFunction = f` calls `setOpenFunction`, which provides
+it). The misc suite's `store` case checks the snapshot, the
+subscriptions, `publishMachine` after a step, that unknown keys and
+entries throw, and that every entry is provided after a boot;
+`test_store.mjs` (the site job) checks `store.js` alone.
 
 ## Kernels and RAM
 

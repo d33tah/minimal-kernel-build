@@ -7644,9 +7644,108 @@ def globals_case(browser, base):
     return problems, r
 
 
+STORE_JS = """async () => {
+  const s = MKB.state, out = { told: [], keyed: [] };
+  const snap0 = s.getSnapshot();
+  out.sameSnap = s.getSnapshot() === snap0;
+  out.snapRunState = snap0.runState;
+  out.snapStepper = snap0.stepper === MKB.stepper;
+  const off = s.subscribe((k) => out.told.push(k));
+  const offKeyed = s.subscribe((k) => out.keyed.push(k + ':' + MKB.runState), ['runState']);
+  const m0 = MKB.machine;
+  document.getElementById('dbg_step').click();
+  await new Promise((r) => setTimeout(r, 1500));
+  out.machineMoved = MKB.machine > m0;
+  out.snapMachine = s.getSnapshot().machine === MKB.machine;
+  out.newSnap = s.getSnapshot() !== snap0;
+  out.badgeSteps = Number(document.getElementById('runbadge').dataset.steps);
+  out.steps = MKB.stepper.steps;
+  document.getElementById('dbg_continue').click();
+  await new Promise((r) => setTimeout(r, 300));
+  document.getElementById('dbg_pause').click();
+  await new Promise((r) => setTimeout(r, 300));
+  off();
+  const n = out.told.length;
+  offKeyed();
+  document.getElementById('dbg_step').click();
+  await new Promise((r) => setTimeout(r, 1000));
+  out.afterOff = out.told.length - n;
+  out.storeThrows = null;
+  try { s.set('nope', 1); } catch (e) { out.storeThrows = e.message; }
+  out.provideThrows = null;
+  try { MKB.provide({ nope: 1 }); } catch (e) { out.provideThrows = e.message; }
+  out.api = Object.fromEntries(Object.entries(MKB.api).map(([g, o]) => [g, Object.keys(o).filter((k) => o[k] === undefined)]));
+  out.apiFrozen = Object.isFrozen(MKB.api) && Object.isSealed(MKB.api.show);
+  // a listener that throws: the others run, the error is reported afterwards
+  const ran = [];
+  const offBad = s.subscribe(() => { throw new Error('store test listener'); }, ['countNote']);
+  const offGood = s.subscribe(() => ran.push(1), ['countNote']);
+  MKB.countNote = 'store test';
+  MKB.countNote = '';
+  offBad();
+  offGood();
+  out.othersRan = ran.length;
+  // removed by an earlier listener of the same change: not told
+  const order = [];
+  let offLate = null;
+  const offFirst = s.subscribe(() => { order.push('first'); offLate(); }, ['countNote']);
+  offLate = s.subscribe(() => order.push('late'), ['countNote']);
+  MKB.countNote = 'store test 2';
+  MKB.countNote = '';
+  offFirst();
+  out.order = order;
+  out.get = s.get('runState') === MKB.runState && s.get('stepper') === MKB.stepper;
+  return out;
+}"""
+
+
+def store_case(browser, base):
+    """The page's state store and API (R2, page.js): a snapshot is the same
+    object until a value changes; a step publishes the machine's state
+    (publishMachine) to the subscribed views (the run badge shows the new
+    count); Continue and Pause change runState and tell its keyed listener
+    with the new value already readable; an unsubscribed listener hears
+    nothing; unknown keys and API entries throw; every API entry is
+    provided after the boot; a throwing listener does not stop the others."""
+    problems, r = [], {}
+    page = browser.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(base + "/index.html?kernel=hello&paused=1#debugger")
+    page.wait_for_function("document.getElementById('dbg_state').dataset.state === 'paused'", timeout=60000)
+    g = page.evaluate(STORE_JS)
+    page.wait_for_timeout(500)  # the listener's errors are reported in a later task
+    r.update(g)
+    r["errors"] = errors
+    if not g["sameSnap"] or g["snapRunState"] != "paused" or not g["snapStepper"]:
+        problems.append(f"snapshot: same {g['sameSnap']}, runState {g['snapRunState']!r}, stepper {g['snapStepper']}")
+    if not g["machineMoved"] or not g["snapMachine"] or not g["newSnap"] or "machine" not in g["told"]:
+        problems.append(f"a step: machine published {g['machineMoved']}, in the snapshot {g['snapMachine']}, "
+                        f"new snapshot {g['newSnap']}, told {g['told'][:12]}")
+    if g["badgeSteps"] != g["steps"] or g["steps"] < 1:
+        problems.append(f"run badge {g['badgeSteps']} instructions, the stepper {g['steps']}")
+    if not g["keyed"] or g["keyed"][-1] != "runState:paused" or \
+            any(k not in ("runState:stepped", "runState:jit", "runState:paused") for k in g["keyed"]):
+        problems.append(f"runState listener: {g['keyed']}, want the new values, paused last")
+    if g["afterOff"] != 0:
+        problems.append(f"unsubscribed listener told {g['afterOff']} times")
+    if g["storeThrows"] != "store: no key nope" or g["provideThrows"] != "page API: no entry nope":
+        problems.append(f"unknown key: {g['storeThrows']!r}, unknown API entry: {g['provideThrows']!r}")
+    missing = {k: v for k, v in g["api"].items() if v}
+    if missing or not g["apiFrozen"]:
+        problems.append(f"API entries not provided: {missing}, frozen {g['apiFrozen']}")
+    if g["othersRan"] != 2 or len([e for e in errors if "store test listener" in e]) != 2 or len(errors) != 2:
+        problems.append(f"throwing listener: others ran {g['othersRan']} times, page errors {errors}")
+    if g["order"] != ["first", "first"] or not g["get"]:
+        problems.append(f"a listener removed by an earlier one: {g['order']}, want first, first; state.get {g['get']}")
+    page.close()
+    return problems, r
+
+
 def suite_misc(ctx):
     """Symbol import, initrds, panic text, determinism, follow mode."""
     failed = report("globals", *globals_case(ctx.browser, ctx.base))
+    failed |= report("store", *store_case(ctx.browser, ctx.base))
     failed |= report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
     failed |= report("import_edges", *import_edges(ctx.browser, ctx.base, ctx.shots))
     failed |= report("initrd", *initrd_case(ctx.browser, ctx.base, ctx.shots))

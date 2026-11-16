@@ -10,7 +10,7 @@ import { initrd, image, pageClass, emulator, emuRam, symbols, setPageClass, setG
 	runState, grid, tab, disasm, emuReady, setSelectedPage, setTab, setVmHasKeys, vmHasKeys, setStepper,
 	setEmuReady, setRunState, setEmuRam, setEmulator, prefSpeed, setCounting, startPaused, setStartPaused,
 	setCountNote, counting, countNote, setPrefSpeed, setImage, setSymbols, setDisasm, setInitrd, kernels,
-	setKernels, provideApp } from "./page.js";
+	setKernels, provide, state, publishMachine } from "./page.js";
 import { exposeMKB } from "./debug.js";
 import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAttrs, jumpBadgesHtml,
 	jumpsJitNote, jumpsDrawn, jumpHitScroll, setJumpHitScroll, drawJumpArcs, jumpPopClose, setJumpHit,
@@ -624,6 +624,8 @@ function initLegend() {
 			const over = getComputedStyle(top).position === "sticky" ? top.getBoundingClientRect().height : 0;
 			window.scrollTo(0, window.scrollY + $("about_legend").getBoundingClientRect().top - over - 8);
 		}));
+	// The EIP's page in the map and the grid, drawn with the Debugger.
+	state.subscribe(renderMemEip, ["machine"]);
 }
 
 function pageAt(ev) {
@@ -1732,7 +1734,9 @@ async function boot() {
 	$("scan").disabled = true;
 	$("snap_save").disabled = true;
 	$("footprint").textContent = "";
-	scanCopy = usedPages = changedPages = null;
+	scanCopy = null;
+	usedPages = null;
+	changedPages = null;
 	// A snapshot's page or diff belongs to the machine it was read from.
 	setPageSnapView(null);
 	setSnapDiff(null);
@@ -2372,8 +2376,10 @@ function frameDraw(now) {
 		scan(false);
 		const n = Number($("footprint").dataset.changed || 0);
 		$("pages").dataset.flashed = n;
-		if (n)
-			$("pages").dataset.flashes = ++flashes;
+		if (n) {
+			flashes++;
+			$("pages").dataset.flashes = flashes;
+		}
 	}
 	followEip(true);
 }
@@ -3301,8 +3307,9 @@ function flushScreen() {
 // H1: the menu toggle (#runbadge, bottom right on every tab). Its face says
 // whether the VM runs and how fast (a pulsing dot and the speed), else
 // paused, halted, panic or off; its menu says the same in words with the
-// instruction count. Drawn with the Debugger (drawDebugUi), so it costs
-// nothing per instruction.
+// instruction count. Drawn when the Debugger is (drawDebugUi publishes the
+// machine's state, initRunBadge subscribes), so it costs nothing per
+// instruction.
 function runBadgeState() {
 	if (!stepper || runState === "off")
 		return "off";
@@ -3398,6 +3405,7 @@ function initRunBadge() {
 		if (!$("runbadge_menu").hidden && !(ev.target.closest && ev.target.closest("#runbadge")))
 			runBadgeOpen(false);
 	}, true);
+	state.subscribe(renderRunBadge, ["machine"]);
 	renderRunBadge();
 }
 
@@ -3457,10 +3465,11 @@ function drawDebugUi() {
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
 		$(id).disabled = !can || runState === "off" || REV.busy;
 	revRender();
-	renderRunBadge();
+	// The views subscribed to "machine" draw now: the run badge
+	// (initRunBadge), the EIP's page in the Memory tab (initLegend).
+	publishMachine();
 	renderRegs();
 	renderCounters();
-	renderMemEip();
 	if (runState !== "stepped")
 		renderContext();
 }
@@ -4205,7 +4214,7 @@ async function init() {
 // What the modules below app.js call through page.js (again when a test
 // replaces one of them).
 function shareWithModules() {
-	provideApp({ navJump, jumpTo, listingHold, writeHash, listingKeep, coverageFor, unwindHere, insnStart,
+	provide({ navJump, jumpTo, listingHold, writeHash, listingKeep, coverageFor, unwindHere, insnStart,
 		runToLine, symButton, symbolAt, inspect, renderContext, selectPage, showTab, speedReset, updateDebugUi,
 		insnIndex, syncSrcToggle, boot, loadKernel, setStatus, ram, showHeader, drawMaps, useImage, currentPhys,
 		FRAME_METHODS, drawGrid, openFunction, REF_KEY, setCompactTabs, compactDefault, clockMips, pause, resume,

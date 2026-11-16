@@ -16,9 +16,7 @@
 // of the rest; dbgChanged() re-renders when it arrives.
 
 import { $, escHtml, hex } from "./util.js";
-import { provideSource, kfetch, genSrcPicked, navJump, listingHold, writeHash, edPanelShown, listingKeep,
-	stepper, coverageFor, bmLineStar, image, covRun, runState, unwindHere, insnStart, jumpTo, runToLine,
-	symButton, symbols, symbolAt, inspect, renderContext } from "./page.js";
+import { stepper, image, runState, symbols, api, provide } from "./page.js";
 import { dwarfEachLine } from "./dwarf.js";
 import { dbgChanged, dbgGunzip, dbgHas, dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG,
 	dbgFunction, dbgLineCode, dbgOnChange } from "./dbginfo.js";
@@ -41,7 +39,7 @@ async function srcUseShipped(entry) {
 	const mine = SRC;
 	SRC.base = entry.src.replace(/\/?$/, "/");
 	try {
-		const r = await kfetch(SRC.base + "index.json");
+		const r = await api.source.kfetch(SRC.base + "index.json");
 		if (!r.ok)
 			throw new Error("HTTP " + r.status);
 		const ix = await r.json();
@@ -85,7 +83,7 @@ function srcFile(path) {
 			return { state: "loading" };
 		if (!SRC.have.has(path))
 			return { state: "none", why: path + ": " + (SRC.missing[path] || "not shipped") };
-		load = () => kfetch(SRC.base + path.split("/").map(encodeURIComponent).join("/") + ".gz")
+		load = () => api.source.kfetch(SRC.base + path.split("/").map(encodeURIComponent).join("/") + ".gz")
 			.then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)));
 	} else if (SRC.mode === "picked") {
 		if (!SRC.entries)
@@ -139,7 +137,7 @@ function srcPickFolder(files) {
 	SRC.entries = new Map([...files].map((f) => [f.webkitRelativePath || f.name, f]));
 	SRC.info = SRC.name + " (" + SRC.entries.size.toLocaleString("en") + " files)";
 	srcChanged();
-	genSrcPicked();
+	api.source.genSrcPicked();
 }
 
 // An uncompressed .tar: only the 512-byte headers are read (ustar, GNU long
@@ -209,7 +207,7 @@ async function srcPickTar(file) {
 	SRC.entries = entries;
 	SRC.info = file.name + " (" + entries.size.toLocaleString("en") + " files)";
 	srcChanged();
-	genSrcPicked();
+	api.source.genSrcPicked();
 }
 
 // The picker shows where there is DWARF but no shipped source (an imported
@@ -461,7 +459,7 @@ function srcFocusKeep(draw) {
 // files.json); an imported vmlinux has no file list, so a function's
 // declaration then opens in the function around pa.
 function srcOpenAt(path, line, pa) {
-	navJump(() => {
+	api.show.navJump(() => {
 		const r = pa >= 0 ? dbgFrames(pa) : { state: "none" };
 		const k = r.state === "ok" ? r.frames.findIndex((f) => f.file === path && f.line === line) : -1;
 		if (k >= 0)
@@ -557,7 +555,7 @@ function openSource(pa, k = 0) {
 	const loc = r.frames[k];
 	if (!loc || !loc.file || !loc.line)
 		return;
-	navJump(() => {
+	api.show.navJump(() => {
 		srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line, scrollTo: loc.line };
 		srcShown();
 	});
@@ -566,19 +564,19 @@ function openSource(pa, k = 0) {
 // After srcPanel changed: shown, drawn, remembered, in the hash.
 function srcShown() {
 	srcSwClose(false);
-	const hold = $("src_panel").hidden ? listingHold() : null;
+	const hold = $("src_panel").hidden ? api.show.listingHold() : null;
 	$("src_panel").hidden = false;
 	renderSourcePanel();
 	srcRemember(srcPanel.path);
-	writeHash();
-	edPanelShown();
-	listingKeep(hold);
+	api.show.writeHash();
+	api.source.edPanelShown();
+	api.show.listingKeep(hold);
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
 // it with code, in any function, and which of them have executed.
 function openSourceFile(path) {
-	navJump(() => srcShowFile(path, 0));
+	api.show.navJump(() => srcShowFile(path, 0));
 }
 
 // The whole file without a history entry (openSourceFile, openSourceLine,
@@ -591,7 +589,7 @@ function srcShowFile(path, line) {
 // Open the side panel with a whole file at one line, picked (a function's
 // declaration): its addresses are listed as for a tapped line.
 function openSourceLine(path, line) {
-	navJump(() => srcShowFile(path, line));
+	api.show.navJump(() => srcShowFile(path, line));
 }
 
 // A whole file's lines with code: the line rows of every shard that has
@@ -721,7 +719,7 @@ function renderSourcePanel() {
 		const title = c ? ' title="' + escHtml("Line " + l + " is part of the statement at lines " + c.start + "–" + c.end + ", which " +
 			(c.ran ? "ran" : "has not run") + ". Not counted: only lines with code of their own in the line table are counted, here, in the Coverage tab and in the lcov export.") + '"' : "";
 		out.push('<span class="' + cls + (l === line ? " here" : "") + (l === srcPanel.pick ? " pick" : "") + '" data-line="' + l + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
-			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span>" + bmLineStar(path, l) + "</span>");
+			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span>" + api.show.bmLineStar(path, l) + "</span>");
 	}
 	body.innerHTML = out.join("\n");
 	srcPanel.cont = sv.cont;
@@ -746,7 +744,7 @@ function renderSourcePanel() {
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;
 	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
-	const cov = stepper ? coverageFor(stepper.kernelLo) : null;
+	const cov = stepper ? api.source.coverageFor(stepper.kernelLo) : null;
 	$("src_info").textContent = pl.why ? "No line is marked: " + pl.why + ". Source: " + (SRC.info || SRC.mode) + "." :
 		run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
 		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
@@ -913,9 +911,9 @@ function srcFileCounts(info) {
 	if (fl.state !== "ok" || info.k < 0)
 		return { run: null, code: null };
 	const code = fl.F.files[info.k][1];
-	if (typeof covRun !== "function")
+	if (typeof api.source.covRun !== "function")
 		return { run: null, code };
-	const run = covRun(fl.F);
+	const run = api.source.covRun(fl.F);
 	return { run: run.tint && run.linesKnown ? run.fileRun[info.k].size : null, code, why: run.tint ? "" : run.why };
 }
 
@@ -927,9 +925,9 @@ function srcStackFiles() {
 		return out;
 	const pcs = [stepper.nextPhys()];
 	try {
-		for (const f of unwindHere().frames)
+		for (const f of api.symbols.unwindHere().frames)
 			if (!f.user)
-				pcs.push(insnStart(f.lookup));
+				pcs.push(api.symbols.insnStart(f.lookup));
 	} catch (e) {
 		// no unwind here: EIP's files only
 	}
@@ -1181,7 +1179,7 @@ function initSourceFiles() {
 		if (!srcPanel || !v)
 			return;
 		if (v[0] === "@")
-			jumpTo(Number(v.slice(1)));
+			api.show.jumpTo(Number(v.slice(1)));
 		else
 			openSourceLine(srcPanel.path, Number(v));
 	});
@@ -1254,14 +1252,14 @@ function renderLineAddrs() {
 	run.title = !stepper ? "Boot a kernel first" : "Run until the kernel reaches the first of this line's " + r.bps.length +
 		" breakpoint address" + (r.bps.length === 1 ? "" : "es") + " (the is_stmt rows of the line table, and where each inlined call starts)" +
 		(r.noStmt ? ". This line table has no is_stmt flags: every range's start counts" : "");
-	run.addEventListener("click", () => runToLine(where));
+	run.addEventListener("click", () => api.step.runToLine(where));
 	head.append(run);
 	const list = document.createElement("ul");
 	const item = (a, b, text, title) => {
 		const li = document.createElement("li");
-		const btn = symButton(hex(a), a, "Show this code in the Page tab");
+		const btn = api.symbols.symButton(hex(a), a, "Show this code in the Page tab");
 		btn.dataset.addr = a;
-		const s = symbols && symbolAt(symbols.symbols, a);
+		const s = symbols && api.symbols.symbolAt(symbols.symbols, a);
 		li.append(btn, " " + (s ? s.name + (a > s.paddr ? "+0x" + (a - s.paddr).toString(16) : "") : "") + " (" + (b - a) + " byte" + (b - a === 1 ? "" : "s") + ")" + text);
 		li.title = title;
 		list.append(li);
@@ -1334,12 +1332,12 @@ let srcOpener = null;
 
 function closeSource() {
 	srcSwClose(false);
-	const hold = listingHold();
+	const hold = api.show.listingHold();
 	$("src_panel").hidden = true;
 	srcPanel = null;
-	edPanelShown();
-	writeHash();
-	listingKeep(hold);
+	api.source.edPanelShown();
+	api.show.writeHash();
+	api.show.listingKeep(hold);
 	const a = srcLinkAgain(srcOpener);
 	if (a)
 		a.focus();
@@ -1388,7 +1386,7 @@ function initSource() {
 			x.classList.remove("pick");
 		row.classList.add("pick");
 		renderLineAddrs();
-		writeHash();
+		api.show.writeHash();
 		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
 	});
 	for (const id of ["listing", "context"])
@@ -1400,8 +1398,8 @@ function initSource() {
 			}
 		}, true);
 	$("show_src").addEventListener("change", () => {
-		inspect();
-		renderContext();
+		api.show.inspect();
+		api.show.renderContext();
 	});
 	$("src_tar").addEventListener("change", () => {
 		const f = $("src_tar").files[0];
@@ -1426,7 +1424,7 @@ function initSource() {
 	}, 1000);
 }
 
-provideSource({ srcLinkHtml, srcLinkEl });
+provide({ srcLinkHtml, srcLinkEl });
 export { SRC, srcPanel, setSrcPanel, srcFresh, srcUseShipped, srcChanged, srcFile, srcText, srcStatements,
 	srcLinkEl, srcLinkHtml, srcFocusKeep, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
 	openSourceLine, fileLines, renderSourcePanel, srcKernelKey, srcSwClose, renderSourceRows, closeSource,

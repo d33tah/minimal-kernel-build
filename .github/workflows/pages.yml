@@ -697,6 +697,8 @@ jobs:
         node site/test_srcedit.mjs
         # The Calls frames' typed-array store against a plain-array model.
         node site/test_frames.mjs
+        # The page's state store (store.js) against useSyncExternalStore's contract.
+        node site/test_store.mjs
         # site/jscov-uncovered.tsv still on the code it explains (rows that
         # moved with lines added above them: `node site/jscov/relist.js`).
         node site/jscov/relist.js --check

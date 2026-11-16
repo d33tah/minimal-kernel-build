@@ -12,7 +12,7 @@
 // way the Source panel counts it (dwarf.js dwarfEachLine).
 
 import { $, num, hex } from "./util.js";
-import { provideCoverage, stepper, coverageFor, jumpTo, image } from "./page.js";
+import { stepper, image, api, provide } from "./page.js";
 import { download } from "./graph.js";
 import { dwarfEachLine } from "./dwarf.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
@@ -56,7 +56,7 @@ function covRun(F) {
 	const st = stepper;
 	if (!st)
 		return { tint: false, why: "boot a kernel to record what runs" };
-	const cov = coverageFor(st.kernelLo);
+	const cov = api.source.coverageFor(st.kernelLo);
 	if (!cov.tint)
 		return cov;
 	const c = COV.run;
@@ -273,7 +273,7 @@ function covRender() {
 			const path = F.files[k][0] + ":" + fn[0];
 			const open = COV.open.has(path);
 			row("func", path, depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), open, true,
-				() => jumpTo(fn[4]), fn[0] + " at " + hex(fn[4]) + " (" + (fn.length - 4) / 2 + (fn.length > 6 ? " parts" : " part") +
+				() => api.show.jumpTo(fn[4]), fn[0] + " at " + hex(fn[4]) + " (" + (fn.length - 4) / 2 + (fn.length > 6 ? " parts" : " part") +
 				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab; the arrow shows its prototype, declaration, linkage, inlined copies and frame.",
 				bmDraftFn(fn[4], fn[0]));
 			// Its facts from DW_TAG_subprogram under the row.
@@ -401,5 +401,5 @@ function initCoverage() {
 	}, 1000);
 }
 
-provideCoverage({ covRun, covRender });
+provide({ covRun, covRender });
 export { COV, covTree, covRun, covRender, covShow, initCoverage };

@@ -19,7 +19,7 @@
 // so once the run has ended ("try Debian"); before that it waits.
 
 import { $ } from "./util.js";
-import { stepper, runState, image, selectPage, boot } from "./page.js";
+import { stepper, runState, image, api } from "./page.js";
 import { PCI_CLASSES, MEV, MEV_CPU, MEV_M_WRITE, pciBdf, pciClassName } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 
@@ -574,7 +574,7 @@ const QUESTS = {
 				pb.type = "button";
 				pb.className = "qs-page";
 				pb.textContent = "Open " + qsHex(q.page * 4096) + " in the Page tab";
-				pb.addEventListener("click", () => selectPage(q.page));
+				pb.addEventListener("click", () => api.show.selectPage(q.page));
 				tools.append(pb);
 			}
 			const again = document.createElement("button");
@@ -582,7 +582,7 @@ const QUESTS = {
 			again.className = "qs-boot";
 			again.textContent = "Boot again";
 			again.hidden = true;
-			again.addEventListener("click", () => boot()); // app.js
+			again.addEventListener("click", () => api.machine.boot()); // app.js
 			tools.append(again);
 			card.boot = again;
 			const hint = document.createElement("p");

@@ -37,7 +37,7 @@ import * as rebuild from "./rebuild.js";
 import * as pwa from "./pwa.js";
 import * as page from "./page.js";
 
-// page.js last: its bindings of other modules' functions are copies.
+// page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, stepper, graph, dwarf, unwind, asmnames, dbginfo, source, srcedit, coverage,
 	symimport, livedis, fastforward, cpustate, memevents, memmap, quests, vars, fnfacts, settings, snapshots, replay,
 	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, page];

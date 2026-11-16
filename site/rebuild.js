@@ -16,7 +16,7 @@
 // one.
 
 import { withV, httpWhy, $, kib } from "./util.js";
-import { provideRebuild, image, showTab, setDisasm, useImage, boot, loadKernel, kernels, setStatus } from "./page.js";
+import { image, setDisasm, kernels, api, provide } from "./page.js";
 import { download } from "./graph.js";
 import { dbgFresh, dbgImport, dbgOnChange } from "./dbginfo.js";
 import { srcFresh, SRC, srcChanged, srcPanel, closeSource } from "./source.js";
@@ -283,7 +283,7 @@ function rbFailed(from, e) {
 	$("rb_log").hidden = !m;
 	rbSync();
 	// Where it says why: the Source tab (also when the editor's button was pressed).
-	showTab("source");
+	api.show.showTab("source");
 	$("rb_box").scrollIntoView({ block: "start" });
 	if (ED.cur)
 		edState("not built, the Source tab says why");
@@ -304,7 +304,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const mem = $("memory").value;
 	setDisasm(null);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
-	useImage(from + RB_SUFFIX, bytes.slice().buffer, mem);
+	api.machine.useImage(from + RB_SUFFIX, bytes.slice().buffer, mem);
 	image.from = from;
 	image.edits = edits;
 	RB.shownFor = image; // the build log and the status stay with it
@@ -333,11 +333,11 @@ async function rbBoot(from, kit, edits, r, ms) {
 	$("rb_files").hidden = false;
 	$("rb_dl_elf").textContent = "Download " + elfName;
 	// The screen: in the Machine tab, under the Source panel's sheet on a phone.
-	showTab("machine");
+	api.show.showTab("machine");
 	if (srcPanel && matchMedia("(max-width: 640px)").matches)
 		closeSource();
 	$("screen_container").scrollIntoView({ block: "nearest" });
-	await boot();
+	await api.machine.boot();
 	await gen;
 	await GEN.srcDone;
 	if (image.from !== from || RB.busy)
@@ -356,7 +356,7 @@ function rbDownload(what) {
 function initRebuild() {
 	$("rb_go").addEventListener("click", rbRun);
 	$("rb_go_panel").addEventListener("click", rbRun);
-	$("rb_back").addEventListener("click", () => loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e))));
+	$("rb_back").addEventListener("click", () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => api.show.setStatus(String(e))));
 	$("rb_dl_image").addEventListener("click", () => rbDownload("image"));
 	$("rb_dl_elf").addEventListener("click", () => rbDownload("elf"));
 	$("rb_buildlog_copy").addEventListener("click", rbLogCopy);
@@ -364,5 +364,5 @@ function initRebuild() {
 	rbLoadIndex();
 }
 
-provideRebuild({ rbSync });
+provide({ rbSync });
 export { rbSync, initRebuild };

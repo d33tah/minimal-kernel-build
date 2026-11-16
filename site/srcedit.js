@@ -21,7 +21,7 @@
 // with the overlay applied, original(path) the text it was built from.
 
 import { $ } from "./util.js";
-import { provideSrcedit, image, rbSync } from "./page.js";
+import { image, api, provide } from "./page.js";
 import { dbgOnChange } from "./dbginfo.js";
 import { srcKernelKey, srcFile, SRC, srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
 
@@ -716,7 +716,7 @@ function edStatus(text, state) {
 
 function edChanged() {
 	edRender();
-	rbSync(); // rebuild.js: the count of edits it would build with
+	api.source.rbSync(); // rebuild.js: the count of edits it would build with
 	if (srcPanel && !$("src_panel").hidden)
 		edSync();
 }
@@ -862,6 +862,6 @@ function initSrcEdit() {
 	});
 }
 
-provideSrcedit({ edPanelShown });
+provide({ edPanelShown });
 export { ED_DIFF_MAX, ED, edFilePatch, edParse, edApplyHunks, edPanelShown, edState, edFlush, srcOverlay,
 	initSrcEdit };

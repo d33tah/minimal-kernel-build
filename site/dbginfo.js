@@ -16,7 +16,7 @@
 // cfi-<hex>.bin shards, or the import's .debug_frame through the Worker.
 
 import { withV } from "./util.js";
-import { provideDbginfo, kfetch, fnFactsText } from "./page.js";
+import { api, provide } from "./page.js";
 import { dwarfDecode, dwarfLocalFrames, dwarfScopesAt, dwFuncBase, dwFuncShard, dwarfFrames, dwarfFunction,
 	dwarfRow, dwarfResolvePath, dwarfFileCode } from "./dwarf.js";
 import { cfiFrameInfo, cfiRow, cfiDecode, unwind } from "./unwind.js";
@@ -62,7 +62,7 @@ function dbgUseShards(entry) {
 	DBG.base = entry.dwarf.replace(/\/?$/, "/");
 	// Where the files come from: CI, or genimport.js for an imported vmlinux.
 	DBG.made = entry.made || "precomputed in CI";
-	DBG.indexLoad = kfetch(DBG.base + "index.json").then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+	DBG.indexLoad = api.source.kfetch(DBG.base + "index.json").then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
 		.then((ix) => {
 			DBG.index = ix;
 			DBG.shardSet = new Set(ix.shards);
@@ -85,7 +85,7 @@ function dbgLoadShard(s) {
 		return;
 	DBG.pending.add(s);
 	const mine = DBG;
-	kfetch(DBG.base + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+	api.source.kfetch(DBG.base + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
 		.then((buf) => {
 			if (mine !== DBG)
 				return;
@@ -321,7 +321,7 @@ function dbgTypes() {
 			return { state: "none", why: "this kernel's debug info has no variables (types.json)" };
 		if (!DBG.typesLoad) {
 			const mine = DBG;
-			DBG.typesLoad = kfetch(DBG.base + DBG.index.types).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+			DBG.typesLoad = api.source.kfetch(DBG.base + DBG.index.types).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
 				.then((T) => { if (mine === DBG) { DBG.types = T; dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.types = { failed: e.message }; dbgChanged(); } });
 		}
@@ -401,7 +401,7 @@ function dbgLocalGroups(pa) {
 		if (!DBG.localTables.has(key) && !DBG.localTables.has("pending" + key)) {
 			DBG.localTables.set("pending" + key, true);
 			const mine = DBG;
-			kfetch(DBG.base + "locals-" + s.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+			api.source.kfetch(DBG.base + "locals-" + s.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
 				.then(dbgGunzip)
 				.then((b) => { if (mine === DBG) { DBG.localTables.set(key, JSON.parse(new TextDecoder().decode(b)).fns); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.localTables.set(key, { failed: e.message }); dbgChanged(); } });
@@ -453,7 +453,7 @@ function dbgFnFacts(name) {
 		if (!F) {
 			DBG.funcTables.set(k, "pending");
 			const mine = DBG;
-			kfetch(DBG.base + "funcs-" + k.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+			api.source.kfetch(DBG.base + "funcs-" + k.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
 				.then(dbgGunzip)
 				.then((b) => { if (mine === DBG) { DBG.funcTables.set(k, JSON.parse(new TextDecoder().decode(b))); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.funcTables.set(k, { failed: e.message }); dbgChanged(); } });
@@ -563,7 +563,7 @@ function dbgFiles() {
 		return DBG.files.failed ? { state: "none", why: "the file list did not load: " + DBG.files.failed } : { state: "ok", F: DBG.files };
 	if (!DBG.filesLoad) {
 		const mine = DBG;
-		DBG.filesLoad = kfetch(DBG.base + DBG.index.files).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+		DBG.filesLoad = api.source.kfetch(DBG.base + DBG.index.files).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
 			.then((F) => {
 				F.fileIx = new Map(F.files.map((f, k) => [f[0], k]));
 				F.fnAt = [];
@@ -626,7 +626,7 @@ function dbgCfiRow(pa) {
 		if (!DBG.cfiPending.has(s)) {
 			DBG.cfiPending.add(s);
 			const mine = DBG;
-			kfetch(DBG.base + "cfi-" + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+			api.source.kfetch(DBG.base + "cfi-" + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
 				.then((buf) => { if (mine === DBG) { DBG.cfiTables.set(s, cfiDecode(new Uint8Array(buf))); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.cfiTables.set(s, { failed: e.message }); dbgChanged(); } });
 		}
@@ -856,11 +856,11 @@ function dbgTitle(pa, sym) {
 		return r.why;
 	const facts = dbgFnFactsAt(pa);
 	const more = facts.state !== "ok" ? [facts.why || "reading the function facts…"] :
-		facts.list.filter((x) => x.func).map((x) => x.f ? fnFactsText(x.f, facts.T) : x.func + ": " + (x.why || "reading the function facts…"));
+		facts.list.filter((x) => x.func).map((x) => x.f ? api.symbols.fnFactsText(x.f, facts.T) : x.func + ": " + (x.why || "reading the function facts…"));
 	return dbgChainText(r.frames, sym) + (more.length ? "\n" + more.join("\n") : "");
 }
 
-provideDbginfo({ dbgHas, dbgFrames });
+provide({ dbgHas, dbgFrames });
 export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgImport,
 	dbgForget, dbgRestore, dbgTypes, dbgGunzip, dbgLocals, dbgLocalGroups, dbgFnFacts, dbgFnHolds, dbgFnFactsFor,
 	dbgFnFactsAt, dbgCfiFrame, dbgFiles, dbgFuncAt, dbgCfiRow, dbgCfiInfo, dbgUnwind, dbgTableAt, dbgFrames,

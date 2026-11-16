@@ -6,7 +6,6 @@
 import { useLayoutEffect } from "react";
 import { hex, PAGE, $ } from "./util.js";
 import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, markTabShown, provide } from "./page.js";
-import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { bmFromHash } from "./bookmarks.js";
 import { useStore } from "./ui.jsx";
@@ -72,10 +71,11 @@ function writeHash() {
 	hashOwn = location.hash;
 }
 
-// The tab bar, Settings, Quests and Events follow `tab` (React, the store); the
-// `tabShows` (markTabShown: the panel is shown then; a view that throws does
-// not stop the others); the ones not yet moved there are told after.
-// yet moved there are told.
+// showTab only sets state: the tab (the tab bar, Settings, Quests and
+// Events follow it, React) and tabShows (markTabShown), which the views
+// that draw when their tab is shown follow (listing.js, memview.js,
+// memmap.js, debugui.js, graph.js, coverage.js); a view that throws does
+// not stop the others. The panels are shown here, before them.
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
 	setTab(TABS.includes(name) ? name : "machine");
@@ -84,11 +84,6 @@ function showTab(name) {
 	vmKeys();
 	writeHash();
 	markTabShown();
-	showViews();
-}
-
-function showViews() {
-	graphShow(tab === "calls");
 }
 
 // The VM's screen is in the Machine tab and is hidden (it keeps changing)

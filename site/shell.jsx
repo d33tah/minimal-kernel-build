@@ -16,6 +16,7 @@ import { MemoryPanel } from "./memorypanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
 import { SourceTabPanel } from "./sourcepanel.jsx";
 import { SourceAside } from "./sourceaside.jsx";
+import { CallsPanel } from "./callspanel.jsx";
 
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
@@ -29,6 +30,7 @@ function mountShell() {
 	mount($("panel_debugger"), <DebuggerPanel />);
 	mount($("panel_source"), <SourceTabPanel />);
 	mount($("src_panel"), <SourceAside />);
+	mount($("panel_calls"), <CallsPanel />);
 }
 
 export { mountShell };

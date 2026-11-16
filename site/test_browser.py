@@ -18054,7 +18054,7 @@ REPLAY_EDGE_JS = """async (mode) => {
     for (let i = 0; i < 100 && !st.cpu.in_hlt[0]; i++) st.run(1e6, -1, 2000);
     return { steps: st.steps, hlt: st.cpu.in_hlt[0] };
   }
-  st.textSeen |= MKB.TEXT_PROMPT;
+  st.textSeen |= MKB.STEP_CONST.TEXT_PROMPT;
   st.prompt = null;
   const r = st.run(mode);
   return { r, steps: st.steps, hlt: st.cpu.in_hlt[0], prompt: st.prompt && st.prompt.steps };
@@ -18710,7 +18710,7 @@ def reverse_keys(browser, base, shots, name):
     page = ctx.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
-    rows = "(() => { const t = MKB.stepper.screenText(MKB.VGA_WINDOW_BYTES); const out = []; for (let i = 0; i < t.length; i += 80) out.push(t.slice(i, i + 80).trim()); return out; })()"
+    rows = "(() => { const t = MKB.stepper.screenText(MKB.STEP_CONST.VGA_WINDOW_BYTES); const out = []; for (let i = 0; i < t.length; i += 80) out.push(t.slice(i, i + 80).trim()); return out; })()"
     try:
         page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=120000)
         if not wait_for(lambda: page.evaluate("!!MKB.stepper && !!MKB.stepper.prompt && MKB.runState === 'paused'"), 900, 1):

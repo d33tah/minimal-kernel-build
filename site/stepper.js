@@ -16,9 +16,18 @@
 // (jit_run_interpreted in src/rust/cpu/cpu.rs) does:
 //   previous_ip = eip; op = read_imm8(); run(op | is_32 << 8); counter++.
 
-import { realNow, CLOCK } from "./clock.js";
+import * as clock from "./clock.js";
 import { revMark, MEV } from "./page.js";
-import { JK } from "./jumps.js";
+import * as jumps from "./jumps.js";
+
+// A module's imported and exported bindings are cells: optimized code loads
+// them on every use, where it folds a private const to its value (V8: a
+// small method reading an exported const ran 3x slower than one reading a
+// private one). Frames' methods and Stepper.record run per instruction, so
+// the constants they read are private: the ones from other modules copied
+// here, this module's own exported as one object (STEP_CONST).
+const { realNow, CLOCK } = clock;
+const { JK } = jumps;
 
 const STEP_EXPORTS = {
 	mkb_read_imm8: /3cpu3cpu9read_imm8$/,
@@ -1559,6 +1568,9 @@ class Stepper {
 	}
 }
 
-export { patchV86Wasm, setPatchV86Wasm, VGA_WINDOW_BYTES, TEXT_PANIC, TEXT_END, TEXT_PROMPT, EAX, EBX, ESP,
-	FR_BITS, FR_SIZE, FR_MASK, FR_BIG, FR_BIG16, FR_IRQ, FR_CONT, FR_BYTES, Frames, frStartAt, frEndAt,
-	frSmallAt, FramePath, Stepper };
+// The constants other modules use (a module reading them copies them into
+// its own consts: const { FR_BITS } = STEP_CONST).
+const STEP_CONST = Object.freeze({ VGA_WINDOW_BYTES, TEXT_PANIC, TEXT_END, TEXT_PROMPT, EAX, EBX, ESP, FR_BITS,
+	FR_SIZE, FR_MASK, FR_BIG, FR_BIG16, FR_IRQ, FR_CONT, FR_BYTES });
+
+export { patchV86Wasm, setPatchV86Wasm, STEP_CONST, Frames, frStartAt, frEndAt, frSmallAt, FramePath, Stepper };

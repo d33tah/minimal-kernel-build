@@ -15,7 +15,7 @@ import { exposeMKB } from "./debug.js";
 import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAttrs, jumpBadgesHtml,
 	jumpsJitNote, jumpsDrawn, jumpHitScroll, setJumpHitScroll, drawJumpArcs, jumpPopClose, setJumpHit,
 	renderEipJumps, initJumps } from "./jumps.js";
-import { patchV86Wasm, Stepper, TEXT_PROMPT, TEXT_PANIC, TEXT_END } from "./stepper.js";
+import { patchV86Wasm, Stepper, STEP_CONST } from "./stepper.js";
 import { IRQ_COLOUR, SWITCH, PALETTE, graphShow, graphSelName, graphCapture, graphRestore, graphReset, G,
 	initGraph, renderGraphInfo } from "./graph.js";
 import { cfiRowText } from "./unwind.js";
@@ -57,6 +57,7 @@ const V86_SETUP_ADDR = 0x80000;
 const V86_CMDLINE_ADDR = 0x8e000;
 const V86_HEAP_END = 0x8de00;
 const DEFAULT_RAM = 2 * 1024 * 1024;
+const { TEXT_PROMPT, TEXT_PANIC, TEXT_END } = STEP_CONST;
 const LIVE_MS = 500;
 
 let scanTimer = null;

@@ -6,8 +6,9 @@
 // has it, reads past the end give undefined, and full chunks cost
 // FR_BYTES per frame.
 // Usage: node site/test_frames.mjs [ROUNDS]
-import { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
+import { Frames, STEP_CONST, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
 
+const { FR_SIZE, FR_BYTES } = STEP_CONST;
 const rounds = Number(process.argv[2] || 40);
 let seed = 4242;
 const rnd = (n) => {

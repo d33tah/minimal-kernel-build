@@ -20,9 +20,10 @@ import { CLOCK, realNow, GUEST } from "./clock.js";
 import { V86_KERNEL_ADDR, PAGE } from "./util.js";
 import { symbols, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, stepper, emulator, speedReset,
 	updateDebugUi, v86Restore, disasm, insnIndex } from "./page.js";
-import { TEXT_END } from "./stepper.js";
+import { STEP_CONST } from "./stepper.js";
 import { MEV } from "./memevents.js";
 
+const { TEXT_END } = STEP_CONST;
 const FF_SLICE = 20e6;
 const FF_STEP_FIRST = 2e6;
 let ffActive = false;    // a fast-forward or fast run-to is running

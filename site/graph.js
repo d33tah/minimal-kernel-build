@@ -13,13 +13,15 @@
 import { realNow } from "./clock.js";
 import { $, hex, num } from "./util.js";
 import { runState, bmFnNames, openFunction, jumpTo, tab, image, bmTip } from "./page.js";
-import { FR_SIZE, frStartAt, FR_IRQ, frEndAt, FR_CONT, FR_BITS, FR_MASK, frSmallAt, FR_BIG, FramePath,
-	FR_BIG16 } from "./stepper.js";
+import { STEP_CONST, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes, dbgTitle } from "./dbginfo.js";
 import { srcChainNodes } from "./source.js";
 import { ffInfo } from "./fastforward.js";
 import { varsTasks } from "./vars.js";
 import { fnDetailEl } from "./fnfacts.js";
+
+// Private consts (the layout loops read them per frame; see stepper.js).
+const { FR_SIZE, FR_IRQ, FR_CONT, FR_BITS, FR_MASK, FR_BIG, FR_BIG16 } = STEP_CONST;
 
 const G = {
 	stepper: null,

@@ -22124,6 +22124,10 @@ SCANP_GOT_JS = """() => { const f = document.getElementById('footprint'), l = do
     page: l.dataset.page, lchanged: l.dataset.changed, marks: l.querySelectorAll('mark').length,
     info: document.getElementById('dump_info').textContent }; }"""
 # (marks: a changed byte is marked twice, in the hex and in the ASCII column.)
+# A scan with the Page tab shown, read in the same task: a later drawing of
+# the listing (the Page tab draws again once it has its width) says "since
+# the last scan" instead of the scan's own "since the previous scan".
+SCANP_SCAN_JS = "() => { scan(); return (" + SCANP_GOT_JS + ")(); }"
 # The grid's cell of page p has a pixel of the "changed" mark's colour.
 SCANP_MARK_JS = """(p) => { const c = document.getElementById('pages'), cell = Number(c.dataset.cell), cols = Number(c.dataset.cols);
   const px = c.getContext('2d').getImageData((p % cols) * cell, Math.floor(p / cols) * cell, cell, cell).data;
@@ -22153,8 +22157,8 @@ def scanpages_case(browser, base, shots, name, problems, r):
     page.click("#scan")
     page.evaluate(SCANP_COPY_JS)
 
-    def check(tag, extra=None):
-        want, got = page.evaluate(SCANP_WANT_JS), page.evaluate(SCANP_GOT_JS)
+    def check(tag, extra=None, got=None):
+        want, got = page.evaluate(SCANP_WANT_JS), got or page.evaluate(SCANP_GOT_JS)
         if extra is not None and sorted(want["changed"]) != sorted(extra):
             problems.append(f"{name} {tag}: test setup: RAM changed in {want['changed']}, the test wrote {extra}")
         if got["changed"] != want["changed"] or got["fpChanged"] != str(len(want["changed"])):
@@ -22166,9 +22170,18 @@ def scanpages_case(browser, base, shots, name, problems, r):
     got = check("a scan with nothing written", [])
     if got["fpChanged"] != "0":
         problems.append(f"{name}: two scans in a row of a paused machine: {got['fpChanged']} pages changed")
+    def settle():
+        # The listing is drawn again once it has its width: wait for the draws to stop.
+        for _ in range(20):
+            d0 = page.get_attribute("#listing", "data-draws")
+            time.sleep(0.3)
+            if page.get_attribute("#listing", "data-draws") == d0:
+                break
+
     # A, selected before the scan: its bytes since the last scan, then since the previous one.
     if not open_page(page, A):
         problems.append(f"{name}: page {A:#x} did not open")
+    settle()
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "0" or "0 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {A:#x} right after the scan: {got['lchanged']} changed, {got['info']!r}")
@@ -22190,9 +22203,9 @@ def scanpages_case(browser, base, shots, name, problems, r):
       w(new Uint8Array(g.buffer), {G} * P);
       w([9], {Z} * P + 4000); }}""")
     show_tab(page, "page")
-    page.evaluate("scan()")
+    scanned = page.evaluate(SCANP_SCAN_JS)
     wanted = sorted([A, B, N2, E, G, Z])
-    got = check("a scan after writes", wanted)
+    got = check("a scan after writes", wanted, scanned)
     if got["page"] != str(A) or got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: the scan's drawing of page {A:#x}: page {got['page']}, {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     show_tab(page, "memory")
@@ -22204,6 +22217,7 @@ def scanpages_case(browser, base, shots, name, problems, r):
     page.evaluate(SCANP_COPY_JS)
     # B, selected after the scan and not written since: its bytes as the scan saw them.
     open_page(page, B)
+    settle()
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "0" or "0 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {B:#x} selected after the scan: {got['lchanged']} changed, {got['info']!r}")
@@ -22216,28 +22230,29 @@ def scanpages_case(browser, base, shots, name, problems, r):
     # jumped to): its byte changed since the scan is marked too.
     page.evaluate(f"emulator.write_memory(new Uint8Array([0x42]), {U * 4096 + 9})")
     open_page(page, U)
+    settle()
     got = page.evaluate(SCANP_GOT_JS)
     r[f"{name} selected after a change"] = got["info"]
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {U:#x} written, then selected: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
-    page.evaluate("scan()")
-    got = check("a scan after a write to the selected page", [B, U])
+    scanned = page.evaluate(SCANP_SCAN_JS)
+    got = check("a scan after a write to the selected page", [B, U], scanned)
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: the scan's drawing of page {U:#x}: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     page.evaluate(SCANP_COPY_JS)
     page.evaluate(f"emulator.write_memory(new Uint8Array([0x43]), {U * 4096 + 10})")
-    page.evaluate("scan()")
-    got = check("a scan after a second write to the selected page", [U])
+    scanned = page.evaluate(SCANP_SCAN_JS)
+    got = check("a scan after a second write to the selected page", [U], scanned)
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: page {U:#x} written between two scans while selected: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     page.evaluate(SCANP_COPY_JS)
     # One copy of RAM, the same buffer from scan to scan (P1a: no copy per scan).
     page.evaluate("window.__scanBuf = typeof scanCopy === 'undefined' ? null : scanCopy")
-    page.evaluate("scan()")
+    scanned = page.evaluate(SCANP_SCAN_JS)
     one = page.evaluate("!!window.__scanBuf && scanCopy === window.__scanBuf && scanCopy.length === emuRam && typeof scanPrev === 'undefined'")
     if not one:
         problems.append(f"{name}: a scan made a new copy of RAM or kept a second one")
-    got = check("a scan with nothing written since", [])
+    got = check("a scan with nothing written since", [], scanned)
     if got["lchanged"] != "0" or "0 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: page {U:#x} unchanged between two scans: {got['lchanged']} changed, {got['info']!r}")
     for w in (1280, 390):

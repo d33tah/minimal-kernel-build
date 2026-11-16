@@ -1,4 +1,8 @@
 "use strict";
+import { dwarfRow, dwarfPack, dwarfEachLine, DwarfTypes, dwarfSectionOf, dwFuncShard, dwarfElf, dwarfSections,
+	DwarfReader, dwarfTable, dwarfDecode } from "./dwarf.js";
+import { cfiPack, cfiFromElf } from "./unwind.js";
+
 // The generators of a kernel's data files, shared by CI's command lines
 // (Node: gen-dwarf.js, gen-src.js) and the page's Worker (genworker.js),
 // so an imported vmlinux gets the files CI makes for the kernels shipped
@@ -19,12 +23,6 @@
 // Node, CompressionStream in the browser: other bytes for the same data, so
 // the .gz files and the gzBytes counts they make are the only parts of the
 // output that differ between the two, see test_gen_worker.py).
-//
-// dwarf.js and unwind.js are globals here: importScripts in the Worker; in
-// Node this file requires them onto globalThis.
-
-if (typeof module !== "undefined" && typeof dwarfRow === "undefined")
-	Object.assign(globalThis, require("./dwarf.js"), require("./unwind.js"));
 
 const SHARD_BITS = 16;
 
@@ -777,5 +775,4 @@ async function kgenSrc(getDwarf, readSrc, opts) {
 	return { files, missing, pastEnd, named, checked };
 }
 
-if (typeof module !== "undefined")
-	module.exports = { SHARD_BITS, kgPyJson, kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc };
+export { SHARD_BITS, kgPyJson, kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc };

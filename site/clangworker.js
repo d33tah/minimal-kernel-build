@@ -27,7 +27,7 @@
 //
 // "run" is synchronous inside the Worker: messages sent meanwhile wait.
 
-importScripts("wasi.js" + self.location.search);
+import { MemFS, wasiRun } from "./wasi.js";
 
 const fs = new MemFS();
 const modules = new Map();

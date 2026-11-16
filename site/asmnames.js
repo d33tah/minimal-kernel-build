@@ -23,8 +23,10 @@
 // Anything else gets no name (heap, stack slots of callers, a struct
 // member through a pointer register: the type of a register is not known).
 
-// dwarf.js and unwind.js: globals in the page, modules in node.
-const asmLib = typeof module !== "undefined" && module.exports ? Object.assign({}, require("./dwarf.js"), require("./unwind.js")) : self;
+import { dwWhere, dwTypeName, dwVarDeclText, dwarfLocalFrames, dwLocAt, dwTypeSize, dwPathIn } from "./dwarf.js";
+import { dwSetFrameBase, dwLocation, dwExprText } from "./unwind.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./asmnames.js";
 
 const ASM_REGS = { eax: 0, ecx: 1, edx: 2, ebx: 3, esp: 4, ebp: 5, esi: 6, edi: 7 };
 const ASM_PREFIXES = new Set(["lock", "rep", "repe", "repz", "repne", "repnz", "notrack", "bnd", "data16", "data32", "addr16", "addr32",
@@ -140,15 +142,15 @@ function asmGlobal(va, env) {
 	const pa = va - env.off;
 	if (pa < 0 || pa >= 2 ** 32)
 		return null;
-	const w = env.T ? asmLib.dwWhere(env.T, pa) : null;
+	const w = env.T ? dwWhere(env.T, pa) : null;
 	if (w) {
 		const v = w.var;
 		const name = w.path + (w.offset ? "+" + w.offset : "");
 		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1], scope: v[5] & 4 && v[6] ? v[6] : undefined,
-			detail: name + (w.note ? " (" + w.note + ")" : "") + ": " + asmLib.dwTypeName(env.T, w.type) + ", in " + v[0] + " (" +
-				asmLib.dwTypeName(env.T, v[2]) + ", " + v[3] + " bytes" + (env.T.sections && env.T.sections[v[4]] ? ", " + env.T.sections[v[4]] : "") + ")" +
+			detail: name + (w.note ? " (" + w.note + ")" : "") + ": " + dwTypeName(env.T, w.type) + ", in " + v[0] + " (" +
+				dwTypeName(env.T, v[2]) + ", " + v[3] + " bytes" + (env.T.sections && env.T.sections[v[4]] ? ", " + env.T.sections[v[4]] : "") + ")" +
 				(v[5] & 4 ? ", a static local" + (v[6] ? " of " + v[6] + "()" : "") : "") + (v[5] & 2 ? ", per-CPU" : "") +
-				(asmLib.dwVarDeclText(env.T, v) ? "; defined at " + asmLib.dwVarDeclText(env.T, v) : "") };
+				(dwVarDeclText(env.T, v) ? "; defined at " + dwVarDeclText(env.T, v) : "") };
 	}
 	const s = env.sym ? env.sym(pa) : null;
 	if (s && s.aliases)
@@ -168,25 +170,25 @@ function asmGlobal(va, env) {
 function asmLocal(ea, pa, chain, ctx, env, how) {
 	if (!chain || !chain.length || !env.T)
 		return null;
-	const frames = asmLib.dwarfLocalFrames(chain);
+	const frames = dwarfLocalFrames(chain);
 	if (!frames.length)
 		return null;
 	const fb = frames[frames.length - 1].fb;
-	asmLib.dwSetFrameBase(ctx, fb ? asmLib.dwLocAt(fb, pa) : null);
+	dwSetFrameBase(ctx, fb ? dwLocAt(fb, pa) : null);
 	for (const f of frames)
 		for (const [v, kind] of [...f.params.map((x) => [x, "param"]), ...f.locals.map((x) => [x, "local"])]) {
-			const l = asmLib.dwLocAt(v[3], pa);
+			const l = dwLocAt(v[3], pa);
 			if (!l.expr)
 				continue;
-			const size = asmLib.dwTypeSize(env.T, v[1]) || 4;
-			const r = asmLib.dwLocation(l.expr, ctx, size);
+			const size = dwTypeSize(env.T, v[1]) || 4;
+			const r = dwLocation(l.expr, ctx, size);
 			if (r.mem === undefined || ea < r.mem || ea >= r.mem + size)
 				continue;
-			const p = asmLib.dwPathIn(env.T, v[1], ea - r.mem, v[0]);
+			const p = dwPathIn(env.T, v[1], ea - r.mem, v[0]);
 			const name = p.path + (p.offset ? "+" + p.offset : "");
 			return { name, kind,
-				detail: name + ": " + asmLib.dwTypeName(env.T, p.type) + ", " + (kind === "param" ? "parameter" : "local variable") + " " + v[0] +
-					" of " + (f.func || "?") + "()" + (f.inlined ? " (inlined)" : "") + "; its location here is " + asmLib.dwExprText(l.expr) + ", " + how };
+				detail: name + ": " + dwTypeName(env.T, p.type) + ", " + (kind === "param" ? "parameter" : "local variable") + " " + v[0] +
+					" of " + (f.func || "?") + "()" + (f.inlined ? " (inlined)" : "") + "; its location here is " + dwExprText(l.expr) + ", " + how };
 		}
 	return null;
 }
@@ -266,5 +268,5 @@ function asmOperandNames(text, pa, env) {
 	return out;
 }
 
-if (typeof module !== "undefined")
-	module.exports = { asmMemOps, asmOperandNames, asmSymLookup, asmBranchTarget, asmTargetName, ASM_REGS };
+export { ASM_REGS, asmMemOps, asmSymLookup, asmBranchTarget, asmTargetName, asmOperandNames };
+bridge(thisModule);

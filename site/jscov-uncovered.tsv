@@ -54,9 +54,8 @@ app.js	3876	e626d78f	showTip on an element without data-tip: every listener is o
 app.js	3910-3912	9e52f7a0	sometimes: tipReanchor when the redrawn listing no longer has the open popover's mark (the line scrolled out of the drawn page): a listing redrawn at another page while a popover is pinned, a race with stepping; ran in run 43602952211 only (of 43600287802, 43602952211, 43605289270)
 app.js	4029	ad825671	a touch long press cancelled by moving more than 10 px: CDP touch emulation in the suites taps without moving
 app.js	4035	4a771b70	the context menu after a long press on a tip: headless Chromium sends no contextmenu for an emulated long touch
-asmnames.js	74	f99e340d	sometimes: an operand that ASM_MEM does not parse as memory and that has no parenthesis: the genimport suite (gen-worker job) lists the code where its boot happens to pause, and only some of those listings have such an operand; ran in run 43605289270, not in 43588908776, 43600287802, 43602952211
-asmnames.js	173	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
-asmnames.js	270	a349dd93	module.exports: runs only under Node (test_dwarf.py), which jscov does not measure
+asmnames.js	76	f99e340d	sometimes: an operand that ASM_MEM does not parse as memory and that has no parenthesis: the genimport suite (gen-worker job) lists the code where its boot happens to pause, and only some of those listings have such an operand; ran in run 43605289270, not in 43588908776, 43600287802, 43602952211
+asmnames.js	175	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
 bookmarks.js	114	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
 bookmarks.js	141	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
 bookmarks.js	158	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
@@ -96,52 +95,51 @@ dbginfo.js	458	2c0239a6	a types table without function facts: written by an olde
 dbginfo.js	746	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
 dbginfo.js	750	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
 dbginfo.js	788	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
-dwarf.js	63	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
-dwarf.js	252	235f75e8	a string attribute in a form no compiler writes for names (strx forms are handled above): only corrupt DWARF
-dwarf.js	261	7a53f6e1	addrx/DW_OP_addrx without .debug_addr: clang always writes .debug_addr with them; only a corrupt or stripped file lacks it
-dwarf.js	272	5e9b1de2	DWARF 5 DW_AT_ranges without .debug_rnglists: compilers write the section with the attribute; defensive for a stripped file
-dwarf.js	293	5e9b1de2	DWARF 2-4 DW_AT_ranges without .debug_ranges: as above, defensive for a stripped file
-dwarf.js	409	d2f9eeb9	root DIE whose abbreviation code is not in the table: corrupt unit header; the broken-input cases hit the code in later DIEs (bad abbreviation code) instead, a missing root abbreviation has no reader to compare with
-dwarf.js	554	b6210ff9	line program that ends without DW_LNE_end_sequence: no assembler or compiler writes one; defensive against a truncated .debug_line
-dwarf.js	609-610	0564a727	nameAt of a nameless DIE with DW_AT_specification but no DW_AT_abstract_origin: subprogram names through a specification are read by subRecord/decodeUnit; nameAt is asked only for origins and static locals' functions, whose specification chains (C++ out-of-class methods) carry names on the concrete DIE
-dwarf.js	675	a7e41d61	abbreviation code missing among a subprogram's children (corrupt unit): defensive; the broken-input case fails earlier in decodeUnit
-dwarf.js	682	39666711	varargs read through subprogramAt (an abstract origin in another unit with DW_TAG_unspecified_parameters): needs an LTO build with an out-of-line varargs function in another unit; the C++ fixture's varargs come through the same unit
-dwarf.js	690	76cf68cf	subCache over 50000 entries: only a huge LTO import; a memory guard
-dwarf.js	789	95f07ab9	cval of a missing DW_AT_const_value: an enumerator without a value, which no compiler writes
-dwarf.js	1056	ec3bf762	ownExpr with an operation dwOpEnd does not know next to a DW_OP_addrx: no compiler writes such an expression
-dwarf.js	1061	bdca5b3b	DW_OP_addrx without .debug_addr in a local's location: as line 261, defensive for a stripped file
-dwarf.js	1112-1113	325bc5bb	abstract origin chain of more than one step for a local (an origin that itself has an origin): GCC and clang point every concrete DIE at the abstract one directly
-dwarf.js	1155-1158	fd6c9994	a clang block without DW_AT_abstract_origin and without code whose copy differs from the origin: the case the comment describes needs a specific clang inlining pattern absent from the fixtures and the shipped kernels' checked samples
-dwarf.js	1180	b920061f	foreignKids of an offset before the first unit: not a DIE offset any reference gives
-dwarf.js	1200	a7e41d61	abbreviation code missing among a foreign DIE's children: corrupt unit, defensive
-dwarf.js	1223	3af60ed4	typeAt of an offset before the first unit: not a DIE offset any reference gives
-dwarf.js	1229	df37b36e	typeAt of a DIE whose abbreviation code is missing: corrupt unit, defensive
-dwarf.js	1244	c83e7581	declAt of an offset before the first unit: not a DIE offset any reference gives
-dwarf.js	1250	e7aa57ba	declAt of a DIE whose abbreviation code is missing: corrupt unit, defensive
-dwarf.js	1349	54f36a9d	type key of a DIE offset that is no type DIE: a DW_AT_type pointing at a non-type (corrupt), defensive
-dwarf.js	1420	81005b49	two definitions at one address where the first known has no file: a __weak definition without DW_AT_decl_file next to the kept one; no fixture or shipped kernel has it
-dwarf.js	1460	f56bb5a6	foreign type of an offset before the first unit: not a DIE offset any reference gives
-dwarf.js	1565	b961898d	a function whose DIE chain has no name at all: compilers name every subprogram with code (or its abstract origin); only corrupt DWARF
-dwarf.js	1598	7a3a1f55	a function DIE with code whose name cannot be resolved (see the line above): only corrupt DWARF
-dwarf.js	1703	a0fd0f94	a scope whose parent scope had no code (dropped): nested blocks under a block with no ranges; compilers give a block with variables code or drop it
-dwarf.js	1783	9b03d2df	dwScopeIn false: dwarfScopesAt asks it only for scopes that contain pa, which lie inside the previous one in every DWARF tested
-dwarf.js	1795	4c85ed2a	an enum declaration resolved to its definition: C has no forward-declared enums in the fixtures or kernels (a GNU extension)
-dwarf.js	1806	5a390227	dwTypeSize of void: callers ask it for variable and member types, never void
-dwarf.js	1861	a1ed540f	dwTypeName of an unknown kind: the type table only has the kinds DWT lists
-dwarf.js	1915	ef72d80d	dwVarsPick by file in a types table without files (types.json of an older gen-dwarf.js): every table built now has files
-dwarf.js	1959	90d9ceee	dwPathIn through void: a variable or member of type void does not exist
-dwarf.js	1984	39408db1	dwPathIn into an array of elements of size 0 (an array of empty structs or of an incomplete type): none in the fixtures or kernels
-dwarf.js	2131	37c2b7b5	a unit without cover ranges (no DW_AT_ranges or low/high_pc on the compile unit): the fixtures' and kernels' units all have them
-dwarf.js	2198	247c8376	a function range outside every PT_LOAD (discarded code, e.g. .exit.text of a vmlinux): the fixtures' code is all loaded; the shipped kernels' tables are built by gen-dwarf.js in node
-dwarf.js	2288	b2f2aa3d	dwarfFileAddrs for a table that does not name the file: dwarfFileCode asks only the tables files.json or the import's line programs list for it
-dwarf.js	2300	ca224645	a row clipped to nothing at a shard boundary: needs a row ending exactly at a 64 KiB shard edge in a shipped kernel's file code; not in the checked files
-dwarf.js	2303-2304	1456ff26	tables without is_stmt bits (MKBD version 1 shards from an older gen-dwarf.js): every shipped shard is version 2
-dwarf.js	2343	f98a2dc1	rows of one line continuing across two tables (shards): a line whose code crosses a 64 KiB shard boundary in a file the tests ask for
-dwarf.js	2391	90159e94	a shard that is not MKBD 1 or 2: shards are written by gen-dwarf.js in CI; only a corrupt download
-dwarf.js	2409	b101b0d5	MKBD version 1 shard: every shipped shard is version 2
-dwarf.js	2434	a34ac93b	MKBD version 1 shard: every shipped shard is version 2
-dwarf.js	2439	f62aae9d	module.exports for node (gen-dwarf.js): never true in the browser, where coverage is measured
-dwarfworker.js	79	c8b20a61	a type unit (DW_UT_type/split_type, -fdebug-types-section with DWARF 5) in the lines request: no fixture has type units; their references (DW_FORM_ref_sig8) are not resolved by dwarf.js, so such an import is not supported beyond file:line
+dwarf.js	67	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
+dwarf.js	256	235f75e8	a string attribute in a form no compiler writes for names (strx forms are handled above): only corrupt DWARF
+dwarf.js	265	7a53f6e1	addrx/DW_OP_addrx without .debug_addr: clang always writes .debug_addr with them; only a corrupt or stripped file lacks it
+dwarf.js	276	5e9b1de2	DWARF 5 DW_AT_ranges without .debug_rnglists: compilers write the section with the attribute; defensive for a stripped file
+dwarf.js	297	5e9b1de2	DWARF 2-4 DW_AT_ranges without .debug_ranges: as above, defensive for a stripped file
+dwarf.js	413	d2f9eeb9	root DIE whose abbreviation code is not in the table: corrupt unit header; the broken-input cases hit the code in later DIEs (bad abbreviation code) instead, a missing root abbreviation has no reader to compare with
+dwarf.js	558	b6210ff9	line program that ends without DW_LNE_end_sequence: no assembler or compiler writes one; defensive against a truncated .debug_line
+dwarf.js	613-614	0564a727	nameAt of a nameless DIE with DW_AT_specification but no DW_AT_abstract_origin: subprogram names through a specification are read by subRecord/decodeUnit; nameAt is asked only for origins and static locals' functions, whose specification chains (C++ out-of-class methods) carry names on the concrete DIE
+dwarf.js	679	a7e41d61	abbreviation code missing among a subprogram's children (corrupt unit): defensive; the broken-input case fails earlier in decodeUnit
+dwarf.js	686	39666711	varargs read through subprogramAt (an abstract origin in another unit with DW_TAG_unspecified_parameters): needs an LTO build with an out-of-line varargs function in another unit; the C++ fixture's varargs come through the same unit
+dwarf.js	694	76cf68cf	subCache over 50000 entries: only a huge LTO import; a memory guard
+dwarf.js	793	95f07ab9	cval of a missing DW_AT_const_value: an enumerator without a value, which no compiler writes
+dwarf.js	1060	ec3bf762	ownExpr with an operation dwOpEnd does not know next to a DW_OP_addrx: no compiler writes such an expression
+dwarf.js	1065	bdca5b3b	DW_OP_addrx without .debug_addr in a local's location: as line 261, defensive for a stripped file
+dwarf.js	1116-1117	325bc5bb	abstract origin chain of more than one step for a local (an origin that itself has an origin): GCC and clang point every concrete DIE at the abstract one directly
+dwarf.js	1159-1162	fd6c9994	a clang block without DW_AT_abstract_origin and without code whose copy differs from the origin: the case the comment describes needs a specific clang inlining pattern absent from the fixtures and the shipped kernels' checked samples
+dwarf.js	1184	b920061f	foreignKids of an offset before the first unit: not a DIE offset any reference gives
+dwarf.js	1204	a7e41d61	abbreviation code missing among a foreign DIE's children: corrupt unit, defensive
+dwarf.js	1227	3af60ed4	typeAt of an offset before the first unit: not a DIE offset any reference gives
+dwarf.js	1233	df37b36e	typeAt of a DIE whose abbreviation code is missing: corrupt unit, defensive
+dwarf.js	1248	c83e7581	declAt of an offset before the first unit: not a DIE offset any reference gives
+dwarf.js	1254	e7aa57ba	declAt of a DIE whose abbreviation code is missing: corrupt unit, defensive
+dwarf.js	1353	54f36a9d	type key of a DIE offset that is no type DIE: a DW_AT_type pointing at a non-type (corrupt), defensive
+dwarf.js	1424	81005b49	two definitions at one address where the first known has no file: a __weak definition without DW_AT_decl_file next to the kept one; no fixture or shipped kernel has it
+dwarf.js	1464	f56bb5a6	foreign type of an offset before the first unit: not a DIE offset any reference gives
+dwarf.js	1569	b961898d	a function whose DIE chain has no name at all: compilers name every subprogram with code (or its abstract origin); only corrupt DWARF
+dwarf.js	1602	7a3a1f55	a function DIE with code whose name cannot be resolved (see the line above): only corrupt DWARF
+dwarf.js	1707	a0fd0f94	a scope whose parent scope had no code (dropped): nested blocks under a block with no ranges; compilers give a block with variables code or drop it
+dwarf.js	1787	9b03d2df	dwScopeIn false: dwarfScopesAt asks it only for scopes that contain pa, which lie inside the previous one in every DWARF tested
+dwarf.js	1799	4c85ed2a	an enum declaration resolved to its definition: C has no forward-declared enums in the fixtures or kernels (a GNU extension)
+dwarf.js	1810	5a390227	dwTypeSize of void: callers ask it for variable and member types, never void
+dwarf.js	1865	a1ed540f	dwTypeName of an unknown kind: the type table only has the kinds DWT lists
+dwarf.js	1919	ef72d80d	dwVarsPick by file in a types table without files (types.json of an older gen-dwarf.js): every table built now has files
+dwarf.js	1963	90d9ceee	dwPathIn through void: a variable or member of type void does not exist
+dwarf.js	1988	39408db1	dwPathIn into an array of elements of size 0 (an array of empty structs or of an incomplete type): none in the fixtures or kernels
+dwarf.js	2135	37c2b7b5	a unit without cover ranges (no DW_AT_ranges or low/high_pc on the compile unit): the fixtures' and kernels' units all have them
+dwarf.js	2202	247c8376	a function range outside every PT_LOAD (discarded code, e.g. .exit.text of a vmlinux): the fixtures' code is all loaded; the shipped kernels' tables are built by gen-dwarf.js in node
+dwarf.js	2292	b2f2aa3d	dwarfFileAddrs for a table that does not name the file: dwarfFileCode asks only the tables files.json or the import's line programs list for it
+dwarf.js	2304	ca224645	a row clipped to nothing at a shard boundary: needs a row ending exactly at a 64 KiB shard edge in a shipped kernel's file code; not in the checked files
+dwarf.js	2307-2308	1456ff26	tables without is_stmt bits (MKBD version 1 shards from an older gen-dwarf.js): every shipped shard is version 2
+dwarf.js	2347	f98a2dc1	rows of one line continuing across two tables (shards): a line whose code crosses a 64 KiB shard boundary in a file the tests ask for
+dwarf.js	2395	90159e94	a shard that is not MKBD 1 or 2: shards are written by gen-dwarf.js in CI; only a corrupt download
+dwarf.js	2413	b101b0d5	MKBD version 1 shard: every shipped shard is version 2
+dwarf.js	2438	a34ac93b	MKBD version 1 shard: every shipped shard is version 2
+dwarfworker.js	81	c8b20a61	a type unit (DW_UT_type/split_type, -fdebug-types-section with DWARF 5) in the lines request: no fixture has type units; their references (DW_FORM_ref_sig8) are not resolved by dwarf.js, so such an import is not supported beyond file:line
 fastforward.js	33	b3a1b191	a kernel without startup_32: every shipped kernel's symbols have it; only an imported symbol file lacking it reaches the _text fallback
 fastforward.js	83-84	7d40bae1	new WebAssembly.Module() refused for a JIT block: Chromium compiles modules of this size synchronously on the main thread; the fallback is for browsers with a smaller synchronous limit
 fastforward.js	96-98	ba5085bf	waiting for an asynchronously compiled block: only after the fallback at 83
@@ -168,11 +166,11 @@ genimport.js	60	d6863760	E1 track: the result of an import already replaced by a
 genimport.js	87	62f83410	E1 track: restoring kept files while an import's Worker still runs (race)
 genimport.js	148-149	6eb409f2	E1 track: indexing the picked C source failing in the Worker; no test tree makes it fail
 genimport.js	155	7c65e5eb	E1 track: an index result for a pick or import already replaced (race)
-genworker.js	84	53d4ff50	E1 track: a WASI tool (llvm-nm, llvm-objdump) exiting non-zero: only for a file they cannot read, which the import refuses earlier
-genworker.js	93	566a07df	E1 track: an import with more than 20,000 symbols and trim auto: only Debian-sized kernels, not imported in the coverage jobs
-genworker.js	111	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
-genworker.js	120-121	39d9b74e	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
-genworker.js	152	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
+genworker.js	86	53d4ff50	E1 track: a WASI tool (llvm-nm, llvm-objdump) exiting non-zero: only for a file they cannot read, which the import refuses earlier
+genworker.js	95	566a07df	E1 track: an import with more than 20,000 symbols and trim auto: only Debian-sized kernels, not imported in the coverage jobs
+genworker.js	113	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
+genworker.js	122-123	39d9b74e	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
+genworker.js	154	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
 graph.js	96	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
 graph.js	140	8cefeadf	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
 graph.js	356-358	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
@@ -187,25 +185,21 @@ graph.js	943	21e02933	timelineSummary's skip of frames that end before the entry
 graph.js	989	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
 graph.js	1128-1130	621631a0	drawTop without a stepper: as line 326
 graph.js	1393-1394	00098c34	"called from unknown" in the Calls info: a frame has no caller address only when the first instruction the stepper ever ran starts it; pages start at the reset vector (BIOS, no symbol) and Run to steps its last instructions, so no shipped flow records one (checked: 0 in a whole minified run, 0 after Run to hello_main and 40 steps)
-jumps.js	146	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
-jumps.js	576	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
-jumps.js	685-686	70f8592d	a path whose other end has no physical address: every recorded and static transfer of the shipped kernels lands in RAM
-jumps.js	703	fcf87860	the "no direct path" note in a list of paths into an instruction: not reached by the suites' lists (those with paths in have direct ones)
-jumps.js	838	3271ec5f	module.exports: runs only under Node (test_jumps.py), which jscov does not measure
-kgen.js	27	78a96d96	Node only: kgen.js loading dwarf.js and unwind.js under Node (gen-dwarf.js); the page loads them as scripts
-kgen.js	49	0a435f61	an ELF that is not 32-bit little-endian: the import refuses it before the generators run
-kgen.js	126	78821eac	an allocated section outside every PT_LOAD segment: not in the imported kernels
-kgen.js	137	aa70a5e5	llvm-nm lines without a size: llvm-nm -nS prints sizes for the imported kernels' symbols
-kgen.js	211-213	b0e4074e	llvm-objdump continuing a long encoding on its own line: only with raw bytes shown; the generators ask for --no-show-raw-insn in the page
-kgen.js	418	5fceaba1	a vmlinux without CFI: the imported test kernels have .debug_frame
-kgen.js	532-533	2306e7d5	the function table without instruction starts (objdump failed): see genworker.js 120
-kgen.js	552	c8b20a61	a type or partial unit: the imported kernels have only compile units
-kgen.js	627	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the callers check first
-kgen.js	636	c8b20a61	a type or partial unit (see 552)
-kgen.js	745-747	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
-kgen.js	767	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
-kgen.js	781	70630452	Node only: module.exports
-kit.js	599	6ebc1b22	Node only: module.exports (test_kit.mjs requires kit.js; the page loads it as a script)
+jumps.js	150	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
+jumps.js	583	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
+jumps.js	692-693	70f8592d	a path whose other end has no physical address: every recorded and static transfer of the shipped kernels lands in RAM
+jumps.js	710	fcf87860	the "no direct path" note in a list of paths into an instruction: not reached by the suites' lists (those with paths in have direct ones)
+kgen.js	47	0a435f61	an ELF that is not 32-bit little-endian: the import refuses it before the generators run
+kgen.js	124	78821eac	an allocated section outside every PT_LOAD segment: not in the imported kernels
+kgen.js	135	aa70a5e5	llvm-nm lines without a size: llvm-nm -nS prints sizes for the imported kernels' symbols
+kgen.js	209-211	b0e4074e	llvm-objdump continuing a long encoding on its own line: only with raw bytes shown; the generators ask for --no-show-raw-insn in the page
+kgen.js	416	5fceaba1	a vmlinux without CFI: the imported test kernels have .debug_frame
+kgen.js	530-531	2306e7d5	the function table without instruction starts (objdump failed): see genworker.js 120
+kgen.js	550	c8b20a61	a type or partial unit: the imported kernels have only compile units
+kgen.js	625	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the callers check first
+kgen.js	634	c8b20a61	a type or partial unit (see 552)
+kgen.js	743-745	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
+kgen.js	765	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
 livedis.js	31	14f00310	iced_x86.js without its Node tail: the pinned iced 1.21.0 (fetch-v86.sh, SHA-256) has it
 livedis.js	47-49	639da600	iced failing to load (fetch or instantiate error): the site ships it and no test blocks it
 livedis.js	76	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set
@@ -362,15 +356,14 @@ sw.js	163	d154bd52	sometimes: keepPage skips storing when the storage estimate i
 symimport.js	44	1ab3716f	parseElf reads only the ranges elfSlices fetched (header, program and section headers, .shstrtab, .symtab and its string table); an invariant check
 symimport.js	386	af4b876c	localStorage throwing while an import is forgotten: storage that throws there is tested elsewhere (the page keeps no data), this catch only logs nothing
 symimport.js	440	ae20bf27	localStorage throwing while the command line is remembered: same as above, the catch only drops the write
-unwind.js	96-97	1bb27ba3	a zero-length entry in .debug_frame: no assembler writes one, and llvm-dwarfdump reads it as a broken CIE, so there is nothing to compare with
-unwind.js	114	d7df902c	an FDE whose CIE pointer names no CIE: corrupt CFI; llvm-dwarfdump stops at it, nothing to compare with
-unwind.js	134	cfa47dfe	FDEs with different virtual-physical offsets: the page maps one offset for an import; only gen-dwarf.js (node) maps a kernel's PT_LOADs, and the kernels have one offset for code
-unwind.js	192	9b04b2a3	a CFI shard that is not MKBC 1: written by gen-dwarf.js in CI; only a corrupt download
-unwind.js	245	f78b1ae4	the stop callback while running a CIE's initial instructions with an advance in them: CIEs' initial instructions never advance the location
-unwind.js	279	4000e2b6	DW_CFA_set_loc in a table with mixed offsets: see line 134, not possible for an import or the shipped kernels
-unwind.js	351	23eef0ba	cfiFrameInfo's row callback past the FDE's end: the program stops at the FDE's end; only a DW_CFA_set_loc beyond it, which no assembler writes
-unwind.js	881	de0946db	a register rule of an unknown kind: cfiRow only makes the kinds the switch lists
-unwind.js	920	21dacb92	module.exports for node (gen-dwarf.js): never true in the browser, where coverage is measured
+unwind.js	99-100	1bb27ba3	a zero-length entry in .debug_frame: no assembler writes one, and llvm-dwarfdump reads it as a broken CIE, so there is nothing to compare with
+unwind.js	117	d7df902c	an FDE whose CIE pointer names no CIE: corrupt CFI; llvm-dwarfdump stops at it, nothing to compare with
+unwind.js	137	cfa47dfe	FDEs with different virtual-physical offsets: the page maps one offset for an import; only gen-dwarf.js (node) maps a kernel's PT_LOADs, and the kernels have one offset for code
+unwind.js	195	9b04b2a3	a CFI shard that is not MKBC 1: written by gen-dwarf.js in CI; only a corrupt download
+unwind.js	248	f78b1ae4	the stop callback while running a CIE's initial instructions with an advance in them: CIEs' initial instructions never advance the location
+unwind.js	282	4000e2b6	DW_CFA_set_loc in a table with mixed offsets: see line 134, not possible for an import or the shipped kernels
+unwind.js	354	23eef0ba	cfiFrameInfo's row callback past the FDE's end: the program stops at the FDE's end; only a DW_CFA_set_loc beyond it, which no assembler writes
+unwind.js	884	de0946db	a register rule of an unknown kind: cfiRow only makes the kinds the switch lists
 vars.js	53	7b17ac77	varsRead of a cell (a local's bytes) past its end: varsRow reads a cell only at its own start with the local's type size, the size the cell was made with, so no read runs past it
 vars.js	56	64c2336b	varsRead of a cell with a byte not known: a local made of pieces with a part the DWARF does not describe (dwLocation known[k] 0); no local of the shipped kernels at the frames the CI suites unwind has such a partial location (the dwarf_forms fixtures that have one need GCC builds CI does not run with coverage)
 vars.js	162	ba345793	deref of a pointer whose own 4 bytes are past the end of RAM: every variable lies in the kernel image, which v86 loads into RAM, and a member or index step that leaves RAM ends in a value "(not in RAM)" before any further ->
@@ -407,4 +400,3 @@ wasi.js	453	1bc1f6b3	E0c track (wasi.js, another agent's file): an error return 
 wasi.js	465	d74bcc73	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	513	51b191a5	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	543	4d723cd3	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
-wasi.js	602	de46c173	Node only: module.exports

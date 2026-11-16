@@ -19,7 +19,9 @@
 //                                      it, each unit decoded and dropped in turn) or { type: "lines", q, why }
 //   any failure                     -> { type: "error", i?, message }
 
-importScripts("dwarf.js" + self.location.search, "unwind.js" + self.location.search);
+import { dwarfElf, dwarfSections, DwarfReader, DwarfTypes, dwarfSectionOf, dwarfResolvePath, dwarfTable,
+	dwarfFileCode } from "./dwarf.js";
+import { cfiFromElf } from "./unwind.js";
 
 let dw = null, toPa = null, elf = null, readFile = null, typesAcc = null, fileUnits = null;
 

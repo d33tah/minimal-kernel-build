@@ -24,7 +24,9 @@
 //          missing, pastEnd, log }
 //   meanwhile { id, progress: text }; any failure -> { id, error }
 
-importScripts(...["wasi.js", "dwarf.js", "unwind.js", "kgen.js"].map((f) => f + self.location.search));
+import { dwarfElf, dwarfSections } from "./dwarf.js";
+import { MemFS, wasiRun } from "./wasi.js";
+import { kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc } from "./kgen.js";
 
 let clangModule = null;
 

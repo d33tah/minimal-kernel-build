@@ -736,7 +736,7 @@ function renderSnapPick() {
 
 function snapWorker(msg, transfer) {
 	if (!snapWorkerObj) {
-		snapWorkerObj = new Worker(withV("snapworker.js"));
+		snapWorkerObj = new Worker(withV("snapworker.js"), { type: "module" });
 		snapWorkerObj.onmessage = (ev) => {
 			const w = snapWaiting.get(ev.data.id);
 			if (!w)

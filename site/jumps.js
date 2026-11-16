@@ -14,6 +14,10 @@
 // count, like the executed-addresses bitmap; code v86's JIT runs records
 // nothing.
 
+import { asmTargetName } from "./asmnames.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./jumps.js";
+
 // Kinds, as stored by the stepper (a bit per kind in a path's mask).
 const JK = { jcc: 1, jmp: 2, call: 3, ret: 4, loop: 5, int: 6, iret: 7, sys: 8, ijmp: 9, icall: 10,
 	ljmp: 11, lcall: 12, lret: 13, exc: 14, irq: 15, ud2: 16 };
@@ -249,6 +253,9 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 let jumpsKernel = null; // [disasm, symbols, static paths of disasm.insns]
 let jumpHit = -1;       // the instruction a path list's "go there" opened
 let jumpHitScroll = false; // the Page listing's next drawing scrolls to it
+// Other modules set them through these (an imported binding is read-only).
+const setJumpHit = (pa) => { jumpHit = pa; };
+const setJumpHitScroll = (on) => { jumpHitScroll = on; };
 
 // Static paths of the build's disassembly (made once per kernel, ~20-40 ms
 // for the -O0 minified Linux's 48,000 instructions), or of another list
@@ -834,5 +841,8 @@ function initJumps() {
 	}
 }
 
-if (typeof module !== "undefined")
-	module.exports = { JK, JK_TEXT, JK_ARC, jumpOf, jumpsToPhys, jumpsStatic, jumpsStubArrays, jumpsIndex, jumpPaths, jumpKindsText };
+export { JK, JK_TEXT, JK_ARC, jumpOf, jumpsToPhys, jumpsStatic, jumpsStubArrays, jumpsIndex, jumpKindsText,
+	jumpPaths, jumpHit, jumpHitScroll, setJumpHit, setJumpHitScroll, jumpsFor, jumpsJitNote, jumpBadgesHtml,
+	jumpInlineMax, jumpInlineHtml, jumpStubAttrs, drawJumpArcs, jumpsDrawn, jumpPopClose, jumpGo, renderEipJumps,
+	initJumps };
+bridge(thisModule);

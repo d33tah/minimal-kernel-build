@@ -5,7 +5,10 @@ Cache busting: Pages serves with max-age=600, and a browser that keeps an
 older app.js next to a newer index.html breaks. Every script and stylesheet
 index.html loads gets ?v=<first 12 hex digits of the commit> (the page's
 own fetches add the same stamp, app.js withV), and sw.js gets the commit
-as its V, so a deploy installs a new service worker with new caches.
+as its V, so a deploy installs a new service worker with new caches. The
+page's scripts are ES modules: every `import ... from "./x.js"` of a
+script in SITE_DIR gets the same stamp, so a module is fetched (and run)
+once, under the URL index.html and the other modules name it by.
 
 Usage: site/stamp.py SITE_DIR COMMIT_SHA
 """
@@ -15,10 +18,15 @@ from pathlib import Path
 
 ASSET = re.compile(r'\b(href|src)="((?![a-z]+:|/|#)[^"?]+\.(?:js|css))(\?v=[^"]*)?"')
 SW_V = re.compile(r'^const V = "[^"]*";$', re.M)
+IMPORT = re.compile(r'''(\b(?:from|import)\s*)(["'])(\./[^"'?]+\.js)(\?v=[^"']*)?\2''')
 
 
 def stamp_html(html, v):
     return ASSET.sub(lambda m: f'{m[1]}="{m[2]}?v={v}"', html)
+
+
+def stamp_js(js, v):
+    return IMPORT.sub(lambda m: f"{m[1]}{m[2]}{m[3]}?v={v}{m[2]}", js)
 
 
 def stamp_sw(js, v):
@@ -37,6 +45,12 @@ def main():
     (site / "sw.js").write_text(stamp_sw((site / "sw.js").read_text(), v))
     for m in ASSET.finditer(html):
         print(m[0])
+    for p in sorted(site.glob("*.js")):
+        js = p.read_text()
+        out = stamp_js(js, v)
+        if out != js:
+            p.write_text(out)
+            print(f"{p.name}: {len(IMPORT.findall(out))} imports")
     print(f'sw.js: const V = "{v}";')
 
 

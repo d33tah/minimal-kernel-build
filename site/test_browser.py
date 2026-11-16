@@ -35,6 +35,7 @@ import os
 import pathlib
 import random
 import re
+import runpy
 import shutil
 import subprocess
 import socketserver
@@ -7258,15 +7259,10 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "jumps.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "v86/libv86.js")
-
-
 def stamp(html, v):
-    """What the workflow's sed does to index.html: asset?v=<commit>."""
-    for f in STAMPED:
-        # The workflow has stamped index.html already when this runs in CI.
-        html = re.sub(r'(href|src)="%s(\?v=[^"]*)?"' % re.escape(f), r'\1="%s?v=%s"' % (f, v), html)
-    return html
+    """What the workflow's site/stamp.py does to index.html: asset?v=<commit>
+    (an asset the workflow stamped already gets the new stamp)."""
+    return runpy.run_path(str(SITE / "stamp.py"))["stamp_html"](html, v)
 
 
 def stale_cache_case(browser, timeout):
@@ -7287,9 +7283,14 @@ def stale_cache_case(browser, timeout):
         html = (SITE / "index.html").read_text()
         app = (SITE / "app.js").read_text()
 
+        stamp_js = runpy.run_path(str(SITE / "stamp.py"))["stamp_js"]
+
         def deploy(v):
             (root / "index.html").write_text(stamp(html, v))
             (root / "app.js").write_text(app + f'\nwindow.deployMarker = "{v}";\n')
+            # The modules' imports get the stamp too (site/stamp.py).
+            for f in root.glob("*.js"):
+                f.write_text(stamp_js(f.read_text(), v))
 
         deploy("A")
         httpd = serve(root, CachingHandler)
@@ -19667,7 +19668,7 @@ def cfi_fixture(tmp, kind):
 # opens a vmlinux), its CFI table back, then unwind.js on it.
 CFI_TABLE_JS = """async ([b64, offset]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const w = new Worker('dwarfworker.js' + location.search);
+    const w = new Worker('dwarfworker.js' + location.search, { type: 'module' });
     const ask = (m) => new Promise((res) => { w.onmessage = (e) => res(e.data); w.postMessage(m); });
     const o = await ask({ type: 'open', file: new File([bytes], 'cfi.elf'), offset });
     const c = o.ok ? await ask({ type: 'cfi' }) : null;
@@ -19845,7 +19846,7 @@ def cfi_with_section(b, name, content=None, rename=None):
 
 CFI_ERR_JS = """async ([b64, offset]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const w = new Worker('dwarfworker.js' + location.search);
+    const w = new Worker('dwarfworker.js' + location.search, { type: 'module' });
     const ask = (m) => new Promise((res) => { w.onmessage = (e) => res(e.data); w.postMessage(m); });
     const o = await ask({ type: 'open', file: new File([bytes], 'cfi.elf'), offset });
     const c = o.ok ? await ask({ type: 'cfi' }) : null;
@@ -20041,7 +20042,7 @@ LTO_BASE, LTO_OFFSET = 0xc1000000, 0xc0000000
 
 LTO_OPEN_JS = """async ([b64, offset, pa]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const w = new Worker('dwarfworker.js' + location.search);
+    const w = new Worker('dwarfworker.js' + location.search, { type: 'module' });
     // The answer of type t (the types answer comes after progress messages).
     const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
         w.postMessage(m); });
@@ -20336,7 +20337,7 @@ DWF_VARS = ("shared", "gflags", "gword", "gcolor", "cv", "gop", "vfp", "gdbl", "
 
 DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const w = new Worker('dwarfworker.js' + location.search);
+    const w = new Worker('dwarfworker.js' + location.search, { type: 'module' });
     const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
         w.postMessage(m); });
     const o = await ask({ type: 'open', file: new File([bytes], 'fixture.elf'), offset }, 'open');
@@ -20503,7 +20504,7 @@ def dwf_gdb(elf):
 # the types, each unit's locals), as the import shows them.
 DWF_BAD_JS = """async ([b64, offset]) => {
     const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const w = new Worker('dwarfworker.js' + location.search);
+    const w = new Worker('dwarfworker.js' + location.search, { type: 'module' });
     const ask = (m, t) => new Promise((res) => { w.onmessage = (e) => { if (e.data.type === t || e.data.type === 'error') res(e.data); };
         w.postMessage(m); });
     try {

@@ -598,5 +598,4 @@ function wasiRun(module, fs, opts) {
 	return { code, stdout: join(0), stderr: join(1), mem: mem.buffer.byteLength, instantiateMs };
 }
 
-if (typeof module !== "undefined")
-	module.exports = { MemFS, wasiRun, WASI_ERRNO };
+export { WASI_ERRNO, MemFS, wasiRun };

@@ -154,3 +154,5 @@ function lz4FrameUnpack(src, size) {
 		throw new Error("LZ4 frame holds " + o + " bytes, " + size + " expected");
 	return out.buffer;
 }
+
+export { lz4Init, lz4FramePack, lz4FrameUnpack };

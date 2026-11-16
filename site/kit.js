@@ -33,6 +33,10 @@
 //
 // Loaded by index.html (the page) and by test_kit.mjs (Node, require).
 
+import { realNow } from "./clock.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./kit.js";
+
 const KIT_FORMAT = 1;
 
 // Real time: on the page, performance.now() is clock.js's virtual clock.
@@ -595,5 +599,6 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	return res;
 }
 
-if (typeof module !== "undefined")
-	module.exports = { KIT_FORMAT, kitHash, kitSource, kitSed, kitSedArgs, kitUsers, kitBuild, kitLatin1, kitBytes };
+export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitUsers,
+	kitBuild };
+bridge(thisModule);

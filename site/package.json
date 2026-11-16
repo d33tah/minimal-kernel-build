@@ -1,0 +1,7 @@
+{
+  "name": "mkb-site",
+  "private": true,
+  "description": "The page's scripts are ES modules; Node runs the shared ones (dwarf.js, kgen.js, wasi.js, kit.js, jumps.js...) and gen-dwarf.js, gen-src.js as modules too",
+  "license": "GPL-2.0-only",
+  "type": "module"
+}

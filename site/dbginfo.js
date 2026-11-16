@@ -130,7 +130,7 @@ async function dbgImport(file, offset, key) {
 	if (key)
 		await dbgForget(key); // a new file for this bzImage: the old one's units go
 	const mine = DBG;
-	const w = new Worker(withV("dwarfworker.js"));
+	const w = new Worker(withV("dwarfworker.js"), { type: "module" });
 	DBG.worker = w;
 	w.onmessage = (ev) => {
 		if (mine !== DBG)
@@ -263,7 +263,7 @@ async function dbgRestore(key) {
 // unit does not hold up the file:line lookups of the first.
 function dbgTypesWorker() {
 	const mine = DBG, key = DBG.key;
-	const w = new Worker(withV("dwarfworker.js"));
+	const w = new Worker(withV("dwarfworker.js"), { type: "module" });
 	DBG.typesWorker = w;
 	// It stays for the parameters and locals of a unit (dbgLocals): it
 	// holds the type table their type ids refer to.

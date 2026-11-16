@@ -34,7 +34,7 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
+import * as wasiLib from './wasi.js';
 // Node 20 and 22 call WASI experimental; the warning says nothing here.
 process.removeAllListeners('warning');
 const { WASI } = await import('node:wasi');
@@ -129,7 +129,7 @@ function runWasm(wasmPath, dir, argv) {
 // inputs (the object and its dependency file are not read from DIR).
 let ownModule = null;
 function runOwn(wasmPath, dir, argv, inputs, skip) {
-  const { MemFS, wasiRun } = createRequire(import.meta.url)('./wasi.js');
+  const { MemFS, wasiRun } = wasiLib;
   ownModule ??= new WebAssembly.Module(fs.readFileSync(wasmPath));
   const abs = fs.realpathSync(dir);
   const mfs = new MemFS();

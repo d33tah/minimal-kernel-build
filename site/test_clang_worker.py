@@ -229,8 +229,8 @@ AUTO_HTML = """<!doctype html>
 <meta charset="utf-8">
 <title>clang.wasm without automation</title>
 <script>const withV = (u) => u;</script>
-<script src="clang.js"></script>
-<script>
+<script type="module" src="clang.js"></script>
+<script type="module">
 (async () => {
   let res;
   try { res = await (%s)(%s); } catch (e) { res = { error: String(e), jobs: [] }; }

@@ -995,7 +995,7 @@ function renderPage(p, bytes, base, how, curAt) {
 	else if (back && back.addr === undefined)
 		box.scrollTop = back.top;
 	else if (hit) {
-		jumpHitScroll = false;
+		setJumpHitScroll(false);
 		scrollListingTo(hit);
 	} else if (r.curLine >= 0) {
 		const line = box.querySelector(".cur");
@@ -1484,8 +1484,8 @@ function navJump(jump) {
 function navRestore(v) {
 	jumpPopClose(false);
 	pageSnapView = v.snap || null;
-	jumpHit = v.hit;
-	jumpHitScroll = false;
+	setJumpHit(v.hit);
+	setJumpHitScroll(false);
 	if (v.page !== selectedPage) {
 		selectedPage = v.page;
 		drawGrid();
@@ -2482,8 +2482,8 @@ function openFunction(pa, name, outline = false) {
 	openFnWant = null;
 	navJump(() => {
 		if (outline) {
-			jumpHit = pa;
-			jumpHitScroll = true;
+			setJumpHit(pa);
+			setJumpHitScroll(true);
 		}
 		jumpTo(pa);
 		if (openFnSource(pa, name) === "loading")

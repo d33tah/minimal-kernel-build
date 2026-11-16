@@ -14,11 +14,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const { MemFS, wasiRun } = require('./wasi.js');
-const kit = require('./kit.js');
+import { MemFS, wasiRun } from './wasi.js';
+import * as kit from './kit.js';
 
 const enc = new TextEncoder(), dec = new TextDecoder();
 let failures = 0;

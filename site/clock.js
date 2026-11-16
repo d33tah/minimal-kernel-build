@@ -16,6 +16,9 @@
 // "real" clock v86's own loop runs on real time.
 // The page's own timing uses realNow().
 
+import { bridge } from "./bridge.js";
+import * as thisModule from "./clock.js";
+
 const realNow = performance.now.bind(performance);
 
 const CLOCK = {
@@ -200,3 +203,6 @@ crypto.getRandomValues = function (a) {
 	}
 	return realGetRandomValues(a);
 };
+
+export { realNow, CLOCK, RealDate, GUEST };
+bridge(thisModule);

@@ -16,10 +16,10 @@
 // whose call line names the inlined function (a version mismatch makes
 // that rare; macros and multi-line calls keep it below 100%).
 
-const fs = require("fs");
-const path = require("path");
-const zlib = require("zlib");
-const { kgenSrc } = require("./kgen.js");
+import fs from "fs";
+import path from "path";
+import zlib from "zlib";
+import { kgenSrc } from "./kgen.js";
 
 function usage() {
 	console.error("usage: gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...]");

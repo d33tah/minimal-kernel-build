@@ -50,7 +50,7 @@
 // RAM with those pages on top; restored, diffed or downloaded, a delta is
 // rebuilt into a full state (v86's [77] and [78] again), which v86 reads.
 
-importScripts("lz4frame.js" + self.location.search);
+import { lz4Init, lz4FramePack, lz4FrameUnpack } from "./lz4frame.js";
 const lz4Ready = () => lz4Init("lz4/lz4_wasm_bg.wasm" + self.location.search);
 
 const PAGE = 4096;

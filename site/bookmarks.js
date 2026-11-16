@@ -392,8 +392,8 @@ function bmGo(b) {
 	case "code":
 	case "pos":
 		navJump(() => {
-			jumpHit = t.pa;
-			jumpHitScroll = true;
+			setJumpHit(t.pa);
+			setJumpHitScroll(true);
 			jumpTo(t.pa);
 		});
 		break;

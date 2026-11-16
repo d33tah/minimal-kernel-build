@@ -63,16 +63,17 @@
 // Reads only the .debug_* sections it needs, a unit at a time (a distro
 // vmlinux is ~300 MB).
 
-const fs = require("fs");
-const zlib = require("zlib");
-const path = require("path");
-const { spawn } = require("child_process");
-const { dwFuncShard, dwFuncProto, dwarfElf, dwarfFrames, dwarfFileCode, dwarfDecode,
-	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
+import fs from "fs";
+import zlib from "zlib";
+import path from "path";
+import { spawn } from "child_process";
+import { dwFuncShard, dwFuncProto, dwarfElf, dwarfFrames, dwarfFileCode, dwarfDecode,
+	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } from "./dwarf.js";
 
-const { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
+import { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, CFI_REGS, dwOpEnd } from "./unwind.js";
 
-const { kgenDwarf, KgInsnStarts } = require("./kgen.js");
+import { kgenDwarf, KgInsnStarts } from "./kgen.js";
+import { asmOperandNames, asmSymLookup } from "./asmnames.js";
 
 // The generation itself is kgen.js kgenDwarf (the page's Worker runs it
 // on an imported vmlinux): here the ELF is read from disk, the files are
@@ -230,7 +231,6 @@ function cfiLookup(dir) {
 // (anything else); for test_dwarf.py --locals (gdb's `info scope`).
 function localsLookup(dir) {
 	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
-	const { CFI_REGS, dwOpEnd } = require("./unwind.js");
 	const pieces = (e) => {
 		for (let p = 0; p >= 0 && p < e.length; p = dwOpEnd(e, p))
 			if (e[p] === 0x93 || e[p] === 0x9d)
@@ -292,7 +292,6 @@ function varsLookup(dir) {
 // One JSON line per instruction: the names of its memory operands, from
 // the shards (types.json, cfi-*, locals-*) and ../symbols.json if there.
 function operandsLookup(dir) {
-	const { asmOperandNames, asmSymLookup } = require("./asmnames.js");
 	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
 	const T = index.types ? JSON.parse(fs.readFileSync(path.join(dir, index.types), "utf8")) : null;
 	const symFile = path.join(dir, "..", "symbols.json");

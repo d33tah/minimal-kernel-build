@@ -130,7 +130,7 @@ def objdump(elf):
 def page_paths(disasm, symbols):
     """jumps.js jumpsStatic over disasm.json, as node runs it."""
     js = """
-const J = require(process.argv[1]); const fs = require("fs");
+const J = await import(process.argv[1]); const fs = await import("fs");
 const d = JSON.parse(fs.readFileSync(process.argv[2])), s = JSON.parse(fs.readFileSync(process.argv[3]));
 const S = J.jumpsStatic(d.insns, J.jumpsToPhys(s.sections));
 const inc = {}; for (const [pa, l] of S.inc) inc[pa] = l.map((i) => d.insns[i][0]);
@@ -139,7 +139,7 @@ const none = d.insns.map((x) => x[0]).filter((pa) => J.jumpPaths(Sx, null, pa).n
 process.stdout.write(JSON.stringify({ pa: d.insns.map((x) => x[0]), kind: [...S.kind], fall: [...S.fall],
   target: [...S.target], inc, none }));
 """
-    r = subprocess.run(["node", "-e", js, str(SITE / "jumps.js"), disasm, symbols],
+    r = subprocess.run(["node", "--input-type=module", "-e", js, str(SITE / "jumps.js"), disasm, symbols],
                        capture_output=True, text=True, check=True)
     return json.loads(r.stdout)
 

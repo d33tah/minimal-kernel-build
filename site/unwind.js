@@ -18,6 +18,9 @@
 // i386 DWARF register numbers: 0 EAX, 1 ECX, 2 EDX, 3 EBX, 4 ESP, 5 EBP,
 // 6 ESI, 7 EDI, 8 EIP (the return address column of GCC's and clang's CIEs).
 
+import { bridge } from "./bridge.js";
+import * as thisModule from "./unwind.js";
+
 const CFI_REGS = ["EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI", "EIP"];
 const CFI_ESP = 4, CFI_EBP = 5, CFI_EIP = 8;
 
@@ -916,5 +919,6 @@ function cfiRowText(row) {
 	return "CFA=" + cfa + (regs.length ? ": " + regs.join(", ") : "");
 }
 
-if (typeof module !== "undefined")
-	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiPack, cfiFind, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, cfiFrameText, cfiStep, dwExpr, dwExprText, unwind };
+export { CFI_REGS, cfiParse, cfiFromElf, cfiPack, cfiFind, cfiDecode, cfiRow, cfiFrameInfo, cfiFrameText,
+	dwOpEnd, dwExprText, dwExpr, dwLocation, dwSetFrameBase, unwind, cfiStep, cfiRowText };
+bridge(thisModule);

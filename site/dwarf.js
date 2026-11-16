@@ -15,6 +15,10 @@
 // and rnglists bases). Relocation sections (.rel.debug_*) are ignored: a
 // vmlinux is ET_EXEC, its DWARF values are final.
 
+import { dwOpEnd } from "./unwind.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./dwarf.js";
+
 const DW_TAG_SUBPROGRAM = 0x2e, DW_TAG_INLINED = 0x1d;
 // Tags whose children can hold code (subprograms, inlined calls). The
 // children of every other tag are skipped through DW_AT_sibling.
@@ -1046,7 +1050,7 @@ class DwarfReader {
 	// DW_OP_GNU_addr_index (an index into .debug_addr, clang) become
 	// DW_OP_addr with the address.
 	ownExpr(c, e) {
-		const opEnd = typeof dwOpEnd === "function" ? dwOpEnd : require("./unwind.js").dwOpEnd;
+		const opEnd = dwOpEnd;
 		if (!e.includes(0xa1) && !e.includes(0xfb))
 			return e;
 		const out = [];
@@ -2435,5 +2439,9 @@ function dwarfDecode(b) {
 	return t;
 }
 
-if (typeof module !== "undefined")
-	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfPack, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfDecode, dwDisplayPath };
+export { dwDisplayPath, DwarfReader, DWT, DwarfTypes, DwarfFuncs, dwFuncShard, dwFuncBase, dwarfScopeGroups,
+	dwarfScopesAt, dwLocAt, dwarfLocalFrames, dwStrip, dwTypeSize, dwTypeName, dwFuncProto, dwVarIndex,
+	dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, dwWhere, dwPathIn, dwarfElf, dwarfSectionOf, dwarfSections,
+	dwarfTable, dwarfPack, dwarfRow, dwarfFrames, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath,
+	dwarfFunction, dwarfDecode };
+bridge(thisModule);

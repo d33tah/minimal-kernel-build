@@ -11,8 +11,8 @@ import path from "node:path";
 import vm from "node:vm";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
-const ctx = vm.createContext({});
-vm.runInContext(fs.readFileSync(path.join(here, "jumps.js"), "utf8") + "\n" +
+const ctx = vm.createContext({ ...await import("./jumps.js") });
+vm.runInContext(
 	fs.readFileSync(path.join(here, "stepper.js"), "utf8") +
 	"\nthis.T = { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath };", ctx);
 const { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath } = ctx.T;

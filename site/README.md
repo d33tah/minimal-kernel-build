@@ -2915,6 +2915,23 @@ uncovered line ranges, `uncoveredLines`):
     node site/jscov/report.js --src site --out /tmp/jscov-report /tmp/jscov
     python3 site/test_jscov.py   # self-test on a fixture page
 
+Which lines ran is decided from the raw ranges themselves
+(`site/jscov/lines.js`): a line ran when a word of code on it (not a
+comment, not punctuation) has a count above 0 under V8's rule (the
+innermost range holding it gives its count); in the bundle a word counts
+for the source line of the map segment that starts at it. A line with no
+such word in any copy (a lone `}`) keeps MCR's verdict. MCR alone called a
+line "partly run" whenever no single unrun range covered all of it, also
+when nothing on it ran (`case 0x12: st.push(x); break; // dup`: the
+comment is outside the range; `case 1: case 2: return 3;`: one range per
+label), and merging a file's mapped copy (the bundle) with a plain copy (a
+Worker's) it lost the lines the Worker ran in a function the page never
+called. Both showed with the bundle (R3: 12 rows made "sometimes:", run in
+no CI run before or after, and unwind.js lines that ran only in the dwarf
+Worker); a Worker's copy of a file the bundle holds now goes in through a
+source map onto itself, and `site/jscov/test_lines.js` (in the jscov job)
+checks both with V8 coverage of a real esbuild bundle.
+
 A function V8 reports without its blocks (it ran, but which branches is
 not known) counts as run and its lines do not. The collector's close line
 counts those per target type, and `raw-*.trace.txt` beside each raw file

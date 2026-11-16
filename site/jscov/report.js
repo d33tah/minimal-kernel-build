@@ -30,6 +30,7 @@ const { pathToFileURL } = require("url");
 const { CoverageReport } = require("monocart-coverage-reports");
 const { mergeV8Coverage } = require("monocart-coverage-reports/util");
 const L = require("./listed.js");
+const { directLines, bundleLines, verdict } = require("./lines.js");
 
 const METRICS = ["lines", "functions", "branches"];
 
@@ -54,6 +55,43 @@ function args(argv) {
 // The page's bundle (site/build.mjs): its coverage is reported on the files
 // its source map names, not on the bundle.
 const BUNDLE = "app.bundle.js";
+
+// Where the unbundled copy of a file the bundle holds too goes in (a URL
+// only; nothing is written there).
+const UNBUNDLED = "unbundled";
+
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+// One field of a source map segment (base64 VLQ).
+function vlq(n) {
+	let v = n < 0 ? (-n << 1) | 1 : n << 1, s = "";
+	do {
+		let d = v & 31;
+		v >>>= 5;
+		if (v)
+			d |= 32;
+		s += B64[d];
+	} while (v);
+	return s;
+}
+
+// A source map of a file onto itself: a segment at every word and every
+// other non-blank character, each to the same line and column.
+function identityMap(name, source, sourceRoot) {
+	let prevLine = 0, prevCol = 0;
+	const mappings = source.split("\n").map((text, ln) => {
+		const segs = [];
+		let gen = 0;
+		for (const m of text.matchAll(/\w+|[^\s\w]/g)) {
+			segs.push(vlq(m.index - gen) + "A" + vlq(ln - prevLine) + vlq(m.index - prevCol));
+			gen = m.index;
+			prevLine = ln;
+			prevCol = m.index;
+		}
+		return segs.join(",");
+	}).join(";");
+	return { version: 3, sourceRoot, sources: [name], sourcesContent: [source], names: [], mappings };
+}
 
 // The page's scripts: every top-level *.js of the site but node tools (#!)
 // and the bundle, and the React components (*.jsx).
@@ -199,12 +237,27 @@ async function main() {
 	for (const [a, b] of generated)
 		bundle.source = bundle.source.slice(0, a) + bundle.source.slice(a, b).replace(/[^\n]/g, " ") + bundle.source.slice(b);
 
+	// A file that ran unbundled too (a Worker's: dwarf.js, unwind.js) goes
+	// in through a source map onto itself, under another URL: MCR merges two
+	// copies of a file well only when both come from a map (a line one copy
+	// ran inside a function the other never called stays covered); a plain
+	// copy merged with a mapped one loses its counts there.
+	const inBundle = new Set(bundle ? bundle.map.sources : []);
 	const entries = [];
+	// Which lines ran, by the ranges themselves (lines.js), per file.
+	const ranLines = {};
 	for (const [n, list] of Object.entries(byFile)) {
 		const merged = list.length > 1 ? await mergeV8Coverage(list) : list[0];
+		if (n === BUNDLE)
+			bundleLines(ranLines, bundle.source, bundle.map, merged.functions.filter(own), (f) => names.includes(f));
+		else
+			directLines(ranLines, n, sources[n], merged.functions);
 		const e = { scriptId: String(entries.length + 1), url: "file://" + path.join(src, n), functions: merged.functions };
 		if (n === BUNDLE)
 			Object.assign(e, { source: bundle.source, sourceMap: bundle.map, functions: merged.functions.filter(own) });
+		else if (inBundle.has(n))
+			Object.assign(e, { url: "file://" + path.join(src, UNBUNDLED, n), source: sources[n],
+				sourceMap: identityMap(n, sources[n], bundle.map.sourceRoot) });
 		else
 			e.source = sources[n];
 		entries.push(e);
@@ -217,7 +270,8 @@ async function main() {
 		baseDir: src,
 		logging: "error",
 		reports: [["v8"], ["console-summary"]],
-		entryFilter: (e) => [...names, BUNDLE].includes(path.basename(e.url)) && path.dirname(e.url.replace(/^file:\/\//, "")) === src,
+		entryFilter: (e) => [...names, BUNDLE].includes(path.basename(e.url)) &&
+			[src, path.join(src, UNBUNDLED)].includes(path.dirname(e.url.replace(/^file:\/\//, ""))),
 		// The bundle's own files (its map's sources are relative to the site),
 		// not React's from node_modules.
 		sourceFilter: (p) => names.includes(path.basename(p)) && !p.includes("node_modules"),
@@ -244,8 +298,14 @@ async function main() {
 		const source = sources[name] || "";
 		s.uncoveredFunctions = (f.data && f.data.functions || []).filter((r) => !r.count && !r.ignored)
 			.map((r) => ({ name: r.name || "(anonymous)", line: lineOf(source, r.start) }));
-		// Line numbers of the code lines that never ran, as "a-b" ranges.
-		s.uncoveredLines = ranges(Object.entries(f.data && f.data.lines || {}).filter(([, c]) => !c).map(([l]) => +l));
+		// Line numbers of the code lines that never ran, as "a-b" ranges:
+		// lines.js's verdict where it has one, else MCR's.
+		const seen = ranLines[name] || new Map();
+		const ranLine = (l, c) => {
+			const v = verdict(seen.get(l), inBundle.has(name));
+			return v === null ? !!c : v;
+		};
+		s.uncoveredLines = ranges(Object.entries(f.data && f.data.lines || {}).filter(([l, c]) => !ranLine(+l, c)).map(([l]) => +l));
 		codeLines[name] = new Set(Object.keys(f.data && f.data.lines || {}).map(Number));
 		s.sourceLines = source.split("\n").length - (source.endsWith("\n") ? 1 : 0);
 		summary.files[name] = s;

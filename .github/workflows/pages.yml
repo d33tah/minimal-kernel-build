@@ -1199,6 +1199,13 @@ jobs:
     - name: Self-test (an unexecuted function shows as uncovered)
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_jscov.py'
 
+    # Which lines count as run, with V8 coverage of an esbuild bundle and an
+    # unbundled copy of one of its files (site/jscov/lines.js).
+    - name: Self-test of the line verdicts
+      run: |
+        npm ci --prefix site --no-audit --no-fund
+        node site/jscov/test_lines.js
+
     # The tests ran the deployed files: the bundle (built as the site job
     # builds it: the same bytes, build.mjs --check there), sw.js and
     # index.html stamped with the commit, so the same stamp here; the

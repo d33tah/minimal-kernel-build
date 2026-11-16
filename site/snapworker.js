@@ -308,9 +308,9 @@ async function side(s, now) {
 	if (s.key === "now") {
 		if (s.raw)
 			return parseState(s.raw);
-		if (now)
-			return now;
-		throw new Error("no copy of the machine's RAM: diff again");
+		if (!now)
+			throw new Error("no copy of the machine's RAM: diff again");
+		return now;
 	}
 	if (s.chain && s.chain.length) {
 		// A delta: its RAM from the chain, its CPU and page list from itself.

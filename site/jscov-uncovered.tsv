@@ -95,7 +95,7 @@ dbginfo.js	466	2c0239a6	a types table without function facts: written by an olde
 dbginfo.js	754	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
 dbginfo.js	758	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
 dbginfo.js	796	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
-debug.js	64	3d21beb3	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
+debug.js	65	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarf.js	65	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
 dwarf.js	254	235f75e8	a string attribute in a form no compiler writes for names (strx forms are handled above): only corrupt DWARF
 dwarf.js	263	7a53f6e1	addrx/DW_OP_addrx without .debug_addr: clang always writes .debug_addr with them; only a corrupt or stripped file lacks it

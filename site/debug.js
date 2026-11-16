@@ -60,8 +60,9 @@ function exposeMKB(app) {
 	const mkb = {};
 	for (const ns of [app, ...MODULES])
 		for (const k of Object.keys(ns)) {
+			// A name two modules export: the first one's (none since R2).
 			if (k in mkb)
-				continue; // a name two modules export: the first one's (none since R2)
+				continue;
 			const set = ns["set" + k[0].toUpperCase() + k.slice(1)];
 			Object.defineProperty(mkb, k, {
 				enumerable: true,

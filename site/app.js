@@ -1483,7 +1483,7 @@ function navJump(jump) {
 
 function navRestore(v) {
 	jumpPopClose(false);
-	pageSnapView = v.snap || null;
+	setPageSnapView(v.snap || null);
 	setJumpHit(v.hit);
 	setJumpHitScroll(false);
 	if (v.page !== selectedPage) {
@@ -1501,12 +1501,12 @@ function navRestore(v) {
 	srcSwClose(false);
 	if (v.src) {
 		// Its scroll once the file is drawn (now, or when the file or DWARF arrives).
-		srcPanel = { ...v.src, scrollPx: v.srcTop };
+		setSrcPanel({ ...v.src, scrollPx: v.srcTop });
 		$("src_panel").hidden = false;
 		renderSourcePanel();
 	} else if (!$("src_panel").hidden) {
 		$("src_panel").hidden = true;
-		srcPanel = null;
+		setSrcPanel(null);
 	}
 	writeHash(); // showTab wrote it before the panel was restored
 	window.scrollTo(window.scrollX, v.y);
@@ -1703,7 +1703,7 @@ async function boot() {
 	stepper = null;
 	emuReady = false;
 	runState = "off";
-	ffActive = false;
+	setFfActive(false);
 	if (emulator) {
 		const old = emulator;
 		emulator = null;
@@ -1718,8 +1718,8 @@ async function boot() {
 	$("footprint").textContent = "";
 	scanCopy = usedPages = changedPages = null;
 	// A snapshot's page or diff belongs to the machine it was read from.
-	pageSnapView = null;
-	snapDiff = null;
+	setPageSnapView(null);
+	setSnapDiff(null);
 	renderSnapDiff();
 	emuRam = ram();
 	$("screen_text").textContent = "";
@@ -2163,7 +2163,7 @@ async function pause(note) {
 	if (!emulator || !emuReady)
 		return;
 	if (ffActive)
-		ffAbort = true;
+		setFfAbort(true);
 	jitRunId++;
 	stopDriver();
 	if (emulator.is_running())
@@ -3639,7 +3639,7 @@ async function doRunTo() {
 	const inText = (a) => !!(symbols && symbols.sections.some((s) => s.class === "text" && a >= s.paddr && a < s.paddr + s.size));
 	const sameSec = t && targets.every((a) => codeRange(t.phys)[0] <= a && a < codeRange(t.phys)[1]);
 	if (t && (sameSec || targets.every((a) => inText(a) && a >= V86_KERNEL_ADDR))) {
-		ffInfo = null;
+		setFfInfo(null);
 		inputTaint(stepper, "a Run to with the JIT and breakpoints");
 		$("dbg_status").textContent = "Running to " + label + " with the JIT...";
 		let ok = true;
@@ -4101,7 +4101,7 @@ async function init() {
 	document.addEventListener("resume", onVisibility);
 	loadVersion();
 	if (params.has("cmdline"))
-		cmdlineFromUrl = params.get("cmdline");
+		setCmdlineFromUrl(params.get("cmdline"));
 	let storedCount = null;
 	try {
 		storedCount = localStorage.getItem(COUNT_KEY);

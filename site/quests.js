@@ -18,6 +18,11 @@
 // APIC and the CPU's accesses to it. A quest the kernel cannot give says
 // so once the run has ended ("try Debian"); before that it waits.
 
+import { PCI_CLASSES, MEV, MEV_CPU, MEV_M_WRITE, pciBdf, pciClassName } from "./memevents.js";
+import { MMAP } from "./memmap.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./quests.js";
+
 const QS_KEY = "mkb-quests";           // { kernel name: { quest id: time solved } }
 const QS_OPEN_KEY = "mkb-quests-open";
 const QS_TICK_MS = 500;
@@ -751,3 +756,6 @@ const QUESTS = {
 		$("qs_note").textContent = this.stored ? "" : "This browser does not let the page store anything: what you solve is kept until the page is closed.";
 	},
 };
+
+export { QUESTS };
+bridge(thisModule);

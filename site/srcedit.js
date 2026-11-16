@@ -20,6 +20,11 @@
 // paths() the changed files of the shown kernel, read(path) a file's text
 // with the overlay applied, original(path) the text it was built from.
 
+import { dbgOnChange } from "./dbginfo.js";
+import { srcKernelKey, srcFile, SRC, srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./srcedit.js";
+
 const ED_DB = "mkb-srcedit";
 const ED_STORE = "edits";
 const ED_SAVE_MS = 300;          // typing pause before the overlay is written
@@ -856,3 +861,7 @@ function initSrcEdit() {
 		}
 	});
 }
+
+export { ED_DIFF_MAX, ED, edFilePatch, edParse, edApplyHunks, edPanelShown, edState, edFlush, srcOverlay,
+	initSrcEdit };
+bridge(thisModule);

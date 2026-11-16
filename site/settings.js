@@ -11,6 +11,12 @@
 //
 // Loaded before app.js; its functions run after app.js has set up.
 
+import { dbgIdbOp, dbgForget } from "./dbginfo.js";
+import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
+import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./settings.js";
+
 const SET_PREFIX = "mkb-";
 const SET_IDB_ROW = "idb:" + "mkb-dwarf";
 
@@ -97,7 +103,7 @@ async function setForget(k) {
 		$("cmdline").value = defaultCmdline(); // for the next Boot
 	}
 	if (k.startsWith(WATCH_KEY) && k === WATCH_KEY + watchKernel) {
-		watchKernel = undefined; // reload the (now empty) list
+		setWatchKernel(undefined); // reload the (now empty) list
 		watchLoad();
 		if (typeof renderWatches === "function")
 			renderWatches();
@@ -203,3 +209,6 @@ function initSettings() {
 	setMirror("set_count", "count", "checked");
 	$("settings_reset").addEventListener("click", resetSettings);
 }
+
+export { renderSettings, initSettings };
+bridge(thisModule);

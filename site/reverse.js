@@ -47,6 +47,13 @@
 // Continue at JIT speed from inside a stretch, a Run to) drops what was
 // ahead (Stepper.branch).
 
+import { CLOCK, realNow, GUEST } from "./clock.js";
+import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
+import { v86ResetHidden, v86Restore } from "./cpustate.js";
+import { INPUT, inputReset, replayActive, inputRewind, inputRedo, inputRoom, replayStop } from "./replay.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./reverse.js";
+
 const REV_MAX = 32;        // checkpoints kept
 const REV_GROUP = 8;       // a full one, then deltas; the oldest group goes first
 const REV_TARGET_MS = 500; // stepping between two checkpoints
@@ -686,3 +693,8 @@ function initReverse() {
 	});
 	revRender();
 }
+
+export { REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, REV, revReset, revRate, revTick, revRoom, revMark,
+	revStepRoom, revJitTick, revJit, revFind, revBlob, revStepBack, revStepTo, revNeedsJit, revBranch, revRender,
+	initReverse };
+bridge(thisModule);

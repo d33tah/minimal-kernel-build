@@ -16,6 +16,11 @@
 // (jit_run_interpreted in src/rust/cpu/cpu.rs) does:
 //   previous_ip = eip; op = read_imm8(); run(op | is_32 << 8); counter++.
 
+import { realNow, CLOCK } from "./clock.js";
+import { JK } from "./jumps.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./stepper.js";
+
 const STEP_EXPORTS = {
 	mkb_read_imm8: /3cpu3cpu9read_imm8$/,
 	mkb_run: /3gen11interpreter3run$/,
@@ -93,6 +98,8 @@ function patchV86Wasm(buffer) {
 	out.set(b.subarray(ex.end), ex.start + head.length + body.length);
 	return { bytes: out, found };
 }
+// For the tests: a failing one in its place.
+const setPatchV86Wasm = (f) => { patchV86Wasm = f; };
 
 const VGA_TEXT = 0xb8000;
 const VGA_TEXT_BYTES = 80 * 25 * 2;
@@ -1552,3 +1559,8 @@ class Stepper {
 		}
 	}
 }
+
+export { patchV86Wasm, setPatchV86Wasm, VGA_WINDOW_BYTES, TEXT_PANIC, TEXT_END, TEXT_PROMPT, EAX, EBX, ESP,
+	FR_BITS, FR_SIZE, FR_MASK, FR_BIG, FR_BIG16, FR_IRQ, FR_CONT, FR_BYTES, Frames, frStartAt, frEndAt,
+	frSmallAt, FramePath, Stepper };
+bridge(thisModule);

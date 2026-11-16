@@ -8,6 +8,10 @@
 // and instantiates the wasm asynchronously. Loaded only when a listing
 // needs it.
 
+import { asmSymLookup, asmBranchTarget, asmTargetName } from "./asmnames.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./livedis.js";
+
 // The "live decode" toggle (Page tab): decode guest memory even where
 // disasm.json has the build's instructions.
 const liveDecode = () => { const el = document.getElementById("live_decode"); return !!(el && el.checked); };
@@ -161,3 +165,7 @@ function liveInsnsForPage(p) {
 	}
 	return { insns, misaligned, bits };
 }
+
+export { liveDecode, iced, icedError, loadIced, kernelSymLookup, decodeLive, virtOffset, bitnessAt,
+	liveInsnsForPage };
+bridge(thisModule);

@@ -15,6 +15,17 @@
 // from. Nothing is kept across a reload: the kernel list loads the shipped
 // one.
 
+import { download } from "./graph.js";
+import { dbgFresh, dbgImport, dbgOnChange } from "./dbginfo.js";
+import { srcFresh, SRC, srcChanged, srcPanel, closeSource } from "./source.js";
+import { srcOverlay, edFlush, ED, edState } from "./srcedit.js";
+import { parseSymbolFile, applySymbols } from "./symimport.js";
+import { ClangWorker } from "./clang.js";
+import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
+import { genImport, GEN } from "./genimport.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./rebuild.js";
+
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
 	why: "",         // why it did not
@@ -352,3 +363,6 @@ function initRebuild() {
 	dbgOnChange(rbSync);
 	rbLoadIndex();
 }
+
+export { rbSync, initRebuild };
+bridge(thisModule);

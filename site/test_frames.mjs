@@ -6,16 +6,7 @@
 // has it, reads past the end give undefined, and full chunks cost
 // FR_BYTES per frame.
 // Usage: node site/test_frames.mjs [ROUNDS]
-import fs from "node:fs";
-import path from "node:path";
-import vm from "node:vm";
-
-const here = path.dirname(new URL(import.meta.url).pathname);
-const ctx = vm.createContext({ ...await import("./jumps.js") });
-vm.runInContext(
-	fs.readFileSync(path.join(here, "stepper.js"), "utf8") +
-	"\nthis.T = { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath };", ctx);
-const { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath } = ctx.T;
+import { Frames, FR_SIZE, FR_BYTES, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
 
 const rounds = Number(process.argv[2] || 40);
 let seed = 4242;

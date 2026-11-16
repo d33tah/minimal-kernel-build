@@ -16,11 +16,21 @@
 // (a HLT byte at the target, put back when hit), once the kernel's code is
 // in memory.
 
+import { CLOCK, realNow, GUEST } from "./clock.js";
+import { TEXT_END } from "./stepper.js";
+import { MEV } from "./memevents.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./fastforward.js";
+
 const FF_SLICE = 20e6;
 const FF_STEP_FIRST = 2e6;
 let ffActive = false;    // a fast-forward or fast run-to is running
 let ffAbort = false;     // Pause pressed during it
 let ffInfo = null;       // last fast-forward: { target, name, steps, ms, slices, restores }
+// Other modules set them through these (an imported binding is read-only).
+const setFfActive = (on) => { ffActive = on; };
+const setFfAbort = (on) => { ffAbort = on; };
+const setFfInfo = (info) => { ffInfo = info; };
 let ffBreaks = null;     // while a fast Run to runs: byte address -> [target, original byte] of its HLTs
 
 const ffEnabled = () => new URLSearchParams(location.search).get("fastforward") !== "0";
@@ -169,6 +179,8 @@ function jitChunk(st, beforeEntry = false, until = Infinity) {
 	MEV.tick(st); // memevents.js checking mode
 	return ran;
 }
+// For the tests: a wrapper in its place.
+const setJitChunk = (f) => { jitChunk = f; };
 
 // jitChunk with the queued blocks live first.
 async function jitStep(st, beforeEntry = false) {
@@ -420,3 +432,8 @@ async function fastRunTo(targets, label) {
 	ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });
 	return hit >= 0;
 }
+
+export { ffActive, ffAbort, ffInfo, setFfActive, setFfAbort, setFfInfo, ffBreaks, ffEnabled, ffTarget,
+	codeRange, ffCounter, JIT, jitDetInstall, jitPending, jitFlush, jitChunk, setJitChunk, jitStep, ffYield,
+	fastForward, fastRunTo };
+bridge(thisModule);

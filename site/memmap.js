@@ -31,6 +31,13 @@
 // back) and to their Source line. "Only first touch": each region lights
 // once per initiator and the story list says who touched it first.
 
+import { realNow } from "./clock.js";
+import { dbgFrames } from "./dbginfo.js";
+import { srcLinkEl } from "./source.js";
+import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./memmap.js";
+
 const MM_ORDER = 7, MM_N = 1 << MM_ORDER, MM_CELLS = MM_N * MM_N;
 const MM_MIN_CELLS = 16, MM_GAP_CELLS = 24, MM_RAM_SHARE = 0.6;
 const MM_L_CPU = 0, MM_L_DEV = 1, MM_L_EMU = 2, MM_L_RAM = 3, MM_LAYERS = 4;
@@ -1221,3 +1228,6 @@ const MMAP = {
 		this.dirtyAll = true;
 	},
 };
+
+export { MMAP };
+bridge(thisModule);

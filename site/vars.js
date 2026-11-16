@@ -8,6 +8,16 @@
 // Values are read from guest RAM when drawn: kernel virtual addresses are
 // physical + the kernel's offset (0xC0000000 for i386 Linux).
 
+import { DWT, dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLocAt, dwarfScopesAt } from "./dwarf.js";
+import { dwSetFrameBase, dwLocation } from "./unwind.js";
+import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
+import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgCfiRow, dbgLocalGroups, dbgTitle, dbgOnChange } from "./dbginfo.js";
+import { srcLinkEl } from "./source.js";
+import { virtOffset, kernelSymLookup } from "./livedis.js";
+import { pageWalk } from "./cpustate.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./vars.js";
+
 const WATCH_KEY = "mkb-watch:";
 // Shown as one-tap suggestions when the kernel has them.
 const WATCH_SUGGEST = ["init_task", "jiffies_64", "linux_banner", "system_state", "current_task", "init_uts_ns"];
@@ -19,6 +29,7 @@ const WATCH_MAX_STRING = 96;
 let watchList = [];
 const watchOpen = new Set(); // "expression/path" of expanded rows
 let watchKernel = null;
+const setWatchKernel = (k) => { watchKernel = k; }; // for other modules (an imported binding is read-only)
 
 const varsReady = () => typeof emulator !== "undefined" && emulator && emuReady;
 
@@ -1232,3 +1243,7 @@ function setupVars() {
 			showVarInfo(Number($("var_info").dataset.addr), varPinned >= 0);
 	});
 }
+
+export { WATCH_KEY, watchList, watchKernel, setWatchKernel, varsOffset, watchLoad, renderWatches,
+	renderLocals, opEnv, opNamesHtml, insnHtml, varsTaskNow, varsTasks, renderTaskRow, varTypeOf, setupVars };
+bridge(thisModule);

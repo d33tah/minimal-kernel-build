@@ -14,6 +14,13 @@
 // Only for an ELF with the "auto" offset: the files place code at the
 // ELF's PT_LOAD addresses.
 
+import { dbgIdbOp, dbgUseShards, dbgChanged } from "./dbginfo.js";
+import { srcUseShipped, SRC } from "./source.js";
+import { MAP_KEY, showImported } from "./symimport.js";
+import { ClangWorker } from "./clang.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./genimport.js";
+
 let GEN = { files: new Map(), state: null, note: "" };
 
 // A kernel data file: one made here, or the site's (source.js asks for
@@ -166,3 +173,6 @@ function genSrcMade(mine, pick, r) {
 	genApply();
 	genKeep();
 }
+
+export { GEN, kfetch, genImport, genRestore, genSrcPicked };
+bridge(thisModule);

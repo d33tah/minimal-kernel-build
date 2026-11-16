@@ -15,6 +15,12 @@
 // Backtraces (dbgUnwind) read the call frame information the same way:
 // cfi-<hex>.bin shards, or the import's .debug_frame through the Worker.
 
+import { dwarfDecode, dwarfLocalFrames, dwarfScopesAt, dwFuncBase, dwFuncShard, dwarfFrames, dwarfFunction,
+	dwarfRow, dwarfResolvePath, dwarfFileCode } from "./dwarf.js";
+import { cfiFrameInfo, cfiRow, cfiDecode, unwind } from "./unwind.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./dbginfo.js";
+
 const DBG_DB = "mkb-dwarf";
 let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
 
@@ -119,6 +125,8 @@ async function dbgIdbOp(mode, fn) {
 		return undefined; // no IndexedDB (private mode, quota): nothing remembered
 	}
 }
+// For the tests: a slower or wrapped one in its place.
+const setDbgIdbOp = (f) => { dbgIdbOp = f; };
 
 // Units of the import are stored as key + ":unit:" + i, the index as key + ":index".
 async function dbgImport(file, offset, key) {
@@ -851,3 +859,9 @@ function dbgTitle(pa, sym) {
 		facts.list.filter((x) => x.func).map((x) => x.f ? fnFactsText(x.f, facts.T) : x.func + ": " + (x.why || "reading the function facts…"));
 	return dbgChainText(r.frames, sym) + (more.length ? "\n" + more.join("\n") : "");
 }
+
+export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgImport,
+	dbgForget, dbgRestore, dbgTypes, dbgGunzip, dbgLocals, dbgLocalGroups, dbgFnFacts, dbgFnHolds, dbgFnFactsFor,
+	dbgFnFactsAt, dbgCfiFrame, dbgFiles, dbgFuncAt, dbgCfiRow, dbgCfiInfo, dbgUnwind, dbgTableAt, dbgFrames,
+	dbgFunction, dbgFileCode, dbgLineCode, dbgLineCodeWait, dbgWhere, dbgChainText, dbgTitle };
+bridge(thisModule);

@@ -6,6 +6,11 @@
 // size}], symbols: [{name, vaddr, paddr, size, type, section}] } plus
 // { source, offset, offsetHow }.
 
+import { dbgFresh, dbgHas, DBG, dbgImport, dbgRestore, dbgForget } from "./dbginfo.js";
+import { srcFresh } from "./source.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./symimport.js";
+
 const PAGE_OFFSET_I386 = 0xC0000000;
 const MAP_KEY = "mkb-map-";
 
@@ -398,6 +403,7 @@ async function forgetImported() {
 
 const CMDLINE_KEY = "mkb-cmdline-";
 let cmdlineFromUrl = null;
+const setCmdlineFromUrl = (c) => { cmdlineFromUrl = c; }; // for other modules (an imported binding is read-only)
 
 async function restoreCmdline() {
 	if (cmdlineFromUrl !== null) {
@@ -656,3 +662,8 @@ function initImport() {
 		}
 	});
 }
+
+export { MAP_KEY, parseSymbolFile, applySymbols, showImported, restoreImported, forgetImported, CMDLINE_KEY,
+	cmdlineFromUrl, setCmdlineFromUrl, restoreCmdline, defaultCmdline, initrdNote, gunzip, analyzeInitrd,
+	ramForInitrd, initInitrd, initImport };
+bridge(thisModule);

@@ -27,6 +27,14 @@
 // chain (the full snapshot, then each delta's pages). Deleting a base folds
 // it into its deltas first (they become deltas of its base, or full).
 
+import { CLOCK, GUEST, realNow } from "./clock.js";
+import { jitPending, jitFlush } from "./fastforward.js";
+import { pageWalk, v86ResetHidden, v86Restore } from "./cpustate.js";
+import { runNow, inputReset, INPUT, inputRestore, replayRun, runStatus } from "./replay.js";
+import { REV, revReset } from "./reverse.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./snapshots.js";
+
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
 const SNAP_STORE = "snaps";
@@ -45,6 +53,9 @@ let snapReqId = 0;
 const snapWaiting = new Map();
 let snapDiff = null;      // { a, b, pages, ... } of the diff shown
 let pageSnapView = null;  // the Page tab shows a snapshot's page: { page, bytes, base, name, against, cur }
+// Other modules set them through these (an imported binding is read-only).
+const setSnapDiff = (d) => { snapDiff = d; };
+const setPageSnapView = (v) => { pageSnapView = v; };
 let snapDelAllTimer = null;
 let snapBase = null;      // the last snapshot saved or restored: { id, kernelKey, ram, hashes }
 const SNAP_DELTA_MAX = 31; // deltas in a chain before the next save is full again
@@ -757,6 +768,8 @@ function snapWorker(msg, transfer) {
 		snapWorkerObj.postMessage({ ...msg, id }, transfer || []);
 	});
 }
+// For the tests: one that holds answers back in its place.
+const setSnapWorker = (f) => { snapWorker = f; };
 
 const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
@@ -1060,3 +1073,8 @@ function initSnapshots() {
 	}));
 	snapLoad();
 }
+
+export { snapshots, pageSnapView, setSnapDiff, setPageSnapView, snapKernelKey, snapKernelName, snapTx,
+	saveSnapshot, restoreSnapshot, snapUnpack, renderSnapshots, snapWorker, setSnapWorker, snapById,
+	renderSnapDiff, snapPages, pageSnapBanner, initSnapshots };
+bridge(thisModule);

@@ -31,6 +31,13 @@
 // happened: a Run to with the JIT's breakpoints, the clock changed. With the
 // real-time clock nothing is recorded.
 
+import { CLOCK, GUEST } from "./clock.js";
+import { setCmdlineFromUrl } from "./symimport.js";
+import { ffEnabled } from "./fastforward.js";
+import { v86ResetHidden } from "./cpustate.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./replay.js";
+
 const RUN_FORMAT = "mkb-run";
 // 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
 // ends slices elsewhere than npm's build did, so a run of version 1 does
@@ -371,7 +378,7 @@ async function replayRun(run) {
 	prefSpeed = [...$("dbg_speed").options].some((o) => o.value === run.speed) ? run.speed : prefSpeed;
 	$("count").checked = !!run.count;
 	startPaused = !!run.paused;
-	cmdlineFromUrl = run.cmdline;
+	setCmdlineFromUrl(run.cmdline);
 	$("cmdline").value = run.cmdline;
 	const mem = String(run.ram);
 	if (![...$("memory").options].some((o) => o.value === mem))
@@ -521,3 +528,8 @@ function initReplay() {
 	$("run_file").addEventListener("change", replayFile);
 	renderRunInfo();
 }
+
+export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
+	inputTaint, inputReset, inputRestore, inputBoot, runScreenHash, runNow, replayRun, replayFinish, replayStop,
+	replayAfterStop, runStatus, initReplay };
+bridge(thisModule);

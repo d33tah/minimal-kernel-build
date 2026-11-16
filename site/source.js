@@ -15,8 +15,15 @@
 // srcFile() answers synchronously from what is loaded and starts the load
 // of the rest; dbgChanged() re-renders when it arrives.
 
+import { dwarfEachLine } from "./dwarf.js";
+import { dbgChanged, dbgGunzip, dbgHas, dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG,
+	dbgFunction, dbgLineCode, dbgOnChange } from "./dbginfo.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./source.js";
+
 let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
 let srcPanel = null;      // { pa, fn, path, line } shown in the side panel
+const setSrcPanel = (p) => { srcPanel = p; }; // for other modules (an imported binding is read-only)
 
 function srcFresh(mode, why) {
 	SRC = { mode, why, files: new Map(), missing: {}, notes: {} };
@@ -1416,3 +1423,9 @@ function initSource() {
 			renderSourcePanel();
 	}, 1000);
 }
+
+export { SRC, srcPanel, setSrcPanel, srcFresh, srcUseShipped, srcChanged, srcFile, srcText, srcStatements,
+	srcLinkEl, srcLinkHtml, srcFocusKeep, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
+	openSourceLine, fileLines, renderSourcePanel, srcKernelKey, srcSwClose, renderSourceRows, closeSource,
+	initSource };
+bridge(thisModule);

@@ -21,6 +21,17 @@
 // apart with a switch). They are kept in localStorage (small JSON); without
 // storage they last until the page is reloaded, and the list says so.
 
+import { realNow } from "./clock.js";
+import { jumpHit, setJumpHit, setJumpHitScroll } from "./jumps.js";
+import { graphNodeAt, selectedNode, download, G, graphTick } from "./graph.js";
+import { asmTargetName } from "./asmnames.js";
+import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./source.js";
+import { kernelSymLookup } from "./livedis.js";
+import { snapKernelKey, snapKernelName, snapshots, saveSnapshot, restoreSnapshot } from "./snapshots.js";
+import { runNow, replayRun, runStatus } from "./replay.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./bookmarks.js";
+
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
 const BM_KINDS = { code: "instruction", page: "memory page", line: "source line", file: "source file", fn: "function", pos: "machine position" };
@@ -906,3 +917,7 @@ function initBookmarks() {
 	setInterval(bmPendingTick, 300);
 	bmRender();
 }
+
+export { BM, bmDraftFn, bmDraftLine, bmMarks, bmTip, bmStarEl, bmCodeStar, bmFnStar, bmLineStar, bmFnNames,
+	bmAddButton, bmRenderPages, bmFromHash, bmMenuFit, initBookmarks };
+bridge(thisModule);

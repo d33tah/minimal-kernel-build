@@ -10,6 +10,11 @@
 //   PIT, RTC: JS objects in cpu.devices (src/pit.js, src/rtc.js).
 // What v86 does not keep is shown as "not emulated" or "not kept".
 
+import { jitPending, jitFlush } from "./fastforward.js";
+import { MEV } from "./memevents.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./cpustate.js";
+
 const CR4_BITS = [[0, "VME"], [1, "PVI"], [2, "TSD"], [3, "DE"], [4, "PSE"], [5, "PAE"], [6, "MCE"], [7, "PGE"],
 	[8, "PCE"], [9, "OSFXSR"], [10, "OSXMMEXCPT"], [11, "UMIP"], [16, "FSGSBASE"], [17, "PCIDE"], [18, "OSXSAVE"],
 	[20, "SMEP"], [21, "SMAP"]];
@@ -570,3 +575,6 @@ async function v86Restore(em, state) {
 	v86ResetHidden(em, "restore");
 	MEV.restored(); // memevents.js: the events from the stepper's count on are gone
 }
+
+export { phys32, pageWalk, renderCpuState, v86ResetHidden, v86Restore };
+bridge(thisModule);

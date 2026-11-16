@@ -41,6 +41,12 @@
 // CPU write (v86.wasm marks the pages the CPU may have written) and no
 // device or emulator event is reported in MEV.check.failures.
 
+import { CLOCK } from "./clock.js";
+import { dbgFrames } from "./dbginfo.js";
+import { srcLinkEl } from "./source.js";
+import { bridge } from "./bridge.js";
+import * as thisModule from "./memevents.js";
+
 const MEV_KIND_WRITE = 1, MEV_KIND_BULK = 1 << 8, MEV_KIND_E820 = 1 << 9; // src/rust/mev.rs
 const MEV_CPU = 0, MEV_DEVICE = 1, MEV_EMULATOR = 2; // libv86 cpu.js MEV_DEVICE, MEV_EMULATOR
 const MEV_INITIATORS = ["cpu", "device", "emulator"];
@@ -1084,3 +1090,6 @@ const MEV = {
 		return tr;
 	},
 };
+
+export { MEV_CPU, MEV_ISA_DMA, MEV_M_WRITE, MEV_M_BULK, PCI_CLASSES, pciBdf, pciClassName, MEV };
+bridge(thisModule);

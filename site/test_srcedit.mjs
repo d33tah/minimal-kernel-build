@@ -8,13 +8,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import vm from "node:vm";
 
-const here = path.dirname(new URL(import.meta.url).pathname);
-const ctx = vm.createContext({});
-vm.runInContext(fs.readFileSync(path.join(here, "srcedit.js"), "utf8") +
-	"\nthis.T = { edLines, edDiff, edFilePatch, edParse, edApplyHunks };", ctx);
-const { edFilePatch, edParse, edApplyHunks } = ctx.T;
+import { edFilePatch, edParse, edApplyHunks } from "./srcedit.js";
 
 const rounds = Number(process.argv[2] || 300);
 let seed = 12345;

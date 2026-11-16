@@ -2,17 +2,30 @@
 
 `index.html` boots a bzImage in [v86](https://github.com/copy/v86) (pinned
 version and checksums in `THIRD_PARTY.md`, `fetch-v86.sh` and
-`gen-v86.sh`, which builds `v86.wasm` with `v86-det.patch`). Plain HTML,
-JS and CSS with relative URLs; no build step, no libraries besides v86.
+`gen-v86.sh`, which builds `v86.wasm` with `v86-det.patch`). HTML, ES
+modules and CSS with relative URLs; one build step, the bundle below, and
+React for the views moved to components (R3).
 
 ## Scripts: ES modules, no globals
 
 Every script of the page is an ES module that imports what it uses by
-name; the browser loads them as they are (no bundler, so a line in the
-coverage report is a line of the file). `index.html` loads `clock.js`
-(first: v86 takes its clock when `libv86.js` loads), v86's `libv86.js` (a
-classic script: the global `V86`) and `app.js`, which imports the rest
-(`clock.js` again: one module, run once). A module imports only from
+name. `index.html` loads `clock.js` (first: v86 takes its clock when
+`libv86.js` loads), v86's `libv86.js` (a classic script: the global `V86`)
+and `app.bundle.js`: `app.js` with every module it imports (but
+`clock.js`, which the bundle imports by its URL: one module, run once),
+the React components (`*.jsx`) and React, bundled by `build.mjs`.
+
+    cd site && npm ci && node build.mjs   # app.bundle.js and app.bundle.js.map
+
+`build.mjs` runs esbuild (version pinned in `package-lock.json`, like
+React) with nothing minified, renamed or lowered: the bundle is the
+modules' own code in import order, with a source map naming the file and
+line of every piece. The same sources give the same bytes; the site job
+checks that (`node build.mjs --check` builds again in memory and compares)
+before it stamps and deploys the bundle. The coverage report (jscov)
+follows the source map, so its lines and the list of lines the tests do
+not run are those of the source files, not of the bundle. The Workers load
+their modules themselves, unbundled. A module imports only from
 modules below it, in this order, so there is no import cycle:
 
     util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
@@ -54,15 +67,17 @@ modules below it, in this order, so there is no import cycle:
   (`package.json` has `"type": "module"`): `gen-dwarf.js`, `gen-src.js`
   and the `.mjs` tests import them.
 - `stamp.py` (the deploy) puts `?v=<commit>` on the import specifiers as
-  on index.html's tags, so a module is fetched and run once, under one
-  URL; `check-pwa.py` follows the imports from index.html and fails when
+  on index.html's tags (the bundle's import of `clock.js`, the Workers'
+  imports), so a module is fetched and run once, under one URL;
+  `check-pwa.py` follows the imports from index.html and fails when
   sw.js does not precache one of them.
 - CI's job `lint` runs ESLint (`eslint.config.mjs`, versions pinned in
   `package-lock.json`): `no-undef` (a name nothing declares or imports),
   `no-implicit-globals`, no `window.foo = ...` or `Object.defineProperty(window, ...)`
   outside `debug.js`, and `import/no-cycle`. Locally: `cd site && npm ci &&
   npx eslint .`. The misc suite checks the page's own globals after a boot
-  are exactly `MKB` and `V86`, and that index.html loads only those three scripts.
+  are exactly `MKB` and `V86` (React adds none), and that index.html loads
+  only those three scripts.
 - Code that runs per instruction (stepper.js's `Stepper.record`,
   `jumpAfter`, the `Frames` methods) reads only private consts: V8 folds
   a module's private `const` into optimized code, but loads an exported or
@@ -2841,7 +2856,14 @@ coverage: in CI run 43438427659 pwaReload showed as never run although the
 pwa suite clicks Reload), and before the
 page terminates a Worker. Only the site's top-level scripts are
 kept (not v86/, iced/, lz4/, nor the node tools gen-dwarf.js and
-gen-src.js). `site/jscov/report.js` (monocart-coverage-reports, pinned with
+gen-src.js). The page runs `app.bundle.js` (build.mjs): the report maps
+its ranges back through `app.bundle.js.map` to the modules and components
+it holds (React's own files are left out), and merges them with the same
+files run unbundled in the Workers; so every line, file and row of the
+list below is a line of `app.js`, `tabs.jsx`, ..., never of the bundle.
+The report needs the bundle and its map as the tests ran them: built
+(`node site/build.mjs`, the same bytes as the deployed one) and stamped.
+`site/jscov/report.js` (monocart-coverage-reports, pinned with
 its SHA-512 integrity hashes in `site/jscov/package-lock.json`) merges the
 raw files of every job into an HTML report and `summary.json` (lines,
 functions, branches per file, every function that never ran and the

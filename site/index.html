@@ -640,9 +640,11 @@
 <div id="tip_pop" class="tip-pop" role="tooltip" hidden></div>
 <div id="jump_pop" class="jump-pop" role="dialog" aria-label="Jump paths" hidden></div>
 
-<!-- clock.js first: v86 must see its clock (app.js imports the same module) -->
+<!-- clock.js first: v86 must see its clock (the bundle imports the same module).
+     app.bundle.js is app.js with the modules it imports, the React components
+     and React, built by build.mjs (npm ci && node build.mjs). -->
 <script type="module" src="clock.js"></script>
 <script defer src="v86/libv86.js"></script>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.bundle.js"></script>
 </body>
 </html>

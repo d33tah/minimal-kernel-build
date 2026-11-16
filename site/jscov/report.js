@@ -14,6 +14,10 @@
 // taken out, a TODO row per new uncovered block). With --require-listed,
 // any of those fails the run.
 //
+// The page runs app.bundle.js (site/build.mjs): its coverage is mapped
+// through app.bundle.js.map onto the files it holds (*.js, *.jsx; not
+// React's), so every number and line here is one of a source file.
+//
 // Usage: node site/jscov/report.js --src site --out jscov-report [--baseline site/jscov-baseline.json]
 //        [--uncovered site/jscov-uncovered.tsv [--require-listed]] [--summary $GITHUB_STEP_SUMMARY] RAW_DIR...
 // Needs: npm ci in site/jscov (monocart-coverage-reports, pinned by package-lock.json).
@@ -22,6 +26,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { pathToFileURL } = require("url");
 const { CoverageReport } = require("monocart-coverage-reports");
 const { mergeV8Coverage } = require("monocart-coverage-reports/util");
 const L = require("./listed.js");
@@ -46,9 +51,14 @@ function args(argv) {
 	return a;
 }
 
-// The page's scripts: every top-level *.js of the site but node tools (#!).
+// The page's bundle (site/build.mjs): its coverage is reported on the files
+// its source map names, not on the bundle.
+const BUNDLE = "app.bundle.js";
+
+// The page's scripts: every top-level *.js of the site but node tools (#!)
+// and the bundle, and the React components (*.jsx).
 function siteScripts(src) {
-	return fs.readdirSync(src).filter((n) => n.endsWith(".js") && fs.statSync(path.join(src, n)).isFile())
+	return fs.readdirSync(src).filter((n) => /\.jsx?$/.test(n) && n !== BUNDLE && fs.statSync(path.join(src, n)).isFile())
 		.filter((n) => !fs.readFileSync(path.join(src, n), "utf8").startsWith("#!")).sort();
 }
 
@@ -106,6 +116,18 @@ async function main() {
 	const out = path.resolve(a.out);
 	const names = siteScripts(src);
 	const sources = Object.fromEntries(names.map((n) => [n, fs.readFileSync(path.join(src, n), "utf8")]));
+	// The bundle as the tests ran it (built and stamped like the deployed
+	// site), and its map.
+	const bundle = fs.existsSync(path.join(src, BUNDLE)) ? {
+		source: fs.readFileSync(path.join(src, BUNDLE), "utf8"),
+		map: JSON.parse(fs.readFileSync(path.join(src, BUNDLE + ".map"), "utf8")),
+	} : null;
+	// The map's sources are relative to the site: as file URLs they come
+	// out as the same paths as the scripts run unbundled (dwarf.js in a
+	// Worker and in the bundle is one file of the report).
+	if (bundle)
+		bundle.map.sourceRoot = pathToFileURL(src).href + "/";
+	const lengthOf = (f) => (f in sources ? sources[f].length : f === BUNDLE && bundle ? bundle.source.length : -1);
 
 	// Group the records by file; a record of a file whose length differs
 	// from the source here ran another version of it (a test's modified
@@ -119,7 +141,7 @@ async function main() {
 				continue;
 			const r = JSON.parse(line);
 			records++;
-			const n = r.file in sources ? sources[r.file].length : -1;
+			const n = lengthOf(r.file);
 			if (r.len !== undefined ? n !== r.len : !(r.end <= n)) {
 				foreign[r.file] = (foreign[r.file] || 0) + 1;
 				continue;
@@ -138,14 +160,37 @@ async function main() {
 			(byFile[r.file] = byFile[r.file] || []).push({ functions });
 		}
 	}
-	console.log(`${files.length} raw files, ${records} records, ${Object.keys(byFile).length} of ${names.length} scripts ran`);
+	const ran = new Set(Object.keys(byFile));
+	if (ran.has(BUNDLE)) {
+		ran.delete(BUNDLE);
+		for (const p of bundle.map.sources)
+			if (names.includes(p))
+				ran.add(p);
+	}
+	console.log(`${files.length} raw files, ${records} records, ${ran.size} of ${names.length} scripts ran` +
+		(byFile[BUNDLE] ? ` (${BUNDLE}: ${byFile[BUNDLE].length} records)` : ""));
 	if (Object.keys(foreign).length)
 		console.log("records of other versions (ignored):", JSON.stringify(foreign));
+
+	// esbuild's namespace objects (debug.js's `import * as x`): a getter per
+	// export, code of the bundler that the map puts on the module's first
+	// line. Not the module's functions: their records are dropped and the
+	// report reads blanks there (the same length: the offsets stay).
+	const generated = bundle ? [...bundle.source.matchAll(/^__export\(\w+, \{\n[^]*?\n\}\);$/gm)]
+		.map((m) => [m.index, m.index + m[0].length]) : [];
+	const own = (f) => !generated.some(([a, b]) => f.ranges[0].startOffset >= a && f.ranges[0].endOffset <= b);
+	for (const [a, b] of generated)
+		bundle.source = bundle.source.slice(0, a) + bundle.source.slice(a, b).replace(/[^\n]/g, " ") + bundle.source.slice(b);
 
 	const entries = [];
 	for (const [n, list] of Object.entries(byFile)) {
 		const merged = list.length > 1 ? await mergeV8Coverage(list) : list[0];
-		entries.push({ scriptId: String(entries.length + 1), url: "file://" + path.join(src, n), source: sources[n], functions: merged.functions });
+		const e = { scriptId: String(entries.length + 1), url: "file://" + path.join(src, n), functions: merged.functions };
+		if (n === BUNDLE)
+			Object.assign(e, { source: bundle.source, sourceMap: bundle.map, functions: merged.functions.filter(own) });
+		else
+			e.source = sources[n];
+		entries.push(e);
 	}
 
 	let results;
@@ -155,16 +200,19 @@ async function main() {
 		baseDir: src,
 		logging: "error",
 		reports: [["v8"], ["console-summary"]],
-		entryFilter: (e) => names.includes(path.basename(e.url)) && path.dirname(e.url.replace(/^file:\/\//, "")) === src,
-		sourceFilter: (p) => names.includes(path.basename(p)),
-		all: { dir: [src], filter: (p) => names.includes(path.basename(p)) && path.dirname(path.resolve(src, p)) === src },
+		entryFilter: (e) => [...names, BUNDLE].includes(path.basename(e.url)) && path.dirname(e.url.replace(/^file:\/\//, "")) === src,
+		// The bundle's own files (its map's sources are relative to the site),
+		// not React's from node_modules.
+		sourceFilter: (p) => names.includes(path.basename(p)) && !p.includes("node_modules"),
+		// A component (*.jsx) is only ever in the bundle.
+		all: { dir: [src], filter: (p) => names.includes(path.basename(p)) && p.endsWith(".js") && path.dirname(path.resolve(src, p)) === src },
 		onEnd: (r) => { results = r; },
 	});
 	mcr.cleanCache();
 	await mcr.add(entries);
 	await mcr.generate();
 
-	const summary = { files: {}, total: {}, scripts: names.length, ran: Object.keys(byFile).length, records, foreign };
+	const summary = { files: {}, total: {}, scripts: names.length, ran: ran.size, records, foreign };
 	const codeLines = {};
 	const sum = Object.fromEntries(METRICS.map((m) => [m, { covered: 0, total: 0 }]));
 	for (const f of results.files) {

@@ -688,6 +688,18 @@ jobs:
         printf '%s\n' '{"label": "Debian 6.1 686 with its initramfs (BusyBox shell)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728}' > "$d/meta.json"
         ls -l "$d"
 
+    # The page's bundle: app.js, its modules, the React components and React
+    # in app.bundle.js with a source map (site/build.mjs; esbuild and React
+    # pinned by site/package-lock.json). The same sources give the same bytes:
+    # --check builds again in memory and compares with the files written.
+    - name: Bundle the page
+      working-directory: site
+      run: |
+        npm ci --no-audit --no-fund
+        node build.mjs
+        node build.mjs --check
+        rm -rf node_modules
+
     - name: Assemble the site
       run: |
         site/check-ids.py
@@ -1187,8 +1199,10 @@ jobs:
     - name: Self-test (an unexecuted function shows as uncovered)
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_jscov.py'
 
-    # The tests ran the deployed files: sw.js and index.html stamped with
-    # the commit (the site job), so the same stamp here. Fails below the
+    # The tests ran the deployed files: the bundle (built as the site job
+    # builds it: the same bytes, build.mjs --check there), sw.js and
+    # index.html stamped with the commit, so the same stamp here; the
+    # bundle's lines are reported on the files of its source map. Fails below the
     # baseline and when site/jscov-uncovered.tsv is not true for this
     # commit (an uncovered line it does not list, a listed line that ran);
     # the job output says which lines and how to update the list, and the
@@ -1196,6 +1210,8 @@ jobs:
     # (uncovered-candidates.tsv, TODO rows for new blocks).
     - name: Merge and report, check the baseline and the uncovered list
       run: |
+        npm ci --prefix site --no-audit --no-fund
+        node site/build.mjs
         site/stamp.py site "$GITHUB_SHA"
         node site/jscov/report.js --src site --out jscov-report --baseline site/jscov-baseline.json \
           --uncovered site/jscov-uncovered.tsv --require-listed --summary "$GITHUB_STEP_SUMMARY" jscov-raw

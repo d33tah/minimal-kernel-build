@@ -1,12 +1,18 @@
 {
   "name": "mkb-site",
   "private": true,
-  "description": "The page's scripts are ES modules; Node runs the shared ones (dwarf.js, kgen.js, wasi.js, kit.js, jumps.js...) and gen-dwarf.js, gen-src.js as modules too. devDependencies: the lint (eslint.config.mjs)",
+  "description": "The page's scripts are ES modules; Node runs the shared ones (dwarf.js, kgen.js, wasi.js, kit.js, jumps.js...) and gen-dwarf.js, gen-src.js as modules too. build.mjs bundles the page (app.js, the modules it imports, the React components *.jsx and React) into app.bundle.js with esbuild. dependencies: React, bundled into the page; devDependencies: the bundler and the lint (eslint.config.mjs)",
   "license": "GPL-2.0-only",
   "type": "module",
+  "dependencies": {
+    "react": "19.2.9",
+    "react-dom": "19.2.9"
+  },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "eslint": "9.39.1",
     "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-react-hooks": "7.1.1",
     "globals": "16.5.0"
   }
 }

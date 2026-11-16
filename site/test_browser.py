@@ -7268,9 +7268,10 @@ def stamp(html, v):
 def stale_cache_case(browser, timeout):
     """Deploy A, load it, deploy B over it, reload with A in the HTTP cache.
 
-    The server sends max-age=600 like GitHub Pages. Deploy B's app.js sets a
-    marker; after the reload the page must run B's app.js (not A's from the
-    cache), boot, and raise no errors.
+    The server sends max-age=600 like GitHub Pages. Deploy B's app.bundle.js
+    (app.js and its modules, build.mjs) sets a marker; after the reload the
+    page must run B's bundle (not A's from the cache), boot, and raise no
+    errors.
     """
     problems = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -7281,13 +7282,13 @@ def stale_cache_case(browser, timeout):
             f = pathlib.Path(f)
             shutil.copy(SITE / f.name, root / f.name)
         html = (SITE / "index.html").read_text()
-        app = (SITE / "app.js").read_text()
+        app = (SITE / "app.bundle.js").read_text()
 
         stamp_js = runpy.run_path(str(SITE / "stamp.py"))["stamp_js"]
 
         def deploy(v):
             (root / "index.html").write_text(stamp(html, v))
-            (root / "app.js").write_text(app + f'\nwindow.deployMarker = "{v}";\n')
+            (root / "app.bundle.js").write_text(app + f'\nwindow.deployMarker = "{v}";\n')
             # The modules' imports get the stamp too (site/stamp.py).
             for f in root.glob("*.js"):
                 f.write_text(stamp_js(f.read_text(), v))
@@ -7305,9 +7306,9 @@ def stale_cache_case(browser, timeout):
         deploy("B")
         page.reload()
         marker = page.evaluate("window.deployMarker")
-        stamp_v = page.evaluate("new URL(document.querySelector('script[src*=\"app.js\"]').src).searchParams.get('v')")
+        stamp_v = page.evaluate("new URL(document.querySelector('script[src*=\"app.bundle.js\"]').src).searchParams.get('v')")
         if marker != "B" or stamp_v != "B":
-            problems.append(f"after the reload index.html is deploy {stamp_v} but app.js is deploy {marker}")
+            problems.append(f"after the reload index.html is deploy {stamp_v} but app.bundle.js is deploy {marker}")
         if not wait_for(lambda: gate_on_screen(page), timeout):
             problems.append("deploy B did not boot after the reload")
         if errors:
@@ -7638,8 +7639,9 @@ def globals_case(browser, base):
         problems.append(f"own globals {g['own']}, want {GLOBALS_WANT}")
     if g["readOnly"] != "MKB.hex has no setter":
         problems.append(f"MKB.hex = 1: {g['readOnly']!r}")
-    if [s.split("?")[0] for s in g["scripts"]] != ["module clock.js", "classic v86/libv86.js", "module app.js"]:
-        problems.append(f"index.html loads {g['scripts']}: the modules clock.js (before v86) and app.js, and v86/libv86.js")
+    if [s.split("?")[0] for s in g["scripts"]] != ["module clock.js", "classic v86/libv86.js", "module app.bundle.js"]:
+        problems.append(f"index.html loads {g['scripts']}: the modules clock.js (before v86) and app.bundle.js (app.js "
+                        "and its imports, build.mjs), and v86/libv86.js")
     page.close()
     return problems, r
 
@@ -14739,7 +14741,7 @@ def pwa_deploy(root, v, marker=None):
     else:
         (root / "index.html").write_text(stamp((root / "index.html").read_text(), v))
     if marker:
-        with open(root / "app.js", "a") as f:
+        with open(root / "app.bundle.js", "a") as f:
             f.write(f'\nwindow.deployMarker = "{marker}";\n')
 
 
@@ -15043,13 +15045,13 @@ def pwa_case(browser, base, shots, timeout):
                 problems.append("after the update reload hello did not boot")
             r["after_reload"] = {
                 "marker": page.evaluate("window.deployMarker"),
-                "stamp": page.evaluate("new URL(document.querySelector('script[src*=\"app.js\"]').src).searchParams.get('v')"),
+                "stamp": page.evaluate("new URL(document.querySelector('script[src*=\"app.bundle.js\"]').src).searchParams.get('v')"),
                 "sw": page.evaluate(PWA_SW_VERSION_JS),
                 "caches": page.evaluate(PWA_CACHES_JS),
             }
             a = r["after_reload"]
             if a["marker"] != "B" or a["stamp"] != PWA_V[1] or a["sw"] != PWA_V[1]:
-                problems.append(f"after the update reload: app.js deploy {a['marker']}, stamp {a['stamp']}, service worker {a['sw']}")
+                problems.append(f"after the update reload: app.bundle.js deploy {a['marker']}, stamp {a['stamp']}, service worker {a['sw']}")
             if any(PWA_V[0] in k for k in a["caches"]) or not any(PWA_V[1] in k for k in a["caches"]):
                 problems.append(f"after the update the old deploy's caches are still there (or no new one): {a['caches']}")
             time.sleep(3)

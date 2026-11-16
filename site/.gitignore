@@ -12,3 +12,6 @@
 /test-screenshots/
 __pycache__/
 node_modules/
+# build.mjs: the page's bundle and its source map
+/app.bundle.js
+/app.bundle.js.map

@@ -9,9 +9,7 @@ import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelecte
 import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { covShow } from "./coverage.js";
-import { MMAP } from "./memmap.js";
 import { bmFromHash } from "./bookmarks.js";
-import { drawGrid } from "./memview.js";
 import { renderContext } from "./debugui.js";
 import { useStore } from "./ui.jsx";
 
@@ -92,11 +90,8 @@ function showTab(name) {
 }
 
 function showViews() {
-	if (tab === "memory")
-		drawGrid();
 	if (tab === "debugger")
 		renderContext();
-	MMAP.place(tab); // memmap.js: the live memory map goes with the Quests tab
 	graphShow(tab === "calls");
 	covShow(tab === "source");
 }

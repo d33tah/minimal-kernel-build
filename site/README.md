@@ -169,11 +169,14 @@ A tab whose views draw themselves into elements by id (tables, listings,
 canvases) gets a component of its markup first: it renders once, and
 the module that draws goes on drawing into those elements. React never
 renders it again, so it never touches what the module wrote. So far:
-Snapshots (`SnapshotsPanel`, snapshotspanel.jsx) and Page (`PagePanel`,
-pagepanel.jsx). A view that draws when its tab is shown subscribes to
+Snapshots (`SnapshotsPanel`, snapshotspanel.jsx), Page (`PagePanel`,
+pagepanel.jsx) and Memory (`MemoryPanel`, memorypanel.jsx). A view that
+draws when its tab is shown subscribes to
 the store's `tabShows` (`markTabShown()`, which `showTab` calls each
 time, also for the tab already shown: the Page tab draws again for
-another page) instead of `showTab` calling it: listing.js's `inspect`.
+another page) instead of `showTab` calling it: listing.js's `inspect`,
+memview.js's grid and the live map's place (memmap.js: the Quests tab or
+the Memory tab).
 
 A view whose state lives in a controller object (`QUESTS`, `MEV`, `RB`) keeps
 it there: the controller computes what the tab shows (the quests' cards,

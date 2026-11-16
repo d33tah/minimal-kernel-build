@@ -458,6 +458,11 @@ function initLegend() {
 		}));
 	// The EIP's page in the map and the grid, drawn with the Debugger.
 	state.subscribe(renderMemEip, ["machine"]);
+	// The grid is drawn when the Memory tab is shown (showTab).
+	state.subscribe(() => {
+		if (tab === "memory")
+			drawGrid();
+	}, ["tabShows"]);
 }
 
 function pageAt(ev) {

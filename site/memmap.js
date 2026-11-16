@@ -33,7 +33,7 @@
 
 import { realNow } from "./clock.js";
 import { $ } from "./util.js";
-import { api, provide } from "./page.js";
+import { api, provide, state, tab } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
@@ -1228,6 +1228,10 @@ const MMAP = {
 		this.dirtyAll = true;
 	},
 };
+
+// The live map goes with the tab shown: the Quests tab beside its cards,
+// else the Memory tab (showTab).
+state.subscribe(() => MMAP.place(tab), ["tabShows"]);
 
 provide({ MMAP });
 export { MMAP };

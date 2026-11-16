@@ -88,7 +88,8 @@ def control_icons_404(d):
 
 
 def control_no_sw(d):
-    edit(d / "pwa.js", 'PWA.reg = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });',
+    # pwa.js's code as the page runs it: in the bundle (build.mjs)
+    edit(d / "app.bundle.js", 'PWA.reg = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });',
          'throw new Error("registration removed by the no-service-worker control");')
 
 

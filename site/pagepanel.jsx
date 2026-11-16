@@ -1,8 +1,13 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Page tab (R3): one page of guest memory as a listing (listing.js),
 // its symbol index and the jump paths (jumps.js). The component is the
 // tab's markup and renders once; listing.js draws the listing, the title
 // and the notes into it through their ids, and reads the page again each
 // time the tab is shown (the store's tabShows).
+
+import { h, Fragment } from "./html.js";
 
 function PagePanel() {
 	return (

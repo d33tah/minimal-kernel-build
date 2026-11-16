@@ -29,9 +29,22 @@ import { stopDriver, resetCounters, resume } from "./run.js";
 // v86.wasm with two internal functions exported for stepping (stepper.js).
 // If the patch fails the page still boots, without the debugger
 // (wasmPatchError).
+// The first boot's bytes are fetched as the page starts (prefetchWasm,
+// app.js), while it sets itself up; a later boot fetches them again.
+let wasmEarly = null;
+
+function prefetchWasm() {
+	wasmEarly = fetch(withV("v86/v86.wasm")).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+}
+
 async function loadWasm(env) {
-	const resp = await fetch(withV("v86/v86.wasm"));
-	const bytes = await resp.arrayBuffer();
+	let bytes = null;
+	if (wasmEarly) {
+		bytes = await wasmEarly;
+		wasmEarly = null;
+	}
+	if (!bytes)
+		bytes = await (await fetch(withV("v86/v86.wasm"))).arrayBuffer();
 	let code = bytes;
 	try {
 		code = patchV86Wasm(bytes).bytes;
@@ -225,4 +238,4 @@ const MILESTONES = ["Hello, World!", "Still alive"];
 // The page API's entries of this module (page.js).
 provide({ boot });
 
-export { boot };
+export { boot, prefetchWasm };

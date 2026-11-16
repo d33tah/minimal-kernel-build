@@ -1,10 +1,13 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Source tab (R3): the coverage tree (coverage.js) and Your edits
 // (srcedit.js) with the Rebuild and boot box (RebuildPanel, rebuild.jsx).
 // The component is the tab's markup and renders once (RebuildPanel renders
 // on RB); coverage.js and srcedit.js draw into it by id, and coverage.js
 // draws its tree when the tab is shown (the store's tabShows).
 
-import { RebuildPanel } from "./rebuild.jsx";
+import { h, Fragment } from "./html.js";
 
 function SourceTabPanel() {
 	return (
@@ -59,7 +62,7 @@ function SourceTabPanel() {
 				{" "}
 				<pre id="ed_diff" className="eddiff" hidden />
 				{" "}
-				<div id="rb_box" className="rbbox"><RebuildPanel /></div>
+				<div id="rb_box" className="rbbox" />
 			</div>
 			{" "}
 			<p id="cov_status" className="note" />

@@ -1,9 +1,14 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The About tab (R3): what the page is, its tabs, how counting works and
 // the legend of every colour and mark (check-legend.py reads the legend
 // from here: each class style.css colours has a sample in the
 // #about_legend section). Static: it renders once; debugui.js writes the
 // deployed commit into #build_subject, memview.js the legend's generated
 // lists (#legend_mem, #legend_graph).
+
+import { h, Fragment } from "./html.js";
 
 function AboutPanel() {
 	return (

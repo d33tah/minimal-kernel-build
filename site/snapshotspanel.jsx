@@ -1,7 +1,12 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Snapshots tab (R3): save, list, restore, download and diff snapshots
 // (snapshots.js), the input log and replay (replay.js). The component is
 // the tab's markup and renders once; snapshots.js fills the table, the
 // store line and the diff, replay.js the run box, through their ids.
+
+import { h, Fragment } from "./html.js";
 
 function SnapshotsPanel() {
 	return (

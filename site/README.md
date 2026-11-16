@@ -18,9 +18,10 @@ the React components (`*.jsx`) and React, bundled by `build.mjs`.
     cd site && npm ci && node build.mjs   # app.bundle.js and app.bundle.js.map
 
 `build.mjs` runs esbuild (version pinned in `package-lock.json`, like
-React) with nothing minified, renamed or lowered: the bundle is the
-modules' own code in import order, with a source map naming the file and
-line of every piece. The same sources give the same bytes; the site job
+React) with only whitespace minified, nothing renamed or lowered: the
+bundle is the modules' own code in import order, with a source map naming
+the file, line and column of every piece (the indentation and line breaks
+were 430 KB of 1.6 MB, ~30 ms of parsing before the boot). The same sources give the same bytes; the site job
 checks that (`node build.mjs --check` builds again in memory and compares)
 before it stamps and deploys the bundle. The coverage report (jscov)
 follows the source map, so its lines and the list of lines the tests do
@@ -33,7 +34,8 @@ modules below it, in this order, so there is no import cycle:
     symimport livedis vars srcedit fnfacts genimport graph rebuild
     memmap quests events replay reverse snapshots bookmarks coverage pwa | header
     scan memview listing debugui tabs settings nav symview run runto boot
-    tips kernel | debug shell app
+    tips kernel | html about snapshotspanel pagepanel memorypanel debuggerpanel
+    sourcepanel sourceaside callspanel machinepanel runbadge | debug shell app
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
@@ -166,17 +168,31 @@ the About tab (`AboutPanel`, about.jsx; `check-legend.py` reads the
 legend's samples there).
 
 A tab whose views draw themselves into elements by id (tables, listings,
-canvases) gets a component of its markup first: it renders once, and
-the module that draws goes on drawing into those elements. React never
-renders it again, so it never touches what the module wrote. So far:
-Snapshots (`SnapshotsPanel`, snapshotspanel.jsx), Page (`PagePanel`,
-pagepanel.jsx) and Memory (`MemoryPanel`, memorypanel.jsx). A view that
-draws when its tab is shown subscribes to
-the store's `tabShows` (`markTabShown()`, which `showTab` calls each
-time, also for the tab already shown: the Page tab draws again for
-another page) instead of `showTab` calling it: listing.js's `inspect`,
-memview.js's grid and the live map's place (memmap.js: the Quests tab or
-the Memory tab).
+canvases) is a component of its markup, written in JSX: Machine
+(machinepanel.jsx), Memory (memorypanel.jsx), Page (pagepanel.jsx),
+Debugger (debuggerpanel.jsx), Calls (callspanel.jsx), Source
+(sourcepanel.jsx), Snapshots (snapshotspanel.jsx), About (about.jsx), the
+Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
+(runbadge.jsx). These files name another JSX runtime in their first
+lines (`@jsxRuntime classic`, `@jsx h`): `html.js`, whose `h()` makes
+HTML, and `shell.jsx` puts each into its element with innerHTML, before
+the React components mount. The modules draw into those elements as
+before; nothing renders them again. React built the same elements one by
+one at every load, about 20 ms of the way to the boot (measured, R3);
+the props are React's (className, htmlFor, defaultValue, style objects),
+so such a file becomes a React component by dropping its pragmas. The
+interactive parts inside them are React: the Source tab's Rebuild and
+boot box (`#rb_box`) and the Source panel's Rebuild button
+(`RebuildPanelButton`, in `#rb_go_slot`, a `display: contents` span).
+
+A view that draws when its tab is shown subscribes to the store's
+`tabShows` (`markTabShown()`, which `showTab` calls each time, also for
+the tab already shown: the Page tab draws again for another page):
+listing.js's listing, memview.js's grid, memmap.js's place of the live
+map (the Quests tab or the Memory tab), debugui.js's Code at EIP,
+graph.js's drawing (started and stopped), coverage.js's tree. Quests and
+Events follow `tab`. `showTab` only sets state (and shows the panel, the
+keys and the hash); a view that throws does not stop the others.
 
 A view whose state lives in a controller object (`QUESTS`, `MEV`, `RB`) keeps
 it there: the controller computes what the tab shows (the quests' cards,

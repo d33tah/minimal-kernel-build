@@ -1,7 +1,12 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Calls tab (R3): the call timeline and graph (graph.js, canvases),
 // the call tree and the Top 30. The component is the tab's markup and
 // renders once; graph.js draws into it by id and starts or stops drawing
 // as its tab is shown or left (the store's tabShows).
+
+import { h, Fragment } from "./html.js";
 
 function CallsPanel() {
 	return (

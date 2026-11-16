@@ -231,7 +231,7 @@ async function main() {
 	// export, code of the bundler that the map puts on the module's first
 	// line. Not the module's functions: their records are dropped and the
 	// report reads blanks there (the same length: the offsets stay).
-	const generated = bundle ? [...bundle.source.matchAll(/^__export\(\w+, \{\n[^]*?\n\}\);$/gm)]
+	const generated = bundle ? [...bundle.source.matchAll(/__export\(\w+, ?\{[^]*?\}\);/g)]
 		.map((m) => [m.index, m.index + m[0].length]) : [];
 	const own = (f) => !generated.some(([a, b]) => f.ranges[0].startOffset >= a && f.ranges[0].endOffset <= b);
 	for (const [a, b] of generated)

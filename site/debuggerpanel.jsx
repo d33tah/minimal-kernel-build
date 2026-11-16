@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Debugger tab (R3): stepping, Run to and reverse controls, the
 // registers and CPU state (debugui.js, cpustate.js), Code at EIP and its
 // jump paths, parameters and locals, watched variables (vars.js). The
@@ -5,6 +8,8 @@
 // it by id, per frame while the machine runs (never through React), and
 // debugui.js draws Code at EIP again each time the tab is shown (the
 // store's tabShows).
+
+import { h, Fragment } from "./html.js";
 
 function DebuggerPanel() {
 	return (

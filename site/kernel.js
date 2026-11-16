@@ -76,10 +76,15 @@ async function loadDisasm(entry) {
 
 async function loadKernel(entry, memFromUrl) {
 	setStatus("Fetching " + entry.path + "...");
-	const resp = await fetch(withV(entry.path));
+	// The bzImage, its disassembly and its symbols are fetched at once (each
+	// one alone was a round trip on the way to the boot); they are used in
+	// the same order as before.
+	const respP = fetch(withV(entry.path)), disasmP = loadDisasm(entry), symbolsP = loadSymbols(entry);
+	const resp = await respP;
 	if (!resp.ok)
 		throw new Error(entry.path + ": " + httpWhy(resp));
-	setDisasm(await loadDisasm(entry));
+	const bytesP = resp.arrayBuffer();
+	setDisasm(await disasmP);
 	await srcUseShipped(entry);
 	dbgUseShards(entry);
 	syncSrcToggle();
@@ -97,7 +102,7 @@ async function loadKernel(entry, memFromUrl) {
 		initrd.info = await analyzeInitrd(initrd.bytes, name);
 	} else if (!entry.initrd && initrd && initrd.entry)
 		setInitrd(null);
-	useImage(entry.name, await resp.arrayBuffer(), memFromUrl || ramDefault, await loadSymbols(entry));
+	useImage(entry.name, await bytesP, memFromUrl || ramDefault, await symbolsP);
 	showImported();
 	await restoreImported();
 	await restoreCmdline();

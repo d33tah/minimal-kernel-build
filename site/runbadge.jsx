@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The menu toggle (R3, H1/K1): the small fixed button at the bottom right
 // of every tab (its face: whether the VM runs and how fast) and its menu:
 // the run state, Pause or Continue, the new-version notice, the bookmarks
@@ -5,6 +8,8 @@
 // markup and renders once; debugui.js draws the face and the state when
 // the store's `machine` changes (renderRunBadge), bookmarks.js and nav.js
 // fill their parts by id.
+
+import { h, Fragment } from "./html.js";
 
 function RunBadgeMenu() {
 	return (

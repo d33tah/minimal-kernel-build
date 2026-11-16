@@ -1,9 +1,14 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Machine tab (R3): the VM's screen (v86 draws into #screen_container:
 // its text rows and canvas), the run controls, the counters and the end
 // banner (debugui.js, run.js), and the kernel and boot controls (boot.js,
 // kernel.js, header.js, symimport.js). The component is the tab's markup
 // and renders once; the modules and v86 draw into it by id, per frame
 // while the machine runs (never through React).
+
+import { h, Fragment } from "./html.js";
 
 function MachinePanel() {
 	return (

@@ -40,12 +40,15 @@ import { initNav } from "./nav.js";
 import { listingStale } from "./symview.js";
 import { onVisibility } from "./run.js";
 import { initDebugger } from "./runto.js";
-import { boot } from "./boot.js";
+import { boot, prefetchWasm } from "./boot.js";
 import { initTips } from "./tips.js";
 import { loadKernel, useImage } from "./kernel.js";
 import { mountShell } from "./shell.jsx";
 
 async function init() {
+	// The kernel list and v86.wasm are fetched while the page sets itself up.
+	prefetchWasm();
+	const kernelsJson = fetch(withV("kernels.json")).then((r) => r.json());
 	// The React components first (shell.jsx): their controls exist from here on.
 	mountShell();
 	const params = new URLSearchParams(location.search);
@@ -173,8 +176,7 @@ async function init() {
 	});
 
 	try {
-		const resp = await fetch(withV("kernels.json"));
-		setKernels((await resp.json()).kernels);
+		setKernels((await kernelsJson).kernels);
 	} catch (e) {
 		setStatus("No kernels.json (" + e + "). Load a bzImage from disk.");
 		return;

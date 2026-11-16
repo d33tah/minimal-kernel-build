@@ -1,9 +1,14 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Memory tab (R3): the boot header's memory map, the page grid
 // (memview.js, a canvas) and the live memory map (memmap.js, canvases;
 // #mm moves to the Quests tab beside its cards and back). The component
 // is the tab's markup and renders once; the modules draw into it through
 // their ids and follow the store's tabShows (the grid is drawn, the map
 // placed, each time a tab is shown).
+
+import { h, Fragment } from "./html.js";
 
 function MemoryPanel() {
 	return (

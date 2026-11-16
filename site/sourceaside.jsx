@@ -1,10 +1,13 @@
+/** @jsxRuntime classic */
+/** @jsx h */
+/** @jsxFrag Fragment */
 // The Source panel (R3): the aside beside every tab (#src_panel) with a
 // file's text (source.js), its file switcher and outline, and the editor
 // (srcedit.js). The component is the markup and renders once; source.js
 // and srcedit.js draw into it by id. Its Rebuild and boot button is a
 // component on RB (rebuild.jsx), like the Source tab's box.
 
-import { RebuildPanelButton } from "./rebuild.jsx";
+import { h, Fragment } from "./html.js";
 
 function SourceAside() {
 	return (
@@ -53,7 +56,7 @@ function SourceAside() {
 					{" "}
 					<button id="ed_revert" type="button" title="Throw away your edits of this file (press twice)">Revert</button>
 					{" "}
-					<RebuildPanelButton />
+					<span id="rb_go_slot" className="rbslot" />
 				</span>
 			</div>
 			{" "}

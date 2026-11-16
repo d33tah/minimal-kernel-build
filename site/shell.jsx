@@ -11,6 +11,7 @@ import { QuestsPanel } from "./quests.jsx";
 import { EventsPanel } from "./events.jsx";
 import { RebuildPanel } from "./rebuild.jsx";
 import { AboutPanel } from "./about.jsx";
+import { SnapshotsPanel } from "./snapshotspanel.jsx";
 
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
@@ -19,6 +20,7 @@ function mountShell() {
 	mount($("panel_events"), <EventsPanel />);
 	mount($("rb_box"), <RebuildPanel />);
 	mount($("panel_about"), <AboutPanel />);
+	mount($("panel_snapshots"), <SnapshotsPanel />);
 }
 
 export { mountShell };

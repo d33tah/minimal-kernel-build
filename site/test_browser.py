@@ -12338,6 +12338,26 @@ def snapdiff_run(browser, base, shots, name, scheme, phone):
     if marks != n0:
         problems.append(f"{tag}: the hexdump of page {p0:#x} marks {marks} bytes, {n0} changed")
     shot("hex")
+    # The Worker keeps no decoded state (P1d): after the diff, the listed
+    # pages of both sides only; a page the diff does not list is read from
+    # both snapshots decoded again (the same bytes on both sides).
+    held = page.evaluate("snapWorker({ op: 'held' })")
+    r["worker holds"] = held
+    if held.get("diffPages") != len(want_pages) or held.get("bytes") != 2 * 4096 * len(want_pages):
+        problems.append(f"{tag}: after the diff the snapshot Worker holds {held}, want the {len(want_pages)} listed pages of both sides")
+    listed = {p for p, _ in want_pages}
+    other = next(p for p in range(1, 4096) if p not in listed)
+    same = page.evaluate("""async (p) => { const r = await snapPages(p);
+      return r.a.length === 4096 && r.b.length === 4096 && r.a.every((v, i) => v === r.b[i]); }""", other)
+    if not same:
+        problems.append(f"{tag}: page {other:#x}, unchanged between the two, differs when read again from the snapshots")
+    # "now" against "now" (both pickers allow it): one state, nothing differs.
+    # The diff replaces the Worker's kept pages, so the Page tab below reads
+    # B's page from the snapshots decoded again.
+    nn = page.evaluate("""async () => { const r = await snapWorker({ op: 'diff', a: { key: 'now', raw: await emulator.save_state() }, b: { key: 'now' } });
+      return [r.pages.length, (await snapWorker({ op: 'held' })).diffPages]; }""")
+    if nn != [0, 0]:
+        problems.append(f"{tag}: now against now lists {nn[0]} pages, the Worker keeps {nn[1]}")
 
     # Open B's page in the Page tab: its bytes as B had them; Back returns.
     p1 = next((p for p, _ in want_pages if p in b_hex), p0)

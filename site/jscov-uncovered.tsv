@@ -287,12 +287,12 @@ snapshots.js	743	18df6ba7	a worker answer for an id nobody waits for: only after
 snapshots.js	783	a46686b9	Diff with a picker empty or no machine: the Diff button is disabled then (renderSnapPick)
 snapshots.js	817	7ff245a8	a register missing on one side of a diff: the worker's cpuOf gives every register but EFLAGS and the meta always has EFLAGS (snapMeta); only a record from before both had them
 snapshots.js	952	f8bff038	a newer diff started while the hexdump's page was read: the worker answers in a few ms, faster than a second click
-snapshots.js	956-957	34d7eae8	reading a page after the diff succeeded: the worker keeps both sides decoded (KEEP 2 plus now); it fails only if the worker died in between
+snapshots.js	956-957	34d7eae8	reading a page after the diff succeeded: the worker keeps both sides of the pages the diff lists; it fails only if the worker died in between
 snapshots.js	1021-1023	f33036bc	same as 951 for the Page tab buttons
 snapshots.js	1025	f8bff038	same race as 947 for the Page tab buttons
-snapworker.js	59	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
-snapworker.js	291	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
-snapworker.js	314	7f0ad9ae	a page read of now without its decoded RAM: now is never evicted from the worker's cache, only lost with a new worker
+snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
+snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
+snapworker.js	313	9fe9260f	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
 source.js	28-30	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
 source.js	40	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
 source.js	47	5eacb3f2	race: as line 38, the index.json fetch failed after another kernel was loaded

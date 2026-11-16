@@ -17,11 +17,16 @@
 //                                how many pages were compared and the CPU
 //                                fields of both sides
 //   { op: "pages", id, a, b, p } page p of both sides (two 4096-byte arrays)
+//   { op: "held", id }           { bytes, diffPages }: what the Worker keeps
+//                                between answers (the last diff's pages)
 // where s, a and b are { key, blob, codec, size, chain } (a stored
 // snapshot: codec "lz4", "gzip" or "raw", size = the stored state's length,
 // chain = for a delta its bases, the full one first) or
 // { key: "now", raw: ArrayBuffer } (a save_state() taken for the diff,
-// sent once per diff). Diffs keep the last few snapshots decoded.
+// sent once per diff). The Worker keeps no decoded state after an answer
+// (Debian: 64 MiB each; diffs kept two snapshots and "now" decoded, 192
+// MiB): a diff keeps both sides' bytes of the pages it lists, which is
+// what "pages" asks for, and decodes the two snapshots again otherwise.
 //
 // v86 0.5.471's state layout (src/state.js save_state): a 16-byte header of
 // four int32 (magic 0x86768676, version 6, total length, info block
@@ -50,8 +55,8 @@ const lz4Ready = () => lz4Init("lz4/lz4_wasm_bg.wasm" + self.location.search);
 
 const PAGE = 4096;
 const STATE_MAGIC = 0x86768676 | 0;
-const KEEP = 2; // decoded snapshots kept besides "now" (64 MiB each for Debian)
-const decoded = new Map(); // key -> { ram: Uint8Array, cpu, base, changed }
+// The last diff's sides and, per page it lists, both sides' bytes.
+let lastDiff = null; // { a, b, pages: Map page -> [Uint8Array, Uint8Array] }
 const DELTA_OF = "mkb_delta_of";
 
 async function gunzip(blob) {
@@ -240,25 +245,15 @@ function nonzeroPages(ram) {
 	return out;
 }
 
-// RAM of s: its chain's full state, then each delta's pages on top. The
-// nearest decoded snapshot of the chain stands in for the ones before it.
+// RAM of s: its chain's full state, then each delta's pages on top.
 async function chainRam(s) {
 	const list = [...(s.chain || []), s];
-	let i = list.length - 1;
-	while (i >= 0 && !decoded.has(list[i].key))
-		i--;
-	let ram;
-	if (i >= 0) {
-		ram = decoded.get(list[i].key).ram.slice();
-	} else {
-		const P = parseRaw(await unpack(list[0]));
-		if (P.deltaOf)
-			throw new Error("the snapshot this delta was taken against is missing");
-		ram = new Uint8Array(P.size);
-		applyPages(ram, P);
-		i = 0;
-	}
-	for (let j = i + 1; j < list.length; j++) {
+	const P0 = parseRaw(await unpack(list[0]));
+	if (P0.deltaOf)
+		throw new Error("the snapshot this delta was taken against is missing");
+	const ram = new Uint8Array(P0.size);
+	applyPages(ram, P0);
+	for (let j = 1; j < list.length; j++) {
 		const P = parseRaw(await unpack(list[j]));
 		if (P.deltaOf !== list[j - 1].key)
 			throw new Error("snapshot " + list[j].key + " is not a delta of " + list[j - 1].key);
@@ -306,30 +301,30 @@ function deltaOf(P, hashes, base) {
 	return { raw: serialize(P, packed, bitmap, base.key), pages: changed.length };
 }
 
-async function side(s) {
+// One side decoded: { ram, cpu } (a delta also: base, changed). "now" is
+// decoded from the save_state() sent with the request (now: the other
+// side's, when both are "now").
+async function side(s, now) {
 	if (s.key === "now") {
 		if (s.raw)
-			decoded.set("now", parseState(s.raw));
-		if (!decoded.has("now"))
-			throw new Error("no copy of the machine's RAM: diff again");
-		return decoded.get("now");
+			return parseState(s.raw);
+		if (now)
+			return now;
+		throw new Error("no copy of the machine's RAM: diff again");
 	}
-	let d = decoded.get(s.key);
-	if (!d) {
-		if (s.chain && s.chain.length) {
-			// A delta: its RAM from the chain, its CPU and page list from itself.
-			const ram = await chainRam(s);
-			const P = parseRaw(await unpack(s));
-			d = { ram, cpu: cpuOf(P), base: P.deltaOf, changed: markedPages(P) };
-		} else {
-			d = parseState(await unpack(s));
-		}
-		decoded.set(s.key, d);
-		const old = [...decoded.keys()].filter((k) => k !== "now");
-		while (old.length > KEEP)
-			decoded.delete(old.shift());
+	if (s.chain && s.chain.length) {
+		// A delta: its RAM from the chain, its CPU and page list from itself.
+		const ram = await chainRam(s);
+		const P = parseRaw(await unpack(s));
+		return { ram, cpu: cpuOf(P), base: P.deltaOf, changed: markedPages(P) };
 	}
-	return d;
+	return parseState(await unpack(s));
+}
+
+// Page p of a side's RAM (zero past its end).
+function pageOf(X, p) {
+	const lo = p * PAGE;
+	return lo < X.ram.length ? X.ram.slice(lo, lo + PAGE) : new Uint8Array(PAGE);
 }
 
 // Pages that differ between A and B (of the pages in only, if given).
@@ -409,26 +404,39 @@ self.onmessage = async (ev) => {
 				const g = gather(ram, nz);
 				raw = serialize(P, g.packed, g.bitmap, null);
 			}
-			decoded.delete(m.s.key);
 			const data = await pack(raw);
 			done({ data, rawLen: raw.byteLength, full, delta }, [data]);
 			return;
 		}
-		const A = await side(m.a), B = await side(m.b);
 		if (m.op === "diff") {
+			lastDiff = null;
+			const A = await side(m.a), B = await side(m.b, m.a.key === "now" ? A : null);
 			// A delta and its base: only the delta's pages can differ.
 			const only = B.changed && B.base === m.a.key ? B.changed : A.changed && A.base === m.b.key ? A.changed : null;
 			const t1 = performance.now();
 			const pages = changedPages(A.ram, B.ram, only);
-			self.postMessage({ id: m.id, pages, compared: only ? only.length : -1, a: A.cpu, b: B.cpu,
-				ms: Math.round(performance.now() - t1) });
+			const ms = Math.round(performance.now() - t1);
+			lastDiff = { a: m.a.key, b: m.b.key, pages: new Map(pages.map(([p]) => [p, [pageOf(A, p), pageOf(B, p)]])) };
+			self.postMessage({ id: m.id, pages, compared: only ? only.length : -1, a: A.cpu, b: B.cpu, ms });
 		} else if (m.op === "pages") {
-			const one = (X) => {
-				const lo = m.p * PAGE;
-				return lo < X.ram.length ? X.ram.slice(lo, lo + PAGE) : new Uint8Array(PAGE);
-			};
-			const pa = one(A), pb = one(B);
+			// From the last diff of these sides, or both snapshots decoded again.
+			const kept = lastDiff && lastDiff.a === m.a.key && lastDiff.b === m.b.key ? lastDiff.pages.get(m.p) : null;
+			let pa, pb;
+			if (kept) {
+				pa = kept[0].slice();
+				pb = kept[1].slice();
+			} else {
+				const A = await side(m.a), B = await side(m.b);
+				pa = pageOf(A, m.p);
+				pb = pageOf(B, m.p);
+			}
 			self.postMessage({ id: m.id, a: pa, b: pb }, [pa.buffer, pb.buffer]);
+		} else if (m.op === "held") {
+			// For the tests: the bytes this Worker keeps between answers.
+			let bytes = 0;
+			for (const [x, y] of lastDiff ? lastDiff.pages.values() : [])
+				bytes += x.byteLength + y.byteLength;
+			self.postMessage({ id: m.id, bytes, diffPages: lastDiff ? lastDiff.pages.size : 0 });
 		}
 	} catch (e) {
 		self.postMessage({ id: m.id, error: String(e && e.message || e) });

@@ -84,7 +84,7 @@ async function main() {
 	fs.writeFileSync(path.join(site, "m.js"), MOD);
 	fs.writeFileSync(path.join(site, "app.js"), APP);
 	await esbuild.build({ absWorkingDir: site, entryPoints: ["app.js"], outfile: path.join(site, "app.bundle.js"), bundle: true,
-		format: "esm", target: "esnext", minifyWhitespace: true, sourcemap: "linked", sourcesContent: true, logLevel: "warning" });
+		format: "esm", target: "esnext", sourcemap: "linked", sourcesContent: true, logLevel: "warning" });
 	// The "Worker": m.js run as it is, from a copy (another URL; the same text).
 	fs.writeFileSync(path.join(work, "m.js"), MOD);
 	fs.writeFileSync(path.join(work, "w.js"), WORKER);

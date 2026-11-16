@@ -18,10 +18,11 @@ the React components (`*.jsx`) and React, bundled by `build.mjs`.
     cd site && npm ci && node build.mjs   # app.bundle.js and app.bundle.js.map
 
 `build.mjs` runs esbuild (version pinned in `package-lock.json`, like
-React) with only whitespace minified, nothing renamed or lowered: the
-bundle is the modules' own code in import order, with a source map naming
-the file, line and column of every piece (the indentation and line breaks
-were 430 KB of 1.6 MB, ~30 ms of parsing before the boot). The same sources give the same bytes; the site job
+React) with nothing minified, renamed or lowered: the bundle is the
+modules' own code in import order, with a source map naming the file and
+line of every piece. (Minifying its whitespace saved ~30 ms of the boot
+but moved MCR's branch counts: 86 -> 83%, more branches found through the
+map; tried and reverted in R3.) The same sources give the same bytes; the site job
 checks that (`node build.mjs --check` builds again in memory and compares)
 before it stamps and deploys the bundle. The coverage report (jscov)
 follows the source map, so its lines and the list of lines the tests do

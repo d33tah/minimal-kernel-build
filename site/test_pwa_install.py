@@ -43,6 +43,7 @@ import argparse
 import json
 import os
 import pathlib
+import re
 import shutil
 import sys
 import tempfile
@@ -88,9 +89,14 @@ def control_icons_404(d):
 
 
 def control_no_sw(d):
-    # pwa.js's code as the page runs it: in the bundle (build.mjs)
-    edit(d / "app.bundle.js", 'PWA.reg = await navigator.serviceWorker.register("sw.js", { updateViaCache: "none" });',
-         'throw new Error("registration removed by the no-service-worker control");')
+    # pwa.js's code as the page runs it: in the bundle (build.mjs; its
+    # whitespace is minified, so the statement is matched without it)
+    path = d / "app.bundle.js"
+    s = path.read_text()
+    reg = re.compile(r'PWA\.reg\s*=\s*await navigator\.serviceWorker\.register\("sw\.js",\s*\{\s*updateViaCache:\s*"none"\s*\}\);?')
+    if len(reg.findall(s)) != 1:
+        raise SystemExit(f"control: pwa.js's registration not found once in {path} (the site changed; update the control)")
+    path.write_text(reg.sub('throw new Error("registration removed by the no-service-worker control");', s))
 
 
 def control_start_outside(d):

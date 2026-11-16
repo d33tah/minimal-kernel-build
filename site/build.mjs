@@ -8,10 +8,8 @@
 // libv86.js (v86 takes its clock when it loads), and the bundle imports the
 // same URL, so there is one clock.
 //
-// Only whitespace is minified: nothing is renamed and the code is not
-// lowered (target esnext), so the bundle is the modules' own code in
-// import order, without the indentation and line breaks (430 KB of 1.6 MB:
-// parsing them cost the page ~30 ms on the way to the boot, R3). The same
+// Nothing is minified or renamed and the code is not lowered (target
+// esnext): the bundle is the modules' own code in import order. The same
 // sources and esbuild version give the same bytes; CI checks that with
 // --check, which builds again in memory and compares with the files on disk.
 //
@@ -44,7 +42,6 @@ const OPTIONS = {
 	target: "esnext",
 	jsx: "automatic",
 	charset: "utf8",
-	minifyWhitespace: true,
 	sourcemap: "linked",
 	sourcesContent: true,
 	legalComments: "eof",

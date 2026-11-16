@@ -24,13 +24,11 @@ const cssName = (k) => (k.startsWith("--") ? k : k.replace(/[A-Z]/g, (c) => "-" 
 // A fragment's children: the HTML of each, in order.
 const Fragment = (props) => ({ html: kids(props.children) });
 
+// The markup has elements and text only (no lists, no conditional parts).
 function kids(list) {
 	let out = "";
 	for (const k of list)
-		if (Array.isArray(k))
-			out += kids(k);
-		else if (k !== null && k !== undefined && k !== false && k !== true)
-			out += typeof k === "object" && k.html !== undefined ? k.html : escText(k);
+		out += typeof k === "object" ? k.html : escText(k);
 	return out;
 }
 
@@ -42,8 +40,6 @@ function h(tag, props, ...children) {
 	let open = "<" + tag;
 	let selected = null;
 	for (const [k, v] of Object.entries(props || {})) {
-		if (v === false || v === null || v === undefined)
-			continue;
 		if (tag === "select" && k === "defaultValue") {
 			selected = String(v);
 			continue;

@@ -161,7 +161,14 @@ tab (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
 quests.jsx), the Events tab (`EventsPanel`, events.jsx) and the Source
 tab's Rebuild and boot box with its build log (`RebuildPanel`,
 rebuild.jsx, in `#rb_box`; the build log's `<pre>` is written line by
-line as the build runs, from a ref, not drawn by React per line).
+line as the build runs, from a ref, not drawn by React per line), and
+the About tab (`AboutPanel`, about.jsx; `check-legend.py` reads the
+legend's samples there).
+
+A tab whose views draw themselves into elements by id (tables, listings,
+canvases) gets a component of its markup first: it renders once, and
+the module that draws goes on drawing into those elements. React never
+renders it again, so it never touches what the module wrote.
 
 A view whose state lives in a controller object (`QUESTS`, `MEV`, `RB`) keeps
 it there: the controller computes what the tab shows (the quests' cards,

@@ -289,7 +289,7 @@ snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only 
 snapworker.js	312	ddb69209	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
 source.js	37-39	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
 source.js	49	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
-source.js	49	5eacb3f2	race: as line 38, the index.json fetch failed after another kernel was loaded
+source.js	56	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
 source.js	78	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
 source.js	85	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
 source.js	92	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race

@@ -263,6 +263,20 @@ def check_list(tmp, fix, raw, summary):
     r = subprocess.run(["node", relist_js, "--rehash", f"cov.js:{got[0][1]}", str(lst)], capture_output=True, text=True)
     if r.stdout.split("\t")[:3] != ["cov.js", got[0][1], code_of(moved_src, line_set(got[0][1]))]:
         problems.append(f"relist --rehash: {r.stdout!r}")
+
+    # Two rows of the same code (`return;` twice, as source.js has): lines
+    # added between them move only the second, which must not land on the
+    # first's lines (it once did, and the second's lines went unlisted).
+    dup = rl / "dup.js"
+    body = ["function f(a) {", "\tif (a)", "\t\treturn;", "\tg();", "\tif (a)", "\t\treturn;", "\th();", "}"]
+    dup.write_text("\n".join(body) + "\n")
+    h = code_of(body, {3})
+    lst.write_text("# self-test\n" + f"dup.js\t3\t{h}\tfirst\n" + f"dup.js\t6\t{h}\tsecond\n")
+    dup.write_text("\n".join(body[:4] + ["\tk();"] * 6 + body[4:]) + "\n")
+    r = relist()
+    got = [(g[0], g[1], g[3]) for g in rows_of(lst.read_text())]
+    if r.returncode or got != [("dup.js", "3", "first"), ("dup.js", "12", "second")]:
+        problems.append(f"relist with two rows of the same code: exit {r.returncode}, rows {got}, want lines 3 and 12\n{r.stdout}")
     return problems
 
 

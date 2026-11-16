@@ -100,6 +100,14 @@ const isSometimes = (r) => /^sometimes:/.test(r.reason);
 function relocate(rows, sources) {
 	const moved = [], lost = [];
 	const shift = {};
+	// Lines a row still holds are taken: a moved row whose code is the same
+	// (two identical `return;` blocks) must not land on them.
+	const taken = {};
+	for (const r of rows)
+		if (r.file in sources && codeOf(splitLines(sources[r.file]), [...r.lines].sort((x, y) => x - y)) === r.code)
+			for (const n of r.lines)
+				(taken[r.file] ||= new Set()).add(n);
+	const free = (file, nums) => !nums.some((n) => taken[file] && taken[file].has(n));
 	for (const r of rows) {
 		if (!(r.file in sources)) {
 			lost.push(r);
@@ -118,7 +126,7 @@ function relocate(rows, sources) {
 		for (let d = 0; best === null && d <= lines.length; d++)
 			for (const s of d ? [want - d, want + d] : [want])
 				if (best === null && s >= 1 && s + rel[rel.length - 1] <= lines.length &&
-					codeOf(lines, rel.map((x) => s + x)) === r.code)
+					codeOf(lines, rel.map((x) => s + x)) === r.code && free(r.file, rel.map((x) => s + x)))
 					best = s;
 		if (best === null) {
 			lost.push(r);
@@ -127,6 +135,8 @@ function relocate(rows, sources) {
 		const from = ranges(nums);
 		shift[r.file] = best - nums[0];
 		r.lines = new Set(rel.map((d) => best + d));
+		for (const n of r.lines)
+			(taken[r.file] ||= new Set()).add(n);
 		moved.push({ row: r, from });
 	}
 	return { moved, lost };

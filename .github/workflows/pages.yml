@@ -826,7 +826,7 @@ jobs:
         - followeip
         - followfuzz
         - memevents
-        - memmap
+        - memmap,scanpages
         - quests,memtabs
     name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:

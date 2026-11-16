@@ -5,14 +5,13 @@
 
 import { useLayoutEffect } from "react";
 import { hex, PAGE, $ } from "./util.js";
-import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, provide } from "./page.js";
+import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, markTabShown, provide } from "./page.js";
 import { graphShow } from "./graph.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { covShow } from "./coverage.js";
 import { MMAP } from "./memmap.js";
 import { bmFromHash } from "./bookmarks.js";
 import { drawGrid } from "./memview.js";
-import { inspect } from "./listing.js";
 import { renderContext } from "./debugui.js";
 import { useStore } from "./ui.jsx";
 
@@ -78,8 +77,9 @@ function writeHash() {
 }
 
 // The tab bar, Settings, Quests and Events follow `tab` (React, the store); the
-// panels are shown and hidden here, and the views not yet components that
-// draw on demand are told.
+// `tabShows` (markTabShown: the panel is shown then; a view that throws does
+// not stop the others); the ones not yet moved there are told after.
+// yet moved there are told.
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
 	setTab(TABS.includes(name) ? name : "machine");
@@ -87,8 +87,11 @@ function showTab(name) {
 		$("panel_" + t).hidden = t !== tab;
 	vmKeys();
 	writeHash();
-	if (tab === "page")
-		inspect();
+	markTabShown();
+	showViews();
+}
+
+function showViews() {
 	if (tab === "memory")
 		drawGrid();
 	if (tab === "debugger")

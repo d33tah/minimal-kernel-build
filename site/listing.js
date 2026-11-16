@@ -7,7 +7,7 @@
 import { realNow } from "./clock.js";
 import { PAGE, $, escHtml, esc, asciiOf, hex, V86_KERNEL_ADDR } from "./util.js";
 import { emulator, disasm, stepper, symbols, api, image, emuRam, selectedPage, emuReady, setSelectedPage,
-	runState, provide } from "./page.js";
+	runState, provide, state, tab } from "./page.js";
 import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAttrs, jumpBadgesHtml,
 	jumpsJitNote, jumpsDrawn, jumpHitScroll, setJumpHitScroll, drawJumpArcs } from "./jumps.js";
 import { srcLineHtml } from "./source.js";
@@ -588,6 +588,12 @@ function listingLineAt(a) {
 
 // Other modules change them through these (an imported binding is read-only).
 const setNavScrollWant = (v) => { navScrollWant = v; };
+
+// The Page tab reads its page again each time it is shown (showTab).
+state.subscribe(() => {
+	if (tab === "page")
+		inspect();
+}, ["tabShows"]);
 
 // The page API's entries of this module (page.js).
 provide({ renderPage, coverageFor, inspect, selectPage, insnIndex, setLive });

@@ -62,11 +62,14 @@ let navBuilt = false;    // the history's first entry is made
 let openFnWant = null;   // the function whose source opens when its DWARF arrives
 // Compact tabs (Settings): the tab bar shows only the emoji (tabs.jsx).
 let compactTabs = false;
+// showTab calls so far (tabs.jsx): the views a tab draws on demand follow it
+// (a tab shown again, e.g. the Page tab for another page, draws again).
+let tabShows = 0;
 
 const state = new Store({ kernels, image, initrd, emulator, emuRam, emuReady, symbols, disasm, pageClass, grid,
 	selectedPage, tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine,
 	usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo, runToLabel, runToFrom,
-	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, compactTabs });
+	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, compactTabs, tabShows });
 
 const setKernels = (v) => { kernels = v; state.set("kernels", v); };
 const setImage = (v) => { image = v; state.set("image", v); };
@@ -105,6 +108,7 @@ const setFlashes = (v) => { flashes = v; state.set("flashes", v); };
 const setNavBuilt = (v) => { navBuilt = v; state.set("navBuilt", v); };
 const setOpenFnWant = (v) => { openFnWant = v; state.set("openFnWant", v); };
 const setCompactTabs = (v) => { compactTabs = v; state.set("compactTabs", v); };
+const markTabShown = () => { tabShows++; state.set("tabShows", tabShows); };
 // The machine's state was drawn anew (registers, counters, screen): views
 // that show it may read it again.
 const publishMachine = () => { machine++; state.set("machine", machine); };
@@ -166,4 +170,4 @@ export { state, kernels, image, initrd, emulator, emuRam, emuReady, symbols, dis
 	runToLabel, runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant,
 	setUsedPages, setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo,
 	setRunToLabel, setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes,
-	setNavBuilt, setOpenFnWant, compactTabs, setCompactTabs, api, provide };
+	setNavBuilt, setOpenFnWant, compactTabs, setCompactTabs, tabShows, markTabShown, api, provide };

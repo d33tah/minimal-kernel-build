@@ -18911,9 +18911,9 @@ FRAMEGOLD_JS = """async () => {
     out['graph_' + fold] = await sha([d.steps, d.entry_step, d.nodes, d.edges]);
     for (const chains of [false, true]) {
       G.chains = chains; G.layout = null;
-      const L = timelineLayout(st), a = lanes();
+      const L = timelineLayout(st), a = lanes(), deepest = layoutDeepest(st, L);
       for (let k = 0; k < n; k++) {
-        mix(a, L.row[k]); mix(a, L.isHead[k] ? 1 : 0); mix(a, L.deepest[k]);
+        mix(a, L.row[k]); mix(a, L.isHead[k] ? 1 : 0); mix(a, deepest[k]);
         if (L.row[k] + 1 > rows) rows = L.row[k] + 1;
       }
       out['layout_' + fold + '_' + chains] = fin(a) + ':' + await sha([...L.chain]);

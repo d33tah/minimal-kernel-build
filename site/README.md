@@ -973,8 +973,11 @@ as a colour emoji (also checked once in Firefox and WebKit):
   calls open at that moment first: closed later, at the snapshot's
   earlier count, they ended before they began (negative counts in the
   Calls tab). The
-  timeline layout keeps a 16-bit row and deepest row per frame (32-bit
-  only for a run deeper than 32,766 calls) and a head flag. Tests:
+  timeline layout keeps a 16-bit row per frame (32-bit only for a run
+  deeper than 32,766 calls) and a head flag, 3 bytes a frame, in buffers
+  it reuses when it is made again (at every redraw while a run goes on
+  with Calls open); the deepest row below each frame (2 bytes more) only
+  once a depth cap asks for it. Tests:
   `site/test_frames.mjs` (site job: random pushes, ends, truncations and
   overflow values against a plain-array model, and 33 bytes a frame) and
   suite framegold (fixed runs of the minified Linux and Debian, then a

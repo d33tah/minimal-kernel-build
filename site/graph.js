@@ -208,27 +208,45 @@ function fitLabel(ctx, text, w) {
 // Display rows of the frames: interrupt frames hidden (when folded), and
 // single-child chains whose parent has almost no self time drawn as one
 // box "a > b > c" (when compressing). Cached until frames or settings change.
-// Per frame: row (-1 hidden), isHead (1: the frame starts its box; the
-// others are in chain under their head) and deepest (the deepest row below
-// it). A row is at most the frame's depth, so 16 bits hold it unless a
-// frame was deeper than that.
+// Per frame: row (-1 hidden) and isHead (1: the frame starts its box; the
+// others are in chain under their head); deepest (the deepest row below
+// it) only once a depth cap asks for it (layoutDeepest). A row is at most
+// the frame's depth, so 16 bits hold it unless a frame was deeper than that.
+// The arrays are views of buffers kept from one layout to the next, with
+// room to grow: while a run goes on with Calls open the layout is made
+// again at every redraw, and new arrays each time held the old layout, the
+// new one and the garbage of the ones before (6 bytes a frame each; now 3,
+// and 2 more for deepest with a depth cap).
+const layoutBuf = { row: null, isHead: null, deepest: null };
+
+function layoutView(name, T, n) {
+	let b = layoutBuf[name];
+	if (!b || !(b instanceof T) || b.length < n) {
+		b = new T(n + (n >> 3) + 4096);
+		layoutBuf[name] = b;
+	}
+	return b.subarray(0, n);
+}
+
 function timelineLayout(st) {
 	const fr = st.fr, n = fr.n;
 	const key = n + "," + G.fold + "," + G.chains + "," + st.steps;
 	if (G.layout && G.layout.key === key)
 		return G.layout;
+	G.layout = null; // its arrays are about to be written over
 	const Row = fr.maxDepth < 0x7fff ? Int16Array : Int32Array;
 	const now = recTo(st); // the end of open frames (fEnd)
 	const hide = G.fold ? FR_IRQ : 0; // hiddenFrame: a flag bit
 	const chunks = fr.chunkCount();
-	// Children shown per frame, counted up to 2 (only "exactly one" matters).
-	const kids = new Uint8Array(n), row = new Row(n).fill(-1), isHead = new Uint8Array(n);
+	// isHead while it is made: bits 0-1 the children shown, counted up to 2
+	// (only "exactly one" matters), bit 2 the head flag.
+	const row = layoutView("row", Row, n).fill(-1), isHead = layoutView("isHead", Uint8Array, n).fill(0);
 	for (let c = 0, k = 0; c < chunks; c++) {
 		const par = fr.parentsOf(c), fl = fr.flagsOf(c), len = fr.chunkLen(c);
 		for (let i = 0; i < len; i++, k++) {
 			const p = par[i];
-			if (p >= 0 && kids[p] < 2 && !(fl[i] & hide))
-				kids[p]++;
+			if (p >= 0 && (isHead[p] & 3) < 2 && !(fl[i] & hide))
+				isHead[p]++;
 		}
 	}
 	const chain = new Map(); // head -> names below it
@@ -242,10 +260,10 @@ function timelineLayout(st) {
 			const p = par[i];
 			if (p < 0 || row[p] < 0) {
 				row[k] = 0;
-				isHead[k] = 1;
+				isHead[k] |= 4;
 				continue;
 			}
-			if (chains && kids[p] === 1) {
+			if (chains && (isHead[p] & 3) === 1) {
 				const pc = p >>> FR_BITS, pi = p & FR_MASK;
 				const sp = frStartAt(fr, fr.baseOf(pc), fr.startsRaw(pc), pi, p), ep = frEndAt(fr, fr.endsRaw(pc), pi, p, sp);
 				const sk = frStartAt(fr, base, ds, i, k), ek = frEndAt(fr, de, i, k, sk);
@@ -255,7 +273,7 @@ function timelineLayout(st) {
 					row[k] = row[p];
 					// The head of p's box: up through the frames in its chain.
 					let h = p;
-					while (!isHead[h])
+					while (!(isHead[h] & 4))
 						h = fr.parentOf(h);
 					if (!chain.has(h))
 						chain.set(h, []);
@@ -264,20 +282,32 @@ function timelineLayout(st) {
 				}
 			}
 			row[k] = row[p] + 1;
-			isHead[k] = 1;
+			isHead[k] |= 4;
 		}
 	}
-	const deepest = row.slice();
-	for (let c = chunks - 1; c >= 0; c--) {
+	for (let k = 0; k < n; k++)
+		isHead[k] >>= 2;
+	G.layout = { key, row, isHead, chain, deepest: null };
+	return G.layout;
+}
+
+// L.deepest: per frame the deepest row of the frames below it.
+function layoutDeepest(st, L) {
+	if (L.deepest)
+		return L.deepest;
+	const fr = st.fr, row = L.row, n = row.length;
+	const deepest = layoutView("deepest", row.constructor, n);
+	deepest.set(row);
+	for (let c = fr.chunkCount() - 1; c >= 0; c--) {
 		const par = fr.parentsOf(c), k0 = c * FR_SIZE;
-		for (let i = fr.chunkLen(c) - 1; i >= 0; i--) {
+		for (let i = Math.min(fr.chunkLen(c), n - k0) - 1; i >= 0; i--) {
 			const p = par[i], k = k0 + i;
 			if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
 				deepest[p] = deepest[k];
 		}
 	}
-	G.layout = { key, row, isHead, chain, deepest };
-	return G.layout;
+	L.deepest = deepest;
+	return deepest;
 }
 
 
@@ -484,6 +514,7 @@ function drawTimeline() {
 	// frEndAt do), tp and rect worked out inline, and the row's coverage
 	// looked up in an array.
 	const row = L.row, isHead = L.isHead, x0 = G.x0, x1 = G.x1, tr = G.transpose, flame = G.flame, xOff = G.xOff, yOff = G.yOff;
+	const deepest = cap < Infinity ? layoutDeepest(st, L) : null;
 	const covOf = [];
 	for (let c = 0; c < chunks; c++) {
 		const base = fr.baseOf(c), ds = fr.startsRaw(c), de = fr.endsRaw(c);
@@ -549,8 +580,8 @@ function drawTimeline() {
 			drawn++;
 			if (G.transpose ? rh >= 13 : rw >= 40)
 				labels.push([k, x, y, rw, rh, label]);
-			if (r === cap && L.deepest[k] > L.row[k])
-				more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
+			if (r === cap && deepest[k] > row[k])
+				more.push([x, y, rw, rh, deepest[k] - row[k]]);
 		}
 	}
 	// The merged sub-pixel columns, as runs of covered columns per row.

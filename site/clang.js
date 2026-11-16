@@ -1,6 +1,5 @@
 "use strict";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./clang.js";
+import { withV } from "./util.js";
 
 // The page's toolchain (plan E0c): clang, ld.lld and the llvm tools of
 // clang/clang.wasm in a Worker (clangworker.js) over an in-memory file
@@ -109,4 +108,3 @@ class ClangWorker {
 }
 
 export { ClangWorker };
-bridge(thisModule);

@@ -32,11 +32,13 @@
 // real-time clock nothing is recorded.
 
 import { CLOCK, GUEST } from "./clock.js";
+import { $, VERSION, kib } from "./util.js";
+import { emulator, stepper, runState, revBranch, image, initrd, emuRam, clockMips, prefSpeed, startPaused,
+	snapKernelKey, kernels, setPrefSpeed, setStartPaused, showHeader, drawMaps, boot, loadKernel, setCounting,
+	pause, resume } from "./page.js";
 import { setCmdlineFromUrl } from "./symimport.js";
 import { ffEnabled } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./replay.js";
 
 const RUN_FORMAT = "mkb-run";
 // 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
@@ -375,9 +377,9 @@ async function replayRun(run) {
 	set("cmdline", run.cmdline);
 	history.replaceState(history.state, "", "?" + p.toString() + location.hash);
 	$("clock_mips").value = run.clock;
-	prefSpeed = [...$("dbg_speed").options].some((o) => o.value === run.speed) ? run.speed : prefSpeed;
+	setPrefSpeed([...$("dbg_speed").options].some((o) => o.value === run.speed) ? run.speed : prefSpeed);
 	$("count").checked = !!run.count;
-	startPaused = !!run.paused;
+	setStartPaused(!!run.paused);
 	setCmdlineFromUrl(run.cmdline);
 	$("cmdline").value = run.cmdline;
 	const mem = String(run.ram);
@@ -418,7 +420,7 @@ function replayFinish() {
 		"Replay differs from the recording (" + rp.why + ") at instruction " + got.at.toLocaleString("en") + ".";
 	runStatus(text + (rp.ignored ? " " + rp.ignored + " scancode" + (rp.ignored === 1 ? "" : "s") + " typed during the replay were ignored." : ""),
 		rp.ok ? "match" : "differ");
-	counting = false;
+	setCounting(false);
 	pause(rp.ok ? "Replay finished: the same state as recorded." : "Replay finished: differs from the recording (" + rp.why + ").");
 }
 
@@ -532,4 +534,3 @@ function initReplay() {
 export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
 	inputTaint, inputReset, inputRestore, inputBoot, runScreenHash, runNow, replayRun, replayFinish, replayStop,
 	replayAfterStop, runStatus, initReplay };
-bridge(thisModule);

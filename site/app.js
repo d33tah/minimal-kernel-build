@@ -1,48 +1,70 @@
 "use strict";
 
+// Its own exports, for window.MKB (debug.js).
+import * as app from "./app.js";
+
+import { realNow, CLOCK, GUEST } from "./clock.js";
+import { $, V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR, PAGE, h8, escHtml, esc, asciiOf, withV, num, h4,
+	httpWhy } from "./util.js";
+import { initrd, image, pageClass, emulator, emuRam, symbols, setPageClass, setGrid, selectedPage, stepper,
+	runState, grid, tab, disasm, emuReady, setSelectedPage, setTab, setVmHasKeys, vmHasKeys, setStepper,
+	setEmuReady, setRunState, setEmuRam, setEmulator, prefSpeed, setCounting, startPaused, setStartPaused,
+	setCountNote, counting, countNote, setPrefSpeed, setImage, setSymbols, setDisasm, setInitrd, kernels,
+	setKernels, provideApp } from "./page.js";
+import { exposeMKB } from "./debug.js";
+import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAttrs, jumpBadgesHtml,
+	jumpsJitNote, jumpsDrawn, jumpHitScroll, setJumpHitScroll, drawJumpArcs, jumpPopClose, setJumpHit,
+	renderEipJumps, initJumps } from "./jumps.js";
+import { patchV86Wasm, Stepper, TEXT_PROMPT, TEXT_PANIC, TEXT_END } from "./stepper.js";
+import { IRQ_COLOUR, SWITCH, PALETTE, graphShow, graphSelName, graphCapture, graphRestore, graphReset, G,
+	initGraph, renderGraphInfo } from "./graph.js";
+import { cfiRowText } from "./unwind.js";
+import { asmTargetName } from "./asmnames.js";
+import { dbgOnChange, dbgFrames, dbgHas, dbgTitle, dbgUnwind, dbgCfiInfo, dbgLineCodeWait, dbgUseShards,
+	dbgFresh } from "./dbginfo.js";
+import { srcLineHtml, srcPanel, srcShowFile, srcSwClose, setSrcPanel, renderSourcePanel, openSource,
+	renderSourceRows, srcLinkEl, srcFocusKeep, srcUseShipped, initSource, srcFresh } from "./source.js";
+import { initSrcEdit } from "./srcedit.js";
+import { covShow, initCoverage } from "./coverage.js";
+import { initrdNote, ramForInitrd, showImported, restoreImported, restoreCmdline, analyzeInitrd, initImport,
+	initInitrd, setCmdlineFromUrl } from "./symimport.js";
+import { liveDecode, liveInsnsForPage, icedError, loadIced, iced, kernelSymLookup, bitnessAt, decodeLive,
+	virtOffset } from "./livedis.js";
+import { ffActive, ffBreaks, setFfActive, ffEnabled, ffTarget, jitDetInstall, fastForward, ffAbort, ffInfo,
+	jitPending, jitFlush, JIT, jitChunk, setFfAbort, ffYield, codeRange, setFfInfo, fastRunTo } from "./fastforward.js";
+import { pageWalk, phys32, renderCpuState } from "./cpustate.js";
+import { MEV } from "./memevents.js";
+import { MMAP } from "./memmap.js";
+import { QUESTS } from "./quests.js";
+import { opEnv, varTypeOf, insnHtml, varsTaskNow, renderTaskRow, renderWatches, renderLocals, setupVars } from "./vars.js";
+import { fnLabelOf, renderFnRows, fnSymAt } from "./fnfacts.js";
+import { renderSettings, initSettings } from "./settings.js";
+import { pageSnapView, pageSnapBanner, setPageSnapView, setSnapDiff, renderSnapDiff, renderSnapshots,
+	initSnapshots } from "./snapshots.js";
+import { inputBoot, replayActive, replayMode, inputFlush, replayFinish, inputMark, inputTaint, inputRoom,
+	replayAfterStop, replayStop, initReplay } from "./replay.js";
+import { REV, revNeedsJit, revStepTo, revJitTick, revTick, revRoom, revStepRoom, revRate, revRender,
+	revBranch, revReset, initReverse } from "./reverse.js";
+import { bmRenderPages, bmCodeStar, bmFnStar, bmFromHash, bmFnNames, bmStarEl, bmAddButton, bmDraftFn,
+	bmMenuFit, initBookmarks } from "./bookmarks.js";
+import { initRebuild } from "./rebuild.js";
+import { PWA, pwaReload } from "./pwa.js";
+
 // Where v86 0.5.471 puts a bzImage (src/kernel.js, load_kernel): the
 // real-mode part at 0x80000, the command line at 0x8e000, the 32-bit part
 // at 1 MiB whatever loadflags/code32_start say.
 const V86_SETUP_ADDR = 0x80000;
 const V86_CMDLINE_ADDR = 0x8e000;
 const V86_HEAP_END = 0x8de00;
-const V86_KERNEL_ADDR = 0x100000;
-const PAGE = 4096;
 const DEFAULT_RAM = 2 * 1024 * 1024;
 const LIVE_MS = 500;
-// v86 0.5.471 src/kernel.js load_kernel: "Put the initrd at the 64 MB
-// boundary" (INITRD_ADDRESS = 64 << 20), whatever the RAM size, and sets
-// ramdisk_image/ramdisk_size in the header to it.
-const V86_INITRD_ADDR = 64 << 20;
 
-// The workflow stamps the script tags with ?v=<commit>; data fetched by the
-// page gets the same stamp, so a cached older deploy is never mixed in.
-// (index.html loads app.js as a plain script: currentScript is its tag.)
-const VERSION = new URL(document.currentScript.src).searchParams.get("v");
-const withV = (url) => (VERSION ? url + (url.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(VERSION) : url);
-
-const $ = (id) => document.getElementById(id);
-const hex = (n) => "0x" + n.toString(16);
-const kib = (n) => (n < 1024 ? n + " bytes" :
-	(n / 1024).toLocaleString("en", { maximumFractionDigits: 1 }) + " KiB");
-
-let kernels = [];
-let image = null;      // { name, bytes: Uint8Array, hdr }
-let initrd = null;     // { name, bytes: Uint8Array } passed to v86, or null
-let emulator = null;
-let emuRam = 0;          // RAM size the running emulator was started with
-let emuReady = false;    // v86 finished loading (emulator-loaded)
 let scanTimer = null;
-let symbols = null;      // symbols.json of the current kernel, or null
-let disasm = null;       // disasm.json of the current kernel, or null
 let focusClass = null;   // page class picked from a legend or bar: highlight those pages
 let scanCopy = null;     // Uint8Array: guest RAM as the latest scan saw it (updated in place)
 let usedPages = null;    // per page: 1 when the latest scan saw a non-zero byte
 let changedPages = null; // per page: 1 when it differs between the last two scans
-let pageClass = [];      // per page: CSS colour token (region or section)
 let pageSections = [];   // per page: section classes it overlaps, or null
-let grid = { cols: 32, cell: 14, pages: 0 };
-let selectedPage = -1;
 let liveTimer = null;
 
 function setStatus(text) {
@@ -362,7 +384,7 @@ function computePageClasses() {
 			}
 		}
 	}
-	pageClass = cls;
+	setPageClass(cls);
 }
 
 function drawGrid() {
@@ -371,7 +393,7 @@ function drawGrid() {
 		computePageClasses();
 	const cols = pages <= 1024 ? 32 : 64;
 	const cell = pages <= 1024 ? 14 : 9;
-	grid = { cols, cell, pages };
+	setGrid({ cols, cell, pages });
 	const canvas = $("pages");
 	canvas.width = cols * cell;
 	canvas.height = Math.ceil(pages / cols) * cell;
@@ -670,10 +692,6 @@ function showHover(p) {
 function readPage(p) {
 	return emulator.read_memory(p * PAGE, PAGE).slice();
 }
-
-const asciiOf = (b) => (b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : ".");
-const esc = (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c);
-const escHtml = (t) => t.replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
 
 // Characters of the listing's monospace font that fit in one line.
 let charWidth = 0, charFont = "";
@@ -1179,7 +1197,7 @@ function inspect() {
 	if (p < 0)
 		return;
 	if (p >= gridRam() / PAGE) {
-		selectedPage = -1;
+		setSelectedPage(-1);
 		return;
 	}
 	$("page_title").textContent = "Page " + hex(p * PAGE) + "–" + hex(p * PAGE + PAGE - 1) +
@@ -1204,7 +1222,7 @@ function inspect() {
 
 function selectPage(p) {
 	navJump(() => {
-		selectedPage = p;
+		setSelectedPage(p);
 		drawGrid();
 		inspect();
 		setLive();
@@ -1227,8 +1245,6 @@ function setLive() {
 const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "events", "quests", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
-// The Machine tab first: it holds the VM's screen and run controls.
-let tab = "machine";
 
 // Hash: #memory, #page/0x100000, #debugger, ...; with the Source panel open
 // its file and line after ~src= (#debugger~src=init/main.c:1000), so a
@@ -1258,7 +1274,7 @@ function writeHash() {
 
 function showTab(name) {
 	name = TAB_ALIASES[name] || name;
-	tab = TABS.includes(name) ? name : "machine";
+	setTab(TABS.includes(name) ? name : "machine");
 	for (const t of TABS) {
 		$("panel_" + t).hidden = t !== tab;
 		$("tab_" + t).setAttribute("aria-selected", t === tab);
@@ -1285,7 +1301,7 @@ function showTab(name) {
 // go to the jump history until the screen is clicked again.
 function vmKeys() {
 	if (tab !== "machine")
-		vmHasKeys = false;
+		setVmHasKeys(false);
 	if (emulator)
 		emulator.keyboard_set_status(tab === "machine");
 }
@@ -1353,7 +1369,7 @@ function readHash() {
 	if (addr) {
 		const a = parseInt(addr, 16);
 		if (Number.isFinite(a))
-			selectedPage = Math.floor(a / PAGE);
+			setSelectedPage(Math.floor(a / PAGE));
 	}
 	showTab(name || "machine");
 	// The file of the hash, without a history entry (a reload, a link).
@@ -1381,7 +1397,6 @@ let navAt = 0;
 let navDepth = 0;          // inside navJump: nested jumps (jumpGo -> jumpTo) are one entry
 let navBuilt = false;
 let navScrollWant = null;  // { page, top or addr, until }: the listing's scroll for renderPage after Back or jumpTo
-let vmHasKeys = true;      // the VM screen was clicked last: Alt+Left/Right are its keys
 
 // The instruction near the top third of the Page listing (where a jump
 // puts its target), else -1.
@@ -1487,7 +1502,7 @@ function navRestore(v) {
 	setJumpHit(v.hit);
 	setJumpHitScroll(false);
 	if (v.page !== selectedPage) {
-		selectedPage = v.page;
+		setSelectedPage(v.page);
 		drawGrid();
 		setLive();
 	}
@@ -1552,7 +1567,7 @@ function initNav() {
 	// too: these go to the history unless the VM screen was clicked last
 	// (or the focus is in a text field). Enter and Space click the buttons.
 	const vmFocus = (ev) => {
-		vmHasKeys = !!ev.target.closest && !!ev.target.closest("#screen_container");
+		setVmHasKeys(!!ev.target.closest && !!ev.target.closest("#screen_container"));
 	};
 	document.addEventListener("pointerdown", vmFocus, true);
 	document.addEventListener("focusin", vmFocus, true);
@@ -1700,13 +1715,13 @@ async function boot() {
 	const gen = ++bootGen;
 	stopDriver();
 	// A fast-forward of the old machine stops at its next check (st !== stepper).
-	stepper = null;
-	emuReady = false;
-	runState = "off";
+	setStepper(null);
+	setEmuReady(false);
+	setRunState("off");
 	setFfActive(false);
 	if (emulator) {
 		const old = emulator;
-		emulator = null;
+		setEmulator(null);
 		destroying = destroying.then(() => old.destroy()).catch((e) => console.warn("destroy:", e));
 	}
 	updateDebugUi();
@@ -1721,7 +1736,7 @@ async function boot() {
 	setPageSnapView(null);
 	setSnapDiff(null);
 	renderSnapDiff();
-	emuRam = ram();
+	setEmuRam(ram());
 	$("screen_text").textContent = "";
 	resetCounters();
 	updateDebugUi();
@@ -1740,7 +1755,7 @@ async function boot() {
 		GUEST.reset(new URLSearchParams(location.search));
 		if (!clockMips())
 			CLOCK.set(false, null);
-		emulator = new V86({
+		setEmulator(new V86({
 			memory_size: emuRam,
 			vga_memory_size: 256 * 1024,
 			screen_container: $("screen_container"),
@@ -1757,7 +1772,7 @@ async function boot() {
 			// bit cleared), but v86's speaker emulation still clicks while that
 			// channel runs. ?sound=1 turns the emulated PC speaker back on.
 			disable_speaker: new URLSearchParams(location.search).get("sound") !== "1",
-		});
+		}));
 	} catch (e) {
 		setStatus("v86 refused to start: " + e);
 		return;
@@ -1767,7 +1782,7 @@ async function boot() {
 		if (em !== emulator)
 			return;
 		GUEST.install(em.v86.cpu);
-		emuReady = true;
+		setEmuReady(true);
 		vmKeys();
 		setStatus("Running " + image.name + " with " + kib(ram()) +
 			(fatal ? ". The header check predicts this will not work." : "."));
@@ -1775,7 +1790,7 @@ async function boot() {
 		$("snap_save").disabled = false;
 		renderSnapshots();
 		try {
-			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
+			setStepper(new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr)));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
 			stepper.setSymbols(codeSymbols());
 			stepper.onTaskLeave = varsTaskNow;
@@ -1803,7 +1818,7 @@ async function boot() {
 				return i;
 			};
 		} catch (e) {
-			stepper = null;
+			setStepper(null);
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
 		}
 		graphReset(stepper);
@@ -1818,7 +1833,7 @@ async function boot() {
 		// "full", count the whole boot in the background, then run the JIT.
 		$("dbg_speed").value = prefSpeed;
 		entryPhase = !!stepper && prefSpeed !== "full";
-		counting = !!stepper && (entryPhase || $("count").checked);
+		setCounting(!!stepper && (entryPhase || $("count").checked));
 		initrdNote();
 		$("entry_info").textContent = entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "";
 		delete $("entry_info").dataset.steps;
@@ -1831,8 +1846,8 @@ async function boot() {
 		drawGrid();
 		inspect();
 		if (startPaused && stepper) {
-			startPaused = false;
-			runState = "paused";
+			setStartPaused(false);
+			setRunState("paused");
 			$("dbg_status").textContent = "Paused at the reset vector.";
 			afterStop();
 			if (replayActive())
@@ -1841,7 +1856,7 @@ async function boot() {
 			// BIOS, setup and the decompressor at JIT speed, then exactly to
 			// the kernel's link entry; from there as before.
 			const t = ffTarget();
-			runState = "paused";
+			setRunState("paused");
 			fastForward(t.phys, t.name).then((ok) => {
 				if (em !== emulator)
 					return;
@@ -1868,20 +1883,15 @@ const MILESTONES = ["Hello, World!", "Still alive"];
 const COUNT_LIMIT_MS = 12000000; // give up counting after this much stepping (200 min)
 const SLICE_MS = 25;            // fast stepping: JS time per slice
 
-let stepper = null;
-let runState = "off";    // "off", "jit" (v86's own loop), "stepped" (our loop), "paused"
-let counting = false;    // stepping from reset until every milestone is on screen
 let countStart = 0;      // realNow() when the count began
 let countMs = 0;         // stepping time spent counting
+const setCountMs = (ms) => { countMs = ms; }; // for the tests: MKB.countMs = ...
 let countSteps = 0;      // instructions stepped in that time
-let countNote = "";
-let startPaused = false; // ?paused=1: stop at the reset vector
 let runTo = null;        // Set of physical addresses "Run to" stops at, or null
 let runToLabel = "";     // what they are ("0x1234", "init/main.c:1000")
 let runToFrom = -1;      // where the Run to started (it steps past a target there once)
 let runToMoved = false;  // an instruction has run since
 let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
-let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
 const SPEED_KEY = "mkb-speed";
 const COUNT_KEY = "mkb-count";
 const REF_KEY = "mkb-ref-";
@@ -1906,10 +1916,10 @@ const speed = () => $("dbg_speed").value;  // "full" or instructions per second
 const fastStepping = () => speed() === "full" || runTo !== null || entryPhase || replayActive();
 
 function resetCounters() {
-	counting = false;
+	setCounting(false);
 	countMs = 0;
 	countSteps = 0;
-	countNote = "";
+	setCountNote("");
 	runTo = null;
 	prevRegs = null;
 	flashes = 0;
@@ -1967,7 +1977,7 @@ async function resume(now = false) {
 		if (emulator.is_running())
 			await emulator.stop();
 		inputMark(stepper, "stepped");
-		runState = "stepped";
+		setRunState("stepped");
 		stepCredit = now ? 1 : 0;
 		prevTick = 0;
 		CLOCK.set(!!clockMips());
@@ -1988,7 +1998,7 @@ async function resume(now = false) {
 			CLOCK.set(true);
 			CLOCK.setMips(clockMips()); // from here on (the menu changed while the JIT ran on real time)
 			inputMark(stepper, "jit");
-			runState = "jit";
+			setRunState("jit");
 			jitLoop();
 		} else {
 			// Real time: v86's own loop, with v86's own compiling.
@@ -2000,7 +2010,7 @@ async function resume(now = false) {
 			if (stepper && CLOCK.virtual)
 				inputTaint(stepper, "the clock was switched to real time");
 			CLOCK.set(false);
-			runState = "jit";
+			setRunState("jit");
 			emulator.run();
 		}
 	}
@@ -2083,7 +2093,7 @@ async function jitLoop() {
 					return;
 				}
 				if (stop) {
-					counting = false;
+					setCounting(false);
 					flushScreen(); // v86 draws the screen only while it runs
 					pause(stop === "prompt" ? "at the (initramfs) prompt" : endText()).then(replayAfterStop);
 					return;
@@ -2168,7 +2178,7 @@ async function pause(note) {
 	stopDriver();
 	if (emulator.is_running())
 		await emulator.stop();
-	runState = "paused";
+	setRunState("paused");
 	runTo = null;
 	speedReset();
 	if (entryPhase && stepper && stepper.sinceEntry >= 0)
@@ -2277,7 +2287,7 @@ function driverTick() {
 		return;
 	}
 	if (reason === "prompt") {
-		counting = false;
+		setCounting(false);
 		flushScreen(); // v86 draws the screen only while it runs
 		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the prompt. " : "") + "at the (initramfs) prompt").then(replayAfterStop);
 		return;
@@ -2285,13 +2295,13 @@ function driverTick() {
 	if (reason === "hlt" && stepper.dead())
 		stepper.markHalt();
 	if (reason === "end" || (reason === "hlt" && stepper.dead())) {
-		counting = false;
+		setCounting(false);
 		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the end. " : "") + endText()).then(replayAfterStop);
 		return;
 	}
 	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
-		counting = false;
-		countNote = "Gave up after " + Math.round(countMs / 1000) + " s of stepping.";
+		setCounting(false);
+		setCountNote("Gave up after " + Math.round(countMs / 1000) + " s of stepping.");
 		if (speed() === "full" && runTo === null) {
 			updateDebugUi();
 			resume();
@@ -2383,7 +2393,7 @@ function followEip(moving = false) {
 	if (phys >= 0 && phys < emuRam) {
 		const p = Math.floor(phys / PAGE);
 		if (p !== selectedPage) {
-			selectedPage = p;
+			setSelectedPage(p);
 			writeHash();
 			if (tab === "memory")
 				drawGrid();
@@ -2414,7 +2424,7 @@ function jumpTo(a) {
 	if (a < 0 || a >= emuRam)
 		return;
 	navJump(() => {
-		selectedPage = Math.floor(a / PAGE);
+		setSelectedPage(Math.floor(a / PAGE));
 		drawGrid();
 		showTab("page");
 		// The listing may be drawn again soon (the Source panel opening
@@ -2922,8 +2932,6 @@ function currentPhys() {
 	return stepper && runState !== "jit" && runState !== "off" ? stepper.nextPhys() : -1;
 }
 
-const h8 = (n) => (n >>> 0).toString(16).padStart(8, "0");
-const h4 = (n) => n.toString(16).padStart(4, "0");
 const FLAG_BITS = [[0, "CF"], [2, "PF"], [4, "AF"], [6, "ZF"], [7, "SF"], [8, "TF"], [9, "IF"], [10, "DF"], [11, "OF"], [14, "NT"], [16, "RF"], [17, "VM"]];
 
 function renderRegs() {
@@ -2972,8 +2980,6 @@ function renderRegs() {
 	el.dataset.phys = phys;
 	renderCpuState();
 }
-
-const num = (n) => (n === null || n === undefined ? "-" : n.toLocaleString("en"));
 
 function renderCounters() {
 	const tbody = $("counters").tBodies[0];
@@ -3224,7 +3230,7 @@ function watchPanicText() {
 	const st = stepper;
 	if ((st.textSeen & TEXT_PROMPT) && !st.prompt) {
 		st.prompt = { exact: false, ...st.snapshot() };
-		counting = false;
+		setCounting(false);
 		// v86 redraws the screen only while the VM runs: let it show the
 		// prompt before pausing.
 		setTimeout(() => {
@@ -3236,7 +3242,7 @@ function watchPanicText() {
 	if (!(st.textSeen & TEXT_END))
 		return;
 	st.end = { kind: "panic-text", message: st.panicText(), exact: false, ...st.snapshot() };
-	counting = false;
+	setCounting(false);
 	pause(endText());
 }
 
@@ -3247,7 +3253,7 @@ function watchJitEnd() {
 	if (!stepper || runState !== "jit" || ffActive || !stepper.dead())
 		return;
 	stepper.markHalt();
-	counting = false;
+	setCounting(false);
 	pause(endText()).then(replayAfterStop);
 }
 
@@ -3685,7 +3691,7 @@ function initDebugger() {
 	$("dbg_addr").addEventListener("keydown", (e) => { if (e.key === "Enter") doRunTo(); });
 	$("dbg_n").addEventListener("keydown", (e) => { if (e.key === "Enter") $("dbg_stepn").click(); });
 	$("dbg_speed").addEventListener("change", () => {
-		prefSpeed = speed();
+		setPrefSpeed(speed());
 		try {
 			localStorage.setItem(SPEED_KEY, prefSpeed);
 		} catch (e) {
@@ -3721,8 +3727,8 @@ function initDebugger() {
 			// no storage: until reload
 		}
 		if (!$("count").checked && counting) {
-			counting = false;
-			countNote = "Counting switched off.";
+			setCounting(false);
+			setCountNote("Counting switched off.");
 			if (runState === "stepped")
 				resume();
 		}
@@ -3743,8 +3749,8 @@ window.addEventListener("unhandledrejection", (e) => reportError(e.reason));
 // Every kernel starts with 2 MB; the header check says when that is too little.
 function useImage(name, buffer, memFromUrl, syms) {
 	const bytes = new Uint8Array(buffer);
-	image = { name, bytes, hdr: parseHeader(bytes) };
-	symbols = syms || null;
+	setImage({ name, bytes, hdr: parseHeader(bytes) });
+	setSymbols(syms || null);
 	$("memory").value = memFromUrl || String(DEFAULT_RAM);
 	// A kernel that needs more than the default (a distro kernel decompresses
 	// to 16 MiB and beyond) gets the smallest listed size that fits it.
@@ -3791,18 +3797,12 @@ async function loadDisasm(entry) {
 	}
 }
 
-// Why a fetch failed: sw.js answers 503 with X-MKB-Offline for a file it
-// does not have while offline.
-function httpWhy(resp) {
-	return resp.headers.get("X-MKB-Offline") ? "not available offline yet (open it once while online)" : "HTTP " + resp.status;
-}
-
 async function loadKernel(entry, memFromUrl) {
 	setStatus("Fetching " + entry.path + "...");
 	const resp = await fetch(withV(entry.path));
 	if (!resp.ok)
 		throw new Error(entry.path + ": " + httpWhy(resp));
-	disasm = await loadDisasm(entry);
+	setDisasm(await loadDisasm(entry));
 	await srcUseShipped(entry);
 	dbgUseShards(entry);
 	syncSrcToggle();
@@ -3816,10 +3816,10 @@ async function loadKernel(entry, memFromUrl) {
 		if (!r.ok)
 			throw new Error(entry.initrd + ": " + httpWhy(r));
 		const name = entry.initrd.split("/").pop();
-		initrd = { name, bytes: new Uint8Array(await r.arrayBuffer()), entry: entry.name };
+		setInitrd({ name, bytes: new Uint8Array(await r.arrayBuffer()), entry: entry.name });
 		initrd.info = await analyzeInitrd(initrd.bytes, name);
 	} else if (!entry.initrd && initrd && initrd.entry)
-		initrd = null;
+		setInitrd(null);
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl || ramDefault, await loadSymbols(entry));
 	showImported();
 	await restoreImported();
@@ -4068,7 +4068,7 @@ async function init() {
 		if (![...$("memory").options].some((o) => o.value === memParam))
 			$("memory").add(new Option(kib(m), memParam));
 	}
-	startPaused = params.get("paused") === "1";
+	setStartPaused(params.get("paused") === "1");
 	const options = [...$("dbg_speed").options].map((o) => o.value);
 	let stored = null;
 	try {
@@ -4076,7 +4076,7 @@ async function init() {
 	} catch (e) {
 		stored = null;
 	}
-	prefSpeed = [params.get("speed"), stored, "1000"].find((v) => options.includes(v));
+	setPrefSpeed([params.get("speed"), stored, "1000"].find((v) => options.includes(v)));
 	const clocks = [...$("clock_mips").options].map((o) => o.value);
 	let storedMips = null;
 	try {
@@ -4172,7 +4172,7 @@ async function init() {
 		const f = $("file").files[0];
 		if (!f)
 			return;
-		disasm = null; // a file from disk comes without disasm.json, C source or DWARF
+		setDisasm(null); // a file from disk comes without disasm.json, C source or DWARF
 		srcFresh(null, "no C source for a bzImage from disk");
 		dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
 		syncSrcToggle();
@@ -4185,7 +4185,7 @@ async function init() {
 
 	try {
 		const resp = await fetch(withV("kernels.json"));
-		kernels = (await resp.json()).kernels;
+		setKernels((await resp.json()).kernels);
 	} catch (e) {
 		setStatus("No kernels.json (" + e + "). Load a bzImage from disk.");
 		return;
@@ -4201,4 +4201,33 @@ async function init() {
 	await loadKernel(wanted, memParam);
 }
 
+// What the modules below app.js call through page.js (again when a test
+// replaces one of them).
+function shareWithModules() {
+	provideApp({ navJump, jumpTo, listingHold, writeHash, listingKeep, coverageFor, unwindHere, insnStart,
+		runToLine, symButton, symbolAt, inspect, renderContext, selectPage, showTab, speedReset, updateDebugUi,
+		insnIndex, syncSrcToggle, boot, loadKernel, setStatus, ram, showHeader, drawMaps, useImage, currentPhys,
+		FRAME_METHODS, drawGrid, openFunction, REF_KEY, setCompactTabs, compactDefault, clockMips, pause, resume,
+		pauseAll, flushScreen, afterStop, runToTargets, FLAG_BITS, pageLabel, symbolsInPage, setLive, pageAt,
+		navListingAnchor, memCellStyle, hideTip, runBadgeOpen, renderRunBadgePwa });
+}
+shareWithModules();
+// For the tests: a stand-in for openFunction, which graph.js and
+// bookmarks.js call too.
+const setOpenFunction = (f) => {
+	openFunction = f;
+	shareWithModules();
+};
+// window.MKB, the page's one global (debug.js).
+exposeMKB(app);
+
 init().catch((e) => setStatus(String(e)));
+
+export { scanCopy, usedPages, changedPages, setStatus, showHeader, REGION_NAMES, SECTION_NAMES, ram, drawMaps,
+	drawGrid, memCellStyle, pageAt, pageLabel, symbolsInPage, symbolAt, insnIndex, coverageFor, scrollListingTo,
+	inspect, selectPage, setLive, writeHash, showTab, compactDefault, setCompactTabs, navList, navAt,
+	navListingAnchor, listingHold, listingKeep, navJump, scan, wasmPatchError, boot, countMs, setCountMs, runTo,
+	entryPhase, REF_KEY, speed, fastStepping, resume, jitLoopId, pause, viewCost, afterStop, codeSymbols, jumpTo,
+	openFunction, symButton, FRAME_METHODS, unwindHere, insnStart, syncSrcToggle, renderContext, currentPhys,
+	FLAG_BITS, clockMips, speedReset, updateDebugUi, flushScreen, renderRunBadgePwa, runBadgeOpen, pauseAll,
+	doStep, runToTargets, runToLine, useImage, loadKernel, hideTip, setOpenFunction };

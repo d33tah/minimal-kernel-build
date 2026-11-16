@@ -17,10 +17,11 @@
 // in memory.
 
 import { CLOCK, realNow, GUEST } from "./clock.js";
+import { V86_KERNEL_ADDR, PAGE } from "./util.js";
+import { symbols, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, stepper, emulator, speedReset,
+	updateDebugUi, v86Restore, disasm, insnIndex } from "./page.js";
 import { TEXT_END } from "./stepper.js";
 import { MEV } from "./memevents.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./fastforward.js";
 
 const FF_SLICE = 20e6;
 const FF_STEP_FIRST = 2e6;
@@ -436,4 +437,3 @@ async function fastRunTo(targets, label) {
 export { ffActive, ffAbort, ffInfo, setFfActive, setFfAbort, setFfInfo, ffBreaks, ffEnabled, ffTarget,
 	codeRange, ffCounter, JIT, jitDetInstall, jitPending, jitFlush, jitChunk, setJitChunk, jitStep, ffYield,
 	fastForward, fastRunTo };
-bridge(thisModule);

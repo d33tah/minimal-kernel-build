@@ -32,11 +32,11 @@
 // once per initiator and the story list says who touched it first.
 
 import { realNow } from "./clock.js";
+import { $ } from "./util.js";
+import { provideMemmap, revStepBack } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./memmap.js";
 
 const MM_ORDER = 7, MM_N = 1 << MM_ORDER, MM_CELLS = MM_N * MM_N;
 const MM_MIN_CELLS = 16, MM_GAP_CELLS = 24, MM_RAM_SHARE = 0.6;
@@ -1229,5 +1229,5 @@ const MMAP = {
 	},
 };
 
+provideMemmap({ MMAP });
 export { MMAP };
-bridge(thisModule);

@@ -1,7 +1,12 @@
 {
   "name": "mkb-site",
   "private": true,
-  "description": "The page's scripts are ES modules; Node runs the shared ones (dwarf.js, kgen.js, wasi.js, kit.js, jumps.js...) and gen-dwarf.js, gen-src.js as modules too",
+  "description": "The page's scripts are ES modules; Node runs the shared ones (dwarf.js, kgen.js, wasi.js, kit.js, jumps.js...) and gen-dwarf.js, gen-src.js as modules too. devDependencies: the lint (eslint.config.mjs)",
   "license": "GPL-2.0-only",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "eslint": "9.39.1",
+    "eslint-plugin-import": "2.32.0",
+    "globals": "16.5.0"
+  }
 }

@@ -34,8 +34,6 @@
 // Loaded by index.html (the page) and by test_kit.mjs (Node, require).
 
 import { realNow } from "./clock.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./kit.js";
 
 const KIT_FORMAT = 1;
 
@@ -601,4 +599,3 @@ async function kitBuild(cc, kit, src, opts = {}) {
 
 export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitUsers,
 	kitBuild };
-bridge(thisModule);

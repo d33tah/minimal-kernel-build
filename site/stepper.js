@@ -17,9 +17,8 @@
 //   previous_ip = eip; op = read_imm8(); run(op | is_32 << 8); counter++.
 
 import { realNow, CLOCK } from "./clock.js";
+import { revMark, MEV } from "./page.js";
 import { JK } from "./jumps.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./stepper.js";
 
 const STEP_EXPORTS = {
 	mkb_read_imm8: /3cpu3cpu9read_imm8$/,
@@ -1563,4 +1562,3 @@ class Stepper {
 export { patchV86Wasm, setPatchV86Wasm, VGA_WINDOW_BYTES, TEXT_PANIC, TEXT_END, TEXT_PROMPT, EAX, EBX, ESP,
 	FR_BITS, FR_SIZE, FR_MASK, FR_BIG, FR_BIG16, FR_IRQ, FR_CONT, FR_BYTES, Frames, frStartAt, frEndAt,
 	frSmallAt, FramePath, Stepper };
-bridge(thisModule);

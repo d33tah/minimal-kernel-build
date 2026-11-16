@@ -5,6 +5,9 @@
 // newer deploy is live, so old and new files are never mixed silently.
 // README.md, "Offline and installing".
 
+import { $, VERSION } from "./util.js";
+import { renderRunBadgePwa } from "./page.js";
+
 const PWA = { reg: null, reloading: false, newer: null, misses: [] };
 const PWA_CHECK_MS = 5 * 60 * 1000;
 
@@ -150,5 +153,7 @@ async function pwaInit() {
 }
 
 // After the page's own loads, so the precache does not compete with them
-// (index.html loads this script itself: its load event is still to come).
+// (app.js imports this module: the page's load event is still to come).
 window.addEventListener("load", pwaInit);
+
+export { PWA, pwaNewer, pwaReload };

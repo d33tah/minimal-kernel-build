@@ -11,6 +11,8 @@
 // everything they call) are muted and hidden by "hide interrupt handling".
 
 import { realNow } from "./clock.js";
+import { $, hex, num } from "./util.js";
+import { runState, bmFnNames, openFunction, jumpTo, tab, image, bmTip } from "./page.js";
 import { FR_SIZE, frStartAt, FR_IRQ, frEndAt, FR_CONT, FR_BITS, FR_MASK, frSmallAt, FR_BIG, FramePath,
 	FR_BIG16 } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes, dbgTitle } from "./dbginfo.js";
@@ -18,8 +20,6 @@ import { srcChainNodes } from "./source.js";
 import { ffInfo } from "./fastforward.js";
 import { varsTasks } from "./vars.js";
 import { fnDetailEl } from "./fnfacts.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./graph.js";
 
 const G = {
 	stepper: null,
@@ -1689,4 +1689,3 @@ export { G, SWITCH, IRQ_COLOUR, PALETTE, graphReset, runStart, fEnd, recTo, hidd
 	timelineLayout, layoutDeepest, taskInfo, taskGuesses, drawTimeline, selectedNode, graphCapture, graphRestore,
 	graphSelName, graphNodeAt, timelineFrameAt, timelineSummary, sandwich, drawTop, timelineDepth, graphTick,
 	graphShow, frameTitle, renderGraphInfo, graphData, download, initGraph };
-bridge(thisModule);

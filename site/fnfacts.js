@@ -8,12 +8,12 @@
 // rows, the Coverage tab's function details and the Graph tab's details;
 // fnFactsText says the same in one line for symbol tooltips.
 
+import { hex } from "./util.js";
+import { provideFnfacts, stepper, symbols, symbolAt, symButton } from "./page.js";
 import { dwFuncProto } from "./dwarf.js";
 import { cfiFrameText } from "./unwind.js";
 import { dbgCfiFrame, dbgFrames, dbgFnFactsAt, dbgFnFactsFor, dbgHas, dbgFnHolds } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./fnfacts.js";
 
 // Inlined copies listed before "and N more".
 const FN_COPIES_SHOWN = 40;
@@ -252,5 +252,5 @@ function fnLabelOf(sym) {
 	return fnBare(r.f.e) ? null : { proto: dwFuncProto(r.T, r.f.e), title: fnFactsText(r.f, r.T) };
 }
 
+provideFnfacts({ fnFactsText });
 export { fnSymAt, fnFactsText, renderFnRows, fnDetailEl, fnLabelOf };
-bridge(thisModule);

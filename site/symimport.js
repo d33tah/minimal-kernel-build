@@ -6,10 +6,11 @@
 // size}], symbols: [{name, vaddr, paddr, size, type, section}] } plus
 // { source, offset, offsetHow }.
 
+import { V86_KERNEL_ADDR, hex, $, kib, V86_INITRD_ADDR } from "./util.js";
+import { image, setSymbols, symbols, setDisasm, syncSrcToggle, disasm, genImport, boot, genRestore, kernels,
+	loadKernel, setStatus, initrd, ram, setInitrd, showHeader, drawMaps, useImage } from "./page.js";
 import { dbgFresh, dbgHas, DBG, dbgImport, dbgRestore, dbgForget } from "./dbginfo.js";
 import { srcFresh } from "./source.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./symimport.js";
 
 const PAGE_OFFSET_I386 = 0xC0000000;
 const MAP_KEY = "mkb-map-";
@@ -306,9 +307,9 @@ async function imageKey() {
 // DWARF is the imported vmlinux's (dbgImport), or none for a System.map.
 // genimport.js replaces them with the files it makes from a vmlinux.
 function applySymbols(map) {
-	symbols = { name: map.name, sections: map.sections, symbols: map.symbols };
+	setSymbols({ name: map.name, sections: map.sections, symbols: map.symbols });
 	symbols.imported = { file: map.name, source: map.source, offset: map.offset, how: map.offsetHow };
-	disasm = null;
+	setDisasm(null);
 	srcFresh(null, "no C source shipped for imported symbols");
 	if (map.source !== "ELF")
 		dbgFresh(null, "a System.map has no debug info: import the unstripped vmlinux for file:line");
@@ -393,7 +394,7 @@ async function forgetImported() {
 	if (k)
 		loadKernel(k).catch((e) => setStatus(String(e)));
 	else {
-		symbols = null;
+		setSymbols(null);
 		showImported();
 		boot();
 	}
@@ -599,7 +600,7 @@ function initInitrd() {
 		const f = $("initrd_file").files[0];
 		if (!f)
 			return;
-		initrd = { name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) };
+		setInitrd({ name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) });
 		initrd.info = await analyzeInitrd(initrd.bytes, f.name);
 		$("initrd_file").value = "";
 		ramForInitrd();
@@ -609,7 +610,7 @@ function initInitrd() {
 		await boot();
 	});
 	$("initrd_clear").addEventListener("click", async () => {
-		initrd = null;
+		setInitrd(null);
 		initrdNote();
 		showHeader();
 		drawMaps();
@@ -647,7 +648,7 @@ function initImport() {
 		const heads = await Promise.all(files.map((f) => f.slice(0, 0x210).arrayBuffer()));
 		const k = heads.findIndex(looksLikeBzImage);
 		if (k >= 0) {
-			disasm = null;
+			setDisasm(null);
 			srcFresh(null, "no C source for a bzImage from disk");
 			dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
 			syncSrcToggle();
@@ -666,4 +667,3 @@ function initImport() {
 export { MAP_KEY, parseSymbolFile, applySymbols, showImported, restoreImported, forgetImported, CMDLINE_KEY,
 	cmdlineFromUrl, setCmdlineFromUrl, restoreCmdline, defaultCmdline, initrdNote, gunzip, analyzeInitrd,
 	ramForInitrd, initInitrd, initImport };
-bridge(thisModule);

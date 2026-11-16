@@ -8,9 +8,9 @@
 // and instantiates the wasm asynchronously. Loaded only when a listing
 // needs it.
 
+import { withV, V86_KERNEL_ADDR, PAGE } from "./util.js";
+import { provideLivedis, inspect, renderContext, symbols, stepper, emulator, emuReady, emuRam } from "./page.js";
 import { asmSymLookup, asmBranchTarget, asmTargetName } from "./asmnames.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./livedis.js";
 
 // The "live decode" toggle (Page tab): decode guest memory even where
 // disasm.json has the build's instructions.
@@ -166,6 +166,6 @@ function liveInsnsForPage(p) {
 	return { insns, misaligned, bits };
 }
 
+provideLivedis({ kernelSymLookup });
 export { liveDecode, iced, icedError, loadIced, kernelSymLookup, decodeLive, virtOffset, bitnessAt,
 	liveInsnsForPage };
-bridge(thisModule);

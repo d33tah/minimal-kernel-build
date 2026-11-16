@@ -16,8 +16,6 @@
 // "real" clock v86's own loop runs on real time.
 // The page's own timing uses realNow().
 
-import { bridge } from "./bridge.js";
-import * as thisModule from "./clock.js";
 
 const realNow = performance.now.bind(performance);
 
@@ -186,11 +184,11 @@ function guestDatePort(entry, fn, when) {
 	entry[fn] = function (v) {
 		if (!CLOCK.virtual || !when())
 			return orig.call(this, v);
-		globalThis.Date = GuestDate;
+		globalThis.Date = GuestDate; // eslint-disable-line no-restricted-syntax -- a builtin swapped, no new global
 		try {
 			return orig.call(this, v);
 		} finally {
-			globalThis.Date = RealDate;
+			globalThis.Date = RealDate; // eslint-disable-line no-restricted-syntax -- the builtin back
 		}
 	};
 }
@@ -205,4 +203,3 @@ crypto.getRandomValues = function (a) {
 };
 
 export { realNow, CLOCK, RealDate, GUEST };
-bridge(thisModule);

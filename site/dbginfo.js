@@ -15,11 +15,11 @@
 // Backtraces (dbgUnwind) read the call frame information the same way:
 // cfi-<hex>.bin shards, or the import's .debug_frame through the Worker.
 
+import { withV } from "./util.js";
+import { provideDbginfo, kfetch, fnFactsText } from "./page.js";
 import { dwarfDecode, dwarfLocalFrames, dwarfScopesAt, dwFuncBase, dwFuncShard, dwarfFrames, dwarfFunction,
 	dwarfRow, dwarfResolvePath, dwarfFileCode } from "./dwarf.js";
 import { cfiFrameInfo, cfiRow, cfiDecode, unwind } from "./unwind.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./dbginfo.js";
 
 const DBG_DB = "mkb-dwarf";
 let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
@@ -860,8 +860,8 @@ function dbgTitle(pa, sym) {
 	return dbgChainText(r.frames, sym) + (more.length ? "\n" + more.join("\n") : "");
 }
 
+provideDbginfo({ dbgHas, dbgFrames });
 export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgImport,
 	dbgForget, dbgRestore, dbgTypes, dbgGunzip, dbgLocals, dbgLocalGroups, dbgFnFacts, dbgFnHolds, dbgFnFactsFor,
 	dbgFnFactsAt, dbgCfiFrame, dbgFiles, dbgFuncAt, dbgCfiRow, dbgCfiInfo, dbgUnwind, dbgTableAt, dbgFrames,
 	dbgFunction, dbgFileCode, dbgLineCode, dbgLineCodeWait, dbgWhere, dbgChainText, dbgTitle };
-bridge(thisModule);

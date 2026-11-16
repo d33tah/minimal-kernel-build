@@ -15,6 +15,8 @@
 // from. Nothing is kept across a reload: the kernel list loads the shipped
 // one.
 
+import { withV, httpWhy, $, kib } from "./util.js";
+import { provideRebuild, image, showTab, setDisasm, useImage, boot, loadKernel, kernels, setStatus } from "./page.js";
 import { download } from "./graph.js";
 import { dbgFresh, dbgImport, dbgOnChange } from "./dbginfo.js";
 import { srcFresh, SRC, srcChanged, srcPanel, closeSource } from "./source.js";
@@ -23,8 +25,6 @@ import { parseSymbolFile, applySymbols } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./rebuild.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -302,7 +302,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const elfName = elfPath.replace(/^.*\//, "");
 	RB.last = { from, bytes, elf, elfName, same };
 	const mem = $("memory").value;
-	disasm = null;
+	setDisasm(null);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
 	useImage(from + RB_SUFFIX, bytes.slice().buffer, mem);
 	image.from = from;
@@ -364,5 +364,5 @@ function initRebuild() {
 	rbLoadIndex();
 }
 
+provideRebuild({ rbSync });
 export { rbSync, initRebuild };
-bridge(thisModule);

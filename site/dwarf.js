@@ -16,8 +16,6 @@
 // vmlinux is ET_EXEC, its DWARF values are final.
 
 import { dwOpEnd } from "./unwind.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./dwarf.js";
 
 const DW_TAG_SUBPROGRAM = 0x2e, DW_TAG_INLINED = 0x1d;
 // Tags whose children can hold code (subprograms, inlined calls). The
@@ -2444,4 +2442,3 @@ export { dwDisplayPath, DwarfReader, DWT, DwarfTypes, DwarfFuncs, dwFuncShard, d
 	dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, dwWhere, dwPathIn, dwarfElf, dwarfSectionOf, dwarfSections,
 	dwarfTable, dwarfPack, dwarfRow, dwarfFrames, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath,
 	dwarfFunction, dwarfDecode };
-bridge(thisModule);

@@ -92,7 +92,7 @@ RUN_JS = """async ({ k, elfs, ci }) => {
   const get = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error(url + ': HTTP ' + r.status); return r; };
   const res = { ua: navigator.userAgent, name: k.name, times: {}, ms: {} };
   const clang = new URL('clang/clang.wasm', location.href).href;
-  const w = new ClangWorker(withV('genworker.js'));
+  const w = new MKB.ClangWorker(MKB.withV('genworker.js'));
   const plain = await (await get(elfs + k.plain)).blob();
   let t = performance.now();
   const a = await w.request({ op: 'gen', file: plain, name: k.elf, label: k.name, clang, trim: k.trim, disasm: k.disasm, dwarf: false });
@@ -261,7 +261,7 @@ def main():
             if args.base:
                 page.route("**/__gen_elfs/**", elf_route)
             page.goto(f"{base}/index.html?kernel=hello")
-            page.wait_for_function("typeof ClangWorker === 'function' && typeof kfetch === 'function'")
+            page.wait_for_function("typeof window.MKB?.ClangWorker === 'function' && typeof window.MKB?.kfetch === 'function'")
             results[bname] = []
             rss = PeakRss()
             t0 = time.monotonic()

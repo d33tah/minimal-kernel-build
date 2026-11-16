@@ -14,12 +14,12 @@
 // Only for an ELF with the "auto" offset: the files place code at the
 // ELF's PT_LOAD addresses.
 
+import { withV, $ } from "./util.js";
+import { provideGenimport, image, symbols, setSymbols, setDisasm, disasm, syncSrcToggle, drawMaps, drawGrid } from "./page.js";
 import { dbgIdbOp, dbgUseShards, dbgChanged } from "./dbginfo.js";
 import { srcUseShipped, SRC } from "./source.js";
 import { MAP_KEY, showImported } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./genimport.js";
 
 let GEN = { files: new Map(), state: null, note: "" };
 
@@ -112,9 +112,9 @@ function genApply() {
 	}
 	const S = genJson("symbols.json");
 	S.symbols.sort((a, b) => a.paddr - b.paddr || a.name.localeCompare(b.name));
-	symbols = { name: S.name, sections: S.sections, symbols: S.symbols, imported: symbols.imported };
+	setSymbols({ name: S.name, sections: S.sections, symbols: S.symbols, imported: symbols.imported });
 	symbols.imported.generated = true;
-	disasm = genGet("disasm.json") ? genJson("disasm.json") : null;
+	setDisasm(genGet("disasm.json") ? genJson("disasm.json") : null);
 	const made = "made in this browser from " + GEN.name + (GEN.restored ? " (kept for this bzImage)" : " in " + GEN.secs.toFixed(1) + " s");
 	if (genGet("dwarf/index.json"))
 		dbgUseShards({ dwarf: GEN.base + "dwarf/", made });
@@ -174,5 +174,5 @@ function genSrcMade(mine, pick, r) {
 	genKeep();
 }
 
+provideGenimport({ kfetch, genSrcPicked, genImport, genRestore });
 export { GEN, kfetch, genImport, genRestore, genSrcPicked };
-bridge(thisModule);

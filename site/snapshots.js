@@ -28,12 +28,14 @@
 // it into its deltas first (they become deltas of its base, or full).
 
 import { CLOCK, GUEST, realNow } from "./clock.js";
+import { kib, hex, $, withV, h4, h8, PAGE, esc, asciiOf } from "./util.js";
+import { provideSnapshots, image, initrd, stepper, emulator, emuReady, emuRam, speedReset, counting, runState,
+	afterStop, selectedPage, inspect, setCounting, setCountNote, tab, kernels, loadKernel, setStatus, FLAG_BITS,
+	pageLabel, symbolsInPage, navJump, setSelectedPage, drawGrid, setLive, showTab } from "./page.js";
 import { jitPending, jitFlush } from "./fastforward.js";
 import { pageWalk, v86ResetHidden, v86Restore } from "./cpustate.js";
 import { runNow, inputReset, INPUT, inputRestore, replayRun, runStatus } from "./replay.js";
 import { REV, revReset } from "./reverse.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./snapshots.js";
 
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
@@ -411,8 +413,8 @@ async function restoreSnapshot(s) {
 		if (stepper)
 			stepper.jumpForget();
 		if (counting || (stepper && stepper.steps)) {
-			counting = false;
-			countNote = "A snapshot was restored: the counters stopped there.";
+			setCounting(false);
+			setCountNote("A snapshot was restored: the counters stopped there.");
 		}
 		// The Debugger's note (shown over the screen while paused) said why
 		// the machine stopped where it was before ("Paused at the reset
@@ -768,8 +770,12 @@ function snapWorker(msg, transfer) {
 		snapWorkerObj.postMessage({ ...msg, id }, transfer || []);
 	});
 }
-// For the tests: one that holds answers back in its place.
-const setSnapWorker = (f) => { snapWorker = f; };
+// For the tests: one that holds answers back in its place (reverse.js calls
+// it through page.js too).
+const setSnapWorker = (f) => {
+	snapWorker = f;
+	provideSnapshots({ snapKernelKey, snapWorker });
+};
 
 const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
@@ -1042,7 +1048,7 @@ async function snapOpenPage(p, which) {
 		id: me.id, name: label(me), againstId: other.id, against: label(other), cur: me.meta.phys };
 	navJump(() => {
 		pageSnapView = view;
-		selectedPage = p;
+		setSelectedPage(p);
 		drawGrid();
 		setLive();
 		showTab("page");
@@ -1074,7 +1080,7 @@ function initSnapshots() {
 	snapLoad();
 }
 
+provideSnapshots({ snapKernelKey, snapWorker });
 export { snapshots, pageSnapView, setSnapDiff, setPageSnapView, snapKernelKey, snapKernelName, snapTx,
-	saveSnapshot, restoreSnapshot, snapUnpack, renderSnapshots, snapWorker, setSnapWorker, snapById,
+	snapRecord, saveSnapshot, restoreSnapshot, snapUnpack, renderSnapshots, snapWorker, setSnapWorker, snapById,
 	renderSnapDiff, snapPages, pageSnapBanner, initSnapshots };
-bridge(thisModule);

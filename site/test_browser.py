@@ -579,13 +579,13 @@ def timeline_pan(page, problems, r):
     if not page.is_checked("#graph_follow"):
         page.check("#graph_follow")
     box = page.locator("#graph_canvas").bounding_box()
-    x0, x1, w = page.evaluate("[G.x0, G.x1, document.getElementById('graph_canvas').clientWidth]")
+    x0, x1, w = page.evaluate("[MKB.G.x0, MKB.G.x1, document.getElementById('graph_canvas').clientWidth]")
     cx, cy = box["x"] + box["width"] / 2, box["y"] + 120
     page.mouse.move(cx, cy)
     page.mouse.down()
     page.mouse.move(cx - 200, cy, steps=5)
     page.mouse.up()
-    a0, a1, follow = page.evaluate("[G.x0, G.x1, G.follow || document.getElementById('graph_follow').checked]")
+    a0, a1, follow = page.evaluate("[MKB.G.x0, MKB.G.x1, MKB.G.follow || document.getElementById('graph_follow').checked]")
     want = 200 / w * (x1 - x0)
     r["pan"] = [round(a0 - x0), round(want), follow]
     if abs((a0 - x0) - want) > 0.01 * (x1 - x0) or abs((a1 - a0) - (x1 - x0)) > 1e-6 * (x1 - x0) or follow:
@@ -596,8 +596,8 @@ def timeline_pan(page, problems, r):
     page.mouse.down()
     page.mouse.move(box["x"] + box["width"] * 0.5, y, steps=5)
     page.mouse.up()
-    mid, want_mid, full = page.evaluate("""() => { const t0 = runStart(), t1 = Math.max(t0 + 1, recTo(G.stepper));
-        return [(G.x0 + G.x1) / 2, t0 + (t1 - t0) / 2, t1 - t0]; }""")
+    mid, want_mid, full = page.evaluate("""() => { const t0 = MKB.runStart(), t1 = Math.max(t0 + 1, MKB.recTo(MKB.G.stepper));
+        return [(MKB.G.x0 + MKB.G.x1) / 2, t0 + (t1 - t0) / 2, t1 - t0]; }""")
     r["minimap"] = [round(mid), round(want_mid)]
     if abs(mid - want_mid) > 0.01 * full:
         problems.append(f"a drag to the middle of the minimap centred the window at {mid:.0f}, want {want_mid:.0f}")
@@ -606,11 +606,11 @@ def timeline_pan(page, problems, r):
 def timeline_views(page, problems, shots, tag, r):
     """Focus, sandwich, search, depth cap, transposed and flame views."""
     timeline_pan(page, problems, r)
-    k = page.evaluate("""() => { const st = G.stepper; let best = -1, w = -1;
+    k = page.evaluate("""() => { const st = MKB.G.stepper; let best = -1, w = -1;
         for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'start_kernel') {
             const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k); if (e > w) { w = e; best = k; } }
         return best; }""")
-    page.evaluate(f"G.selected = {k}; renderGraphInfo()")
+    page.evaluate(f"MKB.G.selected = {k}; MKB.renderGraphInfo()")
     r["sandwich"] = [page.get_attribute("#graph_info", "data-callers"), page.get_attribute("#graph_info", "data-callees")]
     if not int(r["sandwich"][1] or 0) > 0:
         problems.append(f"sandwich of start_kernel lists no callees: {r['sandwich']}")
@@ -633,7 +633,7 @@ def timeline_views(page, problems, shots, tag, r):
         problems.append("the root crumb did not leave the focus")
     page.evaluate("document.getElementById('graph_depth').value = 3; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     time.sleep(0.3)
-    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] > 3)"):
+    if page.evaluate("MKB.G.rects.some(([k]) => MKB.G.layout.row[k] > 3)"):
         problems.append("the depth cap draws deeper rows")
     page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     for b in ("graph_transpose", "graph_flame"):
@@ -659,7 +659,7 @@ def graph_check(page, name, problems, shots, tag):
     if r["nodes"] < 2 or r["edges"] < 1 or r["frames"] < 1:
         problems.append(f"graph recorded {r}")
     from_entry = (counters(page).get("now") or {}).get("entry")
-    summ = page.evaluate("timelineSummary()")
+    summ = page.evaluate("MKB.timelineSummary()")
     r["timeline_total"], r["timeline_root_sum"] = summ["total"], summ["rootSum"]
     r["top_frames"] = [(f["name"], f["depth"], f["incl"]) for f in summ["top"][:6]]
     # Code without a symbol (the relocation stub) has no frame, so the
@@ -671,7 +671,7 @@ def graph_check(page, name, problems, shots, tag):
         names = [f["name"] for f in summ["top"]]
         if "start_kernel" not in names[:6]:
             problems.append(f"start_kernel is not among the top frames: {names[:6]}")
-        ki = page.evaluate("""() => { const st = G.stepper; let incl = 0;
+        ki = page.evaluate("""() => { const st = MKB.G.stepper; let incl = 0;
             for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'kernel_init') incl += (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k);
             return incl; }""")
         r["kernel_init_incl"] = ki
@@ -681,12 +681,12 @@ def graph_check(page, name, problems, shots, tag):
         problems.append("the timeline labels no box")
     page.screenshot(path=str(shots / f"graph-timeline-{tag}-1100.png"))
     # Tap the widest box at depth 0.
-    xy = page.evaluate("""() => { const st = G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
+    xy = page.evaluate("""() => { const st = MKB.G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
         let best = -1, w = -1;
-        for (let k = 0; k < st.fr.n; k++) if (st.fr.depth(k) === 0 && !hiddenFrame(st, k)) {
-            const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), runStart()); if (e > w) { w = e; best = k; } }
-        const a = Math.max(st.fr.start(best), G.x0), b = Math.min(st.fr.end(best) < 0 ? st.steps : st.fr.end(best), G.x1);
-        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + G.areaTop + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fr.node(best))]; }""")
+        for (let k = 0; k < st.fr.n; k++) if (st.fr.depth(k) === 0 && !MKB.hiddenFrame(st, k)) {
+            const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), MKB.runStart()); if (e > w) { w = e; best = k; } }
+        const a = Math.max(st.fr.start(best), MKB.G.x0), b = Math.min(st.fr.end(best) < 0 ? st.steps : st.fr.end(best), MKB.G.x1);
+        return [c.left + ((a + b) / 2 - MKB.G.x0) / (MKB.G.x1 - MKB.G.x0) * c.width, c.top + MKB.G.areaTop + MKB.timelineLayout(st).row[best] * 17 + 8 - MKB.G.yOff, st.nodeName(st.fr.node(best))]; }""")
     page.mouse.click(xy[0], xy[1])
     if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
         problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
@@ -840,14 +840,14 @@ def import_case(browser, base, shots):
         page = browser.new_page(viewport={"width": 1100, "height": 1000})
         page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
         wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 60)
-        page.evaluate("window.oldStepper = stepper")
+        page.evaluate("window.oldStepper = MKB.stepper")
         page.set_input_files("#symfile", str(path))
-        wait_for(lambda: page.evaluate("stepper && stepper !== window.oldStepper && !!stepper.end"), 60)
-        sk_frame = page.evaluate("""() => { const st = G.stepper; let best = null;
+        wait_for(lambda: page.evaluate("MKB.stepper && MKB.stepper !== window.oldStepper && !!MKB.stepper.end"), 60)
+        sk_frame = page.evaluate("""() => { const st = MKB.G.stepper; let best = null;
             for (let k = 0; k < st.fr.n; k++) if (st.nodeName(st.fr.node(k)) === 'start_kernel') {
                 const incl = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - st.fr.start(k);
                 if (!best || incl > best.incl) best = { incl, depth: st.fr.depth(k) }; }
-            return best && { ...best, total: st.steps - runStart() }; }""")
+            return best && { ...best, total: st.steps - MKB.runStart() }; }""")
         r[path.name + "_start_kernel"] = sk_frame
         if not sk_frame or sk_frame["incl"] < sk_frame["total"] / 2:
             problems.append(f"{path.name}: start_kernel missing or small in the timeline: {sk_frame}")
@@ -858,7 +858,7 @@ def import_case(browser, base, shots):
     page = browser.new_page(viewport={"width": 390, "height": 900})
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    before = page.evaluate("symbols.symbols.length")
+    before = page.evaluate("MKB.symbols.symbols.length")
     bad = pathlib.Path(tempfile.mkdtemp()) / "notes.txt"
     bad.write_text("this is not a symbol map\nat all\nreally\n")
     page.set_input_files("#symfile", str(bad))
@@ -866,7 +866,7 @@ def import_case(browser, base, shots):
     r["malformed"] = page.inner_text("#sym_status")
     if page.get_attribute("#sym_status", "data-state") != "error" or "previous symbols stay" not in r["malformed"]:
         problems.append("malformed file: no clear error: " + r["malformed"])
-    if page.evaluate("symbols.symbols.length") != before or page.evaluate("!!symbols.imported"):
+    if page.evaluate("MKB.symbols.symbols.length") != before or page.evaluate("!!MKB.symbols.imported"):
         problems.append("malformed file replaced the symbols")
     if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
         problems.append("the error message makes the page scroll horizontally at 390 px")
@@ -877,7 +877,7 @@ def import_case(browser, base, shots):
     page.set_input_files("#symfile", str(deb))
     wait_for(lambda: "placeholder" in page.inner_text("#sym_status"), 5)
     r["debian_placeholder"] = page.inner_text("#sym_status")
-    if "-dbg" not in r["debian_placeholder"] or page.evaluate("!!symbols.imported"):
+    if "-dbg" not in r["debian_placeholder"] or page.evaluate("!!MKB.symbols.imported"):
         problems.append("Debian placeholder System.map: no pointer to the -dbg package: " + r["debian_placeholder"])
     page.close()
     return problems, r
@@ -936,7 +936,7 @@ def import_edges(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=hello&paused=1")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    before = page.evaluate("symbols.symbols.length")
+    before = page.evaluate("MKB.symbols.symbols.length")
     good = tiny_elf()
     refused = {
         "x86-64.elf": (tiny_elf(elf_class=2), "auto", "not a 32-bit little-endian ELF (only i386 kernels boot here)"),
@@ -955,7 +955,7 @@ def import_edges(browser, base, shots):
         wait_for(lambda: page.inner_text("#sym_status").startswith(f"Could not use {name}:"), 10)
         got = page.inner_text("#sym_status")
         r["refused"][name] = got
-        if got != f"Could not use {name}: {why}. The previous symbols stay." or page.evaluate("symbols.symbols.length") != before:
+        if got != f"Could not use {name}: {why}. The previous symbols stay." or page.evaluate("MKB.symbols.symbols.length") != before:
             problems.append(f"{name}: {got!r}, want the reason {why!r} and the previous {before} symbols")
     # Placed System.maps: (file, its lines, offset field, the offset, how).
     maps = [
@@ -972,10 +972,10 @@ def import_edges(browser, base, shots):
     for name, rows, offset, off, how in maps:
         (tmp / name).write_text("".join(f"{a:08x} {t} {n}\n" for a, t, n in rows))
         page.fill("#sym_offset", offset)
-        page.evaluate("startPaused = true")
+        page.evaluate("MKB.startPaused = true")
         page.set_input_files("#symfile", str(tmp / name))
         wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported" and page.inner_text("#sym_status").startswith(name), 10)
-        got = page.evaluate("[symbols.symbols.map((s) => [s.name, s.paddr, s.size]), symbols.sections.map((s) => [s.name, s.class, s.vaddr, s.size, s.paddr])]")
+        got = page.evaluate("[MKB.symbols.symbols.map((s) => [s.name, s.paddr, s.size]), MKB.symbols.sections.map((s) => [s.name, s.class, s.vaddr, s.size, s.paddr])]")
         status = page.inner_text("#sym_status")
         r["placed"][name] = status[:120]
         # Sizes: up to the next symbol, the last one to its section's end; sections: each class's extent.
@@ -995,10 +995,10 @@ def import_edges(browser, base, shots):
     # An ELF with an offset by hand: its symbol placed by that, not by the PT_LOAD.
     (tmp / "tiny.elf").write_bytes(tiny_elf(text_sym=True))
     page.fill("#sym_offset", "0xc0000000")
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(tmp / "tiny.elf"))
     wait_for(lambda: page.inner_text("#sym_status").startswith("tiny.elf"), 10)
-    r["tiny.elf"] = [page.inner_text("#sym_status")[:90], page.evaluate("symbols.symbols.map((s) => [s.name, s.paddr, s.size, s.type])")]
+    r["tiny.elf"] = [page.inner_text("#sym_status")[:90], page.evaluate("MKB.symbols.symbols.map((s) => [s.name, s.paddr, s.size, s.type])")]
     if not r["tiny.elf"][0].startswith("tiny.elf (ELF): 1 symbols, offset 0xc0000000, set by hand.") or \
             r["tiny.elf"][1] != [["tiny_func", 0x100010, 0x20, "T"]]:
         problems.append(f"tiny.elf with the offset 0xc0000000: {r['tiny.elf']}")
@@ -1013,15 +1013,15 @@ def import_edges(browser, base, shots):
     page.evaluate("""async (smap) => { const b = await (await fetch('kernels/hello/bzImage')).arrayBuffer();
       const dt = new DataTransfer(); dt.items.add(new File([b], 'mine.bzImage')); dt.items.add(new File([smap], 'mine.map'));
       document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""", smap)
-    wait_for(lambda: page.evaluate("image && image.name") == "mine.bzImage" and page.get_attribute("#sym_status", "data-state") == "imported", 20)
-    r["dropped"] = [page.evaluate("image && image.name"), page.inner_text("#sym_status")[:100]]
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == "mine.bzImage" and page.get_attribute("#sym_status", "data-state") == "imported", 20)
+    r["dropped"] = [page.evaluate("MKB.image && MKB.image.name"), page.inner_text("#sym_status")[:100]]
     if r["dropped"][0] != "mine.bzImage" or not r["dropped"][1].startswith(f"mine.map (System.map): {len(hello_syms)} symbols"):
         problems.append(f"a bzImage dropped with its System.map: {r['dropped']}")
     booted = wait_for(lambda: gate_on_screen(page), 60)
     show_tab(page, "machine")
     page.click("#sym_forget")
-    wait_for(lambda: page.evaluate("symbols === null") and gate_on_screen(page), 60)
-    r["forgotten"] = [booted, page.evaluate("symbols === null"), page.inner_text("#sym_status"), page.is_hidden("#sym_forget"), gate_on_screen(page)]
+    wait_for(lambda: page.evaluate("MKB.symbols === null") and gate_on_screen(page), 60)
+    r["forgotten"] = [booted, page.evaluate("MKB.symbols === null"), page.inner_text("#sym_status"), page.is_hidden("#sym_forget"), gate_on_screen(page)]
     if r["forgotten"] != [True, True, "", True, True]:
         problems.append(f"Forget on a bzImage from disk: [booted, no symbols, status, Forget hidden, booted again] {r['forgotten']}")
     page.screenshot(path=str(shots / "import-edges-1280.png"))
@@ -1058,15 +1058,15 @@ def initrd_case(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    page.evaluate("window.oldStepper = stepper")
+    page.evaluate("window.oldStepper = MKB.stepper")
     page.set_input_files("#initrd_file", str(cpio))
     # boot() resumes at the default speed; wait for the new machine.
-    wait_for(lambda: page.evaluate("!!stepper && stepper !== window.oldStepper"), 60)
+    wait_for(lambda: page.evaluate("!!MKB.stepper && MKB.stepper !== window.oldStepper"), 60)
     machine_do(page, "click", "#dbg_pause") if page.is_enabled("#dbg_pause") else None
     r["ram"] = int(page.eval_on_selector("#memory", "e => e.value"))
     if r["ram"] <= 64 << 20:
         problems.append(f"RAM not raised for the initrd: {r['ram']}")
-    head = page.evaluate("Array.from(emulator.read_memory(64 << 20, 16))")
+    head = page.evaluate("Array.from(MKB.emulator.read_memory(64 << 20, 16))")
     if bytes(head) != cpio.read_bytes()[:16]:
         problems.append(f"initrd bytes not at 64 MiB in guest RAM: {bytes(head)!r}")
     r["note"] = page.inner_text("#initrd_status")
@@ -1075,7 +1075,7 @@ def initrd_case(browser, base, shots):
     show_tab(page, "memory")
     if "initrd" not in page.inner_text("#map_all"):
         problems.append("the memory map does not show the initrd")
-    if not page.evaluate("pageClass.includes('r-initrd')"):
+    if not page.evaluate("MKB.pageClass.includes('r-initrd')"):
         problems.append("no grid page is classed as initrd")
     # Too little RAM: the header check says so.
     show_tab(page, "machine")
@@ -1148,8 +1148,8 @@ def header_check_case(browser, base, shots):
     mem_opts = page.evaluate("[...document.getElementById('memory').options].map((o) => Number(o.value))")
     # The file dialog cancelled (no file): hello stays.
     page.set_input_files("#file", [])
-    if page.evaluate("image.name") != "hello":
-        problems.append(f"no file picked: the kernel is now {page.evaluate('image.name')!r}")
+    if page.evaluate("MKB.image.name") != "hello":
+        problems.append(f"no file picked: the kernel is now {page.evaluate('MKB.image.name')!r}")
     (tmp / "not-a-bzimage.bin").write_bytes(bytes(8192))
     patched("old-low.bin", o206=("<H", 0x201), o211=("<B", hello[0x211] & 0xfe))
     patched("big.bin", big)
@@ -1193,7 +1193,7 @@ def header_check_case(browser, base, shots):
             pass
         else:
             page.set_input_files("#file", str(tmp / name))
-            wait_for(lambda: page.evaluate("image && image.name") == name, 10)
+            wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == name, 10)
         if name == "init-size.bin" and not rd and mem == 18 << 20:
             # useImage picks the smallest listed RAM that holds init_size.
             need = min(v for v in mem_opts if v >= init_end)
@@ -1217,8 +1217,8 @@ def header_check_case(browser, base, shots):
         status = page.text_content("#status") or ""
         r[tag + ": status"] = status
         if after and after.startswith("Not booted"):
-            if status != after or page.evaluate("!!emulator || runState !== 'off'"):
-                problems.append(f"{tag}: status {status!r}, emulator {page.evaluate('!!emulator')}, want {after!r} and no machine")
+            if status != after or page.evaluate("!!MKB.emulator || MKB.runState !== 'off'"):
+                problems.append(f"{tag}: status {status!r}, emulator {page.evaluate('!!MKB.emulator')}, want {after!r} and no machine")
         elif (after == predict) != (predict in status):
             problems.append(f"{tag}: status {status!r}, want {'a' if after else 'no'} prediction that it will not work")
         if name == "not-a-bzimage.bin":
@@ -1239,16 +1239,16 @@ def header_check_case(browser, base, shots):
     # A v86.wasm the page cannot patch for stepping (another v86 build):
     # hello still boots, without the debugger, which says why.
     page.set_input_files("#file", str(SITE / kernel_entries()["hello"]["path"]))
-    wait_for(lambda: page.evaluate("image && image.name") == "bzImage", 10)
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == "bzImage", 10)
     # The machine state of the stepped machine before, open in the Debugger.
     show_tab(page, "debugger")
     page.evaluate("document.querySelectorAll('#cpu_state details').forEach((d) => d.open = true)")
     wait_for(lambda: page.locator("#cpu_segments [data-reg='CS']").count() > 0, 10)
-    page.evaluate("() => { window.__patch = patchV86Wasm; patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
+    page.evaluate("() => { window.__patch = MKB.patchV86Wasm; MKB.patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
     show_tab(page, "machine")
     page.click("#boot")
     booted = wait_for(lambda: gate_on_screen(page), 60)
-    r["unpatched v86.wasm"] = [booted, page.inner_text("#dbg_status"), page.evaluate("stepper === null")]
+    r["unpatched v86.wasm"] = [booted, page.inner_text("#dbg_status"), page.evaluate("MKB.stepper === null")]
     if r["unpatched v86.wasm"] != [True, "No debugger: Error: test: not the v86.wasm this page patches", True]:
         problems.append(f"v86.wasm not patched: [booted, debugger status, no stepper] {r['unpatched v86.wasm']}")
     # Without a debugger the Debugger shows no machine state (not the previous machine's).
@@ -1257,22 +1257,22 @@ def header_check_case(browser, base, shots):
     if page.inner_text("#cpu_state").strip():
         problems.append(f"no debugger: the Debugger still shows the previous machine's state: {r['unpatched cpu state']!r}")
     # With the debugger again (v86.wasm patched): the sections are back and read this machine.
-    page.evaluate("() => { patchV86Wasm = window.__patch; }")
+    page.evaluate("() => { MKB.patchV86Wasm = window.__patch; }")
     show_tab(page, "machine")
     page.click("#boot")
-    wait_for(lambda: gate_on_screen(page) and page.evaluate("stepper !== null"), 60)
+    wait_for(lambda: gate_on_screen(page) and page.evaluate("MKB.stepper !== null"), 60)
     show_tab(page, "debugger")
     page.evaluate("document.querySelectorAll('#cpu_state details').forEach((d) => d.open = true)")
     wait_for(lambda: page.locator("#cpu_control [data-reg='CR0']").count() > 0, 10)
     cr0 = page.inner_text("#cpu_control [data-reg='CR0']") if page.locator("#cpu_control [data-reg='CR0']").count() else ""
-    want_cr0 = page.evaluate("'CR0 0x' + (stepper.cpu.cr[0] >>> 0).toString(16).padStart(8, '0')")
+    want_cr0 = page.evaluate("'CR0 0x' + (MKB.stepper.cpu.cr[0] >>> 0).toString(16).padStart(8, '0')")
     r["patched again cpu state"] = cr0
     if not cr0.startswith(want_cr0):
         problems.append(f"the debugger back: the CR0 row {cr0!r}, the CPU's {want_cr0!r}")
-    page.evaluate("() => { patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
+    page.evaluate("() => { MKB.patchV86Wasm = () => { throw new Error('test: not the v86.wasm this page patches'); }; }")
     # No listed RAM size holds it: the largest is picked.
     page.set_input_files("#file", str(patched("huge-init.bin", o260=("<I", 1 << 30))))
-    wait_for(lambda: page.evaluate("image && image.name") == "huge-init.bin", 10)
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == "huge-init.bin", 10)
     r["huge_init_ram"] = page.input_value("#memory")
     if page.input_value("#memory") != str(max(mem_opts)):
         problems.append(f"init_size 1 GiB: RAM {page.input_value('#memory')}, want the largest listed, {max(mem_opts)}")
@@ -1292,7 +1292,7 @@ def initrd_kinds(page, kernel, tmp, problems, r):
     lib/modules release). The file dialog cancelled keeps the initrd and
     does not boot again."""
     page.set_input_files("#file", str(kernel))
-    wait_for(lambda: page.evaluate("image && image.name") == kernel.name, 10)
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == kernel.name, 10)
     def entry(name, data, mode):
         n = name.encode() + b"\0"
         out = ("070701" + "".join(f"{v:08x}" for v in (1, mode, 0, 0, 1, 0, len(data), 0, 0, 0, 0, len(n), 0))).encode() + n
@@ -1310,20 +1310,20 @@ def initrd_kinds(page, kernel, tmp, problems, r):
     r["initrd_kinds"] = {}
     for name, data, says in kinds:
         (tmp / name).write_bytes(data)
-        page.evaluate("window.__stepper = stepper")
+        page.evaluate("window.__stepper = MKB.stepper")
         page.set_input_files("#initrd_file", str(tmp / name))
         want = f"{name}: {page_kib(len(data))}, v86 puts it at 0x4000000.{says}"
         # The note is written before the boot with this initrd starts: wait for its machine too.
-        wait_for(lambda: page.inner_text("#initrd_status") == want and page.evaluate("!!stepper && stepper !== window.__stepper"), 30)
+        wait_for(lambda: page.inner_text("#initrd_status") == want and page.evaluate("!!MKB.stepper && MKB.stepper !== window.__stepper"), 30)
         got = page.inner_text("#initrd_status")
         r["initrd_kinds"][name] = got
         if got != want or page.get_attribute("#initrd_status", "data-mismatch"):
             problems.append(f"initrd {name} for a kernel without kernel_version: {got!r}, want {want!r} and no mismatch")
-    page.evaluate("window.__stepper = stepper")
+    page.evaluate("window.__stepper = MKB.stepper")
     page.set_input_files("#initrd_file", [])
     time.sleep(1)
-    if not page.inner_text("#initrd_status").startswith("notrailer.cpio:") or not page.evaluate("stepper === window.__stepper"):
-        problems.append(f"no initrd file picked: {page.inner_text('#initrd_status')!r}, booted again {page.evaluate('stepper !== window.__stepper')}")
+    if not page.inner_text("#initrd_status").startswith("notrailer.cpio:") or not page.evaluate("MKB.stepper === window.__stepper"):
+        problems.append(f"no initrd file picked: {page.inner_text('#initrd_status')!r}, booted again {page.evaluate('MKB.stepper !== window.__stepper')}")
 
 
 def third_party_case(browser, base, shots, folder):
@@ -1364,7 +1364,7 @@ def panic_text_case(browser, base, shots):
         problems.append("no build line in the header")
     # Write the line through the VGA MMIO handlers, as the guest would, on a
     # row past the first screen (vgacon scrolls through the 32 KiB window).
-    page.evaluate("""() => { const cpu = emulator.v86.cpu;
+    page.evaluate("""() => { const cpu = MKB.emulator.v86.cpu;
         const t = "---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0) ]---";
         for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i + 1, 7); } }""")
     ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text"
@@ -1396,10 +1396,10 @@ def panic_budget_stepped(browser, base, problems, r, errors):
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&mips=10&fastforward=0&revk=20000&panicbudget=2#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     for _ in range(10):  # each Step stops at a milestone
-        if page.evaluate("!!stepper.end"):
+        if page.evaluate("!!MKB.stepper.end"):
             break
-        page.evaluate("doStep(3000000)")
-    page.evaluate("afterStop()")
+        page.evaluate("MKB.doStep(3000000)")
+    page.evaluate("MKB.afterStop()")
     time.sleep(0.5)
     rows = counters(page)
     pe, end = rows.get("panic_entry") or {}, rows.get("end") or {}
@@ -1414,13 +1414,13 @@ def panic_budget_stepped(browser, base, problems, r, errors):
     _, _, text, st = rev_click(page, "#dbg_backn", False)
     stops = []
     for _ in range(5):
-        if page.evaluate("!!stepper.end"):
+        if page.evaluate("!!MKB.stepper.end"):
             break
         page.fill("#dbg_n", "5000")
         page.click("#dbg_stepn")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         time.sleep(0.3)
-        stops.append(page.evaluate("stepper.steps"))
+        stops.append(page.evaluate("MKB.stepper.steps"))
     want_stops = [rows[HELLO]["steps"], rows[ALIVE]["steps"], end["steps"]]
     again = page.inner_text("#end_banner")
     r[tag + ", again"] = [st, stops]
@@ -1430,7 +1430,7 @@ def panic_budget_stepped(browser, base, problems, r, errors):
     page.close()
 
 
-PANIC_TEXT_JS = """([row, t]) => { const cpu = emulator.v86.cpu;
+PANIC_TEXT_JS = """([row, t]) => { const cpu = MKB.emulator.v86.cpu;
     for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * row + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * row + 2 * i + 1, 7); } }"""
 
 
@@ -1445,13 +1445,13 @@ def count_give_up(browser, base, problems, r, errors):
         page.goto(f"{base}/index.html?kernel=minified-linux&speed=full&count=1")
         # Set (or clicked) in the same check that sees the count running:
         # the minified Linux's count takes about a second.
-        page.wait_for_function("typeof counting !== 'undefined' && counting && runState === 'stepped'" +
-                               (" && (countMs = 12000001)" if how == "limit" else " && (document.getElementById('count').click(), true)"),
+        page.wait_for_function("typeof window.MKB?.counting !== 'undefined' && MKB.counting && MKB.runState === 'stepped'" +
+                               (" && (MKB.countMs = 12000001)" if how == "limit" else " && (document.getElementById('count').click(), true)"),
                                timeout=60000)
-        ok = wait_for(lambda: page.evaluate("runState === 'jit' || !!(stepper && stepper.end)"), 30)
-        note = page.evaluate("countNote")
-        wait_for(lambda: gate_on_screen(page) and page.evaluate("!!stepper.end"), 120)
-        r["count " + how] = [ok, note, gate_on_screen(page), page.evaluate("counting")]
+        ok = wait_for(lambda: page.evaluate("MKB.runState === 'jit' || !!(MKB.stepper && MKB.stepper.end)"), 30)
+        note = page.evaluate("MKB.countNote")
+        wait_for(lambda: gate_on_screen(page) and page.evaluate("!!MKB.stepper.end"), 120)
+        r["count " + how] = [ok, note, gate_on_screen(page), page.evaluate("MKB.counting")]
         if r["count " + how] != [True, want, True, False]:
             problems.append(f"count ({how}): [the JIT took over, note, both lines, counting] {r['count ' + how]}")
         page.close()
@@ -1478,12 +1478,12 @@ def panic_text_no_end(browser, base, spin, problems, r, errors):
         page.close()
         return
     if spin:
-        page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
+        page.evaluate("(pa) => MKB.emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
     page.evaluate(PANIC_TEXT_JS, [41, "Kernel panic - not syncing: no end line follows"])
     machine_do(page, "click", "#dbg_continue")
-    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("!!stepper.end"), 120)
-    got = page.evaluate("""() => ({ kind: stepper.end.kind, banner: document.getElementById('end_banner').textContent,
-        budget: stepper.panicBudget, eip: stepper.nextPhys(), before: emulator.read_memory(stepper.nextPhys() - 1, 1)[0] })""")
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("!!MKB.stepper.end"), 120)
+    got = page.evaluate("""() => ({ kind: MKB.stepper.end.kind, banner: document.getElementById('end_banner').textContent,
+        budget: MKB.stepper.panicBudget, eip: MKB.stepper.nextPhys(), before: MKB.emulator.read_memory(MKB.stepper.nextPhys() - 1, 1)[0] })""")
     r[tag] = {k: v for k, v in got.items() if k != "banner"} | {"banner": got["banner"][:100]}
     if spin:
         want = f"panic() entered, no end-of-panic text in the next {3000000:,} instructions. Stopped after "
@@ -1524,7 +1524,7 @@ def panic_text_real_time(browser, base, problems, r, errors):
         problems.append(f"real time: Run to start_kernel: {page.inner_text('#dbg_status')!r}")
         page.close()
         return
-    page.evaluate("(pa) => emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
+    page.evaluate("(pa) => MKB.emulator.write_memory(new Uint8Array([0xeb, 0xfe]), pa)", sk["paddr"])
     # Step 10^15 on the spin (no machine steps that many in 5 s, CI's ran
     # 100,000,000 in less): Step gives up after 5 s, still there.
     page.fill("#dbg_n", "1000000000000000")
@@ -1534,16 +1534,16 @@ def panic_text_real_time(browser, base, problems, r, errors):
     if not re.fullmatch(r"Stepped [\d,]+ instructions \(5 s limit\)\.", r["step_limit"][0]) or r["step_limit"][1] != str(sk["paddr"]):
         problems.append(f"Step 10^15 on a jmp $: {r['step_limit']}, want the 5 s limit at {sk['paddr']}")
     machine_do(page, "click", "#dbg_continue")
-    jit = wait_for(lambda: page.evaluate("runState === 'jit' && !!jitLoopId && CLOCK.virtual"), 10)
+    jit = wait_for(lambda: page.evaluate("MKB.runState === 'jit' && !!MKB.jitLoopId && MKB.CLOCK.virtual"), 10)
     machine_do(page, "select_option", "#clock_mips", "real")
-    real = wait_for(lambda: page.evaluate("runState === 'jit' && !jitLoopId && !CLOCK.virtual && emulator.is_running()"), 10)
+    real = wait_for(lambda: page.evaluate("MKB.runState === 'jit' && !MKB.jitLoopId && !MKB.CLOCK.virtual && MKB.emulator.is_running()"), 10)
     r["clock switched while running"] = [jit, real]
     if not jit or not real:
         problems.append(f"the clock switched to real time while the page's JIT ran: [JIT on the virtual clock, then v86's own loop] {[jit, real]}")
     page.evaluate(PANIC_TEXT_JS, [40, "(initramfs) "])
     ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
                   and "(initramfs) prompt" in page.inner_text("#dbg_status"), 10, 0.1)
-    r["real_time_prompt"] = [page.inner_text("#dbg_status"), page.evaluate("stepper.prompt && stepper.prompt.exact")]
+    r["real_time_prompt"] = [page.inner_text("#dbg_status"), page.evaluate("MKB.stepper.prompt && MKB.stepper.prompt.exact")]
     if not ok or r["real_time_prompt"][1] is not False:
         problems.append(f"real time, the (initramfs) prompt on the screen: {r['real_time_prompt']}, "
                         f"state {page.get_attribute('#dbg_state', 'data-state')}, want paused at the prompt (not exact)")
@@ -1551,7 +1551,7 @@ def panic_text_real_time(browser, base, problems, r, errors):
     machine_do(page, "click", "#dbg_continue")
     ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text"
                   and page.get_attribute("#dbg_state", "data-state") == "paused", 10, 0.1)
-    r["real_time_banner"] = [page.inner_text("#end_banner"), page.evaluate("stepper.end && stepper.end.exact"),
+    r["real_time_banner"] = [page.inner_text("#end_banner"), page.evaluate("MKB.stepper.end && MKB.stepper.end.exact"),
                              page.get_attribute("#regs", "data-phys")]
     if not ok or "Kernel panic: spinning on the real-time clock" not in r["real_time_banner"][0] or r["real_time_banner"][1] is not False:
         problems.append(f"real time, an end of panic text: banner {r['real_time_banner']}, "
@@ -1603,7 +1603,7 @@ def follow_case(browser, base, shots):
         if v is not None:
             seen.append(v)
             rows.append(int(page.get_attribute("#graph_canvas", "data-cur-row") or 0))
-            scrolled = max(scrolled, page.evaluate("G.xOff"))
+            scrolled = max(scrolled, page.evaluate("MKB.G.xOff"))
     r["visible"], r["rows"], r["scrolled_px"] = seen, rows, scrolled
     if not seen or any(v != "true" for v in seen):
         problems.append(f"the running frame left the view while following: {seen} rows {rows}")
@@ -1628,10 +1628,10 @@ def follow_case(browser, base, shots):
     page.mouse.move(cx + 100, cy, steps=4)
     page.mouse.up()
     time.sleep(1)
-    left = page.evaluate("[G.follow, document.getElementById('graph_follow').checked, G.x0, G.x1, G.stepper.steps, runState]")
+    left = page.evaluate("[MKB.G.follow, document.getElementById('graph_follow').checked, MKB.G.x0, MKB.G.x1, MKB.G.stepper.steps, MKB.runState]")
     page.check("#graph_follow")
     time.sleep(1)
-    back = page.evaluate("[G.follow, G.x0, G.x1, G.stepper.steps, runState]")
+    back = page.evaluate("[MKB.G.follow, MKB.G.x0, MKB.G.x1, MKB.G.stepper.steps, MKB.runState]")
     r["follow again"] = [left, back]
     if left[0] or left[1] or not left[4] > left[3] or left[5] != "stepped":
         problems.append(f"after a drag: [follow, ticked, x0, x1, steps, run state] {left}, want not following with the run past the window")
@@ -1663,7 +1663,7 @@ def follow_case(browser, base, shots):
     return problems, r
 
 
-TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fr.n, name = (k) => st.nodeName(st.fr.node(k));
+TASKS_JS = """() => { const st = MKB.stepper, s0 = st.sinceEntry, n = st.fr.n, name = (k) => st.nodeName(st.fr.node(k));
     const iv = [], bySym = {}, perTask = {}; let roots = 0, cont = 0;
     for (let k = 0; k < n; k++) if (st.fr.parent(k) < 0 && st.fr.start(k) >= s0) {
         iv.push([st.fr.start(k), st.fr.end(k) < 0 ? st.steps : st.fr.end(k)]);
@@ -1678,27 +1678,27 @@ TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fr.n, name 
     return { tasks: st.taskCount, roots, contRoots: cont, overlap, maxRootsPerTask: Math.max(0, ...Object.values(perTask)),
         sched: ['__schedule', '__switch_to', '__switch_to_asm', '__cond_resched', 'schedule'].filter((x) => bySym[x]),
         traceEarly: te.length, traceEarlyOrphans: te.filter((u) => !u).length,
-        switches: st.swStep.length, visibleSwitches: st.swStep.filter((t, i) => !(G.fold && st.swIrq[i])).length,
+        switches: st.swStep.length, visibleSwitches: st.swStep.filter((t, i) => !(MKB.G.fold && st.swIrq[i])).length,
         markers: Number(document.getElementById('graph_canvas').dataset.switchMarkers),
         labels: Number(document.getElementById('graph_canvas').dataset.switchLabels),
-        rows: G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: (() => { let m = 0; for (let k = 0; k < n; k++) m = Math.max(m, st.fr.depth(k)); return m; })() }; }"""
+        rows: MKB.G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: (() => { let m = 0; for (let k = 0; k < n; k++) m = Math.max(m, st.fr.depth(k)); return m; })() }; }"""
 
 
 # Covered pixel columns per timeline row: the whole run at once vs the
 # same run as 8 windows at 8x zoom, folded back to the coarse columns.
-COVER_JS = """() => { const st = G.stepper, s0 = runStart(), s1 = st.steps, span = s1 - s0;
-    const saved = [G.x0, G.x1, G.userMoved, G.follow]; G.follow = false; G.userMoved = true;
-    G.x0 = s0; G.x1 = s1; drawTimeline();
+COVER_JS = """() => { const st = MKB.G.stepper, s0 = MKB.runStart(), s1 = st.steps, span = s1 - s0;
+    const saved = [MKB.G.x0, MKB.G.x1, MKB.G.userMoved, MKB.G.follow]; MKB.G.follow = false; MKB.G.userMoved = true;
+    MKB.G.x0 = s0; MKB.G.x1 = s1; MKB.drawTimeline();
     const one = new Map(); let W = 0;
-    for (const [r, c] of G.cover) { W = c.length; one.set(r, c.reduce((a, b) => a + b, 0)); }
+    for (const [r, c] of MKB.G.cover) { W = c.length; one.set(r, c.reduce((a, b) => a + b, 0)); }
     const coarse = new Map();
     for (let i = 0; i < 8; i++) {
-        G.x0 = s0 + span * i / 8; G.x1 = s0 + span * (i + 1) / 8; drawTimeline();
-        for (const [r, c] of G.cover) {
+        MKB.G.x0 = s0 + span * i / 8; MKB.G.x1 = s0 + span * (i + 1) / 8; MKB.drawTimeline();
+        for (const [r, c] of MKB.G.cover) {
             if (!coarse.has(r)) coarse.set(r, new Uint8Array(W));
             const m = coarse.get(r);
             for (let col = 0; col < c.length - 1; col++) if (c[col]) m[Math.min(W - 1, Math.floor((i * (c.length - 1) + col) / 8))] = 1; } }
-    [G.x0, G.x1, G.userMoved, G.follow] = saved; G.dirty = true; drawTimeline();
+    [MKB.G.x0, MKB.G.x1, MKB.G.userMoved, MKB.G.follow] = saved; MKB.G.dirty = true; MKB.drawTimeline();
     const rows = [];
     for (const r of new Set([...one.keys(), ...coarse.keys()])) {
         const a = one.get(r) || 0, b = coarse.has(r) ? coarse.get(r).reduce((x, y) => x + y, 0) : 0;
@@ -1716,11 +1716,11 @@ def coverage_problems(page, name):
 
 # Task names from task_struct (D6): the page's names against gdb's member
 # offsets of struct task_struct applied to guest RAM by the test itself.
-TASK_PAGE_JS = """() => { const st = stepper, info = taskInfo(st);
+TASK_PAGE_JS = """() => { const st = MKB.stepper, info = MKB.taskInfo(st);
     return { cur: st.task, region: st.taskRegion.slice(), alive: info.map((x, t) => t === st.task || st.taskOf.get(st.taskRegion[t]) === t),
              tasks: info.map((x) => ({ name: x.name, how: x.how, guess: !!x.guess, comm: x.comm === undefined ? null : x.comm,
                                        pid: x.pid === undefined ? null : x.pid, va: x.va === undefined ? null : x.va })),
-             off: varsOffset(), types: dbgTypes().state }; }"""
+             off: MKB.varsOffset(), types: MKB.dbgTypes().state }; }"""
 
 
 def tasks_late_types(browser, base, shots, name, r):
@@ -1787,7 +1787,7 @@ def gdb_task_layout(elf):
 
 
 def guest_bytes(page, pa, n):
-    return bytes(page.evaluate("([pa, n]) => Array.from(emulator.read_memory(pa, n))", [pa, n]))
+    return bytes(page.evaluate("([pa, n]) => Array.from(MKB.emulator.read_memory(pa, n))", [pa, n]))
 
 
 def guest_task(page, lay, off, va):
@@ -1806,7 +1806,7 @@ def task_names_check(page, name, shots, r):
     offsets agree; the Debugger's task row and the call tree's task rows
     show the same names."""
     problems = []
-    if not wait_for(lambda: page.evaluate("dbgTypes().state") == "ok", 60):
+    if not wait_for(lambda: page.evaluate("MKB.dbgTypes().state") == "ok", 60):
         return [f"{name}: the types did not load"]
     p = page.evaluate(TASK_PAGE_JS)
     tasks = p["tasks"]
@@ -1899,7 +1899,7 @@ GRAPH_SPY_JS = """() => { if (window.__ft) return; window.__ft = [];
     const u = URL.createObjectURL; window.__blobs = [];
     URL.createObjectURL = (b) => { const h = u(b); __blobs.push(h); return h; }; }"""
 # Redraw now; the texts drawn.
-GRAPH_DRAW_JS = "() => { __ft = []; G.dirty = true; graphTick(); return __ft; }"
+GRAPH_DRAW_JS = "() => { __ft = []; MKB.G.dirty = true; MKB.graphTick(); return __ft; }"
 
 
 def graph_canvas_xy(page, x, y):
@@ -1928,7 +1928,7 @@ def graph_controls(page, name, shots, r):
     texts = page.evaluate(GRAPH_DRAW_JS)
 
     # A task switch's label: the info names the incoming task, as drawn.
-    sw = page.evaluate("""() => { const st = G.stepper, h = G.switchHits[0]; if (!h) return null;
+    sw = page.evaluate("""() => { const st = MKB.G.stepper, h = MKB.G.switchHits[0]; if (!h) return null;
         return { i: h[0], lx: h[1], x: h[1] + h[3] / 2, y: h[2] + h[4] / 2, task: st.swTask[h[0]], at: st.swStep[h[0]] - st.sinceEntry }; }""")
     if not sw:
         problems.append(f"{name}: no task switch label drawn")
@@ -1943,21 +1943,21 @@ def graph_controls(page, name, shots, r):
         time.sleep(0.7)  # the next press starts afresh
 
     # Merged calls narrower than a pixel: a click zooms into their range.
-    m = page.evaluate("""() => { const st = G.stepper, L = G.layout;
-        for (const h of G.mergedHits) { const [x, y, w, hh, n, t0, t1] = h; const cx = x + w / 2, cy = y + hh / 2;
-            if (n < 2 || timelineFrameAt(cx, cy) >= 0 || G.switchHits.some(([, a, b, c, d]) => cx >= a - 2 && cx <= a + c + 2 && cy >= b - 2 && cy <= b + d + 2)) continue;
-            return { cx, cy, n, t0, t1, row: Math.round((y - G.areaTop + G.yOff) / 17) }; }
+    m = page.evaluate("""() => { const st = MKB.G.stepper, L = MKB.G.layout;
+        for (const h of MKB.G.mergedHits) { const [x, y, w, hh, n, t0, t1] = h; const cx = x + w / 2, cy = y + hh / 2;
+            if (n < 2 || MKB.timelineFrameAt(cx, cy) >= 0 || MKB.G.switchHits.some(([, a, b, c, d]) => cx >= a - 2 && cx <= a + c + 2 && cy >= b - 2 && cy <= b + d + 2)) continue;
+            return { cx, cy, n, t0, t1, row: Math.round((y - MKB.G.areaTop + MKB.G.yOff) / 17) }; }
         return null; }""")
     if not m:
         problems.append(f"{name}: no merged column of 2 or more calls to click")
     else:
         page.mouse.click(*graph_canvas_xy(page, m["cx"], m["cy"]))
         time.sleep(0.4)
-        x0, x1 = page.evaluate("[G.x0, G.x1]")
+        x0, x1 = page.evaluate("[MKB.G.x0, MKB.G.x1]")
         pad = (m["t1"] - m["t0"]) * 0.05
         info = page.inner_text("#graph_info")
-        boxes = page.evaluate("""([t0, t1, row]) => G.rects.filter(([k]) => G.layout.row[k] === row &&
-            G.stepper.fr.start(k) >= t0 && G.stepper.fr.start(k) < t1).length""", [m["t0"], m["t1"], m["row"]])
+        boxes = page.evaluate("""([t0, t1, row]) => MKB.G.rects.filter(([k]) => MKB.G.layout.row[k] === row &&
+            MKB.G.stepper.fr.start(k) >= t0 && MKB.G.stepper.fr.start(k) < t1).length""", [m["t0"], m["t1"], m["row"]])
         r["merged"] = [m["n"], m["row"], boxes, info[:80]]
         if abs(x0 - (m["t0"] - pad)) > 1e-6 * x1 or abs(x1 - (m["t1"] + pad)) > 1e-6 * x1 or \
                 not info.startswith(f"{m['n']:,} calls in this range") or "zoomed in" not in info or boxes < 1:
@@ -1966,18 +1966,18 @@ def graph_controls(page, name, shots, r):
         # Fit: the whole run again.
         page.click("#graph_fit")
         time.sleep(0.3)
-        got = page.evaluate("[G.x0, G.x1, G.stepper.sinceEntry, G.stepper.steps]")
+        got = page.evaluate("[MKB.G.x0, MKB.G.x1, MKB.G.stepper.sinceEntry, MKB.G.stepper.steps]")
         if got[0] != got[2] or got[1] != got[3]:
             problems.append(f"{name}: Fit shows [{got[0]}, {got[1]}], the run is [{got[2]}, {got[3]}]")
 
     # The wheel zooms about the pointer; it does nothing in Top 30.
     w = page.evaluate("document.getElementById('graph_canvas').clientWidth")
     px = round(w * 0.3)
-    x0, x1 = page.evaluate("[G.x0, G.x1]")
+    x0, x1 = page.evaluate("[MKB.G.x0, MKB.G.x1]")
     page.mouse.move(*graph_canvas_xy(page, px, 200))
     page.mouse.wheel(0, -500)
     time.sleep(0.4)
-    a0, a1 = page.evaluate("[G.x0, G.x1]")
+    a0, a1 = page.evaluate("[MKB.G.x0, MKB.G.x1]")
     span = (x1 - x0) / math.e
     t = x0 + px / w * (x1 - x0)
     r["wheel"] = [round(x1 - x0), round(a1 - a0)]
@@ -1988,7 +1988,7 @@ def graph_controls(page, name, shots, r):
     page.mouse.move(*graph_canvas_xy(page, px, 100))
     page.mouse.wheel(0, -500)
     time.sleep(0.2)
-    if page.evaluate("[G.x0, G.x1]") != [a0, a1]:
+    if page.evaluate("[MKB.G.x0, MKB.G.x1]") != [a0, a1]:
         problems.append(f"{name}: the wheel over Top 30 changed the timeline window")
     page.click("#gview_timeline")
     page.click("#graph_fit")
@@ -2006,21 +2006,21 @@ def graph_controls(page, name, shots, r):
             cdp.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [tp(1, 50 + 20 * i), tp(2, 50 + 20 * i)]})
         cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
         time.sleep(0.3)
-    x0, x1 = page.evaluate("[G.x0, G.x1]")
+    x0, x1 = page.evaluate("[MKB.G.x0, MKB.G.x1]")
     for v in ("top", "timeline"):
         page.click("#gview_" + v)
         time.sleep(0.3)
         pinch()
-    a0, a1 = page.evaluate("[G.x0, G.x1]")
+    a0, a1 = page.evaluate("[MKB.G.x0, MKB.G.x1]")
     r["pinch"] = round((x1 - x0) / (a1 - a0), 3)
     if abs(r["pinch"] - 3) > 0.01:
         problems.append(f"{name}: a pinch from 100 to 300 px in Top 30, then in the timeline, zoomed by {r['pinch']}, want 3 (once)")
     # A cancelled touch leaves no pointer behind.
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [tp(1, 0)]})
-    held = page.evaluate("G.pointers.size")
+    held = page.evaluate("MKB.G.pointers.size")
     cdp.send("Input.dispatchTouchEvent", {"type": "touchCancel", "touchPoints": []})
     time.sleep(0.2)
-    after = page.evaluate("[G.pointers.size, G.press === null]")
+    after = page.evaluate("[MKB.G.pointers.size, MKB.G.press === null]")
     if held != 1 or after != [0, True]:
         problems.append(f"{name}: a touch held {held} pointers, after its cancel {after}")
     cdp.detach()
@@ -2036,13 +2036,13 @@ def graph_controls(page, name, shots, r):
     page.mouse.up()
     time.sleep(0.3)
     texts = page.evaluate(GRAPH_DRAW_JS)
-    want = page.evaluate("""() => { const st = G.stepper, L = G.layout, tm = (G.x0 + G.x1) / 2;
-        for (let k = 0; k < st.fr.n; k++) if (L.isHead[k] && L.row[k] === 0 && st.fr.start(k) <= tm && fEnd(st, k) > tm)
+    want = page.evaluate("""() => { const st = MKB.G.stepper, L = MKB.G.layout, tm = (MKB.G.x0 + MKB.G.x1) / 2;
+        for (let k = 0; k < st.fr.n; k++) if (L.isHead[k] && L.row[k] === 0 && st.fr.start(k) <= tm && MKB.fEnd(st, k) > tm)
             return st.nodeName(st.fr.node(k)); return null; }""")
     sticky = [t for t, x, y in texts if t.startswith("↑ ")]
-    r["sticky"] = [page.evaluate("G.yOff"), want, sticky[:1]]
-    if page.evaluate("G.yOff") != 60 or not want or not sticky or not sticky[0].startswith("↑ " + want):
-        problems.append(f"{name}: a 60 px drag upwards: yOff {page.evaluate('G.yOff')}, sticky labels {sticky[:2]}, want the top row's {want!r} first")
+    r["sticky"] = [page.evaluate("MKB.G.yOff"), want, sticky[:1]]
+    if page.evaluate("MKB.G.yOff") != 60 or not want or not sticky or not sticky[0].startswith("↑ " + want):
+        problems.append(f"{name}: a 60 px drag upwards: yOff {page.evaluate('MKB.G.yOff')}, sticky labels {sticky[:2]}, want the top row's {want!r} first")
     page.screenshot(path=str(shots / f"graph-sticky-{name}-1100.png"))
     page.click("#graph_fit")
 
@@ -2053,19 +2053,19 @@ def graph_controls(page, name, shots, r):
     time.sleep(0.3)
     texts = page.evaluate(GRAPH_DRAW_JS)
     deeper = [t for t, x, y in texts if re.fullmatch(r"\+\d+", t)]
-    rows = page.evaluate("Math.max(...G.rects.map(([k]) => G.layout.row[k]))")
+    rows = page.evaluate("Math.max(...MKB.G.rects.map(([k]) => MKB.G.layout.row[k]))")
     r["transposed +N"] = [len(deeper), rows]
     if not deeper or rows > 3:
         problems.append(f"{name}: transposed with depth 3: {len(deeper)} '+N' marks, rows up to {rows}")
     page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
-    x0, x1, xoff, ch = page.evaluate("[G.x0, G.x1, G.xOff, document.getElementById('graph_canvas').clientHeight]")
+    x0, x1, xoff, ch = page.evaluate("[MKB.G.x0, MKB.G.x1, MKB.G.xOff, document.getElementById('graph_canvas').clientHeight]")
     cx, cy = graph_canvas_xy(page, w / 2, 200)
     page.mouse.move(cx, cy)
     page.mouse.down()
     page.mouse.move(cx - 50, cy + 80, steps=4)
     page.mouse.up()
     time.sleep(0.3)
-    a0, a1, aoff = page.evaluate("[G.x0, G.x1, G.xOff]")
+    a0, a1, aoff = page.evaluate("[MKB.G.x0, MKB.G.x1, MKB.G.xOff]")
     dt = 80 / (ch - 26 - 24) * (x1 - x0)
     r["transposed drag"] = [round(x0 - a0), round(dt), aoff]
     if abs((x0 - a0) - dt) > 1e-6 * (x1 - x0) or abs(a1 - a0 - (x1 - x0)) > 1e-6 * (x1 - x0) or aoff != xoff + 50:
@@ -2076,14 +2076,14 @@ def graph_controls(page, name, shots, r):
     time.sleep(0.3)
 
     # "hide interrupts" off: the interrupt frames are drawn; the selection goes.
-    page.evaluate("G.selected = 0; renderGraphInfo()")
-    n_on = page.evaluate("G.rects.filter(([k]) => G.stepper.fr.irq(k)).length")
+    page.evaluate("MKB.G.selected = 0; MKB.renderGraphInfo()")
+    n_on = page.evaluate("MKB.G.rects.filter(([k]) => MKB.G.stepper.fr.irq(k)).length")
     page.uncheck("#graph_fold")
     time.sleep(0.3)
-    n_off, sel = page.evaluate("[G.rects.filter(([k]) => G.stepper.fr.irq(k)).length, G.selected]")
+    n_off, sel = page.evaluate("[MKB.G.rects.filter(([k]) => MKB.G.stepper.fr.irq(k)).length, MKB.G.selected]")
     page.check("#graph_fold")
     time.sleep(0.3)
-    n_back = page.evaluate("G.rects.filter(([k]) => G.stepper.fr.irq(k)).length")
+    n_back = page.evaluate("MKB.G.rects.filter(([k]) => MKB.G.stepper.fr.irq(k)).length")
     r["irq boxes"] = [n_on, n_off, n_back]
     if n_on or not n_off or n_back or sel != -1:
         problems.append(f"{name}: interrupt boxes with hide interrupts on/off/on {r['irq boxes']}, selection after the toggle {sel}")
@@ -2102,8 +2102,8 @@ def graph_controls(page, name, shots, r):
     # Arrows: with nothing selected, the widest box of the top row; Right
     # the next box of its row to the right; Up from the top row stays;
     # Ctrl+Left is not a move.
-    page.evaluate("G.selected = -1; renderGraphInfo(); G.dirty = true; graphTick()")
-    rects = page.evaluate("G.rects.map(([k, x, y, w, h]) => [k, x, w, G.layout.row[k]])")
+    page.evaluate("MKB.G.selected = -1; MKB.renderGraphInfo(); MKB.G.dirty = true; MKB.graphTick()")
+    rects = page.evaluate("MKB.G.rects.map(([k, x, y, w, h]) => [k, x, w, MKB.G.layout.row[k]])")
     top = min(x[3] for x in rects)
     first = max((x for x in rects if x[3] == top), key=lambda x: x[2])
     right = min((x for x in rects if x[3] == top and x[1] > first[1]), key=lambda x: x[1] - first[1], default=None)
@@ -2118,7 +2118,7 @@ def graph_controls(page, name, shots, r):
     for key in ("ArrowRight", "ArrowRight", "ArrowUp", "Control+ArrowLeft"):
         page.keyboard.press(key)
         time.sleep(0.15)
-        seq.append(page.evaluate("G.selected"))
+        seq.append(page.evaluate("MKB.G.selected"))
     want = [first[0], right[0] if right else first[0]]
     want += [want[1], want[1]]
     r["arrows"] = [seq, want]
@@ -2132,7 +2132,7 @@ def graph_controls(page, name, shots, r):
     page.locator("#graph_info").get_by_role("button", name="Page tab", exact=True).first.click()
     ok = wait_for(lambda: shown_tab(page) == "page", 5)
     nav_settle(page)
-    got = page.evaluate("selectedPage")
+    got = page.evaluate("MKB.selectedPage")
     r["page button"] = [ok, got]
     if not ok or got != syms["start_kernel"]["paddr"] // 4096:
         problems.append(f"{name}: the info's Page tab button showed tab {shown_tab(page)!r}, page {got}, want {syms['start_kernel']['paddr'] // 4096}")
@@ -2147,7 +2147,7 @@ def graph_controls(page, name, shots, r):
     # that reach it: swallowed exactly when within 500 ms of the open (on a
     # slow host the click after the open may come later than that).
     page.evaluate("""() => { window.__cap = []; window.__bub = [];
-        const dt = () => (G.openedAt ? Math.round(realNow() - G.openedAt) : null);
+        const dt = () => (MKB.G.openedAt ? Math.round(MKB.realNow() - MKB.G.openedAt) : null);
         // The bubbling listener records the time its capture saw (CI run
         // 43724195461: 823 ms at capture, 824 ms after the handlers ran).
         document.addEventListener('click', (e) => { e.mkbDt = dt(); __cap.push(e.mkbDt); }, true);
@@ -2155,14 +2155,14 @@ def graph_controls(page, name, shots, r):
     entries0 = nav_at(page)
     page.mouse.click(xy["x"], xy["y"])
     page.mouse.click(xy["x"] + 15, xy["y"])
-    ok = wait_for(lambda: page.evaluate("tab") == "page", 5, 0.02)
+    ok = wait_for(lambda: page.evaluate("MKB.tab") == "page", 5, 0.02)
     page.mouse.click(5, 300)
     time.sleep(0.7)
     page.mouse.click(5, 300)
     cap, bub = page.evaluate("[__cap, __bub]")
     r["two presses"] = [ok, cap, bub, entries0, nav_at(page)]
     want = [t for t in cap if t is None or t >= 500]
-    if not ok or page.evaluate("selectedPage") != syms["start_kernel"]["paddr"] // 4096 or len(cap) != 4 or \
+    if not ok or page.evaluate("MKB.selectedPage") != syms["start_kernel"]["paddr"] // 4096 or len(cap) != 4 or \
             cap[:2] != [None, None] or cap[2] is None or bub != want:
         problems.append(f"{name}: two presses 15 px apart on start_kernel: Page tab {ok}; clicks (ms after the open) {cap}, "
                         f"reaching the page {bub}, want {want} (within 500 ms of the open swallowed)")
@@ -2383,7 +2383,7 @@ def cpu_state_case(browser, base, shots, name):
     r["pic"] = row("irq", "PIC master")
     m = re.search(r"IMR 0x([0-9a-f]{2})", r["pic"])
     if cim and m:
-        cached = page.evaluate(f"stepper.cpu.mem8[{cim['paddr']}]")
+        cached = page.evaluate(f"MKB.stepper.cpu.mem8[{cim['paddr']}]")
         r["imr"], r["cached_master_mask"] = m.group(1), f"{cached:02x}"
         if int(m.group(1), 16) != cached:
             problems.append(f"PIC IMR 0x{m.group(1)} != the kernel's cached_irq_mask 0x{cached:02x}")
@@ -2422,7 +2422,7 @@ def cpu_state_case(browser, base, shots, name):
 # present; its PDE 3 names a page table past the end of RAM (0xfffff000). The
 # PT's PTE 6 is not present. PDPTE 2 is not present.
 PAE_JS = """(on) => {
-    const c = stepper.cpu, m = c.mem8, dv = new DataView(m.buffer, m.byteOffset, m.length);
+    const c = MKB.stepper.cpu, m = c.mem8, dv = new DataView(m.buffer, m.byteOffset, m.length);
     const S = (m.length - 0x10000) & ~0xfff;
     if (!on) {
         m.set(window.__paeSaved.bytes, S);
@@ -2447,7 +2447,7 @@ PAE_JS = """(on) => {
 # Saves (on) or puts back (off) the top 64 KiB of RAM and CR0, CR3, CR4,
 # IDTR; returns S, the first of those bytes.
 HAND_SAVE_JS = """(on) => {
-    const c = stepper.cpu, m = c.mem8, S = (m.length - 0x10000) & ~0xfff;
+    const c = MKB.stepper.cpu, m = c.mem8, S = (m.length - 0x10000) & ~0xfff;
     if (!on) {
         const v = window.__handSaved;
         m.set(v.bytes, S);
@@ -2469,7 +2469,7 @@ def hand_tables(page, sk, xlate, problems, r):
     3, each line as written here."""
     S = page.evaluate(HAND_SAVE_JS, True)
     try:
-        pd = page.evaluate("""(S) => { const c = stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
+        pd = page.evaluate("""(S) => { const c = MKB.stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
             new Uint8Array(c.mem8.buffer, c.mem8.byteOffset + S, 0x10000).fill(0);
             const e = (i, v) => dv.setUint32(S + i * 4, v >>> 0, true);
             e(0, 0x000083); e(1, 0x400083); e(2, 0x800083);
@@ -2482,7 +2482,7 @@ def hand_tables(page, sk, xlate, problems, r):
         page.fill("#xlate_in", "0x00812345")
         page.press("#xlate_in", "Enter")
         big = page.inner_text("#xlate_out")
-        page.evaluate("() => { const c = stepper.cpu; c.cr[0] = c.cr[0] & ~0x80000000; }")
+        page.evaluate("() => { const c = MKB.stepper.cpu; c.cr[0] = c.cr[0] & ~0x80000000; }")
         off = xlate("0x1234")
         page.click("#pd_view")
         off_pd = page.inner_text("#xlate_out")
@@ -2505,8 +2505,8 @@ def hand_tables(page, sk, xlate, problems, r):
     # after); gate 0 to mapped RAM that no symbol of symbols.json covers.
     syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
     mapped = page.evaluate("""() => { const out = [];
-        for (let pa = 0x100000; pa < stepper.cpu.mem8.length; pa += 0x1000)
-            if (pageWalk(stepper.cpu, pa + 0xc0000000).phys === pa) out.push(pa + 0x100);
+        for (let pa = 0x100000; pa < MKB.stepper.cpu.mem8.length; pa += 0x1000)
+            if (MKB.pageWalk(MKB.stepper.cpu, pa + 0xc0000000).phys === pa) out.push(pa + 0x100);
         return out; }""")
     free = next((a for a in mapped if not any(x["paddr"] <= a < x["paddr"] + max(x["size"], 1) for x in syms)), -1)
     if free < 0:
@@ -2517,8 +2517,8 @@ def hand_tables(page, sk, xlate, problems, r):
     insns = json.loads((SITE / kernel_entries()["minified-linux"]["disasm"]).read_text())["insns"]
     second = next(a for a, *_ in insns if a > sk["paddr"]) - sk["paddr"]
     gates = [(lin, 0x60, 0x8E), (0x12345678, 0x60, 0x0E), (0, 0, 0), (sk["vaddr"] + second, 0x60, 0x80), (sk["vaddr"], 0x60, 0xEF)]
-    idt = page.evaluate("""(gates) => { const c = stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
-        const at = pageWalk(c, c.idtr_offset[0]).phys, saved = c.mem8.slice(at, at + gates.length * 8), size = c.idtr_size[0];
+    idt = page.evaluate("""(gates) => { const c = MKB.stepper.cpu, dv = new DataView(c.mem8.buffer, c.mem8.byteOffset, c.mem8.length);
+        const at = MKB.pageWalk(c, c.idtr_offset[0]).phys, saved = c.mem8.slice(at, at + gates.length * 8), size = c.idtr_size[0];
         try {
             gates.forEach(([off, sel, acc], i) => {
                 dv.setUint32(at + i * 8, ((off & 0xffff) | sel << 16) >>> 0, true);
@@ -2613,7 +2613,7 @@ def cpu_state_tools(page, sk, problems, r):
     hand_tables(page, sk, xlate, problems, r)
     # GDT and IDT at an unmapped linear address.
     if hole is not None:
-        saved = page.evaluate(f"""() => {{ const c = stepper.cpu, s = [c.gdtr_offset[0], c.idtr_offset[0]];
+        saved = page.evaluate(f"""() => {{ const c = MKB.stepper.cpu, s = [c.gdtr_offset[0], c.idtr_offset[0]];
             c.gdtr_offset[0] = c.idtr_offset[0] = {hole}; return s; }}""")
         try:
             page.click("#view_gdt")
@@ -2621,25 +2621,25 @@ def cpu_state_tools(page, sk, problems, r):
             page.click("#view_idt")
             idt = page.inner_text("#cpu_table").splitlines()
         finally:
-            page.evaluate("(s) => { stepper.cpu.gdtr_offset[0] = s[0]; stepper.cpu.idtr_offset[0] = s[1]; }", saved)
+            page.evaluate("(s) => { MKB.stepper.cpu.gdtr_offset[0] = s[0]; MKB.stepper.cpu.idtr_offset[0] = s[1]; }", saved)
         r["gdt_unmapped"], r["idt_unmapped"] = gdt[:1], idt[:1]
         if not gdt or not all(l.endswith(" not mapped") for l in gdt):
             problems.append(f"GDT at an unmapped address: {gdt[:3]}")
         if not idt or not all(l.endswith(" not mapped") for l in idt):
             problems.append(f"IDT at an unmapped address: {idt[:3]}")
     # MMX and SSE registers: shown once they hold a value; a changed row marked.
-    fpu = lambda: page.evaluate("""() => { renderCpuState(); return [...document.querySelectorAll('#cpu_fpu [data-reg]')]
+    fpu = lambda: page.evaluate("""() => { MKB.renderCpuState(); return [...document.querySelectorAll('#cpu_fpu [data-reg]')]
         .map((e) => [e.dataset.reg, e.textContent, e.classList.contains('chg')]); }""")
     before = fpu()
-    saved = page.evaluate("""() => { const c = stepper.cpu, s = [Array.from(c.fpu_st), Array.from(c.reg_xmm32s), c.fpu_stack_empty[0]];
+    saved = page.evaluate("""() => { const c = MKB.stepper.cpu, s = [Array.from(c.fpu_st), Array.from(c.reg_xmm32s), c.fpu_stack_empty[0]];
         c.fpu_st[4] = 0x12345678; c.reg_xmm32s[0] = 0x3f800000; return s; }""")
     try:
         mmx = fpu()
-        page.evaluate("stepper.cpu.fpu_stack_empty[0] = stepper.cpu.fpu_stack_empty[0] & 0xfe")
+        page.evaluate("MKB.stepper.cpu.fpu_stack_empty[0] = MKB.stepper.cpu.fpu_stack_empty[0] & 0xfe")
         st = fpu()
     finally:
-        page.evaluate("""(s) => { const c = stepper.cpu; c.fpu_st.set(s[0]); c.reg_xmm32s.set(s[1]); c.fpu_stack_empty[0] = s[2];
-            renderCpuState(); }""", saved)
+        page.evaluate("""(s) => { const c = MKB.stepper.cpu; c.fpu_st.set(s[0]); c.reg_xmm32s.set(s[1]); c.fpu_stack_empty[0] = s[2];
+            MKB.renderCpuState(); }""", saved)
     names = lambda rows: [x[0] for x in rows]
     row = lambda rows, n: next((x for x in rows if x[0] == n), None)
     r["fpu_rows"] = [len(before), len(mmx), len(st)]
@@ -2658,13 +2658,13 @@ def runto_refusals(page, syms, problems, r):
     field) steps that many; a Run to the page refuses says why in the
     Debugger's status and the machine stays where it is (the similar names
     and sections from symbols.json)."""
-    s0 = page.evaluate("stepper.steps")
+    s0 = page.evaluate("MKB.stepper.steps")
     page.fill("#dbg_n", "3")
     page.press("#dbg_n", "Enter")
-    r["step_n_enter"] = wait_for(lambda: page.evaluate("stepper.steps") == s0 + 3
+    r["step_n_enter"] = wait_for(lambda: page.evaluate("MKB.stepper.steps") == s0 + 3
                                  and page.get_attribute("#dbg_state", "data-state") == "paused", 30)
     if not r["step_n_enter"]:
-        problems.append(f"Enter in the Step N field (3): {page.evaluate('stepper.steps') - s0} steps")
+        problems.append(f"Enter in the Step N field (3): {page.evaluate('MKB.stepper.steps') - s0} steps")
     secs = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["sections"]
     data = next(x for x in syms if x["name"] == "jiffies")
     sec = next(x for x in secs if x["paddr"] <= data["paddr"] < x["paddr"] + x["size"])
@@ -2912,7 +2912,7 @@ def text_check(page, name, samples, texts, entry_fn, problems, r):
     r["text_rows"] = rows
     r["call_lines_naming_callee"] = f"{named}/{len(calls)}"
     f0 = samples[0][2][0] if samples and samples[0][2] else None
-    r["entry_text"] = page.evaluate("(f) => [...Array(11).keys()].map((k) => srcText(f.file, f.line - 10 + k))", f0) if f0 else None
+    r["entry_text"] = page.evaluate("(f) => [...Array(11).keys()].map((k) => MKB.srcText(f.file, f.line - 10 + k))", f0) if f0 else None
     if not r["entry_text"] or not texts[0] or texts[0][0] != (r["entry_text"][-1] or "").strip() or \
             not any(entry_fn + "(" in (t or "") for t in r["entry_text"]):
         problems.append(f"{name}: the C line at the entry of {entry_fn} is {r['entry_text']!r}")
@@ -2928,10 +2928,10 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=Non
     samples, texts = [], []
     for n in steps:
         if n:
-            before = page.evaluate("stepper.steps")
+            before = page.evaluate("MKB.stepper.steps")
             page.fill("#dbg_n", str(n))
             page.click("#dbg_stepn")
-            wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+            wait_for(lambda: page.evaluate("MKB.stepper.steps") - before >= n and
                      page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         samples.append(source_rows(page))
         if entry_fn:
@@ -2965,8 +2965,8 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=Non
     if cs < 1 or not re.search(r"\.[chS]:\d+|no line information", r["call_stack_title"] or ""):
         problems.append(f"{name}: call stack without file:line tooltips: {cs} frames, {r['call_stack_title']!r}")
     # Calls tab: a frame's hover text has where it was called from.
-    t = page.evaluate("""() => { const st = G.stepper; const k = st.stack.length ? st.stack[st.stack.length - 1] : -1;
-        return k >= 0 ? frameTitle(st, k) : null; }""")
+    t = page.evaluate("""() => { const st = MKB.G.stepper; const k = st.stack.length ? st.stack[st.stack.length - 1] : -1;
+        return k >= 0 ? MKB.frameTitle(st, k) : null; }""")
     r["frame_title"] = t
     if not t or "called from 0x" not in t or not re.search(r"\.[chS]:\d+", t):
         problems.append(f"{name}: flame frame tooltip without DWARF locations: {t!r}")
@@ -3037,14 +3037,14 @@ def src_colour_check(page, name, phys, inl_phys, problems, r, shots):
             got[view] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS[view]))
         if inl_phys is not None:
             page.evaluate("""(pa) => { const box = document.createElement('div'); box.id = 'src_colour_probe';
-                document.getElementById('sym_info').append(box); renderSourceRows(box, pa, null); }""", inl_phys)
-            wait_for(lambda: page.evaluate("srcText(...JSON.parse(document.querySelector('#src_colour_probe #cur_src').dataset.frames)"
+                document.getElementById('sym_info').append(box); MKB.renderSourceRows(box, pa, null); }""", inl_phys)
+            wait_for(lambda: page.evaluate("MKB.srcText(...JSON.parse(document.querySelector('#src_colour_probe #cur_src').dataset.frames)"
                                            ".slice(-1).map(f => [f.file, f.line])[0]) !== null"), 15)
             page.evaluate("""(pa) => { const box = document.getElementById('src_colour_probe'); box.textContent = '';
-                renderSourceRows(box, pa, null); }""", inl_phys)
+                MKB.renderSourceRows(box, pa, null); }""", inl_phys)
             got["Debugger inlined-into row"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Debugger inlined-into row"]))
             page.evaluate("document.getElementById('src_colour_probe').remove()")
-        page.evaluate("(pa) => openSource(pa)", phys)
+        page.evaluate("(pa) => MKB.openSource(pa)", phys)
         wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
         got["Source panel"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Source panel"]))
         page.screenshot(path=str(shots / f"srccolour-{name}-1280-{scheme}.png"))
@@ -3054,8 +3054,8 @@ def src_colour_check(page, name, phys, inl_phys, problems, r, shots):
         page.set_viewport_size({"width": 1280, "height": 1000})
         page.click("#src_close")
         show_tab(page, "calls")
-        page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-            G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
+        page.evaluate("""() => { const st = MKB.G.stepper; MKB.G.view = 'timeline';
+            MKB.G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; MKB.renderGraphInfo(); }""")
         got["Graph detail"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Graph detail"]))
         show_tab(page, "debugger")
         for view, (_, text) in SRC_COLOUR_VIEWS.items():
@@ -3116,8 +3116,8 @@ def dwarf_case(browser, base, shots, name):
     page.screenshot(path=str(shots / f"dwarf-debugger-{name}-1280-light.png"))
     # Calls tab: the detail of the innermost open frame names its call site and entry with file:line.
     show_tab(page, "calls")
-    page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
+    page.evaluate("""() => { const st = MKB.G.stepper; MKB.G.view = 'timeline';
+        MKB.G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; MKB.renderGraphInfo(); }""")
     wait_for(lambda: "reading DWARF" not in (page.evaluate("(document.getElementById('graph_src') || {}).innerText") or ""), 15)
     r["graph_detail"] = page.evaluate("(document.getElementById('graph_src') || {}).innerText")
     if not r["graph_detail"] or not ("called from 0x" in r["graph_detail"] and re.search(r"\.[chS]:\d+", r["graph_detail"])):
@@ -3286,7 +3286,7 @@ def dwarf_import_case(browser, base, shots):
     page.goto(url)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     # The import reboots the kernel: start that boot paused too (?paused=1 holds for the first boot only).
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported" and
              "compile units" in page.inner_text("#sym_status"), 30)
@@ -3305,7 +3305,7 @@ def dwarf_import_case(browser, base, shots):
     page.screenshot(path=str(shots / "dwarf-import-1280.png"))
     # Parameters and locals decoded in the browser from the imported DWARF
     # equal the shipped ones (gen-dwarf.js on the same ELF) at the same count.
-    at = page.evaluate("stepper.steps")
+    at = page.evaluate("MKB.stepper.steps")
     wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
     imported = locals_open_all(page)
     ship = browser.new_page(viewport={"width": 1280, "height": 1000})
@@ -3316,9 +3316,9 @@ def dwarf_import_case(browser, base, shots):
     ship.click("#dbg_runto")
     wait_for(lambda: ship.get_attribute("#dbg_state", "data-state") == "paused"
              and ship.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120)
-    ship.fill("#dbg_n", str(at - ship.evaluate("stepper.steps")))
+    ship.fill("#dbg_n", str(at - ship.evaluate("MKB.stepper.steps")))
     ship.click("#dbg_stepn")
-    wait_for(lambda: ship.evaluate("stepper.steps") == at and ship.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    wait_for(lambda: ship.evaluate("MKB.stepper.steps") == at and ship.get_attribute("#dbg_state", "data-state") == "paused", 60)
     wait_for(lambda: ship.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
     shipped = locals_open_all(ship)
     ship.close()
@@ -3330,7 +3330,7 @@ def dwarf_import_case(browser, base, shots):
     # Without a file list (an import), the function facts' "defined at"
     # opens the function around its code with the declaration's line picked.
     show_tab(page, "calls")
-    wait_for(lambda: page.evaluate("G.rects.length > 0"), 20)
+    wait_for(lambda: page.evaluate("MKB.G.rects.length > 0"), 20)
     xy = graph_box_xy(page, "start_kernel")
     if not xy:
         problems.append("imported -g vmlinux: no start_kernel box in the Calls tab")
@@ -3358,8 +3358,8 @@ def dwarf_import_case(browser, base, shots):
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
     r["reload_status"] = page.inner_text("#sym_status")
     got = page.evaluate("""async (pas) => { const out = [];
-        for (const pa of pas) { let f = dbgFrames(pa);
-            for (let i = 0; i < 50 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = dbgFrames(pa); }
+        for (const pa of pas) { let f = MKB.dbgFrames(pa);
+            for (let i = 0; i < 50 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = MKB.dbgFrames(pa); }
             out.push(f); }
         return out; }""", [p for p, _, _ in samples])
     same = sum(1 for (p, st, fr), g in zip(samples, got) if g["state"] == st and (g.get("frames") or []) == fr)
@@ -3403,8 +3403,8 @@ def dwarf_import_case(browser, base, shots):
         r["debian_import_seconds"] = round(time.monotonic() - t0, 1)
         r["debian_status"] = page.inner_text("#sym_status")
         got = page.evaluate("""async (pas) => { const out = [];
-            for (const pa of pas) { let f = dbgFrames(pa);
-                for (let i = 0; i < 300 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = dbgFrames(pa); }
+            for (const pa of pas) { let f = MKB.dbgFrames(pa);
+                for (let i = 0; i < 300 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = MKB.dbgFrames(pa); }
                 out.push(f); }
             return out; }""", pas)
         want = symbolize_frames(deb, [p + 0xC0000000 for p in pas])
@@ -4106,7 +4106,7 @@ def types_import_case(browser, base, shots):
     in IndexedDB across a reload."""
     problems, r = [], {}
     same_js = """async (url) => { const t = await (await fetch(url)).text();
-        const T = DBG.types; return t === JSON.stringify({ format: T.format, types: T.types.slice(0, T.types.length - (T.sub ? T.sub.size : 0)),
+        const T = MKB.DBG.types; return t === JSON.stringify({ format: T.format, types: T.types.slice(0, T.types.length - (T.sub ? T.sub.size : 0)),
             vars: T.vars, sections: T.sections, files: T.files }); }"""
     for name, size in (("minified-linux", None), ("debian-6.1-686", None)):
         elf = debug_elf(name)
@@ -4121,7 +4121,7 @@ def types_import_case(browser, base, shots):
         url = f"{base}/index.html?kernel={name}&paused=1#debugger"
         page.goto(url)
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-        page.evaluate("startPaused = true")
+        page.evaluate("MKB.startPaused = true")
         page.set_input_files("#symfile", str(elf))
         wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 120)
         t0 = time.monotonic()
@@ -4220,7 +4220,7 @@ def debian_case(browser, base, shots, name):
     ok = wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5)
     r["ff_seconds"] = round(time.monotonic() - t0, 1)
     machine_do(page, "click", "#dbg_pause")
-    info = page.evaluate("ffInfo && { stop: ffInfo.stopPhys, steps: ffInfo.steps, ms: Math.round(ffInfo.ms) }")
+    info = page.evaluate("MKB.ffInfo && { stop: MKB.ffInfo.stopPhys, steps: MKB.ffInfo.steps, ms: Math.round(MKB.ffInfo.ms) }")
     r["ff"] = info
     if not ok or not info or info["stop"] != st32["paddr"] or r["ff_seconds"] > 120:
         problems.append(f"fast-forward to startup_32 {st32['paddr']:#x}: {info}, {r['ff_seconds']} s")
@@ -4230,16 +4230,16 @@ def debian_case(browser, base, shots, name):
     # clock it reads, and the clock used to be put back only afterwards, so
     # the TSC lagged by however far the JIT ran past the slice start (in
     # Firefox and WebKit by a varying number of chunks, D0).
-    r["tsc_minus_clock"] = page.evaluate("""() => { const c = emulator.v86.cpu; c.store_current_tsc();
-      return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(CLOCK.now() * 1e6); }""")
+    r["tsc_minus_clock"] = page.evaluate("""() => { const c = MKB.emulator.v86.cpu; c.store_current_tsc();
+      return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(MKB.CLOCK.now() * 1e6); }""")
     if abs(r["tsc_minus_clock"]) > 1_000_000:
         problems.append(f"after the fast-forward the TSC is off the virtual clock by {r['tsc_minus_clock']} ticks (1 ms = 10^6)")
-    s0 = page.evaluate("stepper.steps")
+    s0 = page.evaluate("MKB.stepper.steps")
     page.fill("#dbg_addr", hex(sk["vaddr"]))
     page.click("#dbg_runto")
     ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
                   and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 300, 0.5)
-    r["entry_to_start_kernel"] = page.evaluate("stepper.steps") - s0
+    r["entry_to_start_kernel"] = page.evaluate("MKB.stepper.steps") - s0
     if not ok or r["entry_to_start_kernel"] != 62512:
         problems.append(f"startup_32 -> start_kernel took {r['entry_to_start_kernel']} instructions, not 62,512")
     page.close()
@@ -4364,7 +4364,7 @@ def debian_covtree(page, entry, bins, problems, r, shots):
             dirs |= {"/".join(parts[:i + 1]) for i in range(len(parts) - 1)}
             total += 1 + (len(names) if hit and q in p.lower() else len(hit))
     total += len(dirs)
-    page.evaluate("() => { COV.open.clear(); COV.open.add(''); }")
+    page.evaluate("() => { MKB.COV.open.clear(); MKB.COV.open.add(''); }")
     page.fill("#cov_filter", q)
     shown = int(page.get_attribute("#cov_tree", "data-rows") or 0)
     note = page.inner_text("#cov_tree > p.note") if page.locator("#cov_tree > p.note").count() else ""
@@ -4386,13 +4386,13 @@ UNWIND_POINTS = [
 # The stack pages of a pause (8 KiB stacks around ESP and every frame's CFA)
 # read through the page tables, with the registers: what gdb needs to unwind.
 UNWIND_DUMP_JS = """() => {
-    const cpu = stepper.cpu, r = stepper.regs(), fr = JSON.parse(document.getElementById('call_stack').dataset.frames);
+    const cpu = MKB.stepper.cpu, r = MKB.stepper.regs(), fr = JSON.parse(document.getElementById('call_stack').dataset.frames);
     const want = new Set();
     for (const a of [r.esp, ...fr.map((f) => f.cfa).filter((x) => x !== undefined && x !== null)])
         for (let p = ((a >>> 13) << 13) - 8192; p < ((a >>> 13) << 13) + 16384; p += 4096) want.add(p >>> 0);
     const pages = [];
     for (const va of [...want].sort((a, b) => a - b)) {
-        const w = pageWalk(cpu, va);
+        const w = MKB.pageWalk(cpu, va);
         if (w.phys === null || w.phys + 4096 > cpu.mem8.length) continue;
         let s = '';
         for (const b of cpu.mem8.subarray(w.phys, w.phys + 4096)) s += String.fromCharCode(b);
@@ -4671,10 +4671,10 @@ def unwind_case(browser, base, shots, name, fn, steps):
     elf = debug_elf(name)
     for n in steps:
         if n:
-            before = page.evaluate("stepper.steps")
+            before = page.evaluate("MKB.stepper.steps")
             page.fill("#dbg_n", str(n))
             page.click("#dbg_stepn")
-            wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+            wait_for(lambda: page.evaluate("MKB.stepper.steps") - before >= n and
                      page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
         dump = page.evaluate(UNWIND_DUMP_JS)
@@ -5014,7 +5014,7 @@ def lineaddr_case(browser, base, shots, name):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    page.evaluate("openSourceFile('init/main.c')")
+    page.evaluate("MKB.openSourceFile('init/main.c')")
     first_bps = None
     for (text, how), line in zip(points, lines):
         t0 = time.monotonic()
@@ -5065,7 +5065,7 @@ def lineaddr_case(browser, base, shots, name):
                 if "init/main.c" not in r["main.c typed"]:
                     problems.append(f"{name}: main.c:{line} typed: {r['main.c typed']!r}")
             q = "main.c" if short else "init/main.c"
-            got = page.evaluate("async ([q, l]) => { const r = await dbgLineCodeWait(q, l); return [r.bps || [], r.rows || []]; }", [q, line])
+            got = page.evaluate("async ([q, l]) => { const r = await MKB.dbgLineCodeWait(q, l); return [r.bps || [], r.rows || []]; }", [q, line])
             bps, rows = got[0], [x[:2] for x in got[1]]
             if not bps:
                 problems.append(f"{name}: {q}:{line} has no breakpoint addresses")
@@ -5105,7 +5105,7 @@ def lineaddr_case(browser, base, shots, name):
         page.locator(f'#src_body [data-line="{got_line}"]').scroll_into_view_if_needed()
         page.screenshot(path=str(shots / f"lineaddr-{name}-inlined-1280-light.png"))
         page.click("#src_close")
-        page.evaluate("openSourceFile('init/main.c')")
+        page.evaluate("MKB.openSourceFile('init/main.c')")
         wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     if not problems:
         # An address of the list jumps to the Page tab; the listing's C line there lists the same addresses.
@@ -5134,7 +5134,7 @@ def lineaddr_case(browser, base, shots, name):
         path = "arch/x86/include/asm/current.h"
         text = gzip.decompress((SITE / "kernels" / name / "src" / (path + ".gz")).read_bytes()).decode().split("\n")
         line = next(k + 1 for k, l in enumerate(text) if "this_cpu_read_stable(current_task)" in l)
-        page.evaluate(f"openSourceFile({json.dumps(path)})")
+        page.evaluate(f"MKB.openSourceFile({json.dumps(path)})")
         row = page.locator(f'#src_body [data-line="{line}"]')
         wait_for(lambda: row.count() > 0, 30)
         row.click()
@@ -5172,13 +5172,13 @@ def lineaddr_import_case(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    shipped = page.evaluate("async (l) => (await dbgLineCodeWait('init/main.c', l)).bps", line)
-    page.evaluate("startPaused = true")
+    shipped = page.evaluate("async (l) => (await MKB.dbgLineCodeWait('init/main.c', l)).bps", line)
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "import" and
              "compile units" in page.inner_text("#sym_status"), 30)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    got = page.evaluate("async (l) => { const r = await dbgLineCodeWait('init/main.c', l); return [r.state, r.bps, r.how || r.why]; }", line)
+    got = page.evaluate("async (l) => { const r = await MKB.dbgLineCodeWait('init/main.c', l); return [r.state, r.bps, r.how || r.why]; }", line)
     r["import"] = got
     if got[0] != "ok" or sorted(got[1]) != sorted(shipped or []):
         problems.append(f"import: init/main.c:{line} breakpoints {got}, shipped {shipped}")
@@ -5310,16 +5310,16 @@ def fnfacts_case(browser, base, shots, name):
     # An inlined copy in it: the first one after EIP that its facts list.
     target = page.evaluate("""async (pa) => {
         for (let t = 0; t < 200; t++) {
-            const fn = dbgFunction(pa);
+            const fn = MKB.dbgFunction(pa);
             if (fn.state === 'ok') {
                 for (const [a, , frames] of fn.rows) {
                     if (a <= pa || frames.length < 2) continue;
-                    const x = dbgFnFacts(frames[0].func);
+                    const x = MKB.dbgFnFacts(frames[0].func);
                     if (x.state === 'loading') break;
                     const hit = x.state === 'ok' && x.fns.some((f) => f.e[8].includes(a));
                     if (hit) return [a, frames.map((f) => f.func)];
                 }
-                if (fn.rows.every(([a, , frames]) => a <= pa || frames.length < 2 || dbgFnFacts(frames[0].func).state !== 'loading')) return null;
+                if (fn.rows.every(([a, , frames]) => a <= pa || frames.length < 2 || MKB.dbgFnFacts(frames[0].func).state !== 'loading')) return null;
             }
             await new Promise((res) => setTimeout(res, 100));
         }
@@ -5348,7 +5348,7 @@ def fnfacts_case(browser, base, shots, name):
                     problems.append(f"{name}: function rows {[x['func'] for x in rows]}, llvm-symbolizer --inlines {want}")
                 inner = rows[0]
                 f = inner["facts"]
-                if not page.evaluate("([n, pa]) => dbgFnFacts(n).fns.some((x) => x.e[0] === n && x.e[8].includes(pa))", [inner["func"], pa]):
+                if not page.evaluate("([n, pa]) => MKB.dbgFnFacts(n).fns.some((x) => x.e[0] === n && x.e[8].includes(pa))", [inner["func"], pa]):
                     problems.append(f"{name}: {inner['func']}'s copies do not list {pa:#x}")
                 dd = dwarfdump_named(str(elf), [inner["func"]], [])
                 decl = [d for o, d in dd.items() if d["tag"] == "DW_TAG_subprogram" and "origin" not in d and d.get("name") == inner["func"]
@@ -5393,7 +5393,7 @@ def fnfacts_case(browser, base, shots, name):
                 page.set_viewport_size({"width": 1280, "height": 1000})
             page.emulate_media(color_scheme="light")
     # The Page listing: the function's label line has its prototype and the facts in its title.
-    page.evaluate("(a) => jumpTo(a)", sk["paddr"])
+    page.evaluate("(a) => MKB.jumpTo(a)", sk["paddr"])
     lbl = page.locator(f'#listing .lbl[data-sym="{fn}"]')
     if not wait_for(lambda: lbl.count() > 0 and lbl.first.get_attribute("data-proto"), 60):
         problems.append(f"{name}: the Page listing's {fn} label line has no prototype")
@@ -5430,12 +5430,12 @@ def fnfacts_case(browser, base, shots, name):
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         show_tab(page, "calls")
         time.sleep(0.5)
-        xy = page.evaluate("""() => { const st = G.stepper;
+        xy = page.evaluate("""() => { const st = MKB.G.stepper;
             let best = -1, w = -1;
-            for (let k = 0; k < st.fr.n; k++) if (!hiddenFrame(st, k) && (() => { const x = dbgFnFacts(st.nodeName(st.fr.node(k))); return x.state === 'ok' && x.fns.length; })()) {
-                const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), runStart()); if (e > w) { w = e; best = k; } }
+            for (let k = 0; k < st.fr.n; k++) if (!MKB.hiddenFrame(st, k) && (() => { const x = MKB.dbgFnFacts(st.nodeName(st.fr.node(k))); return x.state === 'ok' && x.fns.length; })()) {
+                const e = (st.fr.end(k) < 0 ? st.steps : st.fr.end(k)) - Math.max(st.fr.start(k), MKB.runStart()); if (e > w) { w = e; best = k; } }
             if (best < 0) return null;
-            G.selected = best; renderGraphInfo();
+            MKB.G.selected = best; MKB.renderGraphInfo();
             return [0, 0, st.nodeName(st.fr.node(best))]; }""")
         if not xy:
             problems.append(f"{name}: no Graph frame of a DWARF function")
@@ -5471,27 +5471,27 @@ def fnfacts_import_case(browser, base, shots):
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     render = """async () => {
-        for (let t = 0; t < 600 && dbgTypes().state === 'loading'; t++) await new Promise((res) => setTimeout(res, 100));
-        const ty = dbgTypes(); if (ty.state !== 'ok') return ty.why;
+        for (let t = 0; t < 600 && MKB.dbgTypes().state === 'loading'; t++) await new Promise((res) => setTimeout(res, 100));
+        const ty = MKB.dbgTypes(); if (ty.state !== 'ok') return ty.why;
         let F;
-        if (DBG.mode === 'shards') {
-            if (!DBG.index.funcs) return 'index.json has no function facts';
+        if (MKB.DBG.mode === 'shards') {
+            if (!MKB.DBG.index.funcs) return 'index.json has no function facts';
             F = { files: [], fns: [] };
-            for (let k = 0; k < DBG.index.funcs.shards; k++) {
-                const b = await dbgGunzip(await (await fetch(DBG.base + 'funcs-' + k.toString(16) + '.json.gz')).arrayBuffer());
+            for (let k = 0; k < MKB.DBG.index.funcs.shards; k++) {
+                const b = await MKB.dbgGunzip(await (await fetch(MKB.DBG.base + 'funcs-' + k.toString(16) + '.json.gz')).arrayBuffer());
                 const s = JSON.parse(new TextDecoder().decode(b));
                 F.fns.push(...s.fns.map((e) => [e[0], e[1] >= 0 ? s.files[e[1]] : null, ...e.slice(2)]));
             }
         } else if (!ty.T.funcs) return 'the import has no function facts';
         else F = { fns: ty.T.funcs.fns.map((e) => [e[0], e[1] >= 0 ? ty.T.funcs.files[e[1]] : null, ...e.slice(2)]) };
-        return F.fns.map((e) => JSON.stringify([e[0], e[1], e[2], e[3], e[4], dwFuncProto(ty.T, e), e[7], e[8]])).sort(); }"""
+        return F.fns.map((e) => JSON.stringify([e[0], e[1], e[2], e[3], e[4], MKB.dwFuncProto(ty.T, e), e[7], e[8]])).sort(); }"""
     shipped = page.evaluate(render)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
     page.click("#dbg_runto")
     wait_for(lambda: page.get_attribute("#regs", "data-phys") == str(sk["paddr"]) and
              ((page.evaluate(FNROWS_JS) or {}).get("rows") or [{}])[0].get("entry"), 120)
     want_row = page.evaluate(FNROWS_JS)
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "import" and
              "compile units" in page.inner_text("#sym_status"), 30)
@@ -5536,7 +5536,7 @@ def unwind_import_case(browser, base, shots, want):
     url = f"{base}/index.html?kernel=minified-linux&paused=1#debugger"
     page.goto(url)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported" and
              "compile units" in page.inner_text("#sym_status"), 30)
@@ -5547,10 +5547,10 @@ def unwind_import_case(browser, base, shots, want):
                     and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
         page.close()
         return ["imported -g vmlinux: Run to memblock_add_range did not stop there"], r
-    before = page.evaluate("stepper.steps")
+    before = page.evaluate("MKB.stepper.steps")
     page.fill("#dbg_n", "9")
     page.click("#dbg_stepn")
-    wait_for(lambda: page.evaluate("stepper.steps") - before >= 9 and page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    wait_for(lambda: page.evaluate("MKB.stepper.steps") - before >= 9 and page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 30)
     got = json.loads(page.get_attribute("#call_stack", "data-frames"))
     # pc: the call instruction with the build's disassembly, return address - 1 without (an import has none).
@@ -5563,19 +5563,19 @@ def unwind_import_case(browser, base, shots, want):
         problems.append(f"imported vmlinux: the call stack does not say where its CFI is from: {r['title']!r}")
     page.screenshot(path=str(shots / "unwind-import-1280.png"))
     # The variables pass of the Worker first (dbgTypes), then each frame's unit.
-    wait_for(lambda: page.evaluate("dbgTypes().state") != "loading", 120)
+    wait_for(lambda: page.evaluate("MKB.dbgTypes().state") != "loading", 120)
     locs = locals_open_all(page, 60)
     r["locals"] = sum(len(sc["vars"]) for d in locs for sc in d["scopes"])
     if locs != want_locals:
         problems.append(f"imported vmlinux: Parameters and locals differ from the shipped shards': {locs} vs {want_locals}")
     if not page.evaluate("document.getElementById('locals').textContent.length > 0") or not r["locals"]:
         problems.append("imported vmlinux: no parameters and locals")
-    names_js = """(pas) => pas.map((pa) => { const x = dbgLocals(pa);
+    names_js = """(pas) => pas.map((pa) => { const x = MKB.dbgLocals(pa);
         return x.state === 'ok' ? x.frames.map((f) => [f.func, f.params.map((v) => v[0]), f.locals.map((v) => v[0])]) : x.state; })"""
     rows_js = """async (pas) => { const out = [];
-        for (const pa of pas) { let x = dbgCfiRow(pa);
-            for (let i = 0; i < 50 && x === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); x = dbgCfiRow(pa); }
-            out.push(x && x.cfa ? cfiRowText(x) : x); }
+        for (const pa of pas) { let x = MKB.dbgCfiRow(pa);
+            for (let i = 0; i < 50 && x === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); x = MKB.dbgCfiRow(pa); }
+            out.push(x && x.cfa ? MKB.cfiRowText(x) : x); }
         return out; }"""
     pas = [f["pc"] for f in got]
     before = page.evaluate(rows_js, pas)
@@ -5586,7 +5586,7 @@ def unwind_import_case(browser, base, shots, want):
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
     rows = page.evaluate(rows_js, pas)
     r["after_reload"] = rows
-    wait_for(lambda: page.evaluate("dbgTypes().state") == "ok", 30)
+    wait_for(lambda: page.evaluate("MKB.dbgTypes().state") == "ok", 30)
     lafter = page.evaluate(names_js, pas)
     if lafter != lbefore:
         problems.append(f"after a reload: parameters and locals {lafter}, before {lbefore}")
@@ -5903,7 +5903,7 @@ def branches_import_case(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "import" and
              "compile units" in page.inner_text("#sym_status"), 30)
@@ -6007,10 +6007,10 @@ def hello_case(browser, base, shots, name="hello"):
         return int(page.get_attribute("#regs", "data-phys"))
 
     def step_only(n):
-        before = page.evaluate("stepper.steps")
+        before = page.evaluate("MKB.stepper.steps")
         page.fill("#dbg_n", str(n))
         page.click("#dbg_stepn")
-        wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") - before >= n and
                  page.get_attribute("#dbg_state", "data-state") == "paused", 30, 0.05)
 
     def variables():
@@ -6130,7 +6130,7 @@ def hello_case(browser, base, shots, name="hello"):
         # jb over the clamp (taken when the row is below 23), movzbl: at the shll
         # put_line's row parameter is EAX (DW_OP_reg0).
         v = step(2 if cursor < 23 else 3, hm["paddr"] + 14)
-        eax = page.evaluate("stepper.regs().eax")
+        eax = page.evaluate("MKB.stepper.regs().eax")
         prow = v.get(("put_line", "row"), {})
         r["put_line.row"] = prow.get("raw"), eax
         if prow.get("state") != "ok" or prow.get("raw") is None or int(prow["raw"]) != eax:
@@ -6238,15 +6238,15 @@ def firstlook_case(browser, base, shots, name):
     r["entry_info"] = page.inner_text("#entry_info")
     if "Stepping BIOS and setup" in r["entry_info"] or "Entered the kernel" not in r["entry_info"]:
         problems.append(f"{name}: paused in {fn}, the entry line says {r['entry_info']!r}")
-    jit = page.evaluate("stepper.jitAfterEntry || stepper.jitBeforeEntry")
+    jit = page.evaluate("MKB.stepper.jitAfterEntry || MKB.stepper.jitBeforeEntry")
     r["jit"] = jit
     r["path"] = page.inner_text("#sym_info .crumbs")
     # The JIT's gap is in the symbol history (the path shows its newest 6;
     # the history keeps 16, so after many stepped calls it has gone).
-    r["history_gap"] = page.evaluate("stepper.history.some((h) => h.sym === -3)")
-    if jit and not r["history_gap"] and page.evaluate("stepper.history.length") < 16:
+    r["history_gap"] = page.evaluate("MKB.stepper.history.some((h) => h.sym === -3)")
+    if jit and not r["history_gap"] and page.evaluate("MKB.stepper.history.length") < 16:
         problems.append(f"{name}: the JIT ran but the symbol history has no gap for it: {r['path']!r}")
-    if page.evaluate("stepper.jitAfterEntry") and "JIT ran here" not in r["path"]:
+    if page.evaluate("MKB.stepper.jitAfterEntry") and "JIT ran here" not in r["path"]:
         problems.append(f"{name}: the JIT ran kernel code but the path does not say so: {r['path']!r}")
     help_bad = page.evaluate(FIRSTLOOK_HELP_JS)
     problems += [f"{name}: {b}" for b in help_bad]
@@ -6258,7 +6258,7 @@ def firstlook_case(browser, base, shots, name):
     r["covtree_info"] = info[:80]
     if not info.startswith("Lines:"):
         problems.append(f"{name}: the Source tab has no notes under the tree: {r['covtree_info']!r}")
-    if page.evaluate("stepper.jitAfterEntry") and not r["cov_status"].startswith("Incomplete"):
+    if page.evaluate("MKB.stepper.jitAfterEntry") and not r["cov_status"].startswith("Incomplete"):
         problems.append(f"{name}: the JIT ran kernel code, the Source tab does not say it is incomplete: {r['cov_status']!r}")
     if page.is_disabled("#cov_export"):
         problems.append(f"{name}: lcov disabled although the tree is there")
@@ -6291,7 +6291,7 @@ def firstlook_import_case(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 60)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
@@ -6415,11 +6415,11 @@ def cov_rows(page, kind=None):
 def cov_open_all(page):
     """Open every directory and file of the Coverage tree."""
     page.evaluate("""() => {
-        const T = covTree(DBG.files);
-        const walk = (d) => { COV.open.add(d.path); d.dirs.forEach(walk); };
+        const T = MKB.covTree(MKB.DBG.files);
+        const walk = (d) => { MKB.COV.open.add(d.path); d.dirs.forEach(walk); };
         walk(T.root);
-        DBG.files.files.forEach(([p]) => COV.open.add(p));
-        covRender(); }""")
+        MKB.DBG.files.files.forEach(([p]) => MKB.COV.open.add(p));
+        MKB.covRender(); }""")
 
 
 def covtree_case(browser, base, shots):
@@ -6681,7 +6681,7 @@ def multiline_case(browser, base, shots):
         got = {l: marks.get(l, ([], "", ""))[:2] for l in range(lo, hi + 1)}
         r[label] = {l: " ".join(c) + " " + m for l, (c, m) in got.items()}
         want = "exec" if ran else "code"
-        own_rows = set(page.evaluate("([p, lo, hi]) => { const c = fileLines(p).code; const o = [];"
+        own_rows = set(page.evaluate("([p, lo, hi]) => { const c = MKB.fileLines(p).code; const o = [];"
                                      " for (let l = lo; l <= hi; l++) if (c.has(l)) o.push(l); return o; }", [path, lo + 1, hi]))
         if own_rows:
             r[label + " lines with rows of their own"] = sorted(own_rows)
@@ -6733,7 +6733,7 @@ def multiline_case(browser, base, shots):
         'static int g(void)',                   # 23 a definition after them
         '{ return 0; }',                        # 24
     ]
-    got = page.evaluate("""lines => { const s = srcStatements({ lines });
+    got = page.evaluate("""lines => { const s = MKB.srcStatements({ lines });
         return [Object.fromEntries(s.end), Array.from(s.of).slice(1, lines.length + 1)]; }""", snippet)
     r["statements"] = got[0]
     want = {"1": 3, "4": 7, "8": 9, "10": 14, "17": 18, "23": 24}
@@ -6752,7 +6752,7 @@ def multiline_case(browser, base, shots):
             problems.append(f"{path}: {func}'s asm statement {lo}-{hi} is one line")
             continue
         # The whole file (the Source tab's view).
-        panel_open("p => openSourceFile(p)", path)
+        panel_open("p => MKB.openSourceFile(p)", path)
         code, ran = check(path + " whole file", path, lo, hi)
         tree, lc = files.get(path), lcov.get(path, {})
         r[path + " counts"] = {"panel": [code, ran], "tree": tree and [tree["lines"], tree["linesRun"]], "lcov": [lc.get("LF"), lc.get("LH")]}
@@ -6763,13 +6763,13 @@ def multiline_case(browser, base, shots):
         page.click("#src_close")
         # The function view at a copy of the statement that ran (inlined
         # into a caller: the view must reach the statement's last line).
-        at = page.evaluate("""([p, l]) => { const s = fileLines(p).code.get(l) || [];
-            const x = s.find(([a, b]) => stepper.countIn(a, b) > 0); return x ? x[0] : -1; }""", [path, lo])
+        at = page.evaluate("""([p, l]) => { const s = MKB.fileLines(p).code.get(l) || [];
+            const x = s.find(([a, b]) => MKB.stepper.countIn(a, b) > 0); return x ? x[0] : -1; }""", [path, lo])
         r[path + " ran at"] = hex(at) if at >= 0 else at
         if at < 0:
             problems.append(f"{path}:{lo} has no address that ran")
         else:
-            panel_open("pa => openSource(pa)", at)
+            panel_open("pa => MKB.openSource(pa)", at)
             check(path + " at " + hex(at), path, lo, hi)
             for scheme, width in (("light", 1280), ("dark", 1280), ("dark", 390), ("light", 390)):
                 page.emulate_media(color_scheme=scheme)
@@ -6785,9 +6785,9 @@ def multiline_case(browser, base, shots):
         # boot (strlen is inlined where it is called), at -O0 it does.
         if func in syms and path.endswith("string_32.c"):
             f = syms[func]
-            own_ran = page.evaluate("([a, n]) => stepper.countIn(a, a + n) > 0", [f["paddr"], f["size"]])
+            own_ran = page.evaluate("([a, n]) => MKB.stepper.countIn(a, a + n) > 0", [f["paddr"], f["size"]])
             r[func + "() ran"] = own_ran
-            panel_open("pa => openSource(pa)", f["paddr"])
+            panel_open("pa => MKB.openSource(pa)", f["paddr"])
             check(path + " " + func + "()", path, lo, hi, ran=own_ran)
             page.click("#src_close")
     page.close()
@@ -6986,12 +6986,12 @@ def srclinks_case(browser, base, shots):
     for _ in range(60):
         if page.locator("#cur_src .frame.inl .srclink").count():
             break
-        before = page.evaluate("stepper.steps")
+        before = page.evaluate("MKB.stepper.steps")
         page.fill("#dbg_n", "5")
         page.click("#dbg_stepn")
-        wait_for(lambda: page.evaluate("stepper.steps") > before and page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") > before and page.get_attribute("#dbg_state", "data-state") == "paused", 30)
         wait_for(lambda: page.get_attribute("#cur_src", "data-state") not in (None, "loading"), 20)
-    r["steps"] = page.evaluate("stepper.steps")
+    r["steps"] = page.evaluate("MKB.stepper.steps")
     wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 30)
     wait_for(lambda: page.locator("#context .src .srclink").count() > 0, 20)
     wait_for(lambda: page.locator("#locals .lhead .srclink").count() > 0, 30)
@@ -7080,8 +7080,8 @@ def srclinks_case(browser, base, shots):
     if page.is_visible("#src_panel"):
         page.click("#src_close")
     show_tab(page, "calls")
-    page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
-        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; renderGraphInfo(); }""")
+    page.evaluate("""() => { const st = MKB.G.stepper; MKB.G.view = 'timeline';
+        MKB.G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fr.n - 1; MKB.renderGraphInfo(); }""")
     wait_for(lambda: page.locator("#graph_src .srclink").count() > 0, 20)
     want, p = srclink_opens(page, "#graph_src")
     r["Graph detail"] = want
@@ -7133,10 +7133,10 @@ def srclinks_case(browser, base, shots):
         # The state line is in the Machine tab (U5), Step N in the Debugger tab.
         show_tab(ph, "machine")
         ph.locator("#dbg_state").scroll_into_view_if_needed()
-        fname = ph.evaluate("stepper.curSym >= 0 ? stepper.symName[stepper.curSym] : ''")
+        fname = ph.evaluate("MKB.stepper.curSym >= 0 ? MKB.stepper.symName[MKB.stepper.curSym] : ''")
         p = state_link_shown(ph)
         if p:
-            problems.append(f"{name} phone, in {fname} after {ph.evaluate('stepper.steps')} steps: {p}")
+            problems.append(f"{name} phone, in {fname} after {ph.evaluate('MKB.stepper.steps')} steps: {p}")
             break
         if len(fname) > len(longest):
             longest = fname
@@ -7146,11 +7146,11 @@ def srclinks_case(browser, base, shots):
             if p:
                 problems.append(f"{name} phone state line in {fname}: {p}")
             break
-        before = ph.evaluate("stepper.steps")
+        before = ph.evaluate("MKB.stepper.steps")
         show_tab(ph, "debugger")
         ph.fill("#dbg_n", "5")
         ph.tap("#dbg_stepn")
-        wait_for(lambda: ph.evaluate("stepper.steps") > before and ph.get_attribute("#dbg_state", "data-state") == "paused", 30)
+        wait_for(lambda: ph.evaluate("MKB.stepper.steps") > before and ph.get_attribute("#dbg_state", "data-state") == "paused", 30)
         wait_for(lambda: ph.locator("#dbg_state .srclink").count() > 0, 20)
     else:
         problems.append(f"{name} phone: no stop in a function with a name of 20 or more characters (longest {longest!r})")
@@ -7445,8 +7445,8 @@ def screen_flush_case(browser, base):
     page.fill("#dbg_n", "1000")
     page.click("#dbg_stepn")
     wait_for(lambda: page.inner_text("#dbg_status").startswith("Stepped"), 60)
-    wait_for(lambda: page.evaluate("stepper.screenText().includes('Still alive')") or page.inner_text("#dbg_status").startswith("Stepped 1,000"), 5)
-    if not page.evaluate("stepper.screenText().includes('Hello, World!')"):
+    wait_for(lambda: page.evaluate("MKB.stepper.screenText().includes('Still alive')") or page.inner_text("#dbg_status").startswith("Stepped 1,000"), 5)
+    if not page.evaluate("MKB.stepper.screenText().includes('Hello, World!')"):
         page.fill("#dbg_n", "1000")
         page.click("#dbg_stepn")
         time.sleep(2)
@@ -7460,7 +7460,7 @@ def screen_flush_case(browser, base):
         page.add_init_script("window.requestAnimationFrame = () => 0;")
         page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
-                 and page.evaluate("!!(stepper && stepper.end)"), 120)
+                 and page.evaluate("!!(MKB.stepper && MKB.stepper.end)"), 120)
         r["minified end"] = page.inner_text("#end_banner")
         screen = page.inner_text("#screen_text")
         if "Still alive" not in screen:
@@ -7513,11 +7513,11 @@ def fetch_fail_case(browser, base, shots):
             ctx.route("**/" + kernel_entries()[initrds[0]]["initrd"] + "*", lambda route: route.fulfill(status=200, body=bytes(512)))
             page.goto(f"{base}/index.html?kernel={initrds[0]}&paused=1")
             had = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
-                           and page.evaluate("!!initrd && initrd.entry") == initrds[0], 60)
+                           and page.evaluate("!!MKB.initrd && MKB.initrd.entry") == initrds[0], 60)
             show_tab(page, "machine")
             page.select_option("#kernel", "hello-os")  # (hello's bzImage answers 404 here)
-            wait_for(lambda: page.evaluate("image && image.name") == "hello-os" and "Running hello-os" in (page.text_content("#status") or ""), 60)
-            r["initrd after the switch"] = [had, page.evaluate("initrd"), page.inner_text("#initrd_status")]
+            wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == "hello-os" and "Running hello-os" in (page.text_content("#status") or ""), 60)
+            r["initrd after the switch"] = [had, page.evaluate("MKB.initrd"), page.inner_text("#initrd_status")]
             if r["initrd after the switch"] != [True, None, ""]:
                 problems.append(f"{initrds[0]} then hello-os picked: [had its initrd, initrd, note] {r['initrd after the switch']}")
             ctx.unroute("**/" + kernel_entries()[initrds[0]]["initrd"] + "*")
@@ -7576,7 +7576,7 @@ def fetch_fail_lists(ctx, base, problems, r):
         time.sleep(0.5)
         st = page.text_content("#status") or ""
         r["kernels.json " + body[:8]] = st
-        if not st.startswith(want) or not st.endswith("Load a bzImage from disk.") or page.evaluate("!!emulator"):
+        if not st.startswith(want) or not st.endswith("Load a bzImage from disk.") or page.evaluate("!!MKB.emulator"):
             problems.append(f"kernels.json {body!r}, Boot pressed: status {st!r}, want {want!r}... and no machine")
         page.close()
         ctx.unroute("**/kernels.json*")
@@ -7598,7 +7598,7 @@ def fetch_fail_lists(ctx, base, problems, r):
         page.click("#dbg_runto")
         want = "Run to hello_main: no symbol of that name (this kernel has no symbols). Run to takes a function name, a hex address or file:line."
         wait_for(lambda: page.inner_text("#dbg_status") == want, 10)
-        got = [ok, page.inner_text("#dbg_status"), page.evaluate("!!disasm"), warns[:2], page.inner_text("#build_info")]
+        got = [ok, page.inner_text("#dbg_status"), page.evaluate("!!MKB.disasm"), warns[:2], page.inner_text("#build_info")]
         r[label] = got
         if not ok or got[1] != want or got[2] != has_disasm or (warn and not any(w.startswith(warn) for w in warns)) or got[4] != "local build":
             problems.append(f"hello with {label}: {got}, want paused at the reset vector, {want!r}, "
@@ -7609,9 +7609,45 @@ def fetch_fail_lists(ctx, base, problems, r):
         ctx.unroute("**/version.json*")
 
 
+GLOBALS_JS = """() => {
+  const f = document.createElement('iframe');
+  document.body.appendChild(f);
+  const blank = new Set(Object.getOwnPropertyNames(f.contentWindow));
+  f.remove();
+  let readOnly = null;
+  try { MKB.hex = 1; } catch (e) { readOnly = e.message; }
+  return { own: Object.getOwnPropertyNames(window).filter((k) => !blank.has(k)).sort(), readOnly,
+    scripts: [...document.scripts].map((s) => (s.type || 'classic') + ' ' + s.getAttribute('src')) };
+}"""
+# The page's own globals: window.MKB and libv86.js's V86 (a classic script
+# of v86); the rest are ES modules (R1).
+GLOBALS_WANT = ["MKB", "V86"]
+
+
+def globals_case(browser, base):
+    """After a boot the page adds no global of its own but MKB (the tests'
+    handle, debug.js) and v86's V86; MKB's names without a setter refuse
+    assignments."""
+    problems, r = [], {}
+    page = browser.new_page()
+    page.goto(base + "/index.html?kernel=hello")
+    page.wait_for_function("!!window.MKB && !!MKB.stepper", timeout=60000)
+    g = page.evaluate(GLOBALS_JS)
+    r.update(g)
+    if g["own"] != GLOBALS_WANT:
+        problems.append(f"own globals {g['own']}, want {GLOBALS_WANT}")
+    if g["readOnly"] != "MKB.hex has no setter":
+        problems.append(f"MKB.hex = 1: {g['readOnly']!r}")
+    if [s.split("?")[0] for s in g["scripts"]] != ["module clock.js", "classic v86/libv86.js", "module app.js"]:
+        problems.append(f"index.html loads {g['scripts']}: the modules clock.js (before v86) and app.js, and v86/libv86.js")
+    page.close()
+    return problems, r
+
+
 def suite_misc(ctx):
     """Symbol import, initrds, panic text, determinism, follow mode."""
-    failed = report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
+    failed = report("globals", *globals_case(ctx.browser, ctx.base))
+    failed |= report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
     failed |= report("import_edges", *import_edges(ctx.browser, ctx.base, ctx.shots))
     failed |= report("initrd", *initrd_case(ctx.browser, ctx.base, ctx.shots))
     if os.environ.get("MKB_THIRD_PARTY"):
@@ -7792,10 +7828,10 @@ def unoptimized_case(browser, base, shots, name):
             return int(page.get_attribute("#regs", "data-phys") or -1)
 
         def step1():
-            before = page.evaluate("stepper.steps")
+            before = page.evaluate("MKB.stepper.steps")
             page.fill("#dbg_n", "1")
             page.click("#dbg_stepn")
-            wait_for(lambda: page.evaluate("stepper.steps") - before >= 1 and
+            wait_for(lambda: page.evaluate("MKB.stepper.steps") - before >= 1 and
                      page.get_attribute("#dbg_state", "data-state") == "paused", 30, 0.05)
 
         page.fill("#dbg_addr", hex(s["vaddr"]))
@@ -7867,7 +7903,7 @@ JUMP_WALKS = {"hello": ("hello_main", 300), "minified-linux": ("rest_init", 1500
 # starts with the instruction executed before the walk when the stepper
 # has one (its transfer is recorded at the walk's first fetch).
 JUMP_WALK_JS = """(n) => {
-    const st = stepper, before = new Map();
+    const st = MKB.stepper, before = new Map();
     for (const [k, e] of st.jumps) before.set(k, e[3]);
     const seq = st.jLast >= 0 ? [st.lastPhys] : [];
     const irq0 = st.irq0;
@@ -7878,13 +7914,13 @@ JUMP_WALK_JS = """(n) => {
     }
     const diff = [];
     for (const [k, e] of st.jumps) { const c = e[3] - (before.get(k) || 0); if (c) diff.push([e[0], e[1], e[2], c]); }
-    updateDebugUi();
+    MKB.updateDebugUi();
     return { seq, diff, irq0: st.irq0 - irq0, pending: st.jPend };
 }"""
 
 # Paths in and out of pa as the page has them (static from disasm.json,
 # observed from the stepper): [[at, mask, stat, count], ...] each.
-JUMP_PATHS_JS = """(pa) => { const P = jumpPaths(jumpsFor(disasm.insns), stepper, pa);
+JUMP_PATHS_JS = """(pa) => { const P = MKB.jumpPaths(MKB.jumpsFor(MKB.disasm.insns), MKB.stepper, pa);
     const f = (l) => l.map((e) => [e.at, e.mask, e.stat, e.count]);
     return { into: f(P.into), out: f(P.out), noDirect: P.noDirect, late: P.late }; }"""
 
@@ -7950,9 +7986,9 @@ def jumps_case(browser, base, shots, name):
     if not ok:
         page.close()
         return [f"{name}: Run to {fn} did not stop there: {status}"], r
-    jit_note = page.evaluate("jumpsJitNote()")
+    jit_note = page.evaluate("MKB.jumpsJitNote()")
     r["jit note"] = jit_note
-    if page.evaluate("stepper.jitAfterEntry || stepper.jitBeforeEntry") and "JIT" not in jit_note:
+    if page.evaluate("MKB.stepper.jitAfterEntry || MKB.stepper.jitBeforeEntry") and "JIT" not in jit_note:
         problems.append(f"{name}: the JIT ran but the page does not say paths are missing: {jit_note!r}")
     # EIP's own paths in the Debugger, at the function's entry: its
     # callers' calls (static), and the JIT note.
@@ -7962,9 +7998,9 @@ def jumps_case(browser, base, shots, name):
     r["eip summary"] = page.inner_text("#eip_jumps")
     if page.get_attribute("#eip_jumps", "data-into") != str(len(P2["into"])) or "Paths into EIP: " + str(len(P2["into"])) not in r["eip summary"]:
         problems.append(f"{name}: the Debugger's paths into EIP {eip:#x} say {r['eip summary']!r}, want {len(P2['into'])}")
-    if not any(e[2] and e[1] == 1 << page.evaluate("JK.call") for e in P2["into"]):
+    if not any(e[2] and e[1] == 1 << page.evaluate("MKB.JK.call") for e in P2["into"]):
         problems.append(f"{name}: no static call into {fn} at EIP: {P2['into']}")
-    if page.evaluate("stepper.jitAfterEntry") and "JIT" not in r["eip summary"]:
+    if page.evaluate("MKB.stepper.jitAfterEntry") and "JIT" not in r["eip summary"]:
         problems.append(f"{name}: the Run to used the JIT but the Debugger's paths do not say so")
     jump_inline_eip_check(page, name, entry, eip, problems, r, shots)
     for scheme in ("light", "dark"):
@@ -7979,7 +8015,7 @@ def jumps_case(browser, base, shots, name):
     want, unknown = jump_oracle(entry, w["seq"])
     r["sources outside disasm.json (skipped)"] = len(unknown)
     got = {(f, t): (c, mask) for f, t, mask, c in w["diff"] if f not in unknown}
-    jk = page.evaluate("JK")
+    jk = page.evaluate("MKB.JK")
     trap = 1 << jk["irq"] | 1 << jk["exc"]
     kinds = {}
     for k in sorted(set(want) | set(got)):
@@ -7996,8 +8032,8 @@ def jumps_case(browser, base, shots, name):
         else:
             ok = gm and not gm & ~(trap | (1 << wk if wk else 0))
         if not ok:
-            problems.append(f"{name}: path {k[0]:#x} -> {k[1]:#x}: kinds {page.evaluate('jumpKindsText', gm)!r}, the instruction is {wk}")
-        kinds[page.evaluate("jumpKindsText", gm)] = kinds.get(page.evaluate("jumpKindsText", gm), 0) + gc
+            problems.append(f"{name}: path {k[0]:#x} -> {k[1]:#x}: kinds {page.evaluate('MKB.jumpKindsText', gm)!r}, the instruction is {wk}")
+        kinds[page.evaluate("MKB.jumpKindsText", gm)] = kinds.get(page.evaluate("MKB.jumpKindsText", gm), 0) + gc
     r["paths in the walk"] = len(want)
     r["transfers by kind"] = kinds
     if name == "minified-linux" and not any("interrupt" in k for k in kinds):
@@ -8016,8 +8052,8 @@ def jumps_case(browser, base, shots, name):
     st_src = [e for e in P["into"] if e[0] == src]
     if not st_src or not st_src[0][2] or st_src[0][3] < c:
         problems.append(f"{name}: {tgt:#x}'s paths in lack the static jcc from {src:#x} taken >= {c}x: {P['into']}")
-    page.evaluate(f"jumpGo({tgt})")
-    page.evaluate("jumpHit = -1")
+    page.evaluate(f"MKB.jumpGo({tgt})")
+    page.evaluate("MKB.jumpHit = -1")
     line = f'#listing .ins[data-addr="{tgt}"]'
     wait_for(lambda: page.locator(line).count() == 1, 20)
     badge = page.locator(f'#listing .jc[data-pa="{tgt}"][data-dir="in"]')
@@ -8057,7 +8093,7 @@ def jumps_case(browser, base, shots, name):
     page.emulate_media(color_scheme="light")
     # The listing is redrawn while the list is open (a scan does that; CI
     # once lost the focus this way): Escape still returns it to the badge.
-    page.evaluate("inspect()")
+    page.evaluate("MKB.inspect()")
     page.keyboard.press("Escape")
     if not wait_for(lambda: page.is_hidden("#jump_pop"), 5):
         problems.append(f"{name}: Escape did not close the list")
@@ -8113,7 +8149,7 @@ def jumps_case(browser, base, shots, name):
     # Phone: no horizontal scroll, the list fits, screenshots.
     page.set_viewport_size({"width": 390, "height": 844})
     time.sleep(0.5)
-    page.evaluate(f"jumpGo({tgt})")
+    page.evaluate(f"MKB.jumpGo({tgt})")
     wait_for(lambda: page.locator(line).count() == 1, 10)
     time.sleep(0.5)
     if not no_hscroll(page, "#listing") or not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
@@ -8203,7 +8239,7 @@ def jump_inline_check(page, box, pa, label, syms, mnem, stat_src, problems, r, w
         # A redraw at a stop scrolls to EIP's line: bring the instruction
         # back as "go there" does, its sources line must come with it.
         r[f"inline {label} {width} rescrolled"] = True
-        page.evaluate(f"scrollListingTo(document.querySelector('#listing .ins[data-addr=\"{pa}\"]'))")
+        page.evaluate(f"MKB.scrollListingTo(document.querySelector('#listing .ins[data-addr=\"{pa}\"]'))")
         got = page.evaluate(JUMP_INLINE_JS, [box, pa])
     if not got["srcVisible"]:
         problems.append(f"{tag}: the sources line is not in view")
@@ -8221,7 +8257,7 @@ def jump_inline_check(page, box, pa, label, syms, mnem, stat_src, problems, r, w
         problems.append(f"{tag}: {n} paths, {len(shown)} shown, but no '+{n - len(shown)} more': {got['src']!r}")
     sym_here = code_name(syms, pa)[1]
     view = set(page.eval_on_selector_all(f"{box} .ins", "ls => ls.map((l) => +l.dataset.addr)"))
-    jk = page.evaluate("JK")
+    jk = page.evaluate("MKB.JK")
     for at, where, text in got["srcEntries"]:
         e = next((x for x in P["into"] if x[0] == at), None)
         if not e:
@@ -8234,7 +8270,7 @@ def jump_inline_check(page, box, pa, label, syms, mnem, stat_src, problems, r, w
         if not e[2]:
             words = [w for kk, w in (("irq", "interrupt"), ("exc", "exception"), ("ret", "ret"), ("iret", "iret")) if e[1] & 1 << jk[kk]]
             if words and not any(w in text for w in words):
-                problems.append(f"{tag}: observed source {at:#x} shown as {text!r}, its kinds are {page.evaluate('jumpKindsText', e[1])}")
+                problems.append(f"{tag}: observed source {at:#x} shown as {text!r}, its kinds are {page.evaluate('MKB.jumpKindsText', e[1])}")
         if e[3] and f"×{e[3]:,}" not in text:
             problems.append(f"{tag}: source {at:#x} taken {e[3]}x, shown as {text!r}")
         want_where = "view" if at in view else ("up" if at < pa else "down") if s and sym_here and s["paddr"] == sym_here["paddr"] else "far"
@@ -8275,7 +8311,7 @@ def jump_inline_case(page, name, entry, want, problems, r, shots):
     interrupt entry (minified Linux), and EIP's line in Code at EIP."""
     syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
     stat_src, mnem = static_sources(entry)
-    jk = page.evaluate("JK")
+    jk = page.evaluate("MKB.JK")
     func = lambda pa: code_name(syms, pa)[1]
     picks = []
     jcc = sorted(((c, f, t) for (f, t), (c, k, d) in want.items() if k == jk["jcc"] and d == t), reverse=True)
@@ -8309,8 +8345,8 @@ def jump_inline_case(page, name, entry, want, problems, r, shots):
         page.set_viewport_size({"width": width, "height": 1000 if width > 500 else 844})
         time.sleep(0.5)
         for label, pa, must, kind in picks:
-            page.evaluate(f"jumpGo({pa})")
-            page.evaluate("jumpHit = -1")
+            page.evaluate(f"MKB.jumpGo({pa})")
+            page.evaluate("MKB.jumpHit = -1")
             wait_for(lambda: page.locator(f'#listing .ins[data-addr="{pa}"]').count() == 1, 20)
             time.sleep(0.3)
             jump_inline_check(page, "#listing", pa, f"{name} {label}", syms, mnem, stat_src, problems, r, width, must, kind)
@@ -8322,14 +8358,14 @@ def jump_inline_case(page, name, entry, want, problems, r, shots):
                 page.emulate_media(color_scheme="light")
         if rets:
             c, f, t = rets[0]
-            page.evaluate(f"jumpGo({f})")
-            page.evaluate("jumpHit = -1")
+            page.evaluate(f"MKB.jumpGo({f})")
+            page.evaluate("MKB.jumpHit = -1")
             wait_for(lambda: page.locator(f'#listing .ins[data-addr="{f}"]').count() == 1, 20)
             jump_inline_out_check(page, "#listing", f, f"{name} ret {width}", syms, problems, r, t, "ret")
         callers_of = sorted(stat_src.get(fn_entry, []), key=lambda x: (x // 4096 == fn_entry // 4096, x))
         if callers_of:
-            page.evaluate(f"jumpGo({callers_of[0]})")
-            page.evaluate("jumpHit = -1")
+            page.evaluate(f"MKB.jumpGo({callers_of[0]})")
+            page.evaluate("MKB.jumpHit = -1")
             wait_for(lambda: page.locator(f'#listing .ins[data-addr="{callers_of[0]}"]').count() == 1, 20)
             # Out of view the target gets a button and a stub; in view
             # (hello is one page) its name in the text is all there is.
@@ -8342,7 +8378,7 @@ def jump_inline_case(page, name, entry, want, problems, r, shots):
     page.set_viewport_size({"width": 1280, "height": 1000})
     time.sleep(0.3)
     # "+k more" opens the whole list; a named source goes there.
-    page.evaluate(f"jumpGo({fn_entry})")
+    page.evaluate(f"MKB.jumpGo({fn_entry})")
     wait_for(lambda: page.locator(f'#listing .jsrc[data-addr="{fn_entry}"]').count() == 1, 20)
     n = len(page.evaluate(JUMP_PATHS_JS, fn_entry)["into"])
     more = page.locator(f'#listing .jsrc[data-addr="{fn_entry}"] .jmore')
@@ -8370,7 +8406,7 @@ def jump_inline_eip_check(page, name, entry, eip, problems, r, shots):
     stat_src, mnem = static_sources(entry)
     for width in (1280, 390):
         page.set_viewport_size({"width": width, "height": 1000 if width > 500 else 844})
-        page.evaluate("renderContext()")
+        page.evaluate("MKB.renderContext()")
         time.sleep(0.5)
         got = jump_inline_check(page, "#context", eip, f"{name} EIP", syms, mnem, stat_src, problems, r, width)
         here = code_name(syms, eip)[1]
@@ -8382,7 +8418,7 @@ def jump_inline_eip_check(page, name, entry, eip, problems, r, shots):
             page.locator("#context").screenshot(path=str(shots / f"jumpsrc-{name}-eip-{width}-{scheme}.png"))
         page.emulate_media(color_scheme="light")
     page.set_viewport_size({"width": 1280, "height": 1000})
-    page.evaluate("renderContext()")
+    page.evaluate("MKB.renderContext()")
 
 
 # The jump path texts of a listing (selector): its ⊘ titles and, for
@@ -8424,7 +8460,7 @@ def text_page_without_symbol(page, name, where, r):
         return []
     p = cand[0]
     start = max(p * 4096, min(s["paddr"] for s in secs if s["paddr"] < p * 4096 + 4096 and s["paddr"] + s["size"] > p * 4096))
-    page.evaluate(f"jumpTo({p * 4096})")
+    page.evaluate(f"MKB.jumpTo({p * 4096})")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == str(p) and page.get_attribute("#listing", "data-source") == "live" and
              int(page.get_attribute("#listing", "data-insns") or 0) > 0, 30)
     first = page.evaluate("(() => { const e = document.querySelector('#listing .ins'); return e ? +e.dataset.addr : -1; })()")
@@ -8460,7 +8496,7 @@ def jumps_live_case(browser, base, shots):
         page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
         if imp:
-            page.evaluate("startPaused = true")
+            page.evaluate("MKB.startPaused = true")
             page.set_input_files("#symfile", str(imp))
             wait_for(lambda: page.get_attribute("#sym_status", "data-state") in ("imported", "error"), 60)
             if page.get_attribute("#sym_status", "data-state") != "imported":
@@ -8468,8 +8504,8 @@ def jumps_live_case(browser, base, shots):
                 page.close()
                 continue
             wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-        wait_for(lambda: page.evaluate("typeof symbols !== 'undefined' && !!symbols && symbols.symbols.length > 0"), 120)
-        sk = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel')")
+        wait_for(lambda: page.evaluate("typeof window.MKB?.symbols !== 'undefined' && !!MKB.symbols && MKB.symbols.symbols.length > 0"), 120)
+        sk = page.evaluate("MKB.symbols.symbols.find((s) => s.name === 'start_kernel')")
         page.fill("#dbg_addr", "start_kernel")
         page.click("#dbg_runto")
         ok, at, status = run_to_wait(page, {sk["paddr"]}, 400)
@@ -8477,7 +8513,7 @@ def jumps_live_case(browser, base, shots):
             problems.append(f"{where}: Run to start_kernel did not stop there: {status!r}")
             page.close()
             continue
-        if page.evaluate("!!disasm"):
+        if page.evaluate("!!MKB.disasm"):
             problems.append(f"{where}: has disasm.json, the case needs a live decode")
         wait_for(lambda: page.get_attribute("#eip_jumps", "data-pa") == str(sk["paddr"]), 20)
         wait_for(lambda: page.get_attribute("#context", "data-source") == "live", 20)
@@ -8501,7 +8537,7 @@ def jumps_live_case(browser, base, shots):
         for sel in ("#listing", "#context"):
             marked = [a for a, _, _ in page.evaluate(NOPATH_MARKS_JS, sel)]
             first = page.evaluate(f"(() => {{ const e = document.querySelector('{sel} .ins'); return e ? +e.dataset.addr : -1; }})()")
-            entries = page.evaluate("(l) => l.filter((a) => symbols.symbols.some((s) => s.paddr === a && /^[Tt]$/.test(s.type || 'T')))", marked)
+            entries = page.evaluate("(l) => l.filter((a) => MKB.symbols.symbols.some((s) => s.paddr === a && /^[Tt]$/.test(s.type || 'T')))", marked)
             r[f"{where} {sel} ⊘"] = len(marked)
             if first in marked:
                 problems.append(f"{where} {sel}: ⊘ on the first instruction decoded ({first:#x}): nothing before it is known")
@@ -8528,12 +8564,12 @@ def jumps_live_case(browser, base, shots):
         page = browser.new_page(viewport={"width": 1280, "height": 1000})
         page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-        wait_for(lambda: page.evaluate("!!disasm && !!symbols"), 30)
-        got = page.evaluate("""() => { const S = jumpsFor(disasm.insns);
-          const pa = disasm.insns.map((x) => x[0]).find((a) => jumpPaths(S, null, a).noDirect);
+        wait_for(lambda: page.evaluate("!!MKB.disasm && !!MKB.symbols"), 30)
+        got = page.evaluate("""() => { const S = MKB.jumpsFor(MKB.disasm.insns);
+          const pa = MKB.disasm.insns.map((x) => x[0]).find((a) => MKB.jumpPaths(S, null, a).noDirect);
           if (pa === undefined) return null;
-          renderEipJumps(S, pa); const t = document.getElementById('eip_jumps').textContent;
-          const d = document.createElement('div'); d.innerHTML = jumpBadgesHtml(jumpPaths(S, null, pa), pa);
+          MKB.renderEipJumps(S, pa); const t = document.getElementById('eip_jumps').textContent;
+          const d = document.createElement('div'); d.innerHTML = MKB.jumpBadgesHtml(MKB.jumpPaths(S, null, pa), pa);
           const n = d.querySelector('.jnone'); return { pa, eip: t, title: n ? n.dataset.tip || n.title : null }; }""")
         r["hello build"] = got
         if not got:
@@ -8566,11 +8602,11 @@ STUB_LIVE_JS = """([lo, hi]) => { const box = document.getElementById('listing')
   const out = [];
   for (const e of box.querySelectorAll('.ins')) {
     const a = +e.dataset.addr; if (a < lo || a >= hi) continue;
-    const i = S ? jumpsIndex(S, a) : -1, text = i >= 0 ? S.insns[i][2] : '';
+    const i = S ? MKB.jumpsIndex(S, a) : -1, text = i >= 0 ? S.insns[i][2] : '';
     let eip = '';
-    if (S && i >= 0) { renderEipJumps(S, a); eip = document.getElementById('eip_jumps').textContent; }
+    if (S && i >= 0) { MKB.renderEipJumps(S, a); eip = document.getElementById('eip_jumps').textContent; }
     out.push([a, text, marks.has(a), eip]); }
-  renderContext();
+  MKB.renderContext();
   return out; }"""
 
 
@@ -8581,14 +8617,14 @@ def stub_arrays_live(page, where, r, shots, tag):
     jmp may keep ⊘."""
     problems = []
     for name, setter in STUB_ARRAYS.items():
-        sym = page.evaluate("(n) => symbols.symbols.find((s) => s.name === n) || null", name)
+        sym = page.evaluate("(n) => MKB.symbols.symbols.find((s) => s.name === n) || null", name)
         if not sym:
             r[f"{where} {name}"] = "not in the symbol table"
             if name == "early_idt_handler_array":
                 problems.append(f"{where}: no early_idt_handler_array symbol")
             continue
         lo, hi = sym["paddr"], sym["paddr"] + sym["size"]
-        page.evaluate("(a) => jumpTo(a)", lo)
+        page.evaluate("(a) => MKB.jumpTo(a)", lo)
         wait_for(lambda: page.get_attribute("#listing", "data-source") == "live" and
                  page.locator(f"#listing .ins[data-addr='{lo}']").count() > 0, 30)
         time.sleep(0.5)
@@ -8638,8 +8674,8 @@ NOPATH_MARKS_JS = """(sel) => { const out = [];
 # Then: every instruction that has run, or has an observed path in, must
 # not carry ⊘ (jumpPaths with the stepper, as the listings draw it).
 NOPATH_WALK_JS = """(n) => {
-  const st = stepper, S0 = jumpsStatic(disasm.insns, jumpsToPhys(symbols && symbols.sections));
-  const only = new Set(disasm.insns.map((x) => x[0]).filter((pa) => jumpPaths(S0, null, pa).noDirect));
+  const st = MKB.stepper, S0 = MKB.jumpsStatic(MKB.disasm.insns, MKB.jumpsToPhys(MKB.symbols && MKB.symbols.sections));
+  const only = new Set(MKB.disasm.insns.map((x) => x[0]).filter((pa) => MKB.jumpPaths(S0, null, pa).noDirect));
   let atEip = null, steps = st.steps;
   for (let i = 0; i < n; i++) {
     st.run(1, -1, 100);
@@ -8647,26 +8683,26 @@ NOPATH_WALK_JS = """(n) => {
     steps = st.steps;
     const pc = st.nextPhys();
     if (!atEip && only.has(pc) && !st.executed(pc)) {
-      renderContext();
+      MKB.renderContext();
       const marks = [];
       for (const x of document.querySelectorAll('#context .jnone')) {
         let e = x.previousElementSibling; while (e && !e.matches('.ins')) e = e.previousElementSibling;
         if (e) marks.push(+e.dataset.addr); }
-      const sym = kernelSymLookup()(pc);
+      const sym = MKB.kernelSymLookup()(pc);
       atEip = { pc, at: i, sym: sym ? sym.name + '+0x' + (pc - sym.paddr).toString(16) : '', marks };
     }
   }
-  updateDebugUi();
-  const S = jumpsFor(disasm.insns);
+  MKB.updateDebugUi();
+  const S = MKB.jumpsFor(MKB.disasm.insns);
   const ran = [], seenIn = [], bad = [];
-  for (const [pa] of disasm.insns) {
+  for (const [pa] of MKB.disasm.insns) {
     const r = st.executed(pa), o = st.jumpIn.has(pa);
     if (r && only.has(pa)) ran.push(pa);
     if (o && only.has(pa)) seenIn.push(pa);
-    if ((r || o) && jumpPaths(S, st, pa).noDirect) bad.push([pa, r, o]);
+    if ((r || o) && MKB.jumpPaths(S, st, pa).noDirect) bad.push([pa, r, o]);
   }
   let none = 0;
-  for (const [pa] of disasm.insns) if (jumpPaths(S, st, pa).noDirect) none++;
+  for (const [pa] of MKB.disasm.insns) if (MKB.jumpPaths(S, st, pa).noDirect) none++;
   return { atEip, ran, seenIn, bad: bad.slice(0, 40), nbad: bad.length, only: only.size, none,
     executed: st.countIn(0, st.seen.length * 8), steps: st.steps };
 }"""
@@ -8693,12 +8729,12 @@ def nopath_case(browser, base, shots, name):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: page.evaluate("!!disasm && !!symbols && !!stepper"), 60)
-    page.evaluate("renderContext()")
+    wait_for(lambda: page.evaluate("!!MKB.disasm && !!MKB.symbols && !!MKB.stepper"), 60)
+    page.evaluate("MKB.renderContext()")
     if any(cur for _, cur, _ in page.evaluate(NOPATH_MARKS_JS, "#context")):
         problems.append(f"{name}: paused at the start, Code at EIP marks the EIP line with ⊘")
     fn, n = NOPATH_WALKS[name]
-    s = page.evaluate(f"symbols.symbols.find((s) => s.name === '{fn}')")
+    s = page.evaluate(f"MKB.symbols.symbols.find((s) => s.name === '{fn}')")
     page.fill("#dbg_addr", hex(s["vaddr"]))
     page.click("#dbg_runto")
     ok, at, status = run_to_wait(page, {s["paddr"]}, 300)
@@ -8728,18 +8764,18 @@ def nopath_case(browser, base, shots, name):
     if any(cur for _, cur, _ in marks):
         problems.append(f"{name}: Code at EIP marks the EIP line with ⊘")
     for pa in w["ran"][:4]:
-        page.evaluate(f"jumpTo({pa})")
+        page.evaluate(f"MKB.jumpTo({pa})")
         wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096), 20)
         time.sleep(0.3)
         drawn = [a for a, _, _ in page.evaluate(NOPATH_MARKS_JS, "#listing")]
-        ran = set(page.evaluate("(l) => l.filter((a) => stepper.executed(a))", drawn))
+        ran = set(page.evaluate("(l) => l.filter((a) => MKB.stepper.executed(a))", drawn))
         if ran:
             problems.append(f"{name}: the Page listing of {pa:#x} marks {len(ran)} instructions that ran with ⊘, e.g. {sorted(ran)[:4]}")
         if pa in drawn:
             problems.append(f"{name}: the Page listing marks {pa:#x} (it ran) with ⊘")
     if w["ran"]:
         pa = w["ran"][0]
-        page.evaluate(f"jumpTo({pa})")
+        page.evaluate(f"MKB.jumpTo({pa})")
         wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096), 20)
         page.evaluate(f"document.querySelector('#listing .ins[data-addr=\"{pa}\"]').scrollIntoView({{block: 'center'}})")
         for width in (1280, 390):
@@ -8760,7 +8796,7 @@ def nopath_case(browser, base, shots, name):
     if page.get_attribute("#listing", "data-source") != "build":
         titles = []
     r["a ⊘ title"] = titles[0] if titles else None
-    r["jit note"] = page.evaluate("jumpsJitNote()")
+    r["jit note"] = page.evaluate("MKB.jumpsJitNote()")
     jit = r["jit note"].startswith("v86")
     for t in titles[:1]:
         for want in ("No path leads here: nothing jumps or calls to this instruction", "whole disassembly", "address is not stored anywhere",
@@ -8857,25 +8893,25 @@ def tipmarks_open_none(page, name, problems):
     tab; its address or None."""
     page.goto(f"{page.context._tip_base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: page.evaluate("!!disasm && !!symbols && !!stepper"), 60)
+    wait_for(lambda: page.evaluate("!!MKB.disasm && !!MKB.symbols && !!MKB.stepper"), 60)
     fn = NOPATH_WALKS[name][0]
-    s = page.evaluate(f"symbols.symbols.find((s) => s.name === '{fn}')")
+    s = page.evaluate(f"MKB.symbols.symbols.find((s) => s.name === '{fn}')")
     page.fill("#dbg_addr", hex(s["vaddr"]))
     page.click("#dbg_runto")
     ok, at, status = run_to_wait(page, {s["paddr"]}, 300)
     if not ok:
         problems.append(f"{name}: Run to {fn} did not stop there: {status}")
         return None
-    steps = page.evaluate("stepper.steps")
+    steps = page.evaluate("MKB.stepper.steps")
     page.fill("#dbg_n", "30")
     page.click("#dbg_stepn")
-    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("stepper.steps") >= steps + 30, 30)
-    pa = page.evaluate("""() => { const S = jumpsFor(disasm.insns);
-      const x = disasm.insns.find(([a]) => jumpPaths(S, stepper, a).noDirect); return x ? x[0] : null; }""")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("MKB.stepper.steps") >= steps + 30, 30)
+    pa = page.evaluate("""() => { const S = MKB.jumpsFor(MKB.disasm.insns);
+      const x = MKB.disasm.insns.find(([a]) => MKB.jumpPaths(S, MKB.stepper, a).noDirect); return x ? x[0] : null; }""")
     if pa is None:
         problems.append(f"{name}: no instruction with ⊘ in the disassembly")
         return None
-    page.evaluate(f"jumpTo({pa})")
+    page.evaluate(f"MKB.jumpTo({pa})")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096) and page.locator("#listing .jnone").count() > 0, 20)
     time.sleep(0.3)
     return pa
@@ -8975,7 +9011,7 @@ def tipmarks_case(browser, base, shots, name="hello"):
         tip_wait(page, False)
     # Code at EIP: the EIP mark, ↑ ↓ ↗ and the gutter stubs.
     show_tab(page, "debugger")
-    page.evaluate("renderContext()")
+    page.evaluate("MKB.renderContext()")
     time.sleep(0.3)
     marks = page.evaluate("""() => ({ eip: document.querySelectorAll('#context .eipmark[data-tip]').length,
       jto: document.querySelectorAll('#context .jto[data-tip]').length, stub: document.querySelectorAll('#context .jstubhit[data-tip]').length })""")
@@ -9049,7 +9085,7 @@ def tipmarks_case(browser, base, shots, name="hello"):
         if tip_wait(page, False)["shown"]:
             problems.append(f"{name}: a tap elsewhere does not close the ⊘ popover at 390 px")
         show_tab(page, "debugger")
-        page.evaluate("renderContext()")
+        page.evaluate("MKB.renderContext()")
         time.sleep(0.3)
         # A long press on a jump end shows where it goes and does not go.
         if page.locator("#context .jto").count():
@@ -9072,7 +9108,7 @@ def tipmarks_case(browser, base, shots, name="hello"):
             if page.evaluate(TIP_STATE_JS)["shown"]:
                 problems.append(f"{name}: a plain tap on a jump end showed the popover: {page.evaluate(TIP_STATE_JS)['text']!r}")
             show_tab(page, "debugger")
-            page.evaluate("renderContext()")
+            page.evaluate("MKB.renderContext()")
             time.sleep(0.3)
         for sel, want in (("#context .eipmark", "EIP"), ("#context .jstubhit", "function")):
             pt = page.evaluate(TIP_POINT_JS, sel)
@@ -9106,8 +9142,8 @@ def tipmarks_live_case(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel={deb}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: page.evaluate("typeof symbols !== 'undefined' && !!symbols && symbols.symbols.length > 0"), 120)
-    sk = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel')")
+    wait_for(lambda: page.evaluate("typeof window.MKB?.symbols !== 'undefined' && !!MKB.symbols && MKB.symbols.symbols.length > 0"), 120)
+    sk = page.evaluate("MKB.symbols.symbols.find((s) => s.name === 'start_kernel')")
     page.fill("#dbg_addr", "start_kernel")
     page.click("#dbg_runto")
     ok, at, status = run_to_wait(page, {sk["paddr"]}, 400)
@@ -9184,8 +9220,8 @@ LEGEND_SWATCHES_JS = """() => { const css = getComputedStyle(document.documentEl
     const v = getComputedStyle(d).backgroundColor; d.remove(); return v; };
   const row = (id) => [...document.querySelectorAll('#' + id + ' li')].map((li) => { const sw = li.querySelector('span');
     return [li.dataset.cls || li.dataset.key || '', sw ? getComputedStyle(sw).backgroundColor : '', li.textContent]; });
-  return { mem: row('legend_mem'), graph: row('legend_graph'), regions: Object.keys(REGION_NAMES), sections: Object.keys(SECTION_NAMES),
-    palette: Object.entries(PALETTE), tok: Object.fromEntries([...Object.keys(REGION_NAMES), ...Object.keys(SECTION_NAMES)].map((k) => [k, tok(k)])) }; }"""
+  return { mem: row('legend_mem'), graph: row('legend_graph'), regions: Object.keys(MKB.REGION_NAMES), sections: Object.keys(MKB.SECTION_NAMES),
+    palette: Object.entries(MKB.PALETTE), tok: Object.fromEntries([...Object.keys(MKB.REGION_NAMES), ...Object.keys(MKB.SECTION_NAMES)].map((k) => [k, tok(k)])) }; }"""
 
 
 def css_rgb(h):
@@ -9213,7 +9249,7 @@ def legend_case(browser, base, shots, name="minified-linux"):
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: page.evaluate("!!disasm && !!symbols && !!stepper"), 60)
+    wait_for(lambda: page.evaluate("!!MKB.disasm && !!MKB.symbols && !!MKB.stepper"), 60)
     if not page.locator("#about_legend").count():
         page.close()
         return [f"{name}: the About tab has no legend (#about_legend)"], r
@@ -9227,29 +9263,29 @@ def legend_case(browser, base, shots, name="minified-linux"):
     page.fill("#dbg_addr", "0x100000")
     page.click("#dbg_runto")
     run_to_wait(page, {0x100000}, 300)
-    page.evaluate("renderContext()")
+    page.evaluate("MKB.renderContext()")
     seen = page.evaluate(LEGEND_LIVE_CLASSES_JS, "#context *, #regs *")
     show_tab(page, "memory")
     page.click("#scan")
     time.sleep(1)
     show_tab(page, "debugger")
-    s = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel')")
+    s = page.evaluate("MKB.symbols.symbols.find((s) => s.name === 'start_kernel')")
     page.fill("#dbg_addr", hex(s["vaddr"]))
     page.click("#dbg_runto")
     run_to_wait(page, {s["paddr"]}, 300)
     page.fill("#dbg_n", "300")
     page.click("#dbg_stepn")
-    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("stepper.steps") > 0, 60)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and page.evaluate("MKB.stepper.steps") > 0, 60)
     time.sleep(1)
     seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#panel_debugger *"))
     pa = s["paddr"]
-    page.evaluate(f"jumpTo({pa})")
+    page.evaluate(f"MKB.jumpTo({pa})")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096), 20)
     time.sleep(0.5)
     page.click("#reread")
     time.sleep(0.5)
     seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#panel_page *"))
-    page.evaluate("openSourceFile('init/main.c')")
+    page.evaluate("MKB.openSourceFile('init/main.c')")
     time.sleep(2)
     seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#src_panel *"))
     page.click("#src_close")
@@ -9367,11 +9403,11 @@ def stub_shift(name):
 # The yellow lines drawn in a box: address, its tip, the build's bytes, and
 # what guest memory holds there and at pa + shift.
 YELLOW_LINES_JS = """([sel, shift]) => [...document.querySelectorAll(sel + ' .ins.bad')].map((e) => {
-  const pa = Number(e.dataset.addr), ins = disasm.insns[insnIndex(pa)], n = ins[1].length / 2;
+  const pa = Number(e.dataset.addr), ins = MKB.disasm.insns[MKB.insnIndex(pa)], n = ins[1].length / 2;
   const b = e.querySelector('.difb');
   return { pa, tip: e.dataset.tip || '', btip: b ? b.dataset.tip || '' : null, mark: b ? b.matches('.tipmark[tabindex="0"]') : false, raw: ins[1],
-    got: [...emulator.read_memory(pa, n)].map((x) => x.toString(16).padStart(2, '0')).join(''),
-    moved: [...emulator.read_memory(pa + shift, n)].map((x) => x.toString(16).padStart(2, '0')).join('') }; })"""
+    got: [...MKB.emulator.read_memory(pa, n)].map((x) => x.toString(16).padStart(2, '0')).join(''),
+    moved: [...MKB.emulator.read_memory(pa + shift, n)].map((x) => x.toString(16).padStart(2, '0')).join('') }; })"""
 
 
 def yellow_check(lines, shift, where, problems, bp=None):
@@ -9432,14 +9468,14 @@ def yellow_case(browser, base, shots, name):
     # below 4 MiB), so changed bytes stay marked long enough to see.
     page.goto(f"{base}/index.html?kernel={name}&paused=1&mem=67108864#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: page.evaluate("!!disasm && !!symbols && !!stepper"), 60)
+    wait_for(lambda: page.evaluate("!!MKB.disasm && !!MKB.symbols && !!MKB.stepper"), 60)
     page.fill("#dbg_addr", "0x100000")
     page.click("#dbg_runto")
     ok, at, status = run_to_wait(page, {0x100000}, 300)
     if not ok:
         page.close()
         return [f"{name}: Run to 0x100000 did not stop there: {status}"], r
-    page.evaluate("renderContext()")
+    page.evaluate("MKB.renderContext()")
     lines = page.evaluate(YELLOW_LINES_JS, ["#context", shift])
     r["Code at EIP yellow at the entry"] = yellow_check(lines, shift, f"{name} Code at EIP", problems)
     if not lines:
@@ -9472,7 +9508,7 @@ def yellow_case(browser, base, shots, name):
         page.emulate_media(color_scheme="light")
         page.keyboard.press("Escape")
     # The Page listing at the entry.
-    page.evaluate("jumpTo(0x100000)")
+    page.evaluate("MKB.jumpTo(0x100000)")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == str(0x100), 20)
     time.sleep(0.5)
     lines = page.evaluate(YELLOW_LINES_JS, ["#listing", shift])
@@ -9486,11 +9522,11 @@ def yellow_case(browser, base, shots, name):
     pp.on("pageerror", lambda e: errors.append(str(e)))
     pp.goto(url.split("#")[0] + "#debugger")
     wait_for(lambda: pp.get_attribute("#dbg_state", "data-state") == "paused", 120)
-    wait_for(lambda: pp.evaluate("!!disasm && !!symbols && !!stepper"), 60)
+    wait_for(lambda: pp.evaluate("!!MKB.disasm && !!MKB.symbols && !!MKB.stepper"), 60)
     pp.fill("#dbg_addr", "0x100000")
     pp.click("#dbg_runto")
     run_to_wait(pp, {0x100000}, 300)
-    pp.evaluate("jumpTo(0x100000)")
+    pp.evaluate("MKB.jumpTo(0x100000)")
     wait_for(lambda: pp.get_attribute("#listing", "data-page") == str(0x100), 20)
     time.sleep(0.5)
     # the listing is drawn again once it has its width: wait for the draws to settle
@@ -9551,13 +9587,13 @@ def yellow_case(browser, base, shots, name):
         problems.append(f"{name}: bytes changed since the last scan do not say why they are yellow: {got}")
     # After the stub: nothing yellow.
     show_tab(page, "debugger")
-    s = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel')")
+    s = page.evaluate("MKB.symbols.symbols.find((s) => s.name === 'start_kernel')")
     page.fill("#dbg_addr", hex(s["vaddr"]))
     page.click("#dbg_runto")
     run_to_wait(page, {s["paddr"]}, 300)
-    page.evaluate("renderContext()")
+    page.evaluate("MKB.renderContext()")
     n_ctx = page.locator("#context .ins.bad").count()
-    page.evaluate("jumpTo(0x100000)")
+    page.evaluate("MKB.jumpTo(0x100000)")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == str(0x100), 20)
     page.click("#reread")
     time.sleep(0.5)
@@ -9571,25 +9607,25 @@ def yellow_case(browser, base, shots, name):
     # between two JIT slices once they are armed (as a user would during a
     # long run), then the line must say it is a Run to breakpoint.
     show_tab(page, "debugger")
-    tgt = page.evaluate("""() => { const [lo, hi] = codeRange(ffTarget().phys), S = jumpsFor(disasm.insns);
-      const x = disasm.insns.find(([a]) => a >= lo + 0x1000 && a < hi && jumpPaths(S, stepper, a).noDirect && !stepper.executed(a));
+    tgt = page.evaluate("""() => { const [lo, hi] = MKB.codeRange(MKB.ffTarget().phys), S = MKB.jumpsFor(MKB.disasm.insns);
+      const x = MKB.disasm.insns.find(([a]) => a >= lo + 0x1000 && a < hi && MKB.jumpPaths(S, MKB.stepper, a).noDirect && !MKB.stepper.executed(a));
       return x ? x[0] : null; }""")
     if tgt is None:
         problems.append(f"{name}: no instruction for the Run to breakpoint check")
     else:
-        page.evaluate(f"jumpTo({tgt})")
+        page.evaluate(f"MKB.jumpTo({tgt})")
         wait_for(lambda: page.get_attribute("#listing", "data-page") == str(tgt // 4096), 20)
         show_tab(page, "debugger")
-        page.evaluate("""(t) => { const orig = jitChunk; window._bpSeen = null;
-          jitChunk = function (...a) { if (!window._bpSeen && emulator.read_memory(t, 1)[0] === 0xf4) {
-              showTab('page'); document.getElementById('reread').click();
+        page.evaluate("""(t) => { const orig = MKB.jitChunk; window._bpSeen = null;
+          MKB.jitChunk = function (...a) { if (!window._bpSeen && MKB.emulator.read_memory(t, 1)[0] === 0xf4) {
+              MKB.showTab('page'); document.getElementById('reread').click();
               const e = document.querySelector('#listing .ins[data-addr="' + t + '"]');
               window._bpSeen = { cls: e ? e.className : '', tip: e ? e.dataset.tip || '' : '', lines: [] }; }
             return orig.apply(this, a); }; window._bpOrig = orig; }""", tgt)
-        page.fill("#dbg_addr", hex(tgt + page.evaluate("symbols.symbols[0].vaddr - symbols.symbols[0].paddr")))
+        page.fill("#dbg_addr", hex(tgt + page.evaluate("MKB.symbols.symbols[0].vaddr - MKB.symbols.symbols[0].paddr")))
         page.click("#dbg_runto")
-        wait_for(lambda: page.evaluate("!ffActive && !!window._bpSeen"), 120)
-        page.evaluate("void (jitChunk = window._bpOrig)")
+        wait_for(lambda: page.evaluate("!MKB.ffActive && !!window._bpSeen"), 120)
+        page.evaluate("void (MKB.jitChunk = window._bpOrig)")
         seen = page.evaluate("window._bpSeen")
         r["during Run to"] = seen
         if not seen or "bad" not in seen["cls"].split():
@@ -10021,7 +10057,7 @@ def navhist_case(browser, base, shots, name="hello"):
     titles = []
     for k in range(n, 0, -1):
         title = page.get_attribute("#nav_back", "title") or ""
-        label = page.evaluate("navList[navAt - 1].label")
+        label = page.evaluate("MKB.navList[MKB.navAt - 1].label")
         if not title.startswith("Back to ") or label not in title:
             problems.append(f"{name}: Back's tooltip {title!r} does not name the view it returns to ({label!r})")
         titles.append(title)
@@ -10077,7 +10113,7 @@ def navhist_case(browser, base, shots, name="hello"):
         time.sleep(0.2)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
     time.sleep(0.5)
-    r["stepping"] = f"page {p0} -> {page.get_attribute('#listing', 'data-page')}, {page.evaluate('stepper.steps')} steps"
+    r["stepping"] = f"page {p0} -> {page.get_attribute('#listing', 'data-page')}, {page.evaluate('MKB.stepper.steps')} steps"
     if nav_at(page) != before or page.evaluate("history.length") != hl:
         problems.append(f"{name}: stepping added history entries: {before} -> {nav_at(page)}, history.length {hl} -> {page.evaluate('history.length')}")
 
@@ -10091,26 +10127,26 @@ def navhist_case(browser, base, shots, name="hello"):
 
     # The VM runs on through the browser's back and forward, and back past
     # the first view stays on the page.
-    page.evaluate("window.mkbEmu = emulator")
+    page.evaluate("window.mkbEmu = MKB.emulator")
     machine_do(page, "select_option", "#dbg_speed", "10")  # hello_main ends in a few hundred instructions
     machine_do(page, "click", "#dbg_continue")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped", 10)
-    r["running"] = page.evaluate("({ state: runState, steps: stepper.steps })")
+    r["running"] = page.evaluate("({ state: MKB.runState, steps: MKB.stepper.steps })")
     url = page.url.split("#")[0]
     for _ in range(n + 1):
         page.go_back()
         time.sleep(0.3)
-    s0 = page.evaluate("stepper.steps")
+    s0 = page.evaluate("MKB.stepper.steps")
     time.sleep(2)
-    got = page.evaluate("({ same: window.mkbEmu === emulator, steps: stepper.steps, state: runState, url: location.href })")
+    got = page.evaluate("({ same: window.mkbEmu === MKB.emulator, steps: MKB.stepper.steps, state: MKB.runState, url: location.href })")
     r["after back past the start"] = got
     if not got["url"].startswith(url) or not got["same"] or got["steps"] <= s0 or got["state"] != "stepped" or nav_at(page)[0] != 0:
         problems.append(f"{name}: back past the first view: {got}, at {nav_at(page)} (want the page, the same VM running, at 0)")
     page.go_forward()
     page.go_forward()
     time.sleep(0.5)
-    if not page.evaluate("window.mkbEmu === emulator && runState === 'stepped'") or nav_at(page)[0] != 1:
-        problems.append(f"{name}: browser forward: at {nav_at(page)}, VM {page.evaluate('runState')}")
+    if not page.evaluate("window.mkbEmu === MKB.emulator && MKB.runState === 'stepped'") or nav_at(page)[0] != 1:
+        problems.append(f"{name}: browser forward: at {nav_at(page)}, VM {page.evaluate('MKB.runState')}")
     if page.is_enabled("#dbg_pause"):
         machine_do(page, "click", "#dbg_pause")
     if errors:
@@ -10211,7 +10247,7 @@ RUNBADGE_JS = """() => { const w = document.getElementById('runbadge'), t = docu
     pos: getComputedStyle(w).position, rect: [r.left, r.top, r.right, r.bottom].map(Math.round), vw: innerWidth, vh: innerHeight,
     anim: cs ? cs.animationName : '', dot: cs ? cs.backgroundColor + ' ' + cs.borderColor : '',
     vmState: st ? st.dataset.state || '' : '', end: e ? e.dataset.kind || '' : '',
-    vmSteps: typeof stepper !== 'undefined' && stepper ? stepper.steps : -1,
+    vmSteps: typeof window.MKB?.stepper !== 'undefined' && MKB.stepper ? MKB.stepper.steps : -1,
     focused: document.activeElement === t, hscroll: document.documentElement.scrollWidth > innerWidth + 1,
     newer: w.dataset.newer || '', runMini: !!document.getElementById('run_mini') }; }"""
 
@@ -10388,7 +10424,7 @@ def runbadge_case(browser, base, shots, linux):
             problems.append(f"{tag}: the menu's state in words does not open Machine ({shown_tab(page)})")
         # The PWA's "new version" notice shows on the toggle on every tab.
         show_tab(page, "about")
-        page.evaluate("typeof pwaNewer === 'function' && pwaNewer('0123456789ab')")
+        page.evaluate("typeof window.MKB?.pwaNewer === 'function' && MKB.pwaNewer('0123456789ab')")
         time.sleep(0.3)
         b = runbadge(page)
         if not b["newer"] or not page.locator("#runbadge_toggle .rbnews").is_visible():
@@ -10451,7 +10487,7 @@ def runbadge_case(browser, base, shots, linux):
                 problems.append(f"{tag}: Debian at full speed: the toggle says {runbadge(page)}")
             runbadge_check(page, f"{tag} full", problems, r, "run", "full")
             page.screenshot(path=str(shots / f"runbadge-{tag}-full.png"))
-            page.evaluate("""() => { const cpu = emulator.v86.cpu;
+            page.evaluate("""() => { const cpu = MKB.emulator.v86.cpu;
                 const t = "---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0) ]---";
                 for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i + 1, 7); } }""")
             if not wait_for(lambda: runbadge(page)["state"] == "panic", 10):
@@ -10590,7 +10626,7 @@ def overlap_case(browser, base, shots):
         page.screenshot(path=str(shots / f"overlap-390-machine-{scheme}.png"))
     page.emulate_media(color_scheme="light")
     # The Source sheet open (the toggle floats right above it).
-    page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
+    page.evaluate("(p) => MKB.openSourceFile(p)", "boot/hello.c")
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     for tab in ("machine", "source", "page"):
         show_tab(page, tab)
@@ -10616,24 +10652,24 @@ def overlap_case(browser, base, shots):
         overlap_scroll(page, f"1280 {tab}", problems, r)
     # The Page listing keeps the line it shows when the panel opens and
     # closes (the page's column changes width, the listing is drawn again).
-    page.evaluate("jumpTo(0x100000)")
+    page.evaluate("MKB.jumpTo(0x100000)")
     wait_for(lambda: page.get_attribute("#listing", "data-page") == "256", 10)
     page.evaluate("() => { const b = document.getElementById('listing'); b.scrollTop = (b.scrollHeight - b.clientHeight) / 2; }")
     time.sleep(1.5)
-    keep = page.evaluate("navListingAnchor()")
+    keep = page.evaluate("MKB.navListingAnchor()")
     line_js = """(a) => { const b = document.getElementById('listing'), br = b.getBoundingClientRect();
       const e = b.querySelector('.ins[data-addr="' + a + '"]'); if (!e) return null; const r = e.getBoundingClientRect();
       return { shown: r.top >= br.top - 1 && r.bottom <= br.bottom + 1, top: Math.round(r.top - br.top), h: Math.round(b.clientHeight),
                scroll: b.scrollHeight > b.clientHeight + 4, w: Math.round(br.width) }; }"""
     r["listing kept"] = [keep, page.evaluate(line_js, keep)]
-    for what, js in (("opens", "(p) => openSourceFile(p)"), ("closes", "() => closeSource()")):
+    for what, js in (("opens", "(p) => MKB.openSourceFile(p)"), ("closes", "() => MKB.closeSource()")):
         page.evaluate(js, "boot/hello.c")
         time.sleep(1.5)
         got = page.evaluate(line_js, keep)
         r["listing kept"].append(got)
         if keep < 0 or not got or not got["shown"] or not got["scroll"]:
             problems.append(f"1280 Page tab: the listing's line {keep:#x} after the Source panel {what}: {got} (before {r['listing kept'][1]})")
-    page.evaluate("(p) => openSourceFile(p)", "boot/hello.c")
+    page.evaluate("(p) => MKB.openSourceFile(p)", "boot/hello.c")
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     for tab in OVERLAP_TABS:
         # A tab under the panel cannot be clicked: the check below names it.
@@ -10673,9 +10709,9 @@ def suite_overlap(ctx):
 
 MEMEIP_JS = """() => {
   if (window.mkbEip) return;
-  const u32 = (a) => { const b = emulator.read_memory(a, 4); return (b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24) >>> 0; };
+  const u32 = (a) => { const b = MKB.emulator.read_memory(a, 4); return (b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24) >>> 0; };
   const walk = (lin) => {
-    const c = emulator.v86.cpu;
+    const c = MKB.emulator.v86.cpu;
     if (!(c.cr[0] & 0x80000000)) return lin >>> 0;
     const cr3 = c.cr[3] >>> 0, pae = !!(c.cr[4] & 0x20), pse = !!(c.cr[4] & 0x10);
     if (pae) {
@@ -10690,9 +10726,9 @@ MEMEIP_JS = """() => {
     const pte = u32((pde & ~0xfff) + ((lin >>> 12) & 0x3ff) * 4); if (!(pte & 1)) return -1;
     return ((pte & ~0xfff) | (lin & 0xfff)) >>> 0;
   };
-  const cpu = () => { const c = emulator.v86.cpu, eip = c.get_real_eip() >>> 0, lin = (c.segment_offsets[1] + eip) >>> 0;
+  const cpu = () => { const c = MKB.emulator.v86.cpu, eip = c.get_real_eip() >>> 0, lin = (c.segment_offsets[1] + eip) >>> 0;
     const pm = !!(c.cr[0] & 1), esp = c.reg32[4] >>> 0, slin = (c.segment_offsets[2] + (pm ? esp : esp & 0xffff)) >>> 0;
-    return { eip, lin, phys: walk(lin), esp, sphys: pm ? walk(slin) : -1, steps: stepper.steps, paging: !!(c.cr[0] & 0x80000000) }; };
+    return { eip, lin, phys: walk(lin), esp, sphys: pm ? walk(slin) : -1, steps: MKB.stepper.steps, paging: !!(c.cr[0] & 0x80000000) }; };
   const M = window.mkbEip = { checks: 0, viol: [], walk, cpu };
   // Each drawing of the mark: in the same task as the drawing, the CPU is
   // where the mark says.
@@ -10707,11 +10743,11 @@ MEMEIP_JS = """() => {
   // Slow motion: the mark follows within 1.5 s of an instruction.
   let pend = null;
   setInterval(() => { const e = document.getElementById('pages_eip');
-    if (!e || typeof stepper === 'undefined' || !stepper || runState !== 'stepped' || entryPhase || ffActive || fastStepping()
+    if (!e || typeof window.MKB?.stepper === 'undefined' || !MKB.stepper || MKB.runState !== 'stepped' || MKB.entryPhase || MKB.ffActive || MKB.fastStepping()
         || document.getElementById('panel_memory').hidden) { pend = null; return; }
-    if (Number(e.dataset.steps) === stepper.steps) { pend = null; return; }
+    if (Number(e.dataset.steps) === MKB.stepper.steps) { pend = null; return; }
     const t = Date.now(); if (pend === null) pend = t;
-    else if (t - pend > 1500) { if (M.viol.length < 20) M.viol.push({ kind: 'stale', for_ms: t - pend, mark_steps: e.dataset.steps, steps: stepper.steps }); pend = t; }
+    else if (t - pend > 1500) { if (M.viol.length < 20) M.viol.push({ kind: 'stale', for_ms: t - pend, mark_steps: e.dataset.steps, steps: MKB.stepper.steps }); pend = t; }
   }, 100);
 }"""
 
@@ -10736,7 +10772,7 @@ MEMEIP_STATE_JS = """() => {
     lineShown: shown(line), bars, ticks, look: cs ? [cs.outlineColor, cs.borderTopColor, cs.boxShadow].join(' | ') : '',
     mark: rect(m), toggle: rect(rb), vw: innerWidth, vh: innerHeight,
     hscroll: document.documentElement.scrollWidth > innerWidth + 1,
-    tokens: Object.fromEntries([...Object.keys(REGION_NAMES), ...Object.keys(SECTION_NAMES), 'accent', 'bg']
+    tokens: Object.fromEntries([...Object.keys(MKB.REGION_NAMES), ...Object.keys(MKB.SECTION_NAMES), 'accent', 'bg']
       .map((k) => [k, getComputedStyle(document.documentElement).getPropertyValue('--' + k).trim()])) }; }"""
 
 
@@ -10846,7 +10882,7 @@ def memeip_run(browser, base, shots, name, scheme, phone, full):
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
         ctx.close()
         return [f"{tag0}: did not start paused at the reset vector"], r
-    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
     page.evaluate(MEMEIP_JS)
     time.sleep(0.5)
     st, w = memeip_check(page, f"{tag0} reset", syms, problems, r, want_esp=False, shift=shift)
@@ -10885,7 +10921,7 @@ def memeip_run(browser, base, shots, name, scheme, phone, full):
     if c1 < 3 or c2 < 5:
         problems.append(f"{tag0}: the EIP mark was drawn {c1} times in 6 s at 1/s and {c2} times in 5 s at 1k/s")
     shot("1k")
-    ended = page.evaluate("!!stepper.end")
+    ended = page.evaluate("!!MKB.stepper.end")
     if not ended:
         machine_do(page, "click", "#dbg_pause")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
@@ -10915,7 +10951,7 @@ def memeip_run(browser, base, shots, name, scheme, phone, full):
             problems.append(f"{tag0}: Back after the EIP line does not return to the Memory tab ({shown_tab(page)})")
         # The ESP link opens the stack's page (ESP from the CPU: the kernel's
         # direct map at 0xC0000000, or no paging).
-        esp = page.evaluate("emulator.v86.cpu.reg32[4] >>> 0")
+        esp = page.evaluate("MKB.emulator.v86.cpu.reg32[4] >>> 0")
         esp_phys = esp - 0xC0000000 if esp >= 0xC0000000 else esp
         if page.locator("#mem_esp_go").count():
             page.locator("#mem_esp_go").tap() if phone else page.click("#mem_esp_go")
@@ -10934,7 +10970,7 @@ def memeip_run(browser, base, shots, name, scheme, phone, full):
         machine_do(page, "select_option", "#dbg_speed", "full")
         if page.is_enabled("#dbg_continue"):
             machine_do(page, "click", "#dbg_continue")
-        if not wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper.end"), 180):
+        if not wait_for(lambda: page.evaluate("MKB.runState === 'paused' && !MKB.ffActive && !!MKB.stepper.end"), 180):
             problems.append(f"{tag0}: the run did not end at full speed")
         else:
             time.sleep(0.5)
@@ -10956,13 +10992,13 @@ def memeip_switch(browser, base, shots):
     ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
     page = ctx.new_page()
     page.goto(f"{base}/index.html?kernel=hello&speed=1#memory")
-    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 120)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 120)
     page.evaluate(MEMEIP_JS)
     time.sleep(3)
     for label, act in (("kernel switch to hello-os", lambda: machine_do(page, "select_option", "#kernel", "hello-os")),
                        ("Boot", lambda: machine_do(page, "click", "#boot"))):
         act()
-        wait_for(lambda: page.evaluate("runState === 'stepped' && !entryPhase && !ffActive"), 120)
+        wait_for(lambda: page.evaluate("MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 120)
         page.evaluate("mkbEip.checks = 0")
         time.sleep(4)
         machine_do(page, "click", "#dbg_pause")
@@ -11026,7 +11062,7 @@ def memory_controls_case(browser, base, shots):
     wait_for(lambda: gate_on_screen(page), 60)
     show_tab(page, "memory")
     li = page.locator("#legend li[data-cls='r-conv']")
-    n = page.evaluate("pageClass.filter((c) => c === 'r-conv').length")
+    n = page.evaluate("MKB.pageClass.filter((c) => c === 'r-conv').length")
     got = []
     for key in ("Enter", " "):
         li.focus()
@@ -11072,7 +11108,7 @@ def memory_controls_case(browser, base, shots):
     if [prev, nxt] != ["4", "6"]:
         problems.append(f"page 5, previous, next twice: listing pages {[prev, nxt]}, want 4 and 6")
     # hello has halted (hlt with interrupts off): Step has nothing to step.
-    wait_for(lambda: page.evaluate("!!stepper.end"), 30)
+    wait_for(lambda: page.evaluate("!!MKB.stepper.end"), 30)
     machine_do(page, "click", "#dbg_step")
     want = "The CPU executed hlt with interrupts off: nothing to step."
     wait_for(lambda: page.inner_text("#dbg_status") == want, 10)
@@ -11109,20 +11145,20 @@ def suite_memeip(ctx):
 GRAPHOPEN_POINTS = {"hello": ("hello_main", 40, "boot/hello.c"),
                     "minified-linux": ("start_kernel", 3000, "init/main.c")}
 
-GRAPH_STATE_JS = """() => ({ tab, view: G.view, x0: G.x0, x1: G.x1, yOff: G.yOff, xOff: G.xOff, selected: G.selected,
-    focus: G.focus, flame: G.flame, transpose: G.transpose, node: document.getElementById('graph_info').dataset.node || '' })"""
+GRAPH_STATE_JS = """() => ({ tab: MKB.tab, view: MKB.G.view, x0: MKB.G.x0, x1: MKB.G.x1, yOff: MKB.G.yOff, xOff: MKB.G.xOff, selected: MKB.G.selected,
+    focus: MKB.G.focus, flame: MKB.G.flame, transpose: MKB.G.transpose, node: document.getElementById('graph_info').dataset.node || '' })"""
 
 
 def graph_box_xy(page, fn, view="timeline"):
     """Viewport point inside the widest drawn box of function fn (timeline
     frame or Top 30 node), the canvas scrolled below the sticky top bar."""
-    js = """([fn, view]) => { const st = G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
+    js = """([fn, view]) => { const st = MKB.G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
         let best = null;
         if (view === 'timeline') {
-            for (const [k, x, y, w, h] of G.rects)
+            for (const [k, x, y, w, h] of MKB.G.rects)
                 if (st.nodeName(st.fr.node(k)) === fn && (!best || w > best[3])) best = [k, x, y, w, h];
         } else
-            for (const [n, x, y, w, h] of G.boxes) if (st.nodeName(n) === fn) best = [n, x, y, w, h];
+            for (const [n, x, y, w, h] of MKB.G.boxes) if (st.nodeName(n) === fn) best = [n, x, y, w, h];
         if (!best) return null;
         const [k, x, y, w, h] = best;
         const cx = Math.max(x, 0) + Math.min(w, c.width - Math.max(x, 0)) / 2;
@@ -11142,7 +11178,7 @@ def graph_empty_xy(page):
     """A point in the timeline's drawing area that no box, merged column or
     task switch mark covers (below the deepest row)."""
     return page.evaluate("""() => { const c = document.getElementById('graph_canvas').getBoundingClientRect();
-        let low = G.areaTop || 40; for (const r of G.rects) low = Math.max(low, r[2] + r[4]);
+        let low = MKB.G.areaTop || 40; for (const r of MKB.G.rects) low = Math.max(low, r[2] + r[4]);
         const y = Math.min(c.height - 30, low + 40);
         return { x: c.left + c.width * 0.5, y: c.top + y }; }""")
 
@@ -11177,7 +11213,7 @@ def graphopen_opened(page, name, fn, paddr, src_file, how, problems, r, entries0
         const sp = document.getElementById('src_panel'), sb = document.getElementById('src_body');
         const here = sb.querySelector('.here');
         const hv = here && (() => { const a = here.getBoundingClientRect(), b = sb.getBoundingClientRect(); return a.top >= b.top - 1 && a.bottom <= b.bottom + 1; })();
-        return { page: selectedPage, ins: ins.length, insVisible: ins.some(vis), hdr: !!hdr, hdrVisible: vis(hdr),
+        return { page: MKB.selectedPage, ins: ins.length, insVisible: ins.some(vis), hdr: !!hdr, hdrVisible: vis(hdr),
                  panel: !sp.hidden, file: sb.dataset.file || '', state: sb.dataset.state || '', title: document.getElementById('src_title').textContent,
                  hereVisible: !!hv, hereLine: here ? Number(here.dataset.line) : 0,
                  hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }""", [paddr, fn])
@@ -11235,9 +11271,9 @@ def graphopen_back(page, name, fn, before, how, touch, problems):
 # throttled 10x through CDP.
 # The wrapper also counts the opens: at 1280 px the second open of the same
 # place adds no history entry, but it is still a second jump.
-GRAPHOPEN_SLOW_JS = """(ms) => { if (!window.__openFunction0) window.__openFunction0 = openFunction;
+GRAPHOPEN_SLOW_JS = """(ms) => { if (!window.__openFunction0) window.__openFunction0 = MKB.openFunction;
     window.__opens = 0;
-    openFunction = (...a) => { __opens++; __openFunction0(...a); const t = realNow(); while (realNow() - t < ms); }; }"""
+    MKB.openFunction = (...a) => { __opens++; __openFunction0(...a); const t = MKB.realNow(); while (MKB.realNow() - t < ms); }; }"""
 
 
 def graphopen_slow(page, ctx, name, fn, paddr, src_file, phone, problems, r):
@@ -11259,7 +11295,7 @@ def graphopen_slow(page, ctx, name, fn, paddr, src_file, phone, problems, r):
         time.sleep(4)  # a second open would land within this
         cdp.send("Emulation.setCPUThrottlingRate", {"rate": 1})
         opens = page.evaluate("__opens")
-        page.evaluate("() => { openFunction = __openFunction0; }")  # an expression's function value would be called
+        page.evaluate("() => { MKB.openFunction = __openFunction0; }")  # an expression's function value would be called
         r[f"slow {how}"] = [entries0, nav_at(page), opens]
         if opens != 1:
             problems.append(f"{name} {fn} ({how}): opened {opens} times, once expected")
@@ -11289,7 +11325,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
         page.focus("#graph_canvas")
         page.keyboard.press("ArrowRight")
         time.sleep(0.3)
-        empty = page.evaluate("[G.rects.length, G.selected, tab]")
+        empty = page.evaluate("[MKB.G.rects.length, MKB.G.selected, MKB.tab]")
         r["arrow at reset"] = empty
         if empty != [0, -1, "calls"]:
             problems.append(f"{tagw}: ArrowRight on the empty timeline at the reset vector: [boxes, selected, tab] {empty}")
@@ -11305,7 +11341,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
     time.sleep(1)
     show_tab(page, "calls")
-    if not wait_for(lambda: page.evaluate("G.rects.length > 0"), 20):
+    if not wait_for(lambda: page.evaluate("MKB.G.rects.length > 0"), 20):
         ctx.close()
         return [f"{name}: the Calls timeline drew no box"], r
 
@@ -11314,7 +11350,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
 
     orientations = [False] if phone else [False, True]
     for flame in orientations:
-        if page.evaluate("G.flame") != flame:
+        if page.evaluate("MKB.G.flame") != flame:
             page.click("#graph_flame")
             time.sleep(0.5)
         how = ("double tap" if phone else "double click") + (" flame" if flame else "")
@@ -11323,12 +11359,12 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
             problems.append(f"{tagw}: no {fn} box drawn ({how})")
             continue
         # A single click (tap) selects and stays in the Calls tab, as before.
-        focus0 = page.evaluate("G.focus")
+        focus0 = page.evaluate("MKB.G.focus")
         select(xy)
         if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == fn, 3):
             problems.append(f"{tagw}: a single {'tap' if phone else 'click'} did not select {fn}: {page.get_attribute('#graph_info', 'data-node')}")
         time.sleep(0.7)  # longer than a double click: the next press starts afresh
-        if shown_tab(page) != "calls" or page.evaluate("G.focus") != focus0:
+        if shown_tab(page) != "calls" or page.evaluate("MKB.G.focus") != focus0:
             problems.append(f"{tagw}: a single {'tap' if phone else 'click'} left the Calls tab or re-rooted it ({shown_tab(page)})")
         if not phone:
             page.mouse.move(xy["x"], xy["y"] + 1)
@@ -11357,7 +11393,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
                     time.sleep(0.3)
                     page.screenshot(path=str(shots / f"graphopen-{name}-{width}-{s}-back.png"))
                 page.emulate_media(color_scheme=scheme)
-    if page.evaluate("G.flame"):
+    if page.evaluate("MKB.G.flame"):
         page.click("#graph_flame")
         time.sleep(0.4)
     graphopen_slow(page, ctx, name, fn, sym["paddr"], src_file, phone, problems, r)
@@ -11378,10 +11414,10 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
         page.focus("#graph_canvas")
         page.keyboard.press("ArrowDown")
         time.sleep(0.3)
-        down = page.evaluate("[G.selected >= 0 ? G.stepper.fr.parent(G.selected) : -2, G.selected]")
+        down = page.evaluate("[MKB.G.selected >= 0 ? MKB.G.stepper.fr.parent(MKB.G.selected) : -2, MKB.G.selected]")
         page.keyboard.press("ArrowUp")
         time.sleep(0.3)
-        up = page.evaluate("G.selected")
+        up = page.evaluate("MKB.G.selected")
         r[f"arrows {tagw}"] = [before["selected"], down, up]
         if down[0] != before["selected"] or up != before["selected"]:
             problems.append(f"{tagw}: ArrowDown/ArrowUp on the canvas do not move to a callee and back: {r[f'arrows {tagw}']}")
@@ -11454,7 +11490,7 @@ def graphopen_loading(browser, base, shots):
             page.click("#dbg_stepn")
             wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
             show_tab(page, "calls")
-            xy = wait_for(lambda: page.evaluate("G.rects.length > 0") and graph_box_xy(page, fn), 20) and graph_box_xy(page, fn)
+            xy = wait_for(lambda: page.evaluate("MKB.G.rects.length > 0") and graph_box_xy(page, fn), 20) and graph_box_xy(page, fn)
             if not ok or not xy:
                 problems.append(f"shard held: Run to {fn} {ok} ({status!r}), its box {xy}")
                 continue
@@ -11546,9 +11582,9 @@ def srcfiles_seen_lines(page, name, path):
     code: every instruction start the stepper recorded in the kernel's
     DWARF shards, symbolized with llvm-symbolizer --inlines on the -g ELF
     (or gen-dwarf.js --lookup without one), every frame in path."""
-    pas = page.evaluate("""() => { const st = stepper, out = [], bits = DBG.index.shardBits;
+    pas = page.evaluate("""() => { const st = MKB.stepper, out = [], bits = MKB.DBG.index.shardBits;
         for (let a = st.kernelLo; a < st.seen.length * 8; a++)
-            if ((st.seen[a >> 3] >> (a & 7) & 1) && DBG.shardSet.has(Math.floor(a / 2 ** bits))) out.push(a);
+            if ((st.seen[a >> 3] >> (a & 7) & 1) && MKB.DBG.shardSet.has(Math.floor(a / 2 ** bits))) out.push(a);
         return out; }""")
     entry = kernel_entries()[name]
     syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
@@ -11968,14 +12004,14 @@ def suite_srcfiles(ctx):
 SNAPDIFF_STEPS = {"hello": 60, "minified-linux": 3000}
 
 SNAP_JS = """() => { if (window.mkbSnap) return; window.mkbSnap = {
-  cpu() { const c = emulator.v86.cpu, r = c.reg32, s = c.sreg;
+  cpu() { const c = MKB.emulator.v86.cpu, r = c.reg32, s = c.sreg;
     return { eip: (c.instruction_pointer[0] - c.segment_offsets[1]) >>> 0, icount: c.instruction_counter[0] >>> 0,
       regs: { EAX: r[0] >>> 0, ECX: r[1] >>> 0, EDX: r[2] >>> 0, EBX: r[3] >>> 0, ESP: r[4] >>> 0, EBP: r[5] >>> 0,
         ESI: r[6] >>> 0, EDI: r[7] >>> 0, EIP: (c.instruction_pointer[0] - c.segment_offsets[1]) >>> 0,
         EFLAGS: c.get_eflags() >>> 0, ES: s[0], CS: s[1], SS: s[2], DS: s[3], FS: s[4], GS: s[5],
         CR0: c.cr[0] >>> 0, CR2: c.cr[2] >>> 0, CR3: c.cr[3] >>> 0, CR4: c.cr[4] >>> 0 },
       screen: [...document.getElementById('screen_text').children].map((e) => e.textContent.replace(/\\s+$/, '')) }; },
-  keep(k) { this[k] = emulator.read_memory(0, emuRam).slice(); },
+  keep(k) { this[k] = MKB.emulator.read_memory(0, MKB.emuRam).slice(); },
   pages(a, b) { const A = this[a], B = this[b], out = [];
     for (let p = 0; p < A.length / 4096; p++) { let n = 0;
       for (let i = p * 4096; i < p * 4096 + 4096; i++) if (A[i] !== B[i]) n++;
@@ -12189,7 +12225,7 @@ def snapdiff_run(browser, base, shots, name, scheme, phone):
     def start():
         page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
         page.evaluate(SNAP_JS)
         return ok
 
@@ -12342,21 +12378,21 @@ def snapdiff_run(browser, base, shots, name, scheme, phone):
     # The Worker keeps no decoded state (P1d): after the diff, the listed
     # pages of both sides only; a page the diff does not list is read from
     # both snapshots decoded again (the same bytes on both sides).
-    held = page.evaluate("snapWorker({ op: 'held' })")
+    held = page.evaluate("MKB.snapWorker({ op: 'held' })")
     r["worker holds"] = held
     if held.get("diffPages") != len(want_pages) or held.get("bytes") != 2 * 4096 * len(want_pages):
         problems.append(f"{tag}: after the diff the snapshot Worker holds {held}, want the {len(want_pages)} listed pages of both sides")
     listed = {p for p, _ in want_pages}
     other = next(p for p in range(1, 4096) if p not in listed)
-    same = page.evaluate("""async (p) => { const r = await snapPages(p);
+    same = page.evaluate("""async (p) => { const r = await MKB.snapPages(p);
       return r.a.length === 4096 && r.b.length === 4096 && r.a.every((v, i) => v === r.b[i]); }""", other)
     if not same:
         problems.append(f"{tag}: page {other:#x}, unchanged between the two, differs when read again from the snapshots")
     # "now" against "now" (both pickers allow it): one state, nothing differs.
     # The diff replaces the Worker's kept pages, so the Page tab below reads
     # B's page from the snapshots decoded again.
-    nn = page.evaluate("""async () => { const r = await snapWorker({ op: 'diff', a: { key: 'now', raw: await emulator.save_state() }, b: { key: 'now' } });
-      return [r.pages.length, (await snapWorker({ op: 'held' })).diffPages]; }""")
+    nn = page.evaluate("""async () => { const r = await MKB.snapWorker({ op: 'diff', a: { key: 'now', raw: await MKB.emulator.save_state() }, b: { key: 'now' } });
+      return [r.pages.length, (await MKB.snapWorker({ op: 'held' })).diffPages]; }""")
     if nn != [0, 0]:
         problems.append(f"{tag}: now against now lists {nn[0]} pages, the Worker keeps {nn[1]}")
 
@@ -12390,7 +12426,7 @@ def snapdiff_run(browser, base, shots, name, scheme, phone):
         problems.append(f"{tag}: the screen after restoring B differs from B's")
     # v86's set_state leaves last_result (the lazy flags' input), the FPU
     # status word and MXCSR outside wasm memory: the page puts them back.
-    views = page.evaluate("(() => { const c = emulator.v86.cpu; return ['last_result', 'fpu_status_word', 'mxcsr']"
+    views = page.evaluate("(() => { const c = MKB.emulator.v86.cpu; return ['last_result', 'fpu_status_word', 'mxcsr']"
                           ".filter((k) => c[k].buffer !== c.wasm_memory.buffer); })()")
     if views:
         problems.append(f"{tag}: after the restore {views} are not in v86's wasm memory")
@@ -12510,7 +12546,7 @@ def snapdiff_kernels(browser, base, shots, phone):
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
     snap_save(page, 1, phone)
     machine_do(page, "select_option", "#kernel", "hello-os")
-    wait_for(lambda: page.evaluate("image && image.name === 'hello-os' && emuReady"), 120)
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name === 'hello-os' && MKB.emuReady"), 120)
     show_tab(page, "snapshots")
     wait_for(lambda: (snap_rows(page)["rows"] or [{}])[0].get("kernel") == "other", 20)
     st = snap_rows(page)
@@ -12522,7 +12558,7 @@ def snapdiff_kernels(browser, base, shots, phone):
         problems.append("another kernel: horizontal scroll")
     page.screenshot(path=str(shots / f"snapdiff-other-{390 if phone else 1280}.png"), full_page=True)
     snap_click(page, "#snapshots button.snapswitch", phone)
-    wait_for(lambda: page.evaluate("image && image.name === 'hello' && emuReady"), 120)
+    wait_for(lambda: page.evaluate("MKB.image && MKB.image.name === 'hello' && MKB.emuReady"), 120)
     wait_for(lambda: (snap_rows(page)["rows"] or [{}])[0].get("kernel") == "match", 20)
     x = snap_rows(page)["rows"][0]
     if x["kernel"] != "match" or not x["restore"]:
@@ -12588,13 +12624,13 @@ def snapdiff_perf(browser, base, shots, mem):
 
 SNAP_LEGACY_JS = """async (id) => {
   // An S1 (gzip) record of the same state, stored as S1 stored it.
-  const s = snapshots.find((x) => x.id === id);
-  const raw = await snapUnpack(s);
+  const s = MKB.snapshots.find((x) => x.id === id);
+  const raw = await MKB.snapUnpack(s);
   const gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
   const rec = { id: s.id + 'gz', seq: s.seq + 1, name: 'S1 gzip snapshot', time: s.time + 1, kernel: s.kernel,
     kernelKey: s.kernelKey, ram: s.ram, raw: raw.byteLength, size: gz.byteLength, gzip: true, saveMs: 5, gzipMs: 25,
     meta: s.meta, data: new Blob([gz]) };
-  await snapTx('readwrite', (st) => st.put(rec));
+  await MKB.snapTx('readwrite', (st) => st.put(rec));
   return rec.id; }"""
 
 
@@ -12678,7 +12714,7 @@ SNAP_FILL_JS = """(mib) => { let x = 12345; const rnd = () => (x = (Math.imul(x,
   for (let m = 0; m < mib; m++) {
     for (let i = 0; i < chunk.length;) { const n = 16 + (rnd() & 1023), kind = rnd() % 3, v = rnd() & 255;
       for (let k = 0; k < n && i < chunk.length; k++, i++) chunk[i] = kind === 0 ? rnd() & 255 : kind === 1 ? v : 0; }
-    emulator.v86.cpu.mem8.set(chunk, (8 + m) << 20); } }"""
+    MKB.emulator.v86.cpu.mem8.set(chunk, (8 + m) << 20); } }"""
 
 
 def snapdiff_bigsave(browser, base, shots, phone):
@@ -12710,7 +12746,7 @@ def snapdiff_bigsave(browser, base, shots, phone):
     r["save seconds"] = round(time.monotonic() - t0, 2)
     time.sleep(1)
     long = page.evaluate("window.mkbLong")
-    s = page.evaluate("(() => { const { data, meta, ...s } = snapshots[0]; return s; })()")
+    s = page.evaluate("(() => { const { data, meta, ...s } = MKB.snapshots[0]; return s; })()")
     r["snapshot"] = {k: s.get(k) for k in ("raw", "size", "codec", "level", "saveMs", "packMs")}
     r["long tasks ms (save)"] = sorted(long)[-5:]
     if long and max(long) > 200:
@@ -12720,7 +12756,7 @@ def snapdiff_bigsave(browser, base, shots, phone):
         problems.append(f"the LZ4 snapshot is {s.get('size')} bytes for {s['raw']} raw")
     page.screenshot(path=str(shots / f"snapdiff-bigsave-{390 if phone else 1280}.png"), full_page=True)
     # Restore after scribbling over the filled RAM.
-    page.evaluate("emulator.v86.cpu.mem8.fill(0x55, 8 << 20, 9 << 20)")
+    page.evaluate("MKB.emulator.v86.cpu.mem8.fill(0x55, 8 << 20, 9 << 20)")
     page.evaluate(SNAP_LONG_JS)
     t0 = time.monotonic()
     snap_click(page, f"#snapshots tr[data-id='{st['rows'][0]['id']}'] button.restore", phone)
@@ -12763,14 +12799,14 @@ def snapdiff_poweron(browser, base, shots, name, scheme, phone):
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
         ctx.close()
         return [f"{tag}: did not start paused"], r
-    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
     page.evaluate(SNAP_JS)
     cpu_p = page.evaluate("mkbSnap.cpu()")
     r["at save"] = {"CS:EIP": f"{cpu_p['regs']['CS']:#x}:{cpu_p['eip']:#x}", "icount": cpu_p["icount"]}
     if cpu_p["regs"]["CS"] != 0xF000 or cpu_p["eip"] != 0xFFF0:
         problems.append(f"{tag}: not paused at the reset vector: {r['at save']['CS:EIP']} (test setup)")
     # The slots that broke v86's PCI set_state: no BAR, I/O bit set.
-    r["BAR slots without a BAR, I/O bit set"] = page.evaluate("""() => { const pci = emulator.v86.cpu.devices.pci, out = [];
+    r["BAR slots without a BAR, I/O bit set"] = page.evaluate("""() => { const pci = MKB.emulator.v86.cpu.devices.pci, out = [];
       pci.devices.forEach((d, id) => { if (d && d.pci_bars) for (let i = 0; i < d.pci_bars.length; i++)
         if (!d.pci_bars[i] && pci.device_spaces[id][4 + i] & 1) out.push((d.name || id) + ' BAR' + i); }); return out; }""")
     page.evaluate("mkbSnap.keep('P')")
@@ -12841,20 +12877,20 @@ SNAP_REPLAY = {"hello": (600_000, 600_000), "minified-linux": (1_500_000, 500_00
 # machine had before the Restore, and SeaBIOS's data then differed (RAM
 # after the 100,000 steps).
 SNAP_REPLAY_TSC = (1_300_000, 100_000)
-SNAP_REPLAY_STATE_JS = """async () => { const c = emulator.v86.cpu, m = emulator.read_memory(0, emuRam);
+SNAP_REPLAY_STATE_JS = """async () => { const c = MKB.emulator.v86.cpu, m = MKB.emulator.read_memory(0, MKB.emuRam);
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m))).map((b) => b.toString(16).padStart(2, '0')).join('');
-  return { steps: stepper.steps, eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0), eflags: c.get_eflags() >>> 0,
-    clock: CLOCK.now(), irq0: stepper.irq0, ram: sha }; }"""
+  return { steps: MKB.stepper.steps, eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0), eflags: c.get_eflags() >>> 0,
+    clock: MKB.CLOCK.now(), irq0: MKB.stepper.irq0, ram: sha }; }"""
 
 
 def snap_step_to(page, target):
     """Step (in slices, as the Step button does) until stepper.steps == target."""
     for _ in range(200):
-        left = target - page.evaluate("stepper.steps")
+        left = target - page.evaluate("MKB.stepper.steps")
         if left <= 0:
             break
-        page.evaluate(f"doStep({min(left, 400000)})")
-    return page.evaluate("stepper.steps")
+        page.evaluate(f"MKB.doStep({min(left, 400000)})")
+    return page.evaluate("MKB.stepper.steps")
 
 
 def snapdiff_replay(browser, base, shots, name, scheme, phone, point=None):
@@ -12871,7 +12907,7 @@ def snapdiff_replay(browser, base, shots, name, scheme, phone, point=None):
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
         ctx.close()
         return [f"{tag}: did not start paused"], r
-    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
     if snap_step_to(page, at) != at:
         problems.append(f"{tag}: could not step to {at} (test setup): {page.inner_text('#dbg_status')[:160]}")
     st = snap_save(page, 1, phone)
@@ -12928,8 +12964,8 @@ def snapdiff_guard(fn, *args):
 # diff summary and the "This position" bookmark showed v86's number until X2.
 ONECOUNT_JS = """() => { const now = document.querySelector('#counters tr[data-milestone="now"]');
   return { now: now ? Number(now.dataset.steps) : null, text: document.getElementById('count_text').textContent,
-    badge: Number(document.getElementById('runbadge').dataset.steps || -1), steps: stepper.steps,
-    icount: emulator.v86.cpu.instruction_counter[0] >>> 0 }; }"""
+    badge: Number(document.getElementById('runbadge').dataset.steps || -1), steps: MKB.stepper.steps,
+    icount: MKB.emulator.v86.cpu.instruction_counter[0] >>> 0 }; }"""
 
 
 def onecount_run(browser, base, shots, name, scheme, phone):
@@ -12957,7 +12993,7 @@ def onecount_run(browser, base, shots, name, scheme, phone):
     page.fill("#dbg_n", str(steps))
     page.click("#dbg_stepn")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
-             page.evaluate("stepper.steps") > 0, 120)
+             page.evaluate("MKB.stepper.steps") > 0, 120)
     time.sleep(1)
     show_tab(page, "machine")
     time.sleep(0.5)
@@ -13040,11 +13076,11 @@ def onecount_run(browser, base, shots, name, scheme, phone):
 # snapshot of a kernel that is not in the list, one of a listed kernel at a
 # RAM size the menu does not offer, and a delta whose base is gone.
 SNAP_INJECT_JS = """async (recs) => {
-  const s = snapshots[snapshots.length - 1];
+  const s = MKB.snapshots[MKB.snapshots.length - 1];
   for (const x of recs) {
-    const rec = { ...snapRecord(s), id: s.id + x.tag, seq: s.seq + x.n, time: s.time + x.n, name: x.name,
+    const rec = { ...MKB.snapRecord(s), id: s.id + x.tag, seq: s.seq + x.n, time: s.time + x.n, name: x.name,
       kernel: x.kernel || s.kernel, kernelKey: x.key || s.kernelKey, ram: x.ram || s.ram, delta: x.delta || null };
-    await snapTx('readwrite', (st) => st.put(rec));
+    await MKB.snapTx('readwrite', (st) => st.put(rec));
   }
   return s.id; }"""
 
@@ -13081,17 +13117,17 @@ def lz4_frame(blocks, flg=0x68, bd=0x70, size=0, hc=None):
 # copy of snapshot #1 or #2 (from) with other bytes (b64), codec, size or
 # delta base (delta: null makes it a full one).
 SNAP_CORRUPT_JS = """async (recs) => {
-  const by = Object.fromEntries(snapshots.map((s) => [s.seq, s]));
+  const by = Object.fromEntries(MKB.snapshots.map((s) => [s.seq, s]));
   for (const x of recs) {
     const t = by[x.from || 1];
     const data = x.b64 ? new Blob([Uint8Array.from(atob(x.b64), (c) => c.charCodeAt(0))]) : t.data;
-    const rec = { ...snapRecord(t), id: x.id, seq: 100 + x.n, time: t.time + x.n, name: x.name, data, size: data.size,
+    const rec = { ...MKB.snapRecord(t), id: x.id, seq: 100 + x.n, time: t.time + x.n, name: x.name, data, size: data.size,
       codec: x.codec || t.codec, raw: x.size === undefined ? t.raw : x.size, delta: x.delta === undefined ? t.delta : x.delta };
-    await snapTx('readwrite', (st) => st.put(rec));
+    await MKB.snapTx('readwrite', (st) => st.put(rec));
   }
-  return snapshots.map((s) => ({ seq: s.seq, id: s.id, raw: s.raw, codec: s.codec, delta: s.delta })); }"""
-SNAP_MACHINE_JS = """async () => { const c = emulator.v86.cpu;
-  const d = await crypto.subtle.digest('SHA-256', c.mem8.slice(0, emuRam));
+  return MKB.snapshots.map((s) => ({ seq: s.seq, id: s.id, raw: s.raw, codec: s.codec, delta: s.delta })); }"""
+SNAP_MACHINE_JS = """async () => { const c = MKB.emulator.v86.cpu;
+  const d = await crypto.subtle.digest('SHA-256', c.mem8.slice(0, MKB.emuRam));
   return { ram: Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, '0')).join(''), icount: c.instruction_counter[0] >>> 0,
     eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0) }; }"""
 
@@ -13125,7 +13161,7 @@ def snapdiff_corrupt(browser, base, shots):
     def start(url):
         page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
         return ok
 
     url = f"{base}/index.html?kernel=hello&paused=1#snapshots"
@@ -13137,10 +13173,10 @@ def snapdiff_corrupt(browser, base, shots):
         page.fill("#dbg_n", str(SNAPDIFF_STEPS["hello"]))
         page.click("#dbg_stepn")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
-                 page.evaluate("stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
+                 page.evaluate("MKB.stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
         st = snap_save(page, 2, False)
         a_id, b_id = st["rows"][0]["id"], st["rows"][1]["id"]
-        saved = page.evaluate("snapshots.map((s) => ({ id: s.id, raw: s.raw, codec: s.codec, base: s.delta && s.delta.base }))")
+        saved = page.evaluate("MKB.snapshots.map((s) => ({ id: s.id, raw: s.raw, codec: s.codec, base: s.delta && s.delta.base }))")
         if [x["codec"] for x in saved] != ["lz4", "lz4"] or saved[1]["base"] != a_id:
             return [f"corrupt: two saves are not a full LZ4 snapshot and a delta of it (test setup): {saved}"], r
         b64 = lambda b: base64.b64encode(b).decode()
@@ -13233,7 +13269,7 @@ def snapdiff_corrupt(browser, base, shots):
 
         # A diff with a snapshot of 2 MiB on a 4 MiB machine at hello's end:
         # the pages above 2 MiB that hold bytes, each with how many.
-        ram_a = page.evaluate("emuRam")
+        ram_a = page.evaluate("MKB.emuRam")
         page.goto(f"{base}/index.html?kernel=hello&mem={2 * ram_a}#snapshots")
         if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
             problems.append(f"hello at {2 * ram_a} bytes of RAM did not end")
@@ -13245,8 +13281,8 @@ def snapdiff_corrupt(browser, base, shots):
             page.click("#snap_diff")
             wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") in ("done", "error"), 30)
             d = page.evaluate(SNAP_DIFF_JS) or {}
-            want = page.evaluate(f"""(() => {{ const m = emulator.read_memory(0, emuRam), out = [];
-                for (let p = {ram_a} / 4096; p < emuRam / 4096; p++) {{ let c = 0;
+            want = page.evaluate(f"""(() => {{ const m = MKB.emulator.read_memory(0, MKB.emuRam), out = [];
+                for (let p = {ram_a} / 4096; p < MKB.emuRam / 4096; p++) {{ let c = 0;
                   for (let i = p * 4096; i < p * 4096 + 4096; i++) c += m[i] !== 0;
                   if (c) out.push([p, c]); }}
                 return out; }})()""")
@@ -13266,7 +13302,7 @@ def snapdiff_corrupt(browser, base, shots):
                 page.click("#snap_hex button:text('all rows')")
                 wait_for(lambda: len(page.evaluate(hexrows)[0]) == 256, 10)
                 allrows = page.evaluate(hexrows)
-                now = page.evaluate(f"Array.from(emulator.read_memory({p0} * 4096, 4096))")
+                now = page.evaluate(f"Array.from(MKB.emulator.read_memory({p0} * 4096, 4096))")
                 parse = lambda lines: {int(l[:8], 16): [int(x, 16) for x in l[9:].split()[:16]] for l in lines}
                 a, b = parse(allrows[0]), parse(allrows[1]) if len(allrows) == 2 else {}
                 base_p = p0 * 4096
@@ -13334,7 +13370,7 @@ def snapdiff_corrupt(browser, base, shots):
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
         st = snap_save(page, 1, False)
         row = st["rows"][0]["id"]
-        codec = page.evaluate("snapshots[0].codec")
+        codec = page.evaluate("MKB.snapshots[0].codec")
         snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
         wait_for(lambda: "failed" in page.text_content("#snap_status"), 30)
         r["no worker"] = [st["status"][-80:], codec, page.text_content("#snap_status")]
@@ -13436,14 +13472,14 @@ def snapdiff_edges(browser, base, shots):
         # The same document with another hash would not load again.
         page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
         return ok
 
     url = f"{base}/index.html?kernel=hello&paused=1#debugger"
     if not start(url):
         ctx.close()
         return ["edges: hello did not start paused"], r
-    ram = page.evaluate("emuRam")
+    ram = page.evaluate("MKB.emuRam")
     st = snap_save(page, 1, False)
     a_id = st["rows"][0]["id"]
 
@@ -13461,7 +13497,7 @@ def snapdiff_edges(browser, base, shots):
     page.fill("#dbg_n", str(SNAPDIFF_STEPS["hello"]))
     page.click("#dbg_stepn")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
-             page.evaluate("stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
+             page.evaluate("MKB.stepper.steps") >= SNAPDIFF_STEPS["hello"], 60)
     show_tab(page, "snapshots")
     page.select_option("#snap_a", a_id)
     page.select_option("#snap_b", "now")
@@ -13494,7 +13530,7 @@ def snapdiff_edges(browser, base, shots):
         page.click("#page_snap_live")
         live = wait_for(lambda: not page.is_visible("#page_snap"), 10)
         same = page.evaluate(f"""(() => {{ const d = document.getElementById('listing')._drawn;
-            const m = emulator.read_memory({p0} * 4096, 4096);
+            const m = MKB.emulator.read_memory({p0} * 4096, 4096);
             return !!d && d.bytes.length === m.length && d.bytes.every((b, i) => b === m[i]); }})()""")
         r["live memory"] = [p0, banner[:100], banner2[:100], live, same]
         if "edge renamed" not in banner or "edge renamed twice" not in banner2:
@@ -13545,13 +13581,13 @@ def snapdiff_edges(browser, base, shots):
     wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
     s = status_after(f"#snapshots tr[data-id='{a_id}'] button.restore", "boot with that size")
     r["ram mismatch"] = s[:160]
-    want = f"was taken with {page.evaluate(f'kib({ram})')} of RAM; boot with that size to restore it."
+    want = f"was taken with {page.evaluate(f'MKB.kib({ram})')} of RAM; boot with that size to restore it."
     if want not in s:
         problems.append(f"Restore at {other} bytes of RAM of a {ram}-byte snapshot: {s!r}, want {want!r}")
 
     # A listed kernel at 3 MiB: the switch adds the size to the menu and boots it.
     snap_click(page, f"#snapshots tr[data-id='{odd}'] button.snapswitch", False)
-    booted = wait_for(lambda: page.evaluate("emuRam === 3145728 && !!emulator && emuReady"), 120)
+    booted = wait_for(lambda: page.evaluate("MKB.emuRam === 3145728 && !!MKB.emulator && MKB.emuReady"), 120)
     r["odd ram"] = [page.input_value("#memory"), booted, page.text_content("#snap_status")[:120]]
     if page.input_value("#memory") != "3145728" or not booted:
         problems.append(f"Switch to hello at 3 MiB: memory menu {page.input_value('#memory')!r}, booted {booted}")
@@ -13620,7 +13656,7 @@ DELTA_STEPS = {"hello": 15, "minified-linux": 2500}
 
 DELTA_JS = """() => { if (window.mkbDelta) return; window.mkbDelta = {
   shas: {},
-  async sha(k) { const d = await crypto.subtle.digest('SHA-256', emulator.v86.cpu.mem8.slice(0, emuRam));
+  async sha(k) { const d = await crypto.subtle.digest('SHA-256', MKB.emulator.v86.cpu.mem8.slice(0, MKB.emuRam));
     return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, '0')).join(''); } }; }"""
 
 DELTA_ROWS_JS = """() => [...document.querySelectorAll('#snapshots tbody tr[data-id]')].map((tr) => ({
@@ -13679,7 +13715,7 @@ def deltasnap_chain(browser, base, shots, name, scheme, phone):
     def start():
         page.goto(url) if not page.url.startswith(url.split("#")[0]) else page.reload()
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 30)
         page.evaluate(SNAP_JS)
         page.evaluate(DELTA_JS)
         return ok
@@ -13699,7 +13735,7 @@ def deltasnap_chain(browser, base, shots, name, scheme, phone):
     want, ids, step_pages = [], [], []
     for i in range(11):
         if i:
-            snap_step_to(page, page.evaluate("stepper.steps") + DELTA_STEPS[name] * (1 + i % 3))
+            snap_step_to(page, page.evaluate("MKB.stepper.steps") + DELTA_STEPS[name] * (1 + i % 3))
             page.evaluate("mkbSnap.keep('B')")
             step_pages.append(page.evaluate("mkbSnap.pages('A', 'B')"))
             page.evaluate("mkbSnap.A = mkbSnap.B")
@@ -13839,7 +13875,7 @@ def deltasnap_big(browser, base, shots):
     st = snap_save(page, 1, False)
     full_id = st["rows"][0]["id"]
     # 37 pages of the filled area change, one goes back to zero.
-    page.evaluate("(() => { const m = emulator.v86.cpu.mem8; for (let p = 0; p < 36; p++) m[(9 << 20) + p * 8192 + 5] ^= 0xa5;"
+    page.evaluate("(() => { const m = MKB.emulator.v86.cpu.mem8; for (let p = 0; p < 36; p++) m[(9 << 20) + p * 8192 + 5] ^= 0xa5;"
                   " m.fill(0, 12 << 20, (12 << 20) + 4096); })()")
     want = page.evaluate("mkbDelta.sha()")
     page.evaluate(SNAP_LONG_JS)
@@ -13860,7 +13896,7 @@ def deltasnap_big(browser, base, shots):
         problems.append(f"the 64 MiB delta has base {d['base']!r} and {d['pages']} pages (want {full_id}, 37)")
     if not d["stored"] or d["stored"] * 100 >= full["stored"]:
         problems.append(f"the 64 MiB delta is {d['stored']} bytes, the full snapshot {full['stored']} (want under 1%)")
-    page.evaluate("emulator.v86.cpu.mem8.fill(0x55, 8 << 20, 9 << 20)")
+    page.evaluate("MKB.emulator.v86.cpu.mem8.fill(0x55, 8 << 20, 9 << 20)")
     page.evaluate(SNAP_LONG_JS)
     t0 = time.monotonic()
     if not delta_restore(page, d_id, False):
@@ -14028,8 +14064,8 @@ def tabs_settings(page, problems, r, shots):
         return
     # IndexedDB can be slow (CI run 42704392268: the list was still empty
     # when read): the localStorage rows must not wait for it.
-    page.evaluate("""() => { const orig = dbgIdbOp;
-      dbgIdbOp = async (...a) => { await new Promise((r) => setTimeout(r, 1500)); return orig(...a); }; }""")
+    page.evaluate("""() => { const orig = MKB.dbgIdbOp;
+      MKB.dbgIdbOp = async (...a) => { await new Promise((r) => setTimeout(r, 1500)); return orig(...a); }; }""")
     show_tab(page, "settings")
     stored = page.evaluate(TABS_STORED_JS)
     r["stored_keys"] = stored
@@ -14080,7 +14116,7 @@ def tabs_settings(page, problems, r, shots):
             problems.append("Settings count off: the Machine tab's count stays on or is not remembered")
     page.reload()
     wait_for(lambda: page.locator("#tab_settings").count() and "Running hello " in (page.text_content("#status") or ""), 60)
-    after = {"speed": page.evaluate("prefSpeed"), "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count")}
+    after = {"speed": page.evaluate("MKB.prefSpeed"), "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count")}
     r["after_reload"] = after
     if after != {"speed": "10", "clock": "100", "count": False}:
         problems.append(f"preferences after a reload: {after}, want speed 10, clock 100, count off")
@@ -14101,10 +14137,10 @@ def tabs_settings(page, problems, r, shots):
         return True
     show_tab(page, "debugger")  # loads the kernel's watch list
     show_tab(page, "settings")
-    if page.evaluate("watchList") != ["msg"]:
-        problems.append(f"setup: the watch list of hello is {page.evaluate('watchList')}")
-    if forget("mkb-watch:hello") and page.evaluate("watchList") != []:
-        problems.append(f"after Forget the watch list of hello is {page.evaluate('watchList')}")
+    if page.evaluate("MKB.watchList") != ["msg"]:
+        problems.append(f"setup: the watch list of hello is {page.evaluate('MKB.watchList')}")
+    if forget("mkb-watch:hello") and page.evaluate("MKB.watchList") != []:
+        problems.append(f"after Forget the watch list of hello is {page.evaluate('MKB.watchList')}")
     cmd = next((k for k in page.evaluate(TABS_STORED_JS) if k.startswith("mkb-cmdline-")), None)
     if cmd and forget(cmd) and page.input_value("#cmdline") != "nokaslr cryptomgr.notests":
         problems.append(f"after Forget the command line is {page.input_value('#cmdline')!r}, want the default")
@@ -14128,8 +14164,8 @@ def tabs_settings(page, problems, r, shots):
         return
     # A key written while Reset waits for IndexedDB to forget the imported
     # DWARF (a boot measuring its Still alive count then) goes too.
-    page.evaluate("""() => { const orig = dbgIdbOp;
-      dbgIdbOp = async (...a) => { if (a[0] === 'readwrite') { dbgIdbOp = orig; localStorage.setItem('mkb-ref-hello-real', '123'); }
+    page.evaluate("""() => { const orig = MKB.dbgIdbOp;
+      MKB.dbgIdbOp = async (...a) => { if (a[0] === 'readwrite') { MKB.dbgIdbOp = orig; localStorage.setItem('mkb-ref-hello-real', '123'); }
         return orig(...a); }; }""")
     page.click("#settings_reset")
     time.sleep(0.5)
@@ -14139,7 +14175,7 @@ def tabs_settings(page, problems, r, shots):
         problems.append(f"Reset all settings left {left}")
     if page.evaluate(TABS_IDB_JS, "") != 0:
         problems.append("Reset all settings left the IndexedDB of imported DWARF")
-    now = {"compact": page.is_checked("#compact_tabs"), "speed": page.evaluate("prefSpeed"),
+    now = {"compact": page.is_checked("#compact_tabs"), "speed": page.evaluate("MKB.prefSpeed"),
            "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count"),
            "words": all(t["wordShown"] for t in tabs_look(page))}
     if now != {"compact": False, "speed": "1000", "clock": "10", "count": True, "words": True}:
@@ -14169,7 +14205,7 @@ def tabs_forget_imported(page, problems, r, forget):
         return
     show_tab(page, "settings")
     row = page.evaluate(TABS_ROW_JS, key)
-    n = page.evaluate("symbols.symbols.length")
+    n = page.evaluate("MKB.symbols.symbols.length")
     want = f"Imported symbols for this kernel (hello): System.map (System.map, {n:,} symbols)"
     r["imported_row"] = row and row["text"][:140]
     if not row or want not in row["text"]:
@@ -14177,7 +14213,7 @@ def tabs_forget_imported(page, problems, r, forget):
     if not forget(key):
         return
     ok = wait_for(lambda: page.get_attribute("#sym_status", "data-state") == ""
-                  and page.evaluate("!!symbols && !symbols.imported && symbols.symbols.some((s) => s.name === 'hello_main')"), 30)
+                  and page.evaluate("!!MKB.symbols && !MKB.symbols.imported && MKB.symbols.symbols.some((s) => s.name === 'hello_main')"), 30)
     if not ok:
         problems.append(f"Forget hello's imported symbols: status {page.inner_text('#sym_status')!r}, the kernel's own symbols not back")
 
@@ -14402,7 +14438,7 @@ def tabs_case(browser, base, shots, linux=False):
     # this way and stayed on #calls.
     page.goto(f"{base}/index.html?kernel=hello#calls")
     wait_for(lambda: page.evaluate("location.hash") == "#calls", 10)
-    page.evaluate("() => { location.hash = '#coverage'; writeHash(); }")
+    page.evaluate("() => { location.hash = '#coverage'; MKB.writeHash(); }")
     if not wait_for(lambda: page.get_attribute("#tab_source", "aria-selected") == "true"
                     and page.evaluate("location.hash") == "#source", 10):
         problems.append(f"#coverage with a hash write before its hashchange: hash {page.evaluate('location.hash')!r}, "
@@ -14571,7 +14607,7 @@ PWA_PRECACHED_KERNELS = ("hello", "minified-linux")
 PWA_CACHES_JS = "async () => (await caches.keys()).sort()"
 # The page's registration: each worker's state and script.
 PWA_REG_STATE_JS = """() => Object.fromEntries(['installing', 'waiting', 'active'].map((k) => [k,
-    PWA.reg && PWA.reg[k] ? [PWA.reg[k].state, PWA.reg[k].scriptURL] : null]))"""
+    MKB.PWA.reg && MKB.PWA.reg[k] ? [MKB.PWA.reg[k].state, MKB.PWA.reg[k].scriptURL] : null]))"""
 # The deploy version.json names now, as the page's fetch gets it (a query the cache never saw).
 PWA_VERSION_NOW_JS = """() => fetch('version.json?now=' + Date.now(), { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null)).then((j) => (j && j.sha ? j.sha.slice(0, 12) : null), () => null)"""
@@ -14733,7 +14769,7 @@ def pwa_debug_views(page, base, tag, problems):
     show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 20)
     out["tree"] = page.get_attribute("#cov_tree", "data-state")
-    page.evaluate("openSourceFile('boot/hello.c')")
+    page.evaluate("MKB.openSourceFile('boot/hello.c')")
     wait_for(lambda: HELLO in (page.text_content("#src_body") or ""), 20)
     out["source"] = HELLO in (page.text_content("#src_body") or "")
     if out["tree"] != "ok" or not out["source"]:
@@ -14889,7 +14925,7 @@ def pwa_case(browser, base, shots, timeout):
         page.emulate_media(color_scheme="light")
         page.set_viewport_size({"width": 1280, "height": 900})
         if not live:
-            r["installing_at_reload"] = wait_for(lambda: page.evaluate("!!(PWA.reg && PWA.reg.installing)"), 30)
+            r["installing_at_reload"] = wait_for(lambda: page.evaluate("!!(MKB.PWA.reg && MKB.PWA.reg.installing)"), 30)
             if not r["installing_at_reload"]:
                 problems.append("the new deploy's worker had installed before Reload (want Reload while it installs)")
             checks = []
@@ -14935,7 +14971,7 @@ def pwa_case(browser, base, shots, timeout):
 
 
 PWA_RANGE_JS = """async ([path, range]) => {
-    const resp = await fetch(withV(path), { headers: { Range: range } });
+    const resp = await fetch(MKB.withV(path), { headers: { Range: range } });
     const b = new Uint8Array(await resp.arrayBuffer());
     return { status: resp.status, range: resp.headers.get('content-range'), bytes: Array.from(b.slice(0, 16)), n: b.length };
 }"""
@@ -14997,7 +15033,7 @@ def pwa_after_update(page, base, state, timeout, problems, r):
 # [another origin, a path of this site]: "failed" when the fetch rejects, else its status.
 PWA_ANSWERED_JS = """async ([a, b]) => Promise.all([fetch(a, { mode: 'no-cors' }), fetch(b)].map((p) =>
     p.then((x) => x.status, () => 'failed')))"""
-PWA_CACHED_JS = """async ([cache, path]) => !!(await (await caches.open(cache)).match(new URL(withV(path), location.href).href))"""
+PWA_CACHED_JS = """async ([cache, path]) => !!(await (await caches.open(cache)).match(new URL(MKB.withV(path), location.href).href))"""
 
 
 def pwa_store_checks(page, base, problems, r):
@@ -15011,7 +15047,7 @@ def pwa_store_checks(page, base, problems, r):
     # full, one with room.
     fresh = [f for f in ("kernels/hello/meta.json", "kernels/hello/dwarf/types.json", "kernels/hello/dwarf/files.json",
                          "kernels/hello/src/index.json")
-             if not page.evaluate("async (p) => !!(await caches.match(new URL(withV(p), location.href).href))", f)][:2]
+             if not page.evaluate("async (p) => !!(await caches.match(new URL(MKB.withV(p), location.href).href))", f)][:2]
     if len(fresh) < 2:
         problems.append(f"no two files left that were never fetched: {fresh}")
         return
@@ -15019,12 +15055,12 @@ def pwa_store_checks(page, base, problems, r):
     origin = base + "/"
     cdp.send("Storage.overrideQuotaForOrigin", {"origin": origin, "quotaSize": 1})
     try:
-        full = page.evaluate("async (p) => (await fetch(withV(p))).status", fresh[0])
+        full = page.evaluate("async (p) => (await fetch(MKB.withV(p))).status", fresh[0])
         time.sleep(1.5)
         kept_full = page.evaluate(PWA_CACHED_JS, [data, fresh[0]])
     finally:
         cdp.send("Storage.overrideQuotaForOrigin", {"origin": origin})
-    room = page.evaluate("async (p) => (await fetch(withV(p))).status", fresh[1])
+    room = page.evaluate("async (p) => (await fetch(MKB.withV(p))).status", fresh[1])
     kept_room = wait_for(lambda: page.evaluate(PWA_CACHED_JS, [data, fresh[1]]), 10)
     r["store"] = {fresh[0] + " (storage full)": [full, kept_full], fresh[1]: [room, kept_room]}
     if full != 200 or kept_full or room != 200 or not kept_room:
@@ -15113,8 +15149,8 @@ def pwa_edges(browser, shots, timeout):
             pwa_deploy(root, PWA_V[1], "B")
             # The old page's update check (its 5 minute timer) finds the new
             # worker first: installed and waiting when the new tab opens.
-            old.evaluate("PWA.reg.update()")
-            if not wait_for(lambda: old.evaluate("!!PWA.reg.waiting"), 60):
+            old.evaluate("MKB.PWA.reg.update()")
+            if not wait_for(lambda: old.evaluate("!!MKB.PWA.reg.waiting"), 60):
                 problems.append("another tab: deploy B's worker did not install and wait: " + json.dumps({
                     "workers": old.evaluate(PWA_REG_STATE_JS), "sw.js requests": state["log"]}))
             new = c.new_page()
@@ -15249,35 +15285,35 @@ FOLLOW_EIP_JS = """() => {
     const M = window.mkbFollow = { viol: [], draws: { context: 0, listing: 0 }, good: {}, pend: {}, samples: 0 };
     const sel = { context: '#context .cur[data-addr]', listing: '#listing .cur[data-addr]' };
     const tabOf = { context: 'debugger', listing: 'page' };
-    const now = () => realNow(); // performance.now is the guest's clock (clock.js)
+    const now = () => MKB.realNow(); // performance.now is the guest's clock (clock.js)
     const boxed = (v) => { const e = document.querySelector(sel[v]); return e ? Number(e.dataset.eip ?? e.dataset.addr) : -1; };
     // The boxed line holds EIP: an instruction at EIP (or with EIP inside
     // it, data-eip), or the hex row around it.
     const shows = (v, eip) => { const e = document.querySelector(sel[v]);
         return !!e && (Number(e.dataset.eip ?? e.dataset.addr) === eip ||
             (e.dataset.end !== undefined && eip >= Number(e.dataset.addr) && eip < Number(e.dataset.end))); };
-    const due = (v) => stepper && emuReady && !document.hidden && !ffActive && tab === tabOf[v] && stepper.nextPhys() >= 0 &&
-        stepper.nextPhys() < emuRam && (runState === 'paused' || runState === 'stepped') &&
-        (v === 'context' || runState === 'stepped' || selectedPage === Math.floor(stepper.nextPhys() / PAGE));
-    const state = (v) => ({ view: v, boxed: boxed(v), eip: stepper.nextPhys(), steps: stepper.steps, state: runState,
-        speed: speed(), fast: fastStepping(), runTo: runTo !== null, kernel: image && image.name,
+    const due = (v) => MKB.stepper && MKB.emuReady && !document.hidden && !MKB.ffActive && MKB.tab === tabOf[v] && MKB.stepper.nextPhys() >= 0 &&
+        MKB.stepper.nextPhys() < MKB.emuRam && (MKB.runState === 'paused' || MKB.runState === 'stepped') &&
+        (v === 'context' || MKB.runState === 'stepped' || MKB.selectedPage === Math.floor(MKB.stepper.nextPhys() / MKB.PAGE));
+    const state = (v) => ({ view: v, boxed: boxed(v), eip: MKB.stepper.nextPhys(), steps: MKB.stepper.steps, state: MKB.runState,
+        speed: MKB.speed(), fast: MKB.fastStepping(), runTo: MKB.runTo !== null, kernel: MKB.image && MKB.image.name,
         source: !document.getElementById('src_panel').hidden, page: Number(document.getElementById('listing').dataset.page) });
     const seen = (v) => {
-        if (!stepper)
+        if (!MKB.stepper)
             return;
         M.draws[v]++;
-        if (shows(v, stepper.nextPhys())) {
-            M.good[v] = { t: now(), steps: stepper.steps, st: stepper };
+        if (shows(v, MKB.stepper.nextPhys())) {
+            M.good[v] = { t: now(), steps: MKB.stepper.steps, st: MKB.stepper };
             M.pend[v] = null;
         } else if (due(v) && M.viol.length < 20 && (v === 'context' ||
-                Number(document.getElementById('listing').dataset.page) === Math.floor(stepper.nextPhys() / PAGE)))
+                Number(document.getElementById('listing').dataset.page) === Math.floor(MKB.stepper.nextPhys() / MKB.PAGE)))
             // The listing drawn at another page (the page EIP has just
             // left, before it is followed) is caught by the time limit.
             M.viol.push({ kind: 'drawn without EIP boxed', ...state(v) });
     };
     for (const v of ['context', 'listing'])
         new MutationObserver(() => seen(v)).observe(document.getElementById(v), { attributes: true, attributeFilter: ['data-draws'] });
-    const limit = () => Math.max(1000, 2 * (viewCost || 0) + 400);
+    const limit = () => Math.max(1000, 2 * (MKB.viewCost || 0) + 400);
     M.timer = setInterval(() => {
         M.samples++;
         for (const v of ['context', 'listing']) {
@@ -15288,7 +15324,7 @@ FOLLOW_EIP_JS = """() => {
             // Fresh: drawn at this instruction, or showing EIP anyway (an
             // instruction repeated in place: rep movs, a jump to itself).
             const g = M.good[v];
-            if ((g && g.st === stepper && g.steps === stepper.steps) || shows(v, stepper.nextPhys())) {
+            if ((g && g.st === MKB.stepper && g.steps === MKB.stepper.steps) || shows(v, MKB.stepper.nextPhys())) {
                 M.pend[v] = null;
                 continue;
             }
@@ -15298,7 +15334,7 @@ FOLLOW_EIP_JS = """() => {
             else if (t - M.pend[v] > limit()) {
                 if (M.viol.length < 20)
                     M.viol.push({ kind: 'stale', for_ms: Math.round(t - M.pend[v]), limit_ms: Math.round(limit()),
-                        drawn_steps: g && g.st === stepper ? g.steps : null, ...state(v) });
+                        drawn_steps: g && g.st === MKB.stepper ? g.steps : null, ...state(v) });
                 M.pend[v] = t;
             }
         }
@@ -15307,7 +15343,7 @@ FOLLOW_EIP_JS = """() => {
 
 
 def follow_install(page):
-    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!document.getElementById('listing')"), 60)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!document.getElementById('listing')"), 60)
     page.evaluate(FOLLOW_EIP_JS)
 
 
@@ -15328,7 +15364,7 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed=1#{tab}")
-    if not wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180):
+    if not wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180):
         ctx.close()
         return [{"no slow motion after the entry": page.evaluate(RUN_STATE_JS)}], {}
     follow_install(page)
@@ -15336,16 +15372,16 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
 
     def phase(label, secs):
         time.sleep(secs)
-        phases.append([label, page.evaluate("stepper.steps"), page.evaluate("mkbFollow.draws." + ("context" if tab == "debugger" else "listing"))])
+        phases.append([label, page.evaluate("MKB.stepper.steps"), page.evaluate("mkbFollow.draws." + ("context" if tab == "debugger" else "listing"))])
 
     phase("1/s", 6)
     machine_do(page, "select_option", "#dbg_speed", "10")
     phase("10/s", 4)
     # 1k/s for 4 s or a few instructions: hello's run ends about 450 after
     # its entry (and a click takes a while at 4x).
-    s0 = page.evaluate("stepper.steps")
+    s0 = page.evaluate("MKB.stepper.steps")
     machine_do(page, "select_option", "#dbg_speed", "1000")
-    wait_for(lambda: page.evaluate("stepper.steps") - s0 > (20 if kernel.startswith("hello") else 100), 4, 0.02)
+    wait_for(lambda: page.evaluate("MKB.stepper.steps") - s0 > (20 if kernel.startswith("hello") else 100), 4, 0.02)
     phase("1000/s", 0)
 
     def act(sel):
@@ -15365,14 +15401,14 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
     # Not in the kernel: no breakpoint, the Run to steps to the end of the run.
     page.evaluate("() => { document.getElementById('dbg_addr').value = '0x1000'; }")
     act("#dbg_runto")
-    wait_for(lambda: page.evaluate("runState === 'paused' && runTo === null && !ffActive && !!stepper.end"), 300)
+    wait_for(lambda: page.evaluate("MKB.runState === 'paused' && MKB.runTo === null && !MKB.ffActive && !!MKB.stepper.end"), 300)
     phase("Run to 0x1000 (stepped to the end)", 2)
     # Boot at full speed: the boot is stepped and counted from the reset
     # vector to the gate lines, then the JIT runs it to its end.
     machine_do(page, "select_option", "#dbg_speed", "full")
     show_tab(page, "machine")
     page.click("#boot")
-    wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper && !!stepper.end"), 300)
+    wait_for(lambda: page.evaluate("MKB.runState === 'paused' && !MKB.ffActive && !!MKB.stepper && !!MKB.stepper.end"), 300)
     phase("Boot at full speed (counting), to the end", 2)
     viol = page.evaluate("mkbFollow.viol")
     page.screenshot(path=str(shots / f"follow-eip-{kernel}-{tab}-{throttle}x.png"))
@@ -15473,7 +15509,7 @@ def follow_fuzz_case(browser, base, shots, kernel, seed, actions, verbose=False)
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed={rng.choice(['1', '10'])}#{rng.choice(['debugger', 'page'])}")
-    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180)
     follow_install(page)
     log, problems = [], []
     for _ in range(actions):
@@ -15528,8 +15564,8 @@ def suite_followfuzz(ctx):
 RUN_STATE_JS = """() => ({
     state: document.getElementById('dbg_state').dataset.state || '',
     text: document.getElementById('dbg_state').textContent,
-    steps: stepper ? stepper.steps : -1,
-    end: !!(stepper && stepper.end),
+    steps: MKB.stepper ? MKB.stepper.steps : -1,
+    end: !!(MKB.stepper && MKB.stepper.end),
     pauseOff: document.getElementById('dbg_pause').disabled,
     contOff: document.getElementById('dbg_continue').disabled,
     overlay: !document.getElementById('vm_overlay').hidden,
@@ -15565,7 +15601,7 @@ def run_state_problem(page, budget=3.5):
         return None
     if s0["state"] == "ff":
         # A fast-forward runs the JIT: the count moves, or it ends.
-        moved = wait_for(lambda: page.evaluate("stepper ? stepper.steps : -1") != s0["steps"]
+        moved = wait_for(lambda: page.evaluate("MKB.stepper ? MKB.stepper.steps : -1") != s0["steps"]
                          or page.get_attribute("#dbg_state", "data-state") != "ff", 10)
         return None if moved else {"fast-forward not moving for 10 s": page.evaluate(RUN_STATE_JS)}
     if s0["state"] != "stepped" or s0["speed"] not in ("1", "10"):
@@ -15708,7 +15744,7 @@ def double_boot_case(browser, base, shots, touch):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=1")
-    wait_for(lambda: page.evaluate("typeof ffActive !== 'undefined' && ffActive"), 60, 0.01)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.ffActive !== 'undefined' && MKB.ffActive"), 60, 0.01)
     show_tab(page, "machine")
     if touch:
         page.tap("#boot", no_wait_after=True)
@@ -15717,7 +15753,7 @@ def double_boot_case(browser, base, shots, touch):
         page.evaluate("() => { const b = document.getElementById('boot'); b.click(); b.click(); }")
     problems = []
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped"
-                    and page.evaluate("!entryPhase"), 60):
+                    and page.evaluate("!MKB.entryPhase"), 60):
         problems.append({"not running at 1/s 60 s after two Boots": page.evaluate(RUN_STATE_JS)})
     else:
         bad = run_state_problem(page)
@@ -15732,10 +15768,10 @@ def double_boot_case(browser, base, shots, touch):
 
 
 SPEED_LINE_JS = """() => ({
-    state: runState, entry: entryPhase, runTo: runTo !== null, ff: ffActive, end: !!(stepper && stepper.end),
-    halted: !!stepper && stepper.halted(), set: document.getElementById('dbg_speed').value,
+    state: MKB.runState, entry: MKB.entryPhase, runTo: MKB.runTo !== null, ff: MKB.ffActive, end: !!(MKB.stepper && MKB.stepper.end),
+    halted: !!MKB.stepper && MKB.stepper.halted(), set: document.getElementById('dbg_speed').value,
     text: document.getElementById('vclock').textContent.split(' \u00b7 ')[0],
-    steps: stepper ? stepper.steps : -1,
+    steps: MKB.stepper ? MKB.stepper.steps : -1,
 })"""
 
 
@@ -15771,7 +15807,7 @@ def speed_line_case(browser, base, shots, touch, rate):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=minified-linux&speed={rate}")
-    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 120)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 120)
     act = page.tap if touch else page.click
     problems, samples = [], 0
 
@@ -15805,9 +15841,9 @@ def speed_line_case(browser, base, shots, touch, rate):
             document.dispatchEvent(new Event('visibilitychange'));
         }""")
         # Hidden (a background tab: no animation frames): the run goes on.
-        before = page.evaluate("stepper.steps")
+        before = page.evaluate("MKB.stepper.steps")
         time.sleep(hidden_s)
-        ran = page.evaluate("stepper.steps") - before
+        ran = page.evaluate("MKB.stepper.steps") - before
         if ran < float(rate) * hidden_s / 3:
             problems.append({"hidden": f"{ran} instructions in {hidden_s} s at {rate}/s"})
         cdp.send("Page.setWebLifecycleState", {"state": "frozen"})
@@ -15876,7 +15912,7 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed={rate}")
-    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180)
     page.tap("#tab_" + tab)
     page.evaluate(LONG_TASKS_JS)
     if tab == "memory":
@@ -15941,7 +15977,7 @@ def runto_during_ff_case(browser, base, shots):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=1#debugger")
-    wait_for(lambda: page.evaluate("typeof ffActive !== 'undefined' && ffActive"), 60, 0.01)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.ffActive !== 'undefined' && MKB.ffActive"), 60, 0.01)
     page.evaluate("""() => {
         document.getElementById('dbg_addr').value = 'start_kernel';
         const b = document.getElementById('dbg_runto');
@@ -15950,10 +15986,10 @@ def runto_during_ff_case(browser, base, shots):
     }""")
     problems = []
     done = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
-                    and page.evaluate("!ffActive && runTo === null")
+                    and page.evaluate("!MKB.ffActive && MKB.runTo === null")
                     and not page.inner_text("#dbg_status").startswith(("Running to", "Finding")), 120)
     s = page.evaluate(RUN_STATE_JS)
-    sym = page.evaluate("stepper.symName[stepper.symbolOf(stepper.nextPhys())] || ''")
+    sym = page.evaluate("MKB.stepper.symName[MKB.stepper.symbolOf(MKB.stepper.nextPhys())] || ''")
     if not done or sym != "start_kernel":
         problems.append({"not stopped at start_kernel": s, "at": sym})
     bad = run_state_problem(page)
@@ -16028,7 +16064,7 @@ BM_STATE_JS = """() => { const rows = [...document.querySelectorAll('#bm_list .b
     count: Number((document.getElementById('bm_list') || {dataset: {}}).dataset.count || 0),
     store: (() => { try { return JSON.parse(localStorage.getItem('mkb-bookmarks') || 'null'); } catch (e) { return 'error ' + e; } })(),
     status: (document.getElementById('bm_status') || {}).textContent || '',
-    list: typeof BM === 'undefined' ? null : BM.list.map((b) => ({ ...b })) }; }"""
+    list: typeof window.MKB?.BM === 'undefined' ? null : MKB.BM.list.map((b) => ({ ...b })) }; }"""
 
 BM_DIALOG_JS = """() => { const d = document.getElementById('bm_dialog'); if (!d || d.hidden) return null;
   const b = d.getBoundingClientRect(), n = document.getElementById('bm_name');
@@ -16039,9 +16075,9 @@ BM_WHERE_JS = """() => { const sp = document.getElementById('src_panel'), sb = d
   const L = document.getElementById('listing'), lb = L.getBoundingClientRect();
   const vis = (a) => { const e = L.querySelector('.ins[data-addr="' + a + '"]'); if (!e) return false;
     const r = e.getBoundingClientRect(); return r.top >= lb.top - 1 && r.bottom <= lb.bottom + 1 && r.bottom > 0 && r.top < innerHeight; };
-  return { tab, page: selectedPage, listingPage: Number(L.dataset.page ?? -1), srcOpen: !sp.hidden, file: sb.dataset.file || '',
+  return { tab: MKB.tab, page: MKB.selectedPage, listingPage: Number(L.dataset.page ?? -1), srcOpen: !sp.hidden, file: sb.dataset.file || '',
     title: document.getElementById('src_title').textContent, pick: Number((sb.querySelector('.pick') || {dataset: {}}).dataset.line || 0),
-    hit: jumpHit, hash: location.hash,
+    hit: MKB.jumpHit, hash: location.hash,
     jhit: [...L.querySelectorAll('.ins.jhit[data-addr]')].map((e) => Number(e.dataset.addr)),
     hscroll: document.documentElement.scrollWidth > innerWidth + 1, insVisible: (() => {
       // On screen: inside the listing, under the top bar, above the Source panel's sheet (a phone).
@@ -16158,7 +16194,7 @@ def bm_star_tip(page, sel, name, phone, problems, tag):
     if name not in t or "ookmark" not in t:
         problems.append(f"{tag}: the ★ popover at {sel} does not name the bookmark {name!r}: {t[:160]!r}")
     # Closed as a tap elsewhere would (Escape in the Source panel also closes the panel).
-    page.evaluate("hideTip()")
+    page.evaluate("MKB.hideTip()")
     page.mouse.move(2, 300)
 
 
@@ -16254,8 +16290,8 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
     time.sleep(1)
     eip = int(page.get_attribute("#regs", "data-phys"))
-    icount = page.evaluate("emulator.v86.cpu.instruction_counter[0] >>> 0")  # v86's count: Restore puts it back
-    steps = page.evaluate("stepper.steps")  # the count the Machine tab shows, and the bookmark's name (X2)
+    icount = page.evaluate("MKB.emulator.v86.cpu.instruction_counter[0] >>> 0")  # v86's count: Restore puts it back
+    steps = page.evaluate("MKB.stepper.steps")  # the count the Machine tab shows, and the bookmark's name (X2)
     r["eip"] = [hex(eip), steps, icount]
     show_tab(page, "debugger")
     added = {}
@@ -16296,7 +16332,7 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
 
     # 3. A listing line in the Page tab: context menu / long press, a typed name.
     target = syms[fn]["paddr"]
-    page.evaluate(f"jumpTo({target})")  # the Page tab at the function, as a symbol link does
+    page.evaluate(f"MKB.jumpTo({target})")  # the Page tab at the function, as a symbol link does
     time.sleep(1.4)
     addrs = page.evaluate("[...document.querySelectorAll('#listing .ins[data-addr]')].map((e) => Number(e.dataset.addr))")
     line_pa = next((a for a in addrs if a > target + 4), None)
@@ -16363,7 +16399,7 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
         # was dropped for 1 s after the press, so CI's next step, the
         # Debugger tab, sometimes stayed hidden).
         if phone:
-            r["click_after_long_press_ms"] = round(page.evaluate("realNow() - BM.longAt"))
+            r["click_after_long_press_ms"] = round(page.evaluate("MKB.realNow() - MKB.BM.longAt"))
             page.click("#tab_debugger")
             if not wait_for(lambda: shown_tab(page) == "debugger", 3):
                 problems.append(f"{tag}: a click on the Debugger tab {r['click_after_long_press_ms']} ms after the long press "
@@ -16435,7 +16471,7 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
 
     # 7. A box of the Calls tab: selected, then the Calls ☆ (1280) or a long press (390).
     show_tab(page, "calls")
-    if not wait_for(lambda: page.evaluate("G.rects.length > 0"), 20):
+    if not wait_for(lambda: page.evaluate("MKB.G.rects.length > 0"), 20):
         problems.append(f"{tag}: the Calls timeline drew no box")
     else:
         xy = graph_box_xy(page, fn)
@@ -16537,10 +16573,10 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
             problems.append(f"{tag}: the position bookmark with a snapshot has no Restore")
         else:
             page.click(rs)
-            if not wait_for(lambda: page.evaluate("(emulator.v86.cpu.instruction_counter[0] >>> 0)") == icount and
+            if not wait_for(lambda: page.evaluate("(MKB.emulator.v86.cpu.instruction_counter[0] >>> 0)") == icount and
                             int(page.get_attribute("#regs", "data-phys") or -1) == eip, 30):
                 problems.append(f"{tag}: Restore did not bring the machine to EIP {hex(eip)} after {icount}: "
-                                f"{page.evaluate('emulator.v86.cpu.instruction_counter[0] >>> 0')} at {page.get_attribute('#regs', 'data-phys')}")
+                                f"{page.evaluate('MKB.emulator.v86.cpu.instruction_counter[0] >>> 0')} at {page.get_attribute('#regs', 'data-phys')}")
         bm_close_menu(page)
     # Keyboard: Tab to the first bookmark in the list, Enter jumps.
     if not phone and "page" in added:
@@ -16730,7 +16766,7 @@ def bookmarks_edges(browser, base, shots):
             show_tab(page, tab)
             page.click(f'.tabbar [role=tab][data-tab="{tab}"]')
             if tab == "page":
-                page.evaluate("selectPage(0x100000 / 4096)")
+                page.evaluate("MKB.selectPage(0x100000 / 4096)")
                 time.sleep(0.5)
             page.mouse.move(5, 5)
             page.evaluate("document.activeElement && document.activeElement.blur && document.activeElement.blur()")
@@ -16763,14 +16799,14 @@ def bookmarks_edges(browser, base, shots):
         # Another page of the site (same storage) follows.
         other = ctx.new_page()
         other.goto(url + "#machine")
-        wait_for(lambda: other.evaluate("typeof BM === 'object' && BM.list.length") == n0, 30)
+        wait_for(lambda: other.evaluate("typeof window.MKB?.BM === 'object' && MKB.BM.list.length") == n0, 30)
         # Delete, Undo.
         page.click('#bm_list .bmrow[data-id="bnew1"] .bmdel')
         wait_for(lambda: len(bm_state(page)["list"]) == n0 - 1, 3)
-        seen = wait_for(lambda: other.evaluate("BM.list.length") == n0 - 1, 5)
+        seen = wait_for(lambda: other.evaluate("MKB.BM.list.length") == n0 - 1, 5)
         r["other_page_follows"] = seen
         if not seen:
-            problems.append(f"another page of the site still lists {other.evaluate('BM.list.length')} bookmarks after a delete, want {n0 - 1}")
+            problems.append(f"another page of the site still lists {other.evaluate('MKB.BM.list.length')} bookmarks after a delete, want {n0 - 1}")
         page.click("#bm_status button")
         if not wait_for(lambda: len(bm_state(page)["list"]) == n0 and "“another one” is back." in bm_status(page), 3):
             problems.append(f"Undo of a delete: {len(bm_state(page)['list'])} bookmarks, status {bm_status(page)!r}")
@@ -16810,7 +16846,7 @@ def bookmarks_edges(browser, base, shots):
         p3 = ctx.new_page()
         p3.on("pageerror", lambda e: errors.append(str(e)[:200]))
         p3.goto(f"{base}/index.html?kernel=hello&paused=1&nostore=1#machine")
-        wait_for(lambda: p3.evaluate("typeof BM === 'object'"), 30)
+        wait_for(lambda: p3.evaluate("typeof window.MKB?.BM === 'object'"), 30)
         bm_open_list(p3, False)
         r["no_storage"] = p3.text_content("#bm_store")
         if "this browser keeps no data for the page (SecurityError)" not in (r["no_storage"] or "") or not p3.is_visible("#bm_store"):
@@ -16851,10 +16887,10 @@ def bookmarks_unreachable(browser, base, shots):
         page.goto(f"{base}/index.html?kernel=hello&mips=10", timeout=120000)
         if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
             return [f"{tag}: hello did not end in 120 s"], r
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
         show_tab(page, "memory")
         page.click("#bm_add_mem")
-        eip_page = page.evaluate("stepper.nextPhys() >> 12")
+        eip_page = page.evaluate("MKB.stepper.nextPhys() >> 12")
         d = page.evaluate(BM_DIALOG_JS) or {}
         r["memory star"] = [d.get("kind"), d.get("what"), eip_page]
         if d.get("kind") != "page" or f"page {eip_page:#x}" not in d.get("what", ""):
@@ -16891,7 +16927,7 @@ def bookmarks_unreachable(browser, base, shots):
         wait_for(lambda: bm_status(page).startswith("Copy"), 5)
         refused = bm_status(page)
         page.reload()
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper"), 120)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper"), 120)
         ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=base)
         bm_open_list(page, False)
         page.click(f"{row} a.bmlink")
@@ -16938,7 +16974,7 @@ def bookmarks_unreachable(browser, base, shots):
         page.click("#bm_add_page")
         d = page.evaluate(BM_DIALOG_JS) or {}
         page.keyboard.press("Escape")
-        eip = page.evaluate("stepper.nextPhys()")
+        eip = page.evaluate("MKB.stepper.nextPhys()")
         show_tab(page, "calls")
         page.click("#bm_add_calls")
         r["page and calls stars"] = [d.get("kind"), d.get("what"), eip, bm_status(page), page.evaluate(BM_DIALOG_JS)]
@@ -16951,7 +16987,7 @@ def bookmarks_unreachable(browser, base, shots):
         snap_wait_rows(page, 1)
         wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
         failed = "Error: kernels/hello/bzImage: HTTP 404"
-        still = lambda: page.evaluate("image.name") == "hello-os" and page.get_attribute("#dbg_state", "data-state") == "paused"
+        still = lambda: page.evaluate("MKB.image.name") == "hello-os" and page.get_attribute("#dbg_state", "data-state") == "paused"
 
         def after(what, click, where, want):
             page.evaluate(f"document.getElementById('{where}').textContent = ''")
@@ -16980,10 +17016,10 @@ def bookmarks_unreachable(browser, base, shots):
         # jump is dropped: hello loaded later does not go there.
         want = "Switching to hello for “hello's end” failed: kernels/hello/bzImage: HTTP 404."
         wait_for(lambda: bm_status(page) == want, 5)
-        r["bookmark jump note"] = [bm_status(page), page.evaluate("BM.pending")]
+        r["bookmark jump note"] = [bm_status(page), page.evaluate("MKB.BM.pending")]
         if r["bookmark jump note"] != [want, None]:
             problems.append(f"{tag}: the bookmark's failed jump to hello: note {bm_status(page)!r} (want {want!r}), "
-                            f"pending {page.evaluate('BM.pending')}")
+                            f"pending {page.evaluate('MKB.BM.pending')}")
         bm_open_list(page, False)
         after("bookmark replay", lambda: page.click(f"{row} .bmreplay"), "run_status", "Replay failed: " + failed)
         page.screenshot(path=str(shots / "bookmarks-unreachable-1280-light.png"))
@@ -16995,8 +17031,8 @@ def bookmarks_unreachable(browser, base, shots):
         tbk = [x for x in traceback.extract_tb(e.__traceback__) if x.filename == __file__]
         at = f" at line {tbk[-1].lineno} ({tbk[-1].line})" if tbk else ""
         try:
-            state = page.evaluate("({ url: location.href, tab, dialog: !document.getElementById('bm_dialog').hidden, "
-                                  "menu: !document.getElementById('runbadge_menu').hidden, runState, "
+            state = page.evaluate("({ url: location.href, tab: MKB.tab, dialog: !document.getElementById('bm_dialog').hidden, "
+                                  "menu: !document.getElementById('runbadge_menu').hidden, runState: MKB.runState, "
                                   "status: document.getElementById('status').textContent, bm: document.getElementById('bm_status').textContent })")
             page.screenshot(path=str(shots / "bookmarks-unreachable-failed.png"))
         except PlaywrightError as e2:
@@ -17061,23 +17097,23 @@ JITDET_RUNNING_AT = 1_500_000_000  # count at which the running page is checked
 # (or to an earlier stop: on real time Debian can reach its panic before the
 # cap). stop: also stop there (on real time: Pause), else the virtual-clock
 # run goes on to the page's own stop at the panic's last line.
-JITDET_WATCH_JS = """([cap, stop]) => { const st = stepper, w = window.__jd = { t0: realNow(), c0: ffCounter(st), cap, at: null, c: null, done: false };
-  const iv = setInterval(() => { if (stepper !== st) { clearInterval(iv); return; }
-    const c = ffCounter(st), stopped = runState === 'paused' || runState === 'off';
-    if (!w.ran && runState === 'jit') Object.assign(w, { ran: true, t0: realNow(), c0: c });
-    if (w.ran && !w.at && (c >= cap || stopped)) { w.at = realNow(); w.c = c; if (stop && runState === 'jit') pause(); }
+JITDET_WATCH_JS = """([cap, stop]) => { const st = MKB.stepper, w = window.__jd = { t0: MKB.realNow(), c0: MKB.ffCounter(st), cap, at: null, c: null, done: false };
+  const iv = setInterval(() => { if (MKB.stepper !== st) { clearInterval(iv); return; }
+    const c = MKB.ffCounter(st), stopped = MKB.runState === 'paused' || MKB.runState === 'off';
+    if (!w.ran && MKB.runState === 'jit') Object.assign(w, { ran: true, t0: MKB.realNow(), c0: c });
+    if (w.ran && !w.at && (c >= cap || stopped)) { w.at = MKB.realNow(); w.c = c; if (stop && MKB.runState === 'jit') MKB.pause(); }
     if (w.at && (stop || stopped)) { w.done = true; clearInterval(iv); } }, 10); }"""
-JITDET_STATE_JS = """async () => { const st = stepper, w = window.__jd || {}, m = st.cpu.mem8;
+JITDET_STATE_JS = """async () => { const st = MKB.stepper, w = window.__jd || {}, m = st.cpu.mem8;
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
-  const c = ffCounter(st);
+  const c = MKB.ffCounter(st);
   return { steps: st.steps, counter: c, eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
     chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, end: st.end ? st.end.kind : null,
     exact: st.end ? st.end.exact === true : null, compiles: st.jitCompiles || 0, waits: st.jitWaits || 0,
-    checkpoints: REV.cps.filter((c) => c.jit).length, save_ms: Math.round(REV.cps.reduce((a, c) => a + (c.jit ? c.saveMs : 0), 0)),
+    checkpoints: MKB.REV.cps.filter((c) => c.jit).length, save_ms: Math.round(MKB.REV.cps.reduce((a, c) => a + (c.jit ? c.saveMs : 0), 0)),
     mips: w.at ? +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1) : null }; }"""
 JITDET_RUNNING_JS = """() => ({ clock: document.getElementById('vclock').textContent, virtual: document.getElementById('vclock').dataset.virtual,
   badge: document.getElementById('runbadge').dataset.state, face: document.getElementById('runbadge_speed').textContent,
-  status: document.getElementById('dbg_status').textContent, runState })"""
+  status: document.getElementById('dbg_status').textContent, runState: MKB.runState })"""
 
 
 def jitdet_context(browser, scheme, phone):
@@ -17093,18 +17129,18 @@ def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, probl
     page.on("pageerror", lambda e: errs.append(str(e)[:200]))
     try:
         page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips={mips}", timeout=120000)
-        if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+        if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 180, 0.5):
             problems.append(f"{tag}: not paused at the reset vector")
             return None
         page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, mips == "real"])
         machine_do(page, "click", "#dbg_continue")
         # Look at the running page well before the cap: a fast runner (CI,
         # 650 MIPS) reaches it about 4 s after Continue.
-        wait_for(lambda: page.evaluate(f"ffCounter(stepper) >= {JITDET_RUNNING_AT} || !!window.__jd.at"), 120, 0.05)
+        wait_for(lambda: page.evaluate(f"MKB.ffCounter(MKB.stepper) >= {JITDET_RUNNING_AT} || !!window.__jd.at"), 120, 0.05)
         running = page.evaluate(JITDET_RUNNING_JS)
         page.screenshot(path=str(shots / f"jitdet-{tag}-running.png"))
-        if not wait_for(lambda: page.evaluate("window.__jd.done && runState === 'paused'"), 400, 0.5):
-            problems.append(f"{tag}: did not stop (counter {page.evaluate('ffCounter(stepper)'):,})")
+        if not wait_for(lambda: page.evaluate("window.__jd.done && MKB.runState === 'paused'"), 400, 0.5):
+            problems.append(f"{tag}: did not stop (counter {page.evaluate('MKB.ffCounter(MKB.stepper)'):,})")
             return None
         out = page.evaluate(JITDET_STATE_JS)
         out["running"] = running
@@ -17214,13 +17250,13 @@ def suite_jitdet(ctx):
 GUESTIN_DEFAULT_RTC = "2026-01-01T00:00:00Z"
 GUESTIN_RTC = "2031-02-03T04:05:06Z"
 GUESTIN_DEBIAN_STEPS = 30_000_000
-GUESTIN_STATE_JS = """async () => { const m = emulator.read_memory(0, emuRam), c = emulator.v86.cpu;
+GUESTIN_STATE_JS = """async () => { const m = MKB.emulator.read_memory(0, MKB.emuRam), c = MKB.emulator.v86.cpu;
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m))).map((b) => b.toString(16).padStart(2, '0')).join('');
   const el = document.getElementById('guest_in');
   return { ram: sha.slice(0, 16), bda: Array.from(m.subarray(0x46c, 0x470)), ticks: (m[0x46c] | m[0x46d] << 8 | m[0x46e] << 16 | m[0x46f] << 24) >>> 0,
-    eip: (c.instruction_pointer[0] >>> 0).toString(16), steps: stepper ? stepper.steps : null, clock: CLOCK.now(), virtual: CLOCK.virtual,
+    eip: (c.instruction_pointer[0] >>> 0).toString(16), steps: MKB.stepper ? MKB.stepper.steps : null, clock: MKB.CLOCK.now(), virtual: MKB.CLOCK.virtual,
     rtcTime: c.devices.rtc.rtc_time, browserNow: Date.now(), line: el ? el.textContent : null, lineShown: !!el && el.offsetParent !== null,
-    guest: typeof GUEST === 'object' ? { start: GUEST.rtcStart, seed: GUEST.seed, rng: GUEST.rng } : null }; }"""
+    guest: typeof window.MKB?.GUEST === 'object' ? { start: MKB.GUEST.rtcStart, seed: MKB.GUEST.seed, rng: MKB.GUEST.rng } : null }; }"""
 GUESTIN_DATE_RE = re.compile(r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d+ \d\d:\d\d:\d\d UTC \d{4}\b")
 # BusyBox hwclock: "Mon Feb  3 04:11:14 2031  0.000000 seconds"
 GUESTIN_HWCLOCK_RE = re.compile(r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d+ \d\d:\d\d:\d\d \d{4}(?= +-?[\d.]+ seconds)")
@@ -17280,13 +17316,13 @@ def guestin_debian_stepped(browser, base, shots, name, scheme, phone, tag, probl
             problems.append(f"{tag}: no fast-forward to the kernel entry in 300 s")
             return None
         machine_do(page, "click", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
-        target = page.evaluate("stepper.sinceEntry") + GUESTIN_DEBIAN_STEPS
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
+        target = page.evaluate("MKB.stepper.sinceEntry") + GUESTIN_DEBIAN_STEPS
         for _ in range(400):
-            left = target - page.evaluate("stepper.steps")
+            left = target - page.evaluate("MKB.stepper.steps")
             if left <= 0:
                 break
-            page.evaluate(f"doStep({min(left, 2_000_000)})")
+            page.evaluate(f"MKB.doStep({min(left, 2_000_000)})")
         out = page.evaluate(GUESTIN_STATE_JS)
         if out["steps"] != target:
             problems.append(f"{tag}: stepped to {out['steps']:,}, not {target:,}")
@@ -17317,7 +17353,7 @@ def guestin_snapshot(browser, base, shots, problems, r):
             return
         st = snap_save(page, 1, False)
         row = st["rows"][0]["id"]
-        saved = page.evaluate("(() => { const m = snapshots[0].meta; return { rtcStart: m.rtcStart, seed: m.seed, rng: m.rng }; })()")
+        saved = page.evaluate("(() => { const m = MKB.snapshots[0].meta; return { rtcStart: m.rtcStart, seed: m.seed, rng: m.rng }; })()")
         before = page.evaluate(GUESTIN_STATE_JS)
         r["snapshot_meta"] = saved
         if saved["rtcStart"] != iso_ms(GUESTIN_RTC) or saved["seed"] != 5 or not isinstance(saved["rng"], int):
@@ -17357,15 +17393,15 @@ def guestin_snapshot(browser, base, shots, problems, r):
 # The RTC's register B and VMware's GETTIME as a guest driver uses them:
 # alarm 11:22:33 (BCD) armed with the periodic and update interrupts, then
 # the host time and time zone through the backdoor (EAX magic, ECX 23).
-GUESTIN_PORTS_JS = """() => { const c = emulator.v86.cpu, io = c.io, rtc = c.devices.rtc;
+GUESTIN_PORTS_JS = """() => { const c = MKB.emulator.v86.cpu, io = c.io, rtc = c.devices.rtc;
   const cmos = (i, v) => { io.port_write8(0x70, i); io.port_write8(0x71, v); };
   cmos(0x01, 0x33); cmos(0x03, 0x22); cmos(0x05, 0x11);
-  const guestNow = GUEST.dateNow();
+  const guestNow = MKB.GUEST.dateNow();
   cmos(0x0b, rtc.cmos_b | 0x70);
   c.reg32[0] = 0x564d5868; c.reg32[1] = 23;
   const eax = io.port_read32(0x5658) >>> 0;
   return { guestNow, alarm: rtc.next_interrupt_alarm, periodic: rtc.next_interrupt, update: rtc.update_interrupt_time,
-    eax, ebx: c.reg32[3] >>> 0, edx: c.reg32[2] | 0, pageTz: new Date().getTimezoneOffset(), dateIsReal: Date === RealDate }; }"""
+    eax, ebx: c.reg32[3] >>> 0, edx: c.reg32[2] | 0, pageTz: new Date().getTimezoneOffset(), dateIsReal: Date === MKB.RealDate }; }"""
 
 
 def guestin_edges(browser, base, shots, problems, r):
@@ -17424,16 +17460,16 @@ def guestin_edges(browser, base, shots, problems, r):
         if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
             problems.append(f"{tag}: hello on real time did not end in 120 s")
             return
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
         st = snap_save(page, 1, False)
         row = st["rows"][0]["id"]
-        saved = page.evaluate("({ clock: snapshots[0].meta.clock, time: snapshots[0].time, rtc: emulator.v86.cpu.devices.rtc.last_update, "
-                              "guest: 'rtcStart' in snapshots[0].meta })")
+        saved = page.evaluate("({ clock: MKB.snapshots[0].meta.clock, time: MKB.snapshots[0].time, rtc: MKB.emulator.v86.cpu.devices.rtc.last_update, "
+                              "guest: 'rtcStart' in MKB.snapshots[0].meta })")
         time.sleep(8)
-        later = page.evaluate("CLOCK.now()")
+        later = page.evaluate("MKB.CLOCK.now()")
         snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
         wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or "failed" in page.text_content("#snap_status"), 30)
-        back = page.evaluate("CLOCK.now()")
+        back = page.evaluate("MKB.CLOCK.now()")
         r["real time restore"] = {"saved": saved, "before": later - saved["clock"], "after": back - saved["clock"]}
         if saved["guest"] or page.get_attribute("#snap_status", "data-restored") != row or later - saved["clock"] < 8000 or \
                 not (0 <= back - saved["clock"] < 4000):
@@ -17447,7 +17483,7 @@ def guestin_edges(browser, base, shots, problems, r):
         wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
         snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
         wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or "failed" in page.text_content("#snap_status"), 30)
-        g = page.evaluate("({ now: GUEST.dateNow(), clock: CLOCK.now(), virtual: CLOCK.virtual, taint: INPUT.taint, steps: stepper.steps, "
+        g = page.evaluate("({ now: MKB.GUEST.dateNow(), clock: MKB.CLOCK.now(), virtual: MKB.CLOCK.virtual, taint: MKB.INPUT.taint, steps: MKB.stepper.steps, "
                           "run: document.getElementById('run_text').textContent })")
         show_tab(page, "machine")
         line = page.text_content("#guest_in_text")
@@ -17506,10 +17542,10 @@ def guestin_shell_dates(browser, base, shots, name, problems, r):
             just before Enter and just after the line appeared."""
             n = len(rx.findall(page.inner_text("#screen_container")))
             page.keyboard.type(cmd)
-            c0 = page.evaluate("CLOCK.now()") / 1000
+            c0 = page.evaluate("MKB.CLOCK.now()") / 1000
             page.keyboard.press("Enter")
             ok = wait_for(lambda: len(rx.findall(page.inner_text("#screen_container"))) > n, 60, 0.05)
-            c1 = page.evaluate("CLOCK.now()") / 1000
+            c1 = page.evaluate("MKB.CLOCK.now()") / 1000
             if not ok:
                 problems.append(f"{tag}: `{cmd}` printed no date: {page.inner_text('#screen_container')[-200:]!r}")
                 return None
@@ -17604,12 +17640,12 @@ def suite_guestin(ctx):
 # first slice that ends halted after it. Each kernel and mode three times
 # (1280 light, 390 dark, 1280 dark): the same counts, EIP and RAM.
 EXACTSTOP_RUNS = (("light", False), ("dark", True), ("dark", False))
-EXACTSTOP_STATE_JS = """async () => { const st = stepper, m = st.cpu.mem8;
+EXACTSTOP_STATE_JS = """async () => { const st = MKB.stepper, m = st.cpu.mem8;
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
   const pick = (s) => s && { steps: s.steps, sinceEntry: s.sinceEntry, unique: s.unique, phys: s.phys, kind: s.kind || null, exact: s.exact === undefined ? null : s.exact };
-  return { steps: st.steps, counter: ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
-    chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, clock: CLOCK.now(),
-    end: pick(st.end), prompt: pick(st.prompt), runState, hlt: st.halted(),
+  return { steps: st.steps, counter: MKB.ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
+    chain: st.jitChain === undefined ? null : (st.jitChain >>> 0).toString(16), irq0: st.irq0, clock: MKB.CLOCK.now(),
+    end: pick(st.end), prompt: pick(st.prompt), runState: MKB.runState, hlt: st.halted(),
     banner: document.getElementById('end_banner').textContent, status: document.getElementById('dbg_status').textContent }; }"""
 
 
@@ -17624,10 +17660,10 @@ def exactstop_run(browser, base, shots, name, mode, scheme, phone, tag, problems
     try:
         t0 = time.monotonic()
         page.goto(f"{base}/index.html?kernel={name}&{q}", timeout=120000)
-        want = "!!stepper && !!stepper.prompt" if prompt else "!!stepper && !!stepper.end"
-        if not wait_for(lambda: page.evaluate(f"{want} && runState === 'paused'"), 900, 1):
+        want = "!!MKB.stepper && !!MKB.stepper.prompt" if prompt else "!!MKB.stepper && !!MKB.stepper.end"
+        if not wait_for(lambda: page.evaluate(f"{want} && MKB.runState === 'paused'"), 900, 1):
             problems.append(f"{tag}: no {'prompt' if prompt else 'end'} pause in 900 s "
-                            f"({page.evaluate('stepper ? stepper.steps : null')} steps, {page.evaluate('runState')})")
+                            f"({page.evaluate('MKB.stepper ? MKB.stepper.steps : null')} steps, {page.evaluate('MKB.runState')})")
             page.screenshot(path=str(shots / f"exactstop-{tag}-timeout.png"))
             return None
         time.sleep(0.5)
@@ -17692,7 +17728,7 @@ def countrate_case(browser, base, shots, name, scheme, phone, problems, r):
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
         time.sleep(0.5)
         text = page.inner_text("#count_text")
-        st = page.evaluate("({ steps: stepper.steps, ms: countMs, jit: stepper.jitBeforeEntry })")
+        st = page.evaluate("({ steps: MKB.stepper.steps, ms: MKB.countMs, jit: MKB.stepper.jitBeforeEntry })")
         r[f"countrate-{tag}"] = {"text": text, **st}
         page.eval_on_selector("#count_info", "e => e.scrollIntoView()")
         page.screenshot(path=str(shots / f"countrate-{tag}.png"))
@@ -17735,15 +17771,15 @@ def suite_exactstop(ctx):
 # where it ended) is downloadable, saved with snapshots and position
 # bookmarks, and Replay boots the same kernel and puts the keys in at the
 # same counts: the same count, EIP, RAM and screen at the end.
-REPLAY_STATE_JS = """async () => { flushScreen(); const st = stepper, m = st.cpu.mem8;
+REPLAY_STATE_JS = """async () => { MKB.flushScreen(); const st = MKB.stepper, m = st.cpu.mem8;
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('');
-  const I = typeof INPUT === 'object' ? INPUT : null, keys = I ? I.log.filter((e) => e.keys) : [];
+  const I = typeof window.MKB?.INPUT === 'object' ? MKB.INPUT : null, keys = I ? I.log.filter((e) => e.keys) : [];
   const rs = document.getElementById('run_status');
-  return { steps: st.steps, counter: ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
-    clock: CLOCK.now(), screen: Array.from(document.getElementById('screen_text').children, (e) => e.textContent.replace(/\\s+$/, '')),
+  return { steps: st.steps, counter: MKB.ffCounter(st), eip: (st.cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha.slice(0, 16),
+    clock: MKB.CLOCK.now(), screen: Array.from(document.getElementById('screen_text').children, (e) => e.textContent.replace(/\\s+$/, '')),
     entries: I ? I.log.length : null, keyEntries: keys.length, scancodes: keys.reduce((n, e) => n + e.keys.length, 0),
     firstKeyAt: keys.length ? keys[0].at : null, modes: I ? I.log.filter((e) => e.mode).map((e) => e.mode) : null,
-    pending: I ? I.pending.length : null, taint: I ? I.taint : null, prompt: st.prompt ? st.prompt.steps : null, runState,
+    pending: I ? I.pending.length : null, taint: I ? I.taint : null, prompt: st.prompt ? st.prompt.steps : null, runState: MKB.runState,
     replay: I && I.replay ? { done: I.replay.done, ok: I.replay.ok === undefined ? null : I.replay.ok, late: I.replay.late.length } : null,
     status: rs ? rs.textContent : null, verdict: rs ? rs.dataset.replay || null : null }; }"""
 REPLAY_SAME = ("steps", "counter", "eip", "ram", "clock", "screen")
@@ -17760,7 +17796,7 @@ def replay_state(page):
 
 def replay_wait(page, timeout):
     """Until a replay has finished and the machine is paused there."""
-    return wait_for(lambda: page.evaluate("typeof INPUT === 'object' && !!INPUT.replay && INPUT.replay.done && runState === 'paused'"),
+    return wait_for(lambda: page.evaluate("typeof window.MKB?.INPUT === 'object' && !!MKB.INPUT.replay && MKB.INPUT.replay.done && MKB.runState === 'paused'"),
                     timeout, 1)
 
 
@@ -17801,14 +17837,14 @@ def replay_initrd(browser, base, shots, name, tmp, problems, r):
     page.on("pageerror", lambda e: errs.append(str(e)[:200]))
     try:
         page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=120000)
-        if not wait_for(lambda: page.evaluate("!!stepper && !!stepper.prompt && runState === 'paused'"), 900, 1):
+        if not wait_for(lambda: page.evaluate("!!MKB.stepper && !!MKB.stepper.prompt && MKB.runState === 'paused'"), 900, 1):
             problems.append(f"{tag}: no pause at the (initramfs) prompt")
             return None, None
         show_tab(page, "machine")
         page.click("#screen_container")
         time.sleep(0.3)
         page.keyboard.type("echo j4")
-        held = page.evaluate("typeof INPUT === 'object' ? INPUT.pending.length : -1")
+        held = page.evaluate("typeof window.MKB?.INPUT === 'object' ? MKB.INPUT.pending.length : -1")
         r["held_while_paused"] = held
         if held != 14:
             problems.append(f"{tag}: 7 keys typed while paused: {held} scancodes held for the next slice, want 14")
@@ -17829,7 +17865,7 @@ def replay_initrd(browser, base, shots, name, tmp, problems, r):
             problems.append(f"{tag}: the typed command did not run: {replay_lines(page)[-6:]}")
         time.sleep(2)
         machine_do(page, "click", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 10)
         a = replay_state(page)
         r["recorded"] = {k: a[k] for k in ("steps", "counter", "eip", "ram", "entries", "keyEntries", "scancodes", "modes", "firstKeyAt", "prompt")}
         if a["keyEntries"] is None or a["scancodes"] < 2 * len("echo j4 ok; uname -m") + 2:
@@ -17858,7 +17894,7 @@ def replay_initrd(browser, base, shots, name, tmp, problems, r):
             problems.append(f"{tag}: Download run: {e}")
         # A snapshot keeps the run.
         snap_save(page, 1, False)
-        sr = page.evaluate("(() => { const s = snapshots[snapshots.length - 1]; return s.meta && s.meta.run ? "
+        sr = page.evaluate("(() => { const s = MKB.snapshots[MKB.snapshots.length - 1]; return s.meta && s.meta.run ? "
                            "{ n: s.meta.run.log.length, steps: s.meta.run.end && s.meta.run.end.at } : null; })()")
         r["snapshot_run"] = sr
         if not sr or sr["n"] != a["entries"] or sr["steps"] != a["steps"]:
@@ -17868,8 +17904,8 @@ def replay_initrd(browser, base, shots, name, tmp, problems, r):
         # Replay here.
         page.click("#run_replay")
         if not replay_wait(page, 900):
-            problems.append(f"{tag}: the replay did not finish ({page.evaluate('runState')}, "
-                            f"{page.evaluate('stepper && stepper.steps')} steps)")
+            problems.append(f"{tag}: the replay did not finish ({page.evaluate('MKB.runState')}, "
+                            f"{page.evaluate('MKB.stepper && MKB.stepper.steps')} steps)")
         b = replay_state(page)
         r["replayed"] = {k: b[k] for k in ("steps", "eip", "ram", "verdict", "replay", "status")}
         replay_same(a, b, tag, problems)
@@ -17896,7 +17932,7 @@ def replay_from_file(browser, base, shots, path, a, problems, r):
     page.on("pageerror", lambda e: errs.append(str(e)[:200]))
     try:
         page.goto(f"{base}/index.html?kernel=hello&mips=10", timeout=120000)
-        wait_for(lambda: page.evaluate("!!stepper && runState !== 'off'"), 60)
+        wait_for(lambda: page.evaluate("!!MKB.stepper && MKB.runState !== 'off'"), 60)
         show_tab(page, "snapshots")
         page.set_input_files("#run_file", str(path))
         if not replay_wait(page, 900):
@@ -17935,7 +17971,7 @@ def replay_stepped(browser, base, shots, name, problems, r):
             page.keyboard.type(keys)
         time.sleep(0.6)
         machine_do(page, "tap", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 10)
         s1 = replay_state(page)
         snap_save(page, 1, True)
         row = snap_rows(page)["rows"][0]["id"]
@@ -17943,15 +17979,15 @@ def replay_stepped(browser, base, shots, name, problems, r):
         # baseSteps): a rebase rounds the float, and a replay that does not
         # pause there reads another clock (CI 42945681996: 141.214 vs
         # 141.21399999999997 at the bookmark, both inputs "late").
-        ab = page.evaluate("async () => { const a = [CLOCK.base, CLOCK.baseSteps, CLOCK.mips]; await resume(true); "
-                           "return [a, [CLOCK.base, CLOCK.baseSteps, CLOCK.mips]]; }")
+        ab = page.evaluate("async () => { const a = [MKB.CLOCK.base, MKB.CLOCK.baseSteps, MKB.CLOCK.mips]; await MKB.resume(true); "
+                           "return [a, [MKB.CLOCK.base, MKB.CLOCK.baseSteps, MKB.CLOCK.mips]]; }")
         r["clock_continue"] = ab
         if ab[0] != ab[1]:
             problems.append(f"{tag}: Continue rebased the virtual clock: {ab[0]} -> {ab[1]}")
         for _ in range(3):  # more pauses than the replay has
             time.sleep(0.4)
             machine_do(page, "tap", "#dbg_pause")
-            wait_for(lambda: page.evaluate("runState") == "paused", 10)
+            wait_for(lambda: page.evaluate("MKB.runState") == "paused", 10)
             machine_do(page, "tap", "#dbg_continue")
         show_tab(page, "machine")
         page.tap("#screen_container")
@@ -17960,7 +17996,7 @@ def replay_stepped(browser, base, shots, name, problems, r):
             page.keyboard.type(keys)
         time.sleep(0.6)
         machine_do(page, "tap", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 10)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 10)
         s2 = replay_state(page)
         r["stepped"] = {"s1": {k: s1[k] for k in ("steps", "keyEntries", "modes")}, "s2": {k: s2[k] for k in ("steps", "keyEntries", "modes")}}
         if s1["keyEntries"] < 3 or s2["keyEntries"] <= s1["keyEntries"]:
@@ -18013,12 +18049,12 @@ def replay_stepped(browser, base, shots, name, problems, r):
 # switch back to the JIT) to the next halt. hello's cli; hlt stands in for
 # the shell's idle halt; the prompt's text is marked seen.
 REPLAY_EDGE_JS = """async (mode) => {
-  const st = stepper;
+  const st = MKB.stepper;
   if (mode === 'find') {
     for (let i = 0; i < 100 && !st.cpu.in_hlt[0]; i++) st.run(1e6, -1, 2000);
     return { steps: st.steps, hlt: st.cpu.in_hlt[0] };
   }
-  st.textSeen |= TEXT_PROMPT;
+  st.textSeen |= MKB.TEXT_PROMPT;
   st.prompt = null;
   const r = st.run(mode);
   return { r, steps: st.steps, hlt: st.cpu.in_hlt[0], prompt: st.prompt && st.prompt.steps };
@@ -18034,7 +18070,7 @@ def replay_prompt_edge(browser, base, shots, problems, r):
     try:
         def start():
             page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10", timeout=120000)
-            return wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 120, 0.5)
+            return wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 120, 0.5)
         if not start():
             problems.append(f"{tag}: did not start paused")
             return
@@ -18049,11 +18085,11 @@ def replay_prompt_edge(browser, base, shots, problems, r):
                 return
             left = h["steps"] - n
             for _ in range(100):
-                d = left - page.evaluate("stepper.steps")
+                d = left - page.evaluate("MKB.stepper.steps")
                 if d <= 0:
                     break
-                page.evaluate(f"stepper.run({d}, -1, 2000)")
-            if page.evaluate("stepper.steps") != left:
+                page.evaluate(f"MKB.stepper.run({d}, -1, 2000)")
+            if page.evaluate("MKB.stepper.steps") != left:
                 problems.append(f"{tag}: could not step to {left} (test setup)")
                 return
             out[n] = page.evaluate(REPLAY_EDGE_JS, n)
@@ -18089,8 +18125,8 @@ def replay_refused(browser, base, shots, problems, r):
             return
         entry = int(page.get_attribute("#entry_info", "data-steps"))
         # It stops by itself (init exits: a panic) a few seconds later.
-        wait_for(lambda: page.evaluate("runState") == "paused", 120)
-        run = page.evaluate("runNow()")
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 120)
+        run = page.evaluate("MKB.runNow()")
         url = page.url
 
         def refused(name, body, want):
@@ -18120,14 +18156,14 @@ def replay_refused(browser, base, shots, problems, r):
         page.context.new_cdp_session(page).send("Emulation.setCPUThrottlingRate", {"rate": 20})
         show_tab(page, "snapshots")
         page.click("#run_replay")
-        stepping = wait_for(lambda: page.evaluate(f"replayActive() && runState === 'stepped' && stepper.steps > {entry}"), 300, 0.2)
+        stepping = wait_for(lambda: page.evaluate(f"MKB.replayActive() && MKB.runState === 'stepped' && MKB.stepper.steps > {entry}"), 300, 0.2)
         machine_do(page, "click", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
-        at = page.evaluate("stepper.steps")
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
+        at = page.evaluate("MKB.stepper.steps")
         machine_do(page, "click", "#dbg_step")
         wait_for(lambda: "Replay stopped by Step" in page.text_content("#run_status"), 30)
         st = page.text_content("#run_status")
-        taint = page.evaluate("INPUT.taint")
+        taint = page.evaluate("MKB.INPUT.taint")
         r["stopped by Step"] = [stepping, at, st, page.get_attribute("#run_status", "data-replay"), taint]
         if not stepping or st != f"Replay stopped by Step at instruction {at:,}." or \
                 page.get_attribute("#run_status", "data-replay") != "stopped" or \
@@ -18161,7 +18197,7 @@ def replay_tampered(browser, base, shots, problems, r):
         if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
             problems.append(f"{tag}: hello did not end in 120 s")
             return
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
         show_tab(page, "snapshots")
         with page.expect_download() as dl:
             page.click("#run_dl")
@@ -18215,7 +18251,7 @@ def replay_tampered(browser, base, shots, problems, r):
         if not replay_end(300):
             problems.append(f"{tag}: the 3 MiB run's replay did not finish: {page.text_content('#run_status')[:200]!r}")
         c = replay_state(page)
-        mem = [page.input_value("#memory"), page.evaluate("emuRam"), page.evaluate("[...document.getElementById('memory').options].map((o) => o.text)")]
+        mem = [page.input_value("#memory"), page.evaluate("MKB.emuRam"), page.evaluate("[...document.getElementById('memory').options].map((o) => o.text)")]
         r["tampered 3 MiB"] = [c["status"], c["verdict"], mem[:2]]
         if mem[0] != str(3 << 20) or mem[1] != 3 << 20 or "3,072 KiB" not in mem[2]:
             problems.append(f"{tag}: a run with 3 MiB of RAM: the menu {mem[2]}, chosen {mem[0]}, the machine's RAM {mem[1]}")
@@ -18249,8 +18285,8 @@ def replay_during(browser, base, shots, problems, r):
         if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.5):
             problems.append(f"{tag}: hello did not end")
             return
-        wait_for(lambda: page.evaluate("runState") == "paused", 30)
-        end = page.evaluate("stepper.steps")
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
+        end = page.evaluate("MKB.stepper.steps")
         cdp = page.context.new_cdp_session(page)
         cdp.send("Emulation.setCPUThrottlingRate", {"rate": 20})
 
@@ -18258,11 +18294,11 @@ def replay_during(browser, base, shots, problems, r):
             """Replay; pause it while it steps the BIOS."""
             show_tab(page, "snapshots")
             page.click("#run_replay")
-            if not wait_for(lambda: page.evaluate("replayActive() && runState === 'stepped' && stepper.steps > 100000"), 120, 0.05):
+            if not wait_for(lambda: page.evaluate("MKB.replayActive() && MKB.runState === 'stepped' && MKB.stepper.steps > 100000"), 120, 0.05):
                 return None
             machine_do(page, "click", "#dbg_pause")
-            wait_for(lambda: page.evaluate("runState") == "paused", 30)
-            return page.evaluate("replayActive() ? stepper.steps : null")
+            wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
+            return page.evaluate("MKB.replayActive() ? MKB.stepper.steps : null")
 
         if not replay_paused():
             problems.append(f"{tag}: could not pause the replay while it steps: {page.text_content('#run_status')!r}")
@@ -18270,8 +18306,8 @@ def replay_during(browser, base, shots, problems, r):
         show_tab(page, "machine")
         page.click("#screen_container")
         page.keyboard.type("ab")
-        wait_for(lambda: page.evaluate("INPUT.replay.ignored") == 4, 10)
-        typed = page.evaluate("[INPUT.replay.ignored, INPUT.pending.length]")
+        wait_for(lambda: page.evaluate("MKB.INPUT.replay.ignored") == 4, 10)
+        typed = page.evaluate("[MKB.INPUT.replay.ignored, MKB.INPUT.pending.length]")
         machine_do(page, "click", "#dbg_continue")
         if not replay_wait(page, 180):
             problems.append(f"{tag}: the replay did not end: {page.text_content('#run_status')!r}")
@@ -18291,9 +18327,9 @@ def replay_during(browser, base, shots, problems, r):
         show_tab(page, "machine")
         wall, ms, st, state = rev_click(page, "#dbg_back", False)
         run = page.text_content("#run_status")
-        r["step back during"] = [at, page.evaluate("stepper.steps"), st[:100], state, run, page.get_attribute("#run_status", "data-replay")]
+        r["step back during"] = [at, page.evaluate("MKB.stepper.steps"), st[:100], state, run, page.get_attribute("#run_status", "data-replay")]
         if run != f"Replay stopped by Step back at instruction {at:,}." or page.get_attribute("#run_status", "data-replay") != "stopped" or \
-                state != "done" or page.evaluate("stepper.steps") != at - 1:
+                state != "done" or page.evaluate("MKB.stepper.steps") != at - 1:
             problems.append(f"{tag}: Step back during a replay: {r['step back during']}")
         cdp.send("Emulation.setCPUThrottlingRate", {"rate": 1})
 
@@ -18307,7 +18343,7 @@ def replay_during(browser, base, shots, problems, r):
         back_to = page.text_content("#dbg_status")
         r["back to no symbol"] = [run_to[:120], back_to[:120]]
         if not run_to.startswith("Run to no_such_function_here: ") or back_to != run_to.replace("Run to", "Back to") or \
-                page.evaluate("stepper.steps") != at - 1:
+                page.evaluate("MKB.stepper.steps") != at - 1:
             problems.append(f"{tag}: Back to a name that is no symbol: {back_to!r}, Run to said {run_to!r}")
         page.screenshot(path=str(shots / "replay-during-1280-dark.png"))
         replay_fit(page, tag, problems)
@@ -18353,20 +18389,20 @@ def suite_replay(ctx):
 # again gives the same state and does not count the recordings (coverage,
 # paths, calls) twice; keys typed in the stepped-over stretch go in again at
 # their counts; typing or the JIT after stepping back drops what was ahead.
-REV_STATE_JS = """async () => { const st = stepper, c = st.cpu, m = c.mem8.slice(0, emuRam);
+REV_STATE_JS = """async () => { const st = MKB.stepper, c = st.cpu, m = c.mem8.slice(0, MKB.emuRam);
   const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m))).map((b) => b.toString(16).padStart(2, '0')).join('');
   return { steps: st.steps, phys: st.nextPhys(), eip: c.instruction_pointer[0] >>> 0, regs: Array.from(c.reg32, (x) => x >>> 0),
     sregs: Array.from(c.sreg), eflags: c.get_eflags() >>> 0, cr: [c.cr[0] >>> 0, c.cr[2] >>> 0, c.cr[3] >>> 0, c.cr[4] >>> 0],
-    icount: c.instruction_counter[0] >>> 0, clock: CLOCK.now(), irq0: st.irq0, hlt: c.in_hlt[0], ram: sha, vga: runScreenHash(st) }; }"""
+    icount: c.instruction_counter[0] >>> 0, clock: MKB.CLOCK.now(), irq0: st.irq0, hlt: c.in_hlt[0], ram: sha, vga: MKB.runScreenHash(st) }; }"""
 REV_SAME = ("steps", "phys", "eip", "regs", "sregs", "eflags", "cr", "icount", "clock", "irq0", "hlt", "ram", "vga")
-REV_REC_JS = """() => { const st = stepper; let ns = 0; for (const x of st.nodeSteps) ns += x;
+REV_REC_JS = """() => { const st = MKB.stepper; let ns = 0; for (const x of st.nodeSteps) ns += x;
   return { unique: st.unique, uniqueKernel: st.uniqueKernel, jumps: st.jumpCount, jumpKeys: st.jumps.size, frames: st.fr.n,
     nodeSteps: ns, edges: st.edges.size, history: st.history.length, switches: st.swStep.length,
     end: st.end ? st.end.steps : null, milestones: st.milestones.map((m) => m.found ? m.found.steps : null) }; }"""
 # One pass over [steps, to) stopping at every function's first instruction:
 # (count, address, registers) of each call, the way Back to must find them.
-REV_ORACLE_JS = """({ to, hits }) => { const st = stepper, c = st.cpu;
-  if (!window.mkbRevSet) window.mkbRevSet = new Set(codeSymbols().map((s) => s.paddr));
+REV_ORACLE_JS = """({ to, hits }) => { const st = MKB.stepper, c = st.cpu;
+  if (!window.mkbRevSet) window.mkbRevSet = new Set(MKB.codeSymbols().map((s) => s.paddr));
   let leave = -1;
   while (st.steps < to) {
     const r = st.run(to - st.steps, window.mkbRevSet, 5000, leave);
@@ -18412,15 +18448,15 @@ def rev_click(page, sel, phone, timeout=120):
 def rev_step_to(page, target):
     """Step forward with the Debugger's Step (doStep) until stepper.steps == target."""
     for _ in range(4000):
-        left = target - page.evaluate("stepper.steps")
+        left = target - page.evaluate("MKB.stepper.steps")
         if left <= 0:
             break
-        page.evaluate(f"doStep({min(left, 2000000)})")
-    return page.evaluate("stepper.steps")
+        page.evaluate(f"MKB.doStep({min(left, 2000000)})")
+    return page.evaluate("MKB.stepper.steps")
 
 
 def rev_nav(page):
-    return page.evaluate("[navList.length, navAt]")
+    return page.evaluate("[MKB.navList.length, MKB.navAt]")
 
 
 def reverse_kernel(browser, base, shots, name, scheme, phone):
@@ -18446,7 +18482,7 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
     def start():
         page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10&{params}#debugger", timeout=120000)
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator && !!MKB.symbols"), 60)
         show_tab(page, "debugger")
         return ok
 
@@ -18455,11 +18491,11 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
             return [f"{tag}: did not start paused"], r
         page.fill("#dbg_addr", first)
         page.click("#dbg_runto")
-        want_at = int(first, 16) if first.startswith("0x") else page.evaluate(f"symbols.symbols.find((s) => s.name === '{first}' && s.paddr >= 0x100000).paddr")
+        want_at = int(first, 16) if first.startswith("0x") else page.evaluate(f"MKB.symbols.symbols.find((s) => s.name === '{first}' && s.paddr >= 0x100000).paddr")
         ok, at, status = run_to_wait(page, {want_at}, 600)
         if not ok:
             return [f"{tag}: Run to {first} stopped at {at:#x}: {status[:200]}"], r
-        s0 = page.evaluate("stepper.steps")
+        s0 = page.evaluate("MKB.stepper.steps")
         e = s0 + past
         if e - max(deep, 20000) < s0:
             # Stepped from the reset vector (fastforward=0): the same run
@@ -18479,11 +18515,11 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
         hits = page.evaluate(REV_ORACLE_JS, {"to": e, "hits": hits})
         pe = rev_state(page)
         rec_e = page.evaluate(REV_REC_JS)
-        page.evaluate("afterStop()")  # the views at E (the passes above ran the stepper directly)
+        page.evaluate("MKB.afterStop()")  # the views at E (the passes above ran the stepper directly)
         r["forward"] = {"entry": s0, "E": e, "seconds": round(time.monotonic() - t0, 1), "calls in the last 20,000": len(hits)}
         if pe["steps"] != e:
             problems.append(f"{tag}: the forward run ended at {pe['steps']}, want {e} (halted early?)")
-        cps = page.evaluate("[REV.cps.length, REV.cps.length ? REV.cps[0].steps : -1, REV.kFixed || REV.k]")
+        cps = page.evaluate("[MKB.REV.cps.length, MKB.REV.cps.length ? MKB.REV.cps[0].steps : -1, MKB.REV.kFixed || MKB.REV.k]")
         r["history"] = {"checkpoints": cps[0], "from": cps[1], "k": cps[2], "info": page.inner_text("#rev_info")[:200]}
         if cps[0] < 2 or cps[0] > 32:
             problems.append(f"{tag}: {cps[0]} checkpoints kept (want 2 to 32)")
@@ -18555,8 +18591,8 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
         page.fill("#dbg_n", "100")
         _, _, text, st = rev_click(page, "#dbg_backn", phone)
         rev_step_to(page, e + 30)  # Step stops at a milestone (hello's line) on the way
-        page.evaluate("afterStop()")
-        past = page.evaluate("[stepper.steps, stepper.behind(), stepper.future.length]")
+        page.evaluate("MKB.afterStop()")
+        past = page.evaluate("[MKB.stepper.steps, MKB.stepper.behind(), MKB.stepper.future.length]")
         rec = page.evaluate(REV_REC_JS)
         page.fill("#dbg_n", "30")
         _, _, text2, st2 = rev_click(page, "#dbg_backn", phone)
@@ -18602,7 +18638,7 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
         if name != "debian-6.1-686":
             page.fill("#dbg_n", "50")
             rev_click(page, "#dbg_backn", phone)
-            now = page.evaluate("stepper.steps")
+            now = page.evaluate("MKB.stepper.steps")
             show_tab(page, "machine")
             page.click("#screen_container")
             page.keyboard.press("a")
@@ -18610,16 +18646,16 @@ def reverse_kernel(browser, base, shots, name, scheme, phone):
             page.fill("#dbg_n", "1")
             page.click("#dbg_stepn")
             time.sleep(0.5)
-            b = page.evaluate("[stepper.behind(), stepper.future.length, INPUT.redo.length, REV.cps.every((c) => c.steps <= %d),"
-                              " Array.from({ length: stepper.fr.n }, (_, k) => stepper.fr.start(k)).every((s) => s <= stepper.steps), INPUT.log.filter((e) => e.keys).length]" % now)
+            b = page.evaluate("[MKB.stepper.behind(), MKB.stepper.future.length, MKB.INPUT.redo.length, MKB.REV.cps.every((c) => c.steps <= %d),"
+                              " Array.from({ length: MKB.stepper.fr.n }, (_, k) => MKB.stepper.fr.start(k)).every((s) => s <= MKB.stepper.steps), MKB.INPUT.log.filter((e) => e.keys).length]" % now)
             r["branch"] = b
             if b[0] or b[1] or b[2] or not b[3] or not b[4] or not b[5]:
                 problems.append(f"{tag}: after a key typed while stepped back: behind {b[0]}, future {b[1]}, redo {b[2]}, "
                                 f"checkpoints ahead dropped {b[3]}, calls ahead dropped {b[4]}, keys logged {b[5]}")
-            s1 = page.evaluate("stepper.steps")
+            s1 = page.evaluate("MKB.stepper.steps")
             page.fill("#dbg_n", "5")
             wall, ms, text, st = rev_click(page, "#dbg_backn", phone)
-            if st != "done" or page.evaluate("stepper.steps") != s1 - 5:
+            if st != "done" or page.evaluate("MKB.stepper.steps") != s1 - 5:
                 problems.append(f"{tag}: Step back after the new way: {st} {text[:160]!r}")
     finally:
         if errors:
@@ -18639,20 +18675,20 @@ def reverse_jit(browser, base, shots):
     try:
         page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10&speed=full&count=0&revk=50#debugger", timeout=120000)
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 60)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 60)
         page.fill("#dbg_addr", "0x100000")
         page.click("#dbg_runto")
         run_to_wait(page, {0x100000}, 300)
-        rev_step_to(page, page.evaluate("stepper.steps") + 200)
+        rev_step_to(page, page.evaluate("MKB.stepper.steps") + 200)
         page.fill("#dbg_n", "100")
         rev_click(page, "#dbg_backn", False)
-        r["back"] = page.evaluate("[stepper.steps, stepper.ahead, REV.cps.length]")
+        r["back"] = page.evaluate("[MKB.stepper.steps, MKB.stepper.ahead, MKB.REV.cps.length]")
         machine_do(page, "select_option", "#dbg_speed", "full")
         machine_do(page, "click", "#dbg_continue")
-        wait_for(lambda: page.evaluate("runState") == "paused" or page.evaluate("!!stepper.end"), 60)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused" or page.evaluate("!!MKB.stepper.end"), 60)
         time.sleep(1)
-        b = page.evaluate("""[stepper.behind(), REV.cps.filter((c) => c.jit).length, document.getElementById('dbg_back').disabled,
-          document.getElementById('rev_info').textContent, REV.cps.filter((c) => !c.jit).every((c) => c.steps <= REV.cps.find((x) => x.jit).steps)]""")
+        b = page.evaluate("""[MKB.stepper.behind(), MKB.REV.cps.filter((c) => c.jit).length, document.getElementById('dbg_back').disabled,
+          document.getElementById('rev_info').textContent, MKB.REV.cps.filter((c) => !c.jit).every((c) => c.steps <= MKB.REV.cps.find((x) => x.jit).steps)]""")
         r["after jit"] = b
         if b[0] or not b[1] or b[2] or "at JIT speed" not in b[3] or not b[4]:
             problems.append(f"{tag}: after the JIT: behind {b[0]}, {b[1]} JIT checkpoints, Step back disabled {b[2]}, "
@@ -18674,53 +18710,53 @@ def reverse_keys(browser, base, shots, name):
     page = ctx.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
-    rows = "(() => { const t = stepper.screenText(VGA_WINDOW_BYTES); const out = []; for (let i = 0; i < t.length; i += 80) out.push(t.slice(i, i + 80).trim()); return out; })()"
+    rows = "(() => { const t = MKB.stepper.screenText(MKB.VGA_WINDOW_BYTES); const out = []; for (let i = 0; i < t.length; i += 80) out.push(t.slice(i, i + 80).trim()); return out; })()"
     try:
         page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=120000)
-        if not wait_for(lambda: page.evaluate("!!stepper && !!stepper.prompt && runState === 'paused'"), 900, 1):
+        if not wait_for(lambda: page.evaluate("!!MKB.stepper && !!MKB.stepper.prompt && MKB.runState === 'paused'"), 900, 1):
             return [f"{tag}: no pause at the (initramfs) prompt"], r
         show_tab(page, "debugger")
         page.fill("#dbg_n", "100000")
         page.tap("#dbg_stepn")
         time.sleep(0.5)
-        s0 = page.evaluate("[stepper.steps, REV.cps.length ? REV.cps[0].steps : -1]")
+        s0 = page.evaluate("[MKB.stepper.steps, MKB.REV.cps.length ? MKB.REV.cps[0].steps : -1]")
         show_tab(page, "machine")
         page.tap("#screen_container", position={"x": 4, "y": 4})  # not the overlay's Continue
         page.keyboard.type("echo r2")
         page.keyboard.press("Enter")
-        held = page.evaluate("[runState, INPUT.pending.length]")
+        held = page.evaluate("[MKB.runState, MKB.INPUT.pending.length]")
         if held != ["paused", 16]:
             problems.append(f"{tag}: typing at the prompt: {held} (want paused, 16 scancodes held)")
         show_tab(page, "debugger")
         e = None
         for _ in range(600):
-            page.evaluate("doStep(200000)")
+            page.evaluate("MKB.doStep(200000)")
             if "r2" in page.evaluate(rows):
-                e = page.evaluate("stepper.steps")
+                e = page.evaluate("MKB.stepper.steps")
                 break
         if e is None:
-            return [f"{tag}: the shell did not print r2 while stepping ({page.evaluate('stepper.steps')} steps)"], r
+            return [f"{tag}: the shell did not print r2 while stepping ({page.evaluate('MKB.stepper.steps')} steps)"], r
         pe = rev_state(page)
-        log_e = page.evaluate("JSON.stringify(INPUT.log)")
-        key_at = page.evaluate("INPUT.log.filter((x) => x.keys)[0].at")
-        start = page.evaluate("REV.cps[0].steps")
-        r["run"] = {"history from": start, "keys at": key_at, "r2 at": e, "checkpoints": page.evaluate("REV.cps.length")}
+        log_e = page.evaluate("JSON.stringify(MKB.INPUT.log)")
+        key_at = page.evaluate("MKB.INPUT.log.filter((x) => x.keys)[0].at")
+        start = page.evaluate("MKB.REV.cps[0].steps")
+        r["run"] = {"history from": start, "keys at": key_at, "r2 at": e, "checkpoints": page.evaluate("MKB.REV.cps.length")}
         if start > key_at:
             problems.append(f"{tag}: the history starts at {start}, after the keys at {key_at}")
         page.fill("#dbg_n", str(e - start))
         wall, ms, text, st = rev_click(page, "#dbg_backn", True, 300)
         r["back"] = {"wall ms": wall, "page ms": ms, "status": text[:200]}
-        b = page.evaluate(f"[stepper.steps, INPUT.redo.filter((x) => x.keys).length, {rows}.includes('r2')]")
+        b = page.evaluate(f"[MKB.stepper.steps, MKB.INPUT.redo.filter((x) => x.keys).length, {rows}.includes('r2')]")
         if st != "done" or b[0] != start or not b[1] or b[2]:
             problems.append(f"{tag}: back to {start}: {st} at {b[0]}, {b[1]} key entries waiting, r2 on the screen {b[2]}; {text[:160]!r}")
         show_tab(page, "machine")
-        page.evaluate("flushScreen()")
+        page.evaluate("MKB.flushScreen()")
         page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")
         page.screenshot(path=str(shots / f"reverse-keys-{name}-390-back.png"))
         show_tab(page, "debugger")
         # R5: the history starts where the JIT ran (its checkpoints): one
         # Step goes forward on the recorded run from the checkpoint before e.
-        page.evaluate(f"doStep({e} - stepper.steps)")
+        page.evaluate(f"MKB.doStep({e} - MKB.stepper.steps)")
         rev_step_to(page, e)
         got = rev_state(page)
         if rev_diff(got, pe):
@@ -18729,16 +18765,16 @@ def reverse_keys(browser, base, shots, name):
         # restores did, at checkpoints' counts (a replay resets there too;
         # R5: a JIT checkpoint's own reset is there already); the rest is the
         # recorded log.
-        log_g = json.loads(page.evaluate("JSON.stringify(INPUT.log)"))
+        log_g = json.loads(page.evaluate("JSON.stringify(MKB.INPUT.log)"))
         new_resets = [x["at"] for x in log_g if x.get("reset")][len([x for x in json.loads(log_e) if x.get("reset")]):]
         if [x for x in log_g if not x.get("reset")] != [x for x in json.loads(log_e) if not x.get("reset")] or \
-                page.evaluate("INPUT.redo.length"):
+                page.evaluate("MKB.INPUT.redo.length"):
             problems.append(f"{tag}: the input log after going forward again differs from the recorded one")
-        cps = page.evaluate("REV.cps.map((c) => c.steps)")
+        cps = page.evaluate("MKB.REV.cps.map((c) => c.steps)")
         if any(x not in cps for x in new_resets):
             problems.append(f"{tag}: the step back logged the JIT resets {new_resets}, not all at checkpoints {cps}")
         show_tab(page, "machine")
-        page.evaluate("flushScreen()")
+        page.evaluate("MKB.flushScreen()")
         page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")
         page.screenshot(path=str(shots / f"reverse-keys-{name}-390-again.png"))
         if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
@@ -18763,11 +18799,11 @@ def reverse_keys(browser, base, shots, name):
 # as it is (step to 1.8 M, Step back 5,000 right away).
 REV_LATE_HOLD_MS = 3000
 REV_LATE_HOLD_JS = """(ms) => { if (window.mkbSnapWorker) return;
-  window.mkbSnapWorker = snapWorker;
-  snapWorker = (msg, transfer) => msg.op !== 'pack' ? window.mkbSnapWorker(msg, transfer) :
+  window.mkbSnapWorker = MKB.snapWorker;
+  MKB.snapWorker = (msg, transfer) => msg.op !== 'pack' ? window.mkbSnapWorker(msg, transfer) :
     new Promise((res) => setTimeout(res, ms)).then(() => window.mkbSnapWorker(msg, transfer)); }"""
-REV_LATE_UNHOLD_JS = "() => { if (window.mkbSnapWorker) { snapWorker = window.mkbSnapWorker; delete window.mkbSnapWorker; } }"
-REV_LATE_READY_JS = "async () => { await Promise.all(REV.cps.map((c) => c.ready.catch(() => {}))); return REV.cps.filter((c) => c.failed).length; }"
+REV_LATE_UNHOLD_JS = "() => { if (window.mkbSnapWorker) { MKB.snapWorker = window.mkbSnapWorker; delete window.mkbSnapWorker; } }"
+REV_LATE_READY_JS = "async () => { await Promise.all(MKB.REV.cps.map((c) => c.ready.catch(() => {}))); return MKB.REV.cps.filter((c) => c.failed).length; }"
 
 
 def reverse_late(browser, base, shots):
@@ -18783,8 +18819,8 @@ def reverse_late(browser, base, shots):
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
 
     def back(n, want, what):
-        page.evaluate(f"revStepBack({n})")
-        wait_for(lambda: page.evaluate("!REV.busy"), 120, 0.05)
+        page.evaluate(f"MKB.revStepBack({n})")
+        wait_for(lambda: page.evaluate("!MKB.REV.busy"), 120, 0.05)
         got = rev_state(page)
         status = page.inner_text("#dbg_status")
         r[what] = {"steps": got["steps"], "status": status[:200]}
@@ -18794,7 +18830,7 @@ def reverse_late(browser, base, shots):
     def start():
         page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10&{params}#debugger", timeout=120000)
         ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator && !!MKB.symbols"), 60)
         show_tab(page, "debugger")
         return ok
 
@@ -18803,10 +18839,10 @@ def reverse_late(browser, base, shots):
         # the machine is noted, 1,000 more stepped, Step back 1,000.
         if not start():
             return [f"{tag}: did not start paused"], r
-        k = page.evaluate("REV.kFixed")
+        k = page.evaluate("MKB.REV.kFixed")
         cp = 1780000
         if rev_step_to(page, cp - 1000) != cp - 1000:
-            return [f"{tag}: could not step to {cp - 1000} (the run ended at {page.evaluate('stepper.steps')})"], r
+            return [f"{tag}: could not step to {cp - 1000} (the run ended at {page.evaluate('MKB.stepper.steps')})"], r
         if page.evaluate(REV_LATE_READY_JS):
             problems.append(f"{tag}: a checkpoint failed to pack")
         page.evaluate(REV_LATE_HOLD_JS, REV_LATE_HOLD_MS)
@@ -18815,7 +18851,7 @@ def reverse_late(browser, base, shots):
         rev_step_to(page, cp + 2000)
         # The checkpoint the step back restores (the last at or before
         # cp + 1,000): taken on the way past cp, still packing.
-        held = page.evaluate(f"(() => {{ const c = revFind({cp + 1000}); return c ? [c.steps, c.size === 0, !c.full] : null; }})()")
+        held = page.evaluate(f"(() => {{ const c = MKB.revFind({cp + 1000}); return c ? [c.steps, c.size === 0, !c.full] : null; }})()")
         r["held"] = {"k": k, "checkpoint [count, still packing, a delta]": held}
         if not held or held[0] <= cp - 1000 or not held[1] or not held[2]:
             problems.append(f"{tag}: the checkpoint the step back restores is {held} [count, still packing, a delta]; "
@@ -18829,7 +18865,7 @@ def reverse_late(browser, base, shots):
         rev_step_to(page, 1795000)
         want = rev_state(page)
         if rev_step_to(page, 1800000) != 1800000:
-            problems.append(f"{tag}: could not step to 1,800,000 (at {page.evaluate('stepper.steps')})")
+            problems.append(f"{tag}: could not step to 1,800,000 (at {page.evaluate('MKB.stepper.steps')})")
         else:
             back(5000, want, "back 5,000 from 1,800,000")
         page.screenshot(path=str(shots / "reverse-late-minified-linux-1280-light.png"))
@@ -18895,7 +18931,7 @@ FRAMEGOLD_CASES = {
     "debian-6.1-686": ("", "startup_32", 75000000, 5000000, 3000000, 0),
 }
 FRAMEGOLD_JS = """async () => {
-  const st = stepper, n = st.fr.n;
+  const st = MKB.stepper, n = st.fr.n;
   const hex = (b) => Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, '0')).join('');
   const sha = async (o) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(o))));
   // Two 32-bit FNV-1a lanes over the low and high 32 bits of integers.
@@ -18922,34 +18958,34 @@ FRAMEGOLD_JS = """async () => {
   COLS.forEach((c, i) => { out.cols[c] = fin(h[i]); });
   out.state = await sha({ stack: st.stack, lanes: [...st.lanes], lane: st.lane, lastTop: st.lastTop, open: st.allOpen(),
     suspended: [...st.suspended], sw: [st.swStep, st.swTask, st.swIrq], taskOf: [...st.taskOf], taskRegion: st.taskRegion });
-  const saved = [G.fold, G.chains];
+  const saved = [MKB.G.fold, MKB.G.chains];
   let rows = 0;
   for (const fold of [false, true]) {
-    G.fold = fold;
-    G.taskNames = null; G.taskInfo = null; G.depthKey = -1;
-    const d = graphData();
+    MKB.G.fold = fold;
+    MKB.G.taskNames = null; MKB.G.taskInfo = null; MKB.G.depthKey = -1;
+    const d = MKB.graphData();
     out['tree_' + fold] = await sha(d.call_tree);
     out['graph_' + fold] = await sha([d.steps, d.entry_step, d.nodes, d.edges]);
     for (const chains of [false, true]) {
-      G.chains = chains; G.layout = null;
-      const L = timelineLayout(st), a = lanes(), deepest = layoutDeepest(st, L);
+      MKB.G.chains = chains; MKB.G.layout = null;
+      const L = MKB.timelineLayout(st), a = lanes(), deepest = MKB.layoutDeepest(st, L);
       for (let k = 0; k < n; k++) {
         mix(a, L.row[k]); mix(a, L.isHead[k] ? 1 : 0); mix(a, deepest[k]);
         if (L.row[k] + 1 > rows) rows = L.row[k] + 1;
       }
       out['layout_' + fold + '_' + chains] = fin(a) + ':' + await sha([...L.chain]);
     }
-    drawTop();
-    out['top_' + fold] = await sha([G.boxes.map((b) => b[0]), document.getElementById('graph_canvas').dataset.edges]);
-    out['summary_' + fold] = await sha([timelineSummary(), timelineDepth(st), taskGuesses(st)]);
+    MKB.drawTop();
+    out['top_' + fold] = await sha([MKB.G.boxes.map((b) => b[0]), document.getElementById('graph_canvas').dataset.edges]);
+    out['summary_' + fold] = await sha([MKB.timelineSummary(), MKB.timelineDepth(st), MKB.taskGuesses(st)]);
   }
-  [G.fold, G.chains] = saved; G.layout = null; G.taskNames = null; G.taskInfo = null; G.depthKey = -1;
+  [MKB.G.fold, MKB.G.chains] = saved; MKB.G.layout = null; MKB.G.taskNames = null; MKB.G.taskInfo = null; MKB.G.depthKey = -1;
   out.rows = rows;
   const top = st.nodeOrder.slice().sort((a, b) => st.nodeSteps[b] - st.nodeSteps[a] || a - b).slice(0, 12);
-  out.sandwich = await sha(top.map((x) => sandwich(st, x)));
+  out.sandwich = await sha(top.map((x) => MKB.sandwich(st, x)));
   const counts = [];
-  for (let k = 0; k < n; k += Math.max(1, Math.floor(n / 5000))) counts.push(frameCounts(st, k));
-  for (const k of st.allOpen()) counts.push(frameCounts(st, k));
+  for (let k = 0; k < n; k += Math.max(1, Math.floor(n / 5000))) counts.push(MKB.frameCounts(st, k));
+  for (const k of st.allOpen()) counts.push(MKB.frameCounts(st, k));
   out.counts = await sha(counts);
   return out; }"""
 FRAMEGOLD_SUMMARY = ("steps", "frames", "contFrames", "tasks", "switches", "rows")
@@ -18970,33 +19006,33 @@ def framegold_kernel(browser, base, name, case):
         page.goto(f"{base}/index.html?kernel={name}&paused=1&mips=10&{params}#debugger", timeout=120000)
         if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
             return [f"{name}: did not start paused"], d
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator && !!MKB.symbols"), 60)
         t0 = time.monotonic()
         show_tab(page, "debugger")
         page.fill("#dbg_addr", first)
         page.click("#dbg_runto")
-        want_at = int(first, 16) if first.startswith("0x") else page.evaluate(f"symbols.symbols.find((s) => s.name === '{first}' && s.paddr >= 0x100000).paddr")
+        want_at = int(first, 16) if first.startswith("0x") else page.evaluate(f"MKB.symbols.symbols.find((s) => s.name === '{first}' && s.paddr >= 0x100000).paddr")
         ok, at, status = run_to_wait(page, {want_at}, 600)
         if not ok:
             return [f"{name}: Run to {first} stopped at {at:#x}: {status[:200]}"], d
-        s0 = page.evaluate("stepper.steps")
+        s0 = page.evaluate("MKB.stepper.steps")
         show_tab(page, "calls")
 
         def at(w, target):
             if rev_step_to(page, s0 + target) != s0 + target:
-                problems.append(f"{name}: could not step to {target} past {first} for {w} (at {page.evaluate('stepper.steps') - s0})")
+                problems.append(f"{name}: could not step to {target} past {first} for {w} (at {page.evaluate('MKB.stepper.steps') - s0})")
                 return False
-            page.evaluate("afterStop()")
+            page.evaluate("MKB.afterStop()")
             d[w] = page.evaluate(FRAMEGOLD_JS)
             return True
 
         if not at("A", to):
             return problems, d
-        page.evaluate(f"revStepBack({back})")
-        if not wait_for(lambda: page.evaluate(f"!REV.busy && stepper.steps === {s0 + to - back}"), 120, 0.1):
-            return [f"{name}: Step back {back} from {to} past {first} ended at {page.evaluate('stepper.steps') - s0}: "
+        page.evaluate(f"MKB.revStepBack({back})")
+        if not wait_for(lambda: page.evaluate(f"!MKB.REV.busy && MKB.stepper.steps === {s0 + to - back}"), 120, 0.1):
+            return [f"{name}: Step back {back} from {to} past {first} ended at {page.evaluate('MKB.stepper.steps') - s0}: "
                     f"{page.inner_text('#dbg_status')[:300]!r} {errors[:3]}"], d
-        page.evaluate("revBranch(stepper, 'framegold'); afterStop()")
+        page.evaluate("MKB.revBranch(MKB.stepper, 'framegold'); MKB.afterStop()")
         d["B"] = page.evaluate(FRAMEGOLD_JS)
         if not at("C", to - back + more) or (last and not at("D", last)):
             return problems, d
@@ -19056,12 +19092,12 @@ def suite_framegold(ctx):
 
 # Every recorded frame after a snapshot restore: an end at or after its
 # start, children counts not negative.
-FRAMES_SANE_JS = """() => { const fr = stepper.fr, bad = [];
+FRAMES_SANE_JS = """() => { const fr = MKB.stepper.fr, bad = [];
   for (let k = 0; k < fr.n; k++) {
     const s = fr.start(k), e = fr.end(k), c = fr.child(k);
-    if ((e !== -1 && e < s) || c < 0) { if (bad.length < 5) bad.push([k, stepper.nodeName(fr.node(k)), s, e, c]); bad.n = (bad.n || 0) + 1; }
+    if ((e !== -1 && e < s) || c < 0) { if (bad.length < 5) bad.push([k, MKB.stepper.nodeName(fr.node(k)), s, e, c]); bad.n = (bad.n || 0) + 1; }
   }
-  return { frames: fr.n, steps: stepper.steps, bad, nBad: bad.n || 0 }; }"""
+  return { frames: fr.n, steps: MKB.stepper.steps, bad, nBad: bad.n || 0 }; }"""
 
 
 def framegold_snapshot(browser, base):
@@ -19077,26 +19113,26 @@ def framegold_snapshot(browser, base):
         page.goto(f"{base}/index.html?kernel=minified-linux&paused=1&mips=10&fastforward=0#debugger", timeout=120000)
         if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
             return ["did not start paused"], r
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator && !!symbols"), 60)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator && !!MKB.symbols"), 60)
         page.fill("#dbg_addr", "0x100000")
         page.click("#dbg_runto")
         ok, at, status = run_to_wait(page, {0x100000}, 600)
         if not ok:
             return [f"Run to 0x100000 stopped at {at:#x}: {status[:200]}"], r
-        s0 = page.evaluate("stepper.steps")
+        s0 = page.evaluate("MKB.stepper.steps")
         rev_step_to(page, s0 + 100000)
-        page.evaluate("saveSnapshot()")
-        if not wait_for(lambda: page.evaluate("snapshots.length > 0"), 60):
+        page.evaluate("MKB.saveSnapshot()")
+        if not wait_for(lambda: page.evaluate("MKB.snapshots.length > 0"), 60):
             return [f"no snapshot saved: {page.inner_text('#snap_status')[:200]!r}"], r
         rev_step_to(page, s0 + 300000)
         r["before"] = page.evaluate(FRAMES_SANE_JS)
-        r["open before"] = page.evaluate("stepper.allOpen().length")
-        page.evaluate("restoreSnapshot(snapshots[snapshots.length - 1])")
-        wait_for(lambda: page.evaluate("stepper.steps < %d" % (s0 + 300000)), 30)
-        page.evaluate("pauseAll()")
+        r["open before"] = page.evaluate("MKB.stepper.allOpen().length")
+        page.evaluate("MKB.restoreSnapshot(MKB.snapshots[MKB.snapshots.length - 1])")
+        wait_for(lambda: page.evaluate("MKB.stepper.steps < %d" % (s0 + 300000)), 30)
+        page.evaluate("MKB.pauseAll()")
         # On from the snapshot: stepped (the open calls unwind) and a stretch of the JIT (markGap).
-        rev_step_to(page, page.evaluate("stepper.steps") + 20000)
-        page.evaluate("stepper.markGap()")
+        rev_step_to(page, page.evaluate("MKB.stepper.steps") + 20000)
+        page.evaluate("MKB.stepper.markGap()")
         r["after"] = page.evaluate(FRAMES_SANE_JS)
         if not r["open before"]:
             problems.append("no frame open before the restore (test setup)")
@@ -19131,7 +19167,7 @@ JITREV_RUNS = [  # kernel, scheme, phone, pause past this count (None: the promp
     ("debian-6.1-686-initrd", "dark", True, 3.2e9, None),  # the initramfs scripts
     ("debian-6.1-686-initrd", "light", False, None, None),
 ]
-JITREV_REGS_JS = """() => { const c = stepper.cpu; return { regs: Array.from(c.reg32, (x) => x >>> 0), sregs: Array.from(c.sreg),
+JITREV_REGS_JS = """() => { const c = MKB.stepper.cpu; return { regs: Array.from(c.reg32, (x) => x >>> 0), sregs: Array.from(c.sreg),
   eflags: c.get_eflags() >>> 0, cr: [c.cr[0] >>> 0, c.cr[2] >>> 0, c.cr[3] >>> 0, c.cr[4] >>> 0] }; }"""
 JITREV_LATENCY_MS = 10000
 JITREV_STI_NOTE = "the instruction after an sti runs with it"
@@ -19152,19 +19188,19 @@ def jitrev_back(page, phone, sel, n, tag, problems, r, key):
 def jitrev_replay(page, run, want, regs, tag, problems, r, key, ui):
     """Replay run (ending at the count stepped back to) from boot: the page's
     verdict, and the registers there."""
-    page.evaluate("() => { INPUT.replay = null; delete document.getElementById('run_status').dataset.replay; }")
+    page.evaluate("() => { MKB.INPUT.replay = null; delete document.getElementById('run_status').dataset.replay; }")
     if ui:
         show_tab(page, "snapshots")
         page.eval_on_selector("#run_box", "e => e.scrollIntoView()")
         page.click("#run_replay")
     else:
-        page.evaluate("(run) => { replayRun(run); }", run)
-    wait_for(lambda: page.evaluate("!!INPUT.replay || document.getElementById('run_status').dataset.replay === 'error'"), 60)
+        page.evaluate("(run) => { MKB.replayRun(run); }", run)
+    wait_for(lambda: page.evaluate("!!MKB.INPUT.replay || document.getElementById('run_status').dataset.replay === 'error'"), 60)
     if page.evaluate("document.getElementById('run_status').dataset.replay") == "error":
         problems.append(f"{tag}: {key}: {page.inner_text('#run_status')[:300]!r}")
         return
     if not replay_wait(page, 900):
-        problems.append(f"{tag}: {key}: the replay did not finish ({page.evaluate('[runState, stepper && stepper.steps]')})")
+        problems.append(f"{tag}: {key}: the replay did not finish ({page.evaluate('[MKB.runState, MKB.stepper && MKB.stepper.steps]')})")
         return
     b = replay_state(page)
     got = page.evaluate(JITREV_REGS_JS)
@@ -19189,21 +19225,21 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
     try:
         page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10" + (f"&revjitk={k}" if k else ""), timeout=180000)
         if past is None:
-            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!stepper.prompt && runState === 'paused'"), 900, 1):
+            if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.stepper.prompt && MKB.runState === 'paused'"), 900, 1):
                 return [f"{tag}: no pause at the (initramfs) prompt"], r
         else:
-            if not wait_for(lambda: page.evaluate(f"typeof stepper !== 'undefined' && !!stepper && stepper.steps > {past} && runState === 'jit'"), 900, 0.2):
+            if not wait_for(lambda: page.evaluate(f"typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.stepper.steps > {past} && MKB.runState === 'jit'"), 900, 0.2):
                 return [f"{tag}: the JIT did not pass {past:.2e}"], r
             machine_do(page, "tap" if phone else "click", "#dbg_pause")
-            wait_for(lambda: page.evaluate("runState") == "paused", 30)
+            wait_for(lambda: page.evaluate("MKB.runState") == "paused", 30)
         show_tab(page, "debugger")
         time.sleep(0.5)
         sn = page.evaluate(REV_STATE_JS)
         N = sn["steps"]
         r["paused_at"] = N
         r["history"] = page.evaluate("""() => ({ text: document.getElementById('rev_info').textContent,
-          cps: typeof REV === 'object' ? REV.cps.map((c) => [c.steps, !!c.jit]) : null,
-          segs: typeof REV === 'object' && REV.segs ? REV.segs.map((s) => [s.at, s.kind]) : null,
+          cps: typeof window.MKB?.REV === 'object' ? MKB.REV.cps.map((c) => [c.steps, !!c.jit]) : null,
+          segs: typeof window.MKB?.REV === 'object' && MKB.REV.segs ? MKB.REV.segs.map((s) => [s.at, s.kind]) : null,
           back: !document.getElementById('dbg_back').disabled })""")
         if not r["history"]["back"]:
             problems.append(f"{tag}: Step back is disabled after the JIT ran: {r['history']['text'][:200]!r}")
@@ -19219,11 +19255,11 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
         if s1["steps"] != e1:
             problems.append(f"{tag}: Step back 1 from {N:,} landed at {s1['steps']:,}, not {e1:,}")
         if e1 == N - 2:
-            op = page.evaluate("emulator.read_memory(stepper.nextPhys(), 1)[0]")
+            op = page.evaluate("MKB.emulator.read_memory(MKB.stepper.nextPhys(), 1)[0]")
             r["back 1 opcode"] = op
             if op != 0xFB:
                 problems.append(f"{tag}: Step back 1 says the target is inside an sti's step, but the instruction there is {op:#x}")
-        run1 = page.evaluate("runNow()")
+        run1 = page.evaluate("MKB.runNow()")
         regs1 = page.evaluate(JITREV_REGS_JS)
         page.screenshot(path=str(shots / f"jitrev-{name}-{w}-{scheme}-back1.png"))
         show_tab(page, "debugger")
@@ -19232,20 +19268,20 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
         e1000 = e1 - 999 - (1 if JITREV_STI_NOTE in r["back 1000"]["status"] else 0)
         if s1000["steps"] != e1000:
             problems.append(f"{tag}: Step back 999 more from {e1:,} landed at {s1000['steps']:,}, not {e1000:,}")
-        run1000 = page.evaluate("runNow()")
+        run1000 = page.evaluate("MKB.runNow()")
         regs1000 = page.evaluate(JITREV_REGS_JS)
         # Forward again on the run: at N - 1 and at the pause, as they were.
         page.fill("#dbg_n", str(e1 - e1000))
         t0 = time.monotonic()
         page.locator("#dbg_stepn").tap() if phone else page.click("#dbg_stepn")
-        wait_for(lambda: page.evaluate("stepper.steps") == e1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") == e1 and page.evaluate("!MKB.REV.busy && MKB.runState === 'paused'"), 300, 0.1)
         r["forward 999 ms"] = round((time.monotonic() - t0) * 1000)
         f1 = page.evaluate(REV_STATE_JS)
         for k in REV_SAME:
             if f1[k] != s1[k]:
                 problems.append(f"{tag}: forward to {e1:,} again: {k} {str(f1[k])[:120]} vs stepped back {str(s1[k])[:120]}")
-        page.evaluate("doStep(1)")
-        wait_for(lambda: page.evaluate("stepper.steps") == N and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+        page.evaluate("MKB.doStep(1)")
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") == N and page.evaluate("!MKB.REV.busy && MKB.runState === 'paused'"), 300, 0.1)
         fn = page.evaluate(REV_STATE_JS)
         for k in REV_SAME:
             if fn[k] != sn[k]:
@@ -19267,8 +19303,8 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
             problems.append(f"{tag}: page errors {errs[:3]}")
         # Forward on the run again to N - 1 (from the history's start, where
         # Back to stopped), and Replay that run from boot there.
-        page.evaluate(f"doStep({e1} - stepper.steps)")
-        wait_for(lambda: page.evaluate("stepper.steps") == e1 and page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
+        page.evaluate(f"MKB.doStep({e1} - MKB.stepper.steps)")
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") == e1 and page.evaluate("!MKB.REV.busy && MKB.runState === 'paused'"), 300, 0.1)
         g1 = page.evaluate(REV_STATE_JS)
         r["forward to N-1 again"] = page.inner_text("#dbg_status")[:300]
         for k_ in REV_SAME:
@@ -19319,7 +19355,7 @@ JITSNAP_SHA256 = "cdf710949be5d004f0a8da9b559a49ddebdd5fde94d172e2a2cdf365b1a7a6
 JITSNAP_WINDOWS = [("debian", False, 1.0e9, 2.55e9), ("debian", True, 2.5e9, 3.3e9)]
 JITSNAP_DRV_JS = """() => { window.JS4 = {
   async run(cap, rec) {
-    const st = stepper, cpu = st.cpu;
+    const st = MKB.stepper, cpu = st.cpu;
     const ch = new MessageChannel();
     const y = () => new Promise((r) => { ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
     const t0 = performance.timeOrigin, w0 = Date.now();
@@ -19327,7 +19363,7 @@ JITSNAP_DRV_JS = """() => { window.JS4 = {
     const irq = st.irq0 || 0; // the page's count, not part of the machine: from the run's start
     if (rec) this.trace = [];
     while (st.steps < cap && !st.dead()) {
-      await jitStep(st);
+      await MKB.jitStep(st);
       n++;
       if (rec) {
         let h = 0x811c9dc5;
@@ -19337,33 +19373,33 @@ JITSNAP_DRV_JS = """() => { window.JS4 = {
       }
       if (n % 8 === 0) await y();
     }
-    await jitFlush(st);
+    await MKB.jitFlush(st);
     return { steps: st.steps, slices: n, ms: Date.now() - w0 };
   },
   async state() {
-    const cpu = stepper.cpu, m = cpu.mem8;
+    const cpu = MKB.stepper.cpu, m = cpu.mem8;
     const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', m.slice()))).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-    return { steps: stepper.steps, icount: cpu.instruction_counter[0] >>> 0, eip: (cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha,
-      regs: Array.from(cpu.reg32).map((x) => (x >>> 0).toString(16)).join(','), clock: CLOCK.now(), taint: INPUT.taint };
+    return { steps: MKB.stepper.steps, icount: cpu.instruction_counter[0] >>> 0, eip: (cpu.instruction_pointer[0] >>> 0).toString(16), ram: sha,
+      regs: Array.from(cpu.reg32).map((x) => (x >>> 0).toString(16)).join(','), clock: MKB.CLOCK.now(), taint: MKB.INPUT.taint };
   },
   // The guest's TSC against the virtual clock (offset 0 from power-on): read twice at the same count.
   tsc() {
-    const c = stepper.cpu, rd = () => { c.store_current_tsc(); return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(CLOCK.now() * 1e6); };
+    const c = MKB.stepper.cpu, rd = () => { c.store_current_tsc(); return c.current_tsc[0] + c.current_tsc[1] * 2 ** 32 - Math.round(MKB.CLOCK.now() * 1e6); };
     return [rd(), rd()];
   },
   async save() {
-    const n = snapshots.length;
-    await saveSnapshot();
-    if (snapshots.length !== n + 1) throw new Error('no snapshot: ' + document.getElementById('snap_status').textContent);
-    const s = snapshots[snapshots.length - 1];
+    const n = MKB.snapshots.length;
+    await MKB.saveSnapshot();
+    if (MKB.snapshots.length !== n + 1) throw new Error('no snapshot: ' + document.getElementById('snap_status').textContent);
+    const s = MKB.snapshots[MKB.snapshots.length - 1];
     return { id: s.id, steps: s.meta.steps, status: document.getElementById('snap_status').textContent };
   },
   async restore(id) {
-    const s = snapById(id);
+    const s = MKB.snapById(id);
     if (!s) throw new Error('no snapshot ' + id);
-    await restoreSnapshot(s);
+    await MKB.restoreSnapshot(s);
     if (document.getElementById('snap_status').dataset.restored !== id) throw new Error(document.getElementById('snap_status').textContent);
-    return stepper.steps;
+    return MKB.stepper.steps;
   },
 }; }"""
 
@@ -19389,7 +19425,7 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
     try:
         def fresh():
             page.goto(url, timeout=180000)
-            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused' && emuReady"), 300, 0.5):
+            if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused' && MKB.emuReady"), 300, 0.5):
                 raise PlaywrightError("did not start paused")
             page.evaluate(JITSNAP_DRV_JS)
 
@@ -19410,7 +19446,7 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
         tscs["X2 restored"] = page.evaluate("() => JS4.tsc()")
         out["X2"] = run(b)
         fresh()
-        wait_for(lambda: page.evaluate("(id) => !!snapById(id)", sv["id"]), 30)
+        wait_for(lambda: page.evaluate("(id) => !!MKB.snapById(id)", sv["id"]), 30)
         page.evaluate("(id) => JS4.restore(id)", sv["id"])
         tscs["X3 restored"] = page.evaluate("() => JS4.tsc()")
         out["X3"] = run(b)
@@ -19456,8 +19492,8 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
     r[name] = res
 
 
-JITSNAP_RUN_JS = """() => ({ steps: stepper.steps, prompt: stepper.prompt ? stepper.prompt.steps : null, runState, taint: INPUT.taint,
-  resets: INPUT.log.filter((e) => e.reset).map((e) => e.at) })"""
+JITSNAP_RUN_JS = """() => ({ steps: MKB.stepper.steps, prompt: MKB.stepper.prompt ? MKB.stepper.prompt.steps : null, runState: MKB.runState, taint: MKB.INPUT.taint,
+  resets: MKB.INPUT.log.filter((e) => e.reset).map((e) => e.at) })"""
 
 
 def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
@@ -19473,12 +19509,12 @@ def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
     res = {}
     try:
         page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0&mips=10", timeout=180000)
-        page.evaluate(JITSNAP_DRV_JS) if wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper"), 120) else None
-        if not wait_for(lambda: page.evaluate("!!stepper && stepper.steps > 2.5e9 && runState === 'jit'"), 900, 0.2):
-            problems.append(f"{tag}: the JIT did not pass 2.5e9 ({page.evaluate('[runState, stepper && stepper.steps]')})")
+        page.evaluate(JITSNAP_DRV_JS) if wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper"), 120) else None
+        if not wait_for(lambda: page.evaluate("!!MKB.stepper && MKB.stepper.steps > 2.5e9 && MKB.runState === 'jit'"), 900, 0.2):
+            problems.append(f"{tag}: the JIT did not pass 2.5e9 ({page.evaluate('[MKB.runState, MKB.stepper && MKB.stepper.steps]')})")
             return
         machine_do(page, "tap" if phone else "click", "#dbg_pause")
-        wait_for(lambda: page.evaluate("runState") == "paused", 20)
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 20)
         page.evaluate(JITSNAP_DRV_JS)
         sv = page.evaluate("() => JS4.save()")
         res["saved_at"] = sv["steps"]
@@ -19487,7 +19523,7 @@ def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
         if not resets or resets[-1] != sv["steps"]:
             problems.append(f"{tag}: after Save the log has the JIT resets {resets}, want the save's at {sv['steps']:,} last")
         machine_do(page, "tap" if phone else "click", "#dbg_continue")
-        if not wait_for(lambda: page.evaluate("!!stepper.prompt && runState === 'paused'"), 600, 0.5):
+        if not wait_for(lambda: page.evaluate("!!MKB.stepper.prompt && MKB.runState === 'paused'"), 600, 0.5):
             problems.append(f"{tag}: no pause at the (initramfs) prompt after Save")
             return
         first = page.evaluate("() => JS4.state()")
@@ -19500,7 +19536,7 @@ def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
             problems.append(f"{tag}: Restore: {page.inner_text('#snap_status')[:200]}")
             return
         machine_do(page, "tap" if phone else "click", "#dbg_continue")
-        if not wait_for(lambda: page.evaluate("!!stepper.prompt && runState === 'paused'"), 600, 0.5):
+        if not wait_for(lambda: page.evaluate("!!MKB.stepper.prompt && MKB.runState === 'paused'"), 600, 0.5):
             problems.append(f"{tag}: no pause at the (initramfs) prompt after Restore")
             return
         again = page.evaluate("() => JS4.state()")
@@ -19520,7 +19556,7 @@ def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
         page.screenshot(path=str(shots / f"jitsnap-ui-{w}-{scheme}-restored.png"))
         snap_click(page, "#run_replay", phone)
         if not replay_wait(page, 900):
-            problems.append(f"{tag}: the replay did not finish ({page.evaluate('[runState, stepper && stepper.steps]')})")
+            problems.append(f"{tag}: the replay did not finish ({page.evaluate('[MKB.runState, MKB.stepper && MKB.stepper.steps]')})")
             return
         b = replay_state(page)
         res["replayed"] = {k: b[k] for k in ("steps", "eip", "ram", "verdict", "replay", "status")}
@@ -19546,10 +19582,10 @@ def jitsnap_wasm(browser, base, problems, r):
     page = ctx.new_page()
     try:
         page.goto(f"{base}/index.html?kernel=hello&paused=1&mips=10", timeout=120000)
-        wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 120)
-        w = page.evaluate("""async () => { const b = await (await fetch(withV('v86/v86.wasm'))).arrayBuffer();
+        wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && !!MKB.emulator"), 120)
+        w = page.evaluate("""async () => { const b = await (await fetch(MKB.withV('v86/v86.wasm'))).arrayBuffer();
           const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', b))).map((x) => x.toString(16).padStart(2, '0')).join('');
-          return { sha, reset: typeof emulator.v86.cpu.wm.exports.jit_reset_hidden, patchError: wasmPatchError }; }""")
+          return { sha, reset: typeof MKB.emulator.v86.cpu.wm.exports.jit_reset_hidden, patchError: MKB.wasmPatchError }; }""")
         r["wasm"] = w
         if w["sha"] != JITSNAP_SHA256:
             problems.append(f"jitsnap: the page's v86.wasm has SHA-256 {w['sha']}, want the gen-v86.sh build {JITSNAP_SHA256}")
@@ -19677,16 +19713,16 @@ CFI_TABLE_JS = """async ([b64, offset]) => {
     return { open: o.ok ? 'ok' : o.why, source: c && c.source, why: c && c.why };
 }"""
 
-CFI_ROWS_JS = """(pas) => pas.map((pa) => { const r = cfiRow(window.__cfi, pa); return r === null ? null : r.why ? 'why: ' + r.why : cfiRowText(r); })"""
+CFI_ROWS_JS = """(pas) => pas.map((pa) => { const r = MKB.cfiRow(window.__cfi, pa); return r === null ? null : r.why ? 'why: ' + r.why : MKB.cfiRowText(r); })"""
 
 # unwind() from regs over a memory of { address: value }; the code is the
 # fixture's; entry: [name, start, end] of code that is entry code (it
 # called the frame inside it with pt_regs).
 CFI_UNWIND_JS = """([regs, mem, lo, hi, offset, entry]) => {
     const sym = (pa) => entry && pa >= entry[1] - offset && pa < entry[2] - offset ? [entry[0], entry[1] - offset] : null;
-    const env = { rowAt: (pa) => cfiRow(window.__cfi, pa), read32: (va) => mem[va >>> 0],
+    const env = { rowAt: (pa) => MKB.cfiRow(window.__cfi, pa), read32: (va) => mem[va >>> 0],
                   toPhys: (va) => (va >= lo && va < hi ? va - offset : null), symAt: sym, isEntry: (n) => !!entry && n === entry[0] };
-    const u = unwind(regs, env);
+    const u = MKB.unwind(regs, env);
     return { state: u.state, why: u.why, frames: u.frames.map((f) => ({ pc: f.pc, method: f.method, cfa: f.cfa, regs: f.regs })) };
 }"""
 
@@ -19890,7 +19926,7 @@ def cfi_crafted_checks(page, tmp, problems, r):
     r["crafted unwind"] = u
     if u["frames"][0]["cfa"] != 0x1008 or regs.get(7) != 0x7777 or regs.get(3) != 0x3333:
         problems.append(f"crafted .eh_frame: unwind from +4: {u}")
-    info = page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", hi + 0x100 - CFI_OFFSET)
+    info = page.evaluate("(pa) => MKB.cfiFrameText(MKB.cfiFrameInfo(window.__cfi, pa))", hi + 0x100 - CFI_OFFSET)
     if info != "no call frame information":
         problems.append(f"crafted .eh_frame: the frame of code without an FDE: {info!r}")
     init = bytes([0x0c, 4, 4, 0x88, 1])
@@ -19959,7 +19995,7 @@ def cfi_crafted_checks(page, tmp, problems, r):
     cie = cfi_cie(True, 1, "zR", bytes([0x1b]), init)
     content = cie + cfi_entry(struct.pack("<I", len(cie) + 4) + struct.pack("<ii", CFI_BASE - eh_addr - len(cie) - 8, 13) + b"\0" + bytes([0x3f])) + bytes(4)
     page.evaluate(CFI_ERR_JS, [base64.b64encode(cfi_with_section(base, ".eh_frame", content)[0]).decode(), CFI_OFFSET])
-    got = page.evaluate(CFI_ROWS_JS, [0x1000000, 0x1000002]) + [page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", 0x1000002)]
+    got = page.evaluate(CFI_ROWS_JS, [0x1000000, 0x1000002]) + [page.evaluate("(pa) => MKB.cfiFrameText(MKB.cfiFrameInfo(window.__cfi, pa))", 0x1000002)]
     want = ["why: unknown DW_CFA opcode 0x3f"] * 2 + ["call frame information unreadable: unknown DW_CFA opcode 0x3f"]
     r["crafted unknown opcode"] = got
     if got != want:
@@ -19979,7 +20015,7 @@ def cfi_case(browser, base, shots):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=hello&paused=1")
-    wait_for(lambda: page.evaluate("typeof cfiRow === 'function' && typeof unwind === 'function'"), 30)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.cfiRow === 'function' && typeof window.MKB?.unwind === 'function'"), 30)
     with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as tmp:
         for kind in ("eh_frame", "debug_frame"):
             elf = cfi_fixture(pathlib.Path(tmp), kind)
@@ -20004,7 +20040,7 @@ def cfi_case(browser, base, shots):
                 problems.append(f"{kind}: rows differ from llvm-dwarfdump: {bad[:4]} ({len(rows)} rows)")
             if kind == "debug_frame" and "CFA=ESP+20" not in (want.get(CFI_BASE + 0xc) or ""):
                 problems.append(f"debug_frame: llvm-dwarfdump has no DW_CFA_set_loc row at 0xc100000c: {want.get(CFI_BASE + 0xc)}")
-            info = page.evaluate("(pa) => cfiFrameText(cfiFrameInfo(window.__cfi, pa))", CFI_BASE + 4 - CFI_OFFSET)
+            info = page.evaluate("(pa) => MKB.cfiFrameText(MKB.cfiFrameInfo(window.__cfi, pa))", CFI_BASE + 4 - CFI_OFFSET)
             r[kind + "_frame"] = info
             # .debug_frame's last row (DW_CFA_set_loc) is CFA=ESP+20.
             want_info = (f"frame pointer: CFA = EBP+8 from +0x3 (before that at most ESP+{20 if kind == 'debug_frame' else 8}); the call frame information does not "
@@ -20057,12 +20093,12 @@ LTO_OPEN_JS = """async ([b64, offset, pa]) => {
         groups.push(...l.groups);
     }
     w.terminate();
-    const name = (v) => [v[0], dwTypeName(T, v[1]), v[3] === null ? 'optimized out' : 'has a location'];
+    const name = (v) => [v[0], MKB.dwTypeName(T, v[1]), v[3] === null ? 'optimized out' : 'has a location'];
     return { open: 'ok', units: o.units,
-        funcs: T.funcs.fns.map((e) => ({ name: e[0], at: T.funcs.files[e[1]] + ':' + e[2], proto: dwFuncProto(T, e),
+        funcs: T.funcs.fns.map((e) => ({ name: e[0], at: T.funcs.files[e[1]] + ':' + e[2], proto: MKB.dwFuncProto(T, e),
             inlined: e[8].map((x) => x + offset) })),
-        vars: T.vars.map((v) => ({ name: v[0], at: dwVarDeclText(T, v), type: dwTypeName(T, v[2]), va: v[1] + offset, scope: v[6] })),
-        frames: dwarfLocalFrames(dwarfScopesAt(groups, pa)).map((f) => ({ func: f.func, inlined: f.inlined,
+        vars: T.vars.map((v) => ({ name: v[0], at: MKB.dwVarDeclText(T, v), type: MKB.dwTypeName(T, v[2]), va: v[1] + offset, scope: v[6] })),
+        frames: MKB.dwarfLocalFrames(MKB.dwarfScopesAt(groups, pa)).map((f) => ({ func: f.func, inlined: f.inlined,
             params: f.params.map(name), locals: f.locals.map(name) })) };
 }"""
 
@@ -20121,7 +20157,7 @@ def dwarf_lto_case(browser, base, shots):
         errors = []
         page.on("pageerror", lambda e: errors.append(str(e)[:200]))
         page.goto(f"{base}/index.html?kernel=hello&paused=1")
-        wait_for(lambda: page.evaluate("typeof dwFuncProto === 'function' && typeof dwarfLocalFrames === 'function'"), 30)
+        wait_for(lambda: page.evaluate("typeof window.MKB?.dwFuncProto === 'function' && typeof window.MKB?.dwarfLocalFrames === 'function'"), 30)
         got = page.evaluate(LTO_OPEN_JS, [base64.b64encode(elf.read_bytes()).decode(), LTO_OFFSET, call - LTO_OFFSET])
         page.close()
     r["page"] = got
@@ -20351,7 +20387,7 @@ DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
         if (u.type === 'error') { w.terminate(); return { ...out, error: 'unit: ' + u.message }; }
         tables.push(u.table);
     }
-    const at = (pa) => { for (const t of tables) { const f = dwarfFrames(t, pa); if (f) return f; } return null; };
+    const at = (pa) => { for (const t of tables) { const f = MKB.dwarfFrames(t, pa); if (f) return f; } return null; };
     out.frames = [];
     for (let pa = lo; pa < hi; pa++)
         out.frames.push(at(pa));
@@ -20372,33 +20408,33 @@ DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
     out.cfi = c.why || c.source;
     out.rows = [];
     for (let pa = lo; pa < hi && c.table; pa++) {
-        const r = cfiRow(c.table, pa);
-        out.rows.push(r === null ? null : r.why ? 'why: ' + r.why : cfiRowText(r));
+        const r = MKB.cfiRow(c.table, pa);
+        out.rows.push(r === null ? null : r.why ? 'why: ' + r.why : MKB.cfiRowText(r));
     }
-    out.funcs = T.funcs.fns.map((e) => ({ name: e[0], at: T.funcs.files[e[1]] + ':' + e[2], type: dwFuncProto(T, e, false),
+    out.funcs = T.funcs.fns.map((e) => ({ name: e[0], at: T.funcs.files[e[1]] + ':' + e[2], type: MKB.dwFuncProto(T, e, false),
         noret: !!(e[3] & 4), varargs: !!(e[3] & 2) }));
-    out.vars = T.vars.map((v) => ({ name: v[0], va: v[1] + offset, size: v[3], at: dwVarDeclText(T, v), type: dwTypeName(T, v[2]),
-        where: [...Array(v[3]).keys()].map((k) => { const x = dwWhere(T, v[1] + k); return x ? x.path + (x.note ? ' ' + x.note : '') : null; }) }));
+    out.vars = T.vars.map((v) => ({ name: v[0], va: v[1] + offset, size: v[3], at: MKB.dwVarDeclText(T, v), type: MKB.dwTypeName(T, v[2]),
+        where: [...Array(v[3]).keys()].map((k) => { const x = MKB.dwWhere(T, v[1] + k); return x ? x.path + (x.note ? ' ' + x.note : '') : null; }) }));
     // The static local by its function's name (a watch's mix::calls).
-    const pick = (q) => { const p = dwVarsPick(T, T.vars.filter((v) => v[0] === 'calls'), q, 'calls'); return p.v ? [p.v[0], p.v[1] + offset, p.v[6]] : p.why; };
+    const pick = (q) => { const p = MKB.dwVarsPick(T, T.vars.filter((v) => v[0] === 'calls'), q, 'calls'); return p.v ? [p.v[0], p.v[1] + offset, p.v[6]] : p.why; };
     out.picks = [pick('mix'), pick('use')];
-    out.flags = T.types.filter((t) => t[0] === DWT.struct && t[1] === 'flags' && t[3]).map((t) => t[3])[0] || null;
-    out.enums = Object.fromEntries(T.types.filter((t) => t[0] === DWT.enum).map((t) => [t[1], t[3]]));
+    out.flags = T.types.filter((t) => t[0] === MKB.DWT.struct && t[1] === 'flags' && t[3]).map((t) => t[3])[0] || null;
+    out.enums = Object.fromEntries(T.types.filter((t) => t[0] === MKB.DWT.enum).map((t) => [t[1], t[3]]));
     // The variables at each address: name and kind of location there, as
     // gen-dwarf.js --locals classifies them for test_dwarf.py's gdb_scopes.
-    const pieces = (e) => { for (let p = 0; p >= 0 && p < e.length; p = dwOpEnd(e, p)) if (e[p] === 0x93 || e[p] === 0x9d) return true; return false; };
+    const pieces = (e) => { for (let p = 0; p >= 0 && p < e.length; p = MKB.dwOpEnd(e, p)) if (e[p] === 0x93 || e[p] === 0x9d) return true; return false; };
     const cls = (loc, pa) => {
-        const l = dwLocAt(loc, pa);
+        const l = MKB.dwLocAt(loc, pa);
         if (l.why) return 'out';
         if (l.c !== undefined || l.cb) return 'const';
         const e = l.expr;
         if (pieces(e)) return 'pieces';
-        if (e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f) return 'reg:' + (CFI_REGS[e[0] - 0x50] || e[0] - 0x50);
+        if (e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f) return 'reg:' + (MKB.CFI_REGS[e[0] - 0x50] || e[0] - 0x50);
         return e.length ? 'expr' : 'out';
     };
     out.locals = [];
     for (let pa = lo; pa < hi; pa++) {
-        const fr = dwarfLocalFrames(dwarfScopesAt(groups, pa));
+        const fr = MKB.dwarfLocalFrames(MKB.dwarfScopesAt(groups, pa));
         out.locals.push(fr.length ? fr.map((f) => ({ func: f.func, vars: [...f.params, ...f.locals].map((v) => [v[0], cls(v[3], pa)]) })) : null);
     }
     // Every location expression as text, per variable: [name, lo, hi, text].
@@ -20408,10 +20444,10 @@ DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
         for (const s of g)
             for (const v of s[5]) {
                 if (typeof v[3] === 'string')
-                    out.exprs.push([v[0], 0, 0, dwExprText(hex(v[3]))]);
+                    out.exprs.push([v[0], 0, 0, MKB.dwExprText(hex(v[3]))]);
                 else if (Array.isArray(v[3]))
                     for (const [a, n, e] of v[3]) // a default location (DW_LLE_default_location): -1, -1
-                        out.exprs.push([v[0], n ? a + offset : -1, n ? a + n + offset : -1, dwExprText(hex(e))]);
+                        out.exprs.push([v[0], n ? a + offset : -1, n ? a + n + offset : -1, MKB.dwExprText(hex(e))]);
             }
     // probe [pa, registers by DWARF number, { address: byte }]: each
     // variable's value there (dwLocation) as bytes, null where not known,
@@ -20421,10 +20457,10 @@ DWF_JS = """async ([b64, offset, lo, hi, src, probe]) => {
         const ctx = { reg: (r) => regs[r], read: (a, n) => { let v = 0; for (let k = n - 1; k >= 0; k--) { if (mem[a + k] === undefined) return undefined; v = v * 256 + mem[a + k]; } return v; },
                       readBytes: (a, n) => { const b = []; for (let k = 0; k < n; k++) { if (mem[a + k] === undefined) return null; b.push(mem[a + k]); } return Uint8Array.from(b); } };
         out.values = {};
-        for (const f of dwarfLocalFrames(dwarfScopesAt(groups, pa)))
+        for (const f of MKB.dwarfLocalFrames(MKB.dwarfScopesAt(groups, pa)))
             for (const v of [...f.params, ...f.locals]) {
-                const l = dwLocAt(v[3], pa);
-                const r = l.why ? l : dwLocation(l.expr, ctx, dwTypeSize(T, v[1]));
+                const l = MKB.dwLocAt(v[3], pa);
+                const r = l.why ? l : MKB.dwLocation(l.expr, ctx, MKB.dwTypeSize(T, v[1]));
                 out.values[v[0]] = r.why ? r.why : r.mem !== undefined ? 'at ' + r.mem :
                     r.whys.length && !r.known.some((x) => x) ? r.whys.join('; ') : [...r.bytes].map((x, k) => (r.known[k] ? x : null));
             }
@@ -20613,7 +20649,7 @@ DWF_SECOND = "int other(int x)\n{\n\treturn x * 3 + 1;\n}\n"
 DBG_WAIT_JS = """async ([fn, args]) => {
     const plain = (r) => JSON.parse(JSON.stringify(r === undefined ? null : r, (k, v) => v instanceof Map ? [...v] : v));
     for (let i = 0; i < 300; i++) {
-        const r = window[fn](...args);
+        const r = MKB[fn](...args);
         if (r !== 'loading' && !(r && r.state === 'loading'))
             return plain(r);
         await new Promise((ok) => setTimeout(ok, 100));
@@ -20660,11 +20696,11 @@ def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
         return page.evaluate(DBG_WAIT_JS, [fn, list(args)])
 
     def imp(path, done="compile units"):
-        page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+        page.evaluate("MKB.startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
         page.set_input_files("#symfile", str(path))
         # (The status of the import before names another file, or is the same file's.)
         wait_for(lambda: page.inner_text("#sym_status").startswith(path.name + " ") and done in page.inner_text("#sym_status") and
-                 page.evaluate("DBG.file && DBG.file.name") == path.name, 30)
+                 page.evaluate("MKB.DBG.file && MKB.DBG.file.name") == path.name, 30)
         return page.inner_text("#sym_status")
 
     def reload(state):
@@ -20727,14 +20763,14 @@ def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
     if mine is None or mine != sorted(n for n, _ in gs):
         problems.append(f"import: the parameters and locals at {va:#x}: {str(lo)[:300]}, gdb {gs}")
     ask("dbgFnFactsAt", pa(va))
-    title = page.evaluate("(pa) => dbgTitle(pa)", pa(va))
+    title = page.evaluate("(pa) => MKB.dbgTitle(pa)", pa(va))
     w = want[m_vas.index(va)]
     r["title"] = title
     if not title.startswith(f"{w[0][0]} at m.c:{w[0][2]}\ninlined into {w[1][0]} at m.c:{w[1][2]}") or "(" not in title.split("\n")[2]:
         problems.append(f"import: the title at {va:#x}: {title!r}, llvm-symbolizer {w}")
     fi = ask("dbgCfiFrame", pa(m_vas[0]))
     fdes = dwarfdump_cfi(str(elf))
-    expect("call frame information", page.evaluate("dbgCfiInfo()"), f".debug_frame of the imported vmlinux ({len(fdes)} FDEs)")
+    expect("call frame information", page.evaluate("MKB.dbgCfiInfo()"), f".debug_frame of the imported vmlinux ({len(fdes)} FDEs)")
     if not isinstance(fi, dict) or not fi.get("fde"):
         problems.append(f"import: the frame at {m_vas[0]:#x}: {fi}")
     show_tab(page, "machine")
@@ -20768,7 +20804,7 @@ def dwf_ui_checks(browser, base, shots, tmp, symbolize, gdb_scopes):
     reload("cached")
     expect("after a reload, the locals of a unit not read", ask("dbgLocals", pa(other)),
            {"state": "none", "why": "the parameters and locals of this compile unit were not read before the reload: import the vmlinux again"})
-    row = page.evaluate("(pa) => cfiRowText(dbgCfiRow(pa))", pa(m_vas[0]))
+    row = page.evaluate("(pa) => MKB.cfiRowText(MKB.dbgCfiRow(pa))", pa(m_vas[0]))
     f = next((f for f in fdes if f[0] <= m_vas[0] < f[1]), None)
     wrow = [t for a, t in (f[2] if f else []) if a <= m_vas[0]]
     expect("after a reload, the CFI row", row, wrow[-1] if wrow else None)
@@ -20830,7 +20866,7 @@ def dwf_fail_checks(browser, base, elf):
         held.clear()
         ctx, page = opened(("**/kernels/hello/dwarf/index.json*", lambda rt: held.append(rt)))
         if drop[0] == "locals":
-            expect("index on its way: files, CFI", page.evaluate("(pa) => [dbgFiles(), dbgCfiRow(pa)]", pa),
+            expect("index on its way: files, CFI", page.evaluate("(pa) => [MKB.dbgFiles(), MKB.dbgCfiRow(pa)]", pa),
                    [{"state": "loading", "why": "reading the debug info index…"}, "loading"])
         wait_for(lambda: held, 10)
         held[0].fulfill(status=200, content_type="application/json", body=json.dumps({k: v for k, v in index.items() if k not in drop}))
@@ -20855,15 +20891,15 @@ def dwf_fail_checks(browser, base, elf):
            {"state": "none", "why": "no DWARF function here (assembly or code without debug info)"})
     expect("function: no code", ask(page, "dbgFunction", 0x5000), {"state": "none", "why": "no DWARF here: not code of this kernel's vmlinux"})
     # A bzImage from disk has no debug info.
-    page.evaluate("startPaused = true")
+    page.evaluate("MKB.startPaused = true")
     page.set_input_files("#file", str(SITE / "kernels" / "hello" / "bzImage"))
-    wait_for(lambda: page.evaluate("DBG.mode === null && DBG.why.startsWith('no debug info for a bzImage')"), 30)
+    wait_for(lambda: page.evaluate("MKB.DBG.mode === null && MKB.DBG.why.startsWith('no debug info for a bzImage')"), 30)
     why = "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line"
     expect("from disk: locals", ask(page, "dbgLocals", pa), {"state": "none", "why": why})
     expect("from disk: function facts", ask(page, "dbgFnFacts", "hello_main"), {"state": "none", "why": why})
     expect("from disk: CFI", ask(page, "dbgCfiRow", pa), {"why": why})
     expect("from disk: code of a line", ask(page, "dbgFileCode", "hello.c"), {"state": "none", "why": why})
-    expect("no address: title", page.evaluate("dbgTitle(-1)"), "")
+    expect("no address: title", page.evaluate("MKB.dbgTitle(-1)"), "")
     ctx.close()
     # The Worker's script does not load: for the file:line reader, then
     # (the first one loaded) for the variables' second Worker.
@@ -20874,7 +20910,7 @@ def dwf_fail_checks(browser, base, elf):
             asked.append(rt.request.url)
             rt.continue_() if first_ok and len(asked) == 1 else nf(rt)
         ctx, page = opened(("**/dwarfworker.js*", worker))
-        page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+        page.evaluate("MKB.startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
         page.set_input_files("#symfile", str(elf))
         if not first_ok:
             wait_for(lambda: "the DWARF reader failed" in page.inner_text("#sym_status"), 30)
@@ -20891,7 +20927,7 @@ def dwf_fail_checks(browser, base, elf):
         ctx.close()
     # No IndexedDB (private mode): the import works, nothing is remembered.
     ctx, page = opened(init="Object.defineProperty(window, 'indexedDB', { value: undefined });")
-    page.evaluate("startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
+    page.evaluate("MKB.startPaused = true; document.getElementById('sym_offset').value = '0xc0000000'")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 30)
     g = ask(page, "dbgFrames", pa_of(elf, "use"))
@@ -21361,7 +21397,7 @@ def dwarf_forms_case(browser, base, shots, builds=DWF_BUILDS):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=hello&paused=1")
-    wait_for(lambda: page.evaluate("typeof dwFuncProto === 'function' && typeof cfiRow === 'function' && typeof dwExprText === 'function'"), 30)
+    wait_for(lambda: page.evaluate("typeof window.MKB?.dwFuncProto === 'function' && typeof window.MKB?.cfiRow === 'function' && typeof window.MKB?.dwExprText === 'function'"), 30)
     with tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP")) as tmp:
         tmp = pathlib.Path(tmp)
         for name in builds:
@@ -21595,21 +21631,21 @@ def genimport_case(browser, base, shots):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
-    wait_for(lambda: page.evaluate("!!(symbols && image)"), 60)
+    wait_for(lambda: page.evaluate("!!(MKB.symbols && MKB.image)"), 60)
     t0 = time.monotonic()
     page.set_input_files("#symfile", str(elf))
     if not wait_for(lambda: page.get_attribute("#gen_status", "data-state") in ("done", "failed"), 300):
         problems.append(f"the files were not made in 300 s: {page.inner_text('#gen_status')!r}")
     r["made_s"] = round(time.monotonic() - t0, 1)
     r["gen_status"] = page.inner_text("#gen_status")
-    wait_for(lambda: page.evaluate("DBG.mode === 'shards' && !!DBG.index"), 30)
+    wait_for(lambda: page.evaluate("MKB.DBG.mode === 'shards' && !!MKB.DBG.index"), 30)
     st = page.evaluate("""async () => {
       const hex = async (b) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map((x) => x.toString(16).padStart(2, '0')).join('');
       const sums = {};
-      for (const [k, b] of GEN.files)
-        sums[k.slice(GEN.base.length)] = await hex(b);
-      return { mode: DBG.mode, info: DBG.info, cfi: dbgCfiInfo(), insns: disasm ? disasm.insns.length : null, syms: symbols.symbols.length,
-               generated: !!(symbols.imported && symbols.imported.generated), sym: $('sym_status').textContent, sums };
+      for (const [k, b] of MKB.GEN.files)
+        sums[k.slice(MKB.GEN.base.length)] = await hex(b);
+      return { mode: MKB.DBG.mode, info: MKB.DBG.info, cfi: MKB.dbgCfiInfo(), insns: MKB.disasm ? MKB.disasm.insns.length : null, syms: MKB.symbols.symbols.length,
+               generated: !!(MKB.symbols.imported && MKB.symbols.imported.generated), sym: MKB.$('sym_status').textContent, sums };
     }""")
     r["state"] = {k: v for k, v in st.items() if k != "sums"}
     r["files"] = len(st["sums"])
@@ -21622,16 +21658,16 @@ def genimport_case(browser, base, shots):
     if diff:
         problems.append(f"files made in the browser differ from the shipped kernel's: {diff[:6]}")
     # The static jump paths are disasm.json's: the Page tab at start_kernel.
-    sk = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel').paddr")
-    page.evaluate(f"selectPage({sk >> 12})")
+    sk = page.evaluate("MKB.symbols.symbols.find((s) => s.name === 'start_kernel').paddr")
+    page.evaluate(f"MKB.selectPage({sk >> 12})")
     wait_for(lambda: "(disasm.json)" in page.inner_text("#dump_info"), 30)
     r["dump_info"] = page.inner_text("#dump_info")[:120]
     if "(disasm.json)" not in r["dump_info"]:
         problems.append(f"the listing is not disasm.json's: {r['dump_info']!r}")
     # The rest of the debug files through kfetch: function facts, locals (.gz), types, CFI.
-    wait_for(lambda: page.evaluate(f"dbgFnFacts('start_kernel').state === 'ok' && dbgLocalGroups({sk}).state === 'ok' && !!(dbgCfiRow({sk}) || {{}}).cfa"), 30)
-    r["debug"] = page.evaluate(f"""({{ facts: dbgFnFacts('start_kernel').fns.length, locals: dbgLocalGroups({sk}).G.length,
-      types: dbgTypes().T.types.length, cfi: !!(dbgCfiRow({sk}) && dbgCfiRow({sk}).cfa) }})""")
+    wait_for(lambda: page.evaluate(f"MKB.dbgFnFacts('start_kernel').state === 'ok' && MKB.dbgLocalGroups({sk}).state === 'ok' && !!(MKB.dbgCfiRow({sk}) || {{}}).cfa"), 30)
+    r["debug"] = page.evaluate(f"""({{ facts: MKB.dbgFnFacts('start_kernel').fns.length, locals: MKB.dbgLocalGroups({sk}).G.length,
+      types: MKB.dbgTypes().T.types.length, cfi: !!(MKB.dbgCfiRow({sk}) && MKB.dbgCfiRow({sk}).cfa) }})""")
     if not r["debug"]["facts"] or not r["debug"]["locals"] or not r["debug"]["types"] or not r["debug"]["cfi"]:
         problems.append(f"function facts, locals, types or CFI of start_kernel: {r['debug']}")
     # The coverage tree after the counted boot: the shipped kernel's files.
@@ -21665,20 +21701,20 @@ def genimport_case(browser, base, shots):
         (wrong / "init" / "main.c").write_text("\n".join((tree / "init" / "main.c").read_text().split("\n")[:10]))
         page.set_input_files("#src_dir", str(wrong))
         wait_for(lambda: "is not the tree the kernel was built from" in page.inner_text("#gen_status"), 60)
-        r["wrong_tree"] = [page.evaluate("SRC.mode"), page.inner_text("#gen_status")[-160:]]
+        r["wrong_tree"] = [page.evaluate("MKB.SRC.mode"), page.inner_text("#gen_status")[-160:]]
         if r["wrong_tree"][0] != "picked" or "init/main.c" not in r["wrong_tree"][1]:
             problems.append(f"a tree that is not the kernel's: {r['wrong_tree']}")
         # The right tree, twice (the second replaces the first's src/).
         for _ in range(2):
             page.set_input_files("#src_dir", str(tree))
-            wait_for(lambda: page.evaluate("SRC.mode === 'picked'"), 10)
-            wait_for(lambda: page.evaluate("SRC.mode === 'shipped' && !!SRC.have && /indexed in this browser/.test(SRC.info || '')"), 60)
-        r["src"] = page.evaluate("({ mode: SRC.mode, info: SRC.info, have: SRC.have ? SRC.have.size : 0 })")
+            wait_for(lambda: page.evaluate("MKB.SRC.mode === 'picked'"), 10)
+            wait_for(lambda: page.evaluate("MKB.SRC.mode === 'shipped' && !!MKB.SRC.have && /indexed in this browser/.test(MKB.SRC.info || '')"), 60)
+        r["src"] = page.evaluate("({ mode: MKB.SRC.mode, info: MKB.SRC.info, have: MKB.SRC.have ? MKB.SRC.have.size : 0 })")
         want = json.loads((kdir / "src" / "index.json").read_text())["files"]
         if r["src"]["mode"] != "shipped" or r["src"]["have"] != len(want):
             problems.append(f"the picked tree did not become src/: {r['src']}, shipped {len(want)} files")
-        wait_for(lambda: page.evaluate("srcFile('init/main.c').state") == "ok", 30)
-        text = page.evaluate("srcFile('init/main.c').lines")
+        wait_for(lambda: page.evaluate("MKB.srcFile('init/main.c').state") == "ok", 30)
+        text = page.evaluate("MKB.srcFile('init/main.c').lines")
         if text != (tree / "init" / "main.c").read_text().split("\n"):
             problems.append("init/main.c in the Source panel is not the file's text")
     r["gen_status_src"] = page.inner_text("#gen_status")
@@ -21697,8 +21733,8 @@ def genimport_case(browser, base, shots):
     page.set_viewport_size({"width": 1280, "height": 1000})
     # A reload: everything is back from IndexedDB, nothing made again.
     page.reload()
-    wait_for(lambda: page.evaluate("typeof GEN !== 'undefined' && GEN.state === 'done' && DBG.mode === 'shards' && SRC.mode === 'shipped'"), 60)
-    r["reload"] = page.evaluate("({ gen: GEN.state, restored: !!GEN.restored, mode: DBG.mode, src: SRC.mode, insns: disasm ? disasm.insns.length : null, status: $('gen_status').textContent })")
+    wait_for(lambda: page.evaluate("typeof window.MKB?.GEN !== 'undefined' && MKB.GEN.state === 'done' && MKB.DBG.mode === 'shards' && MKB.SRC.mode === 'shipped'"), 60)
+    r["reload"] = page.evaluate("({ gen: MKB.GEN.state, restored: !!MKB.GEN.restored, mode: MKB.DBG.mode, src: MKB.SRC.mode, insns: MKB.disasm ? MKB.disasm.insns.length : null, status: MKB.$('gen_status').textContent })")
     if not r["reload"]["restored"] or r["reload"]["mode"] != "shards" or r["reload"]["src"] != "shipped" or not r["reload"]["insns"]:
         problems.append(f"after a reload: {r['reload']}")
     page.close()
@@ -21706,12 +21742,12 @@ def genimport_case(browser, base, shots):
     page = browser.new_page(viewport={"width": 1280, "height": 1000})
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
-    wait_for(lambda: page.evaluate("!!(symbols && image)"), 60)
+    wait_for(lambda: page.evaluate("!!(MKB.symbols && MKB.image)"), 60)
     page.set_input_files("#symfile", str(elf))
-    wait_for(lambda: page.evaluate("GEN.state === 'running'"), 30)
+    wait_for(lambda: page.evaluate("MKB.GEN.state === 'running'"), 30)
     page.select_option("#kernel", "hello")
-    wait_for(lambda: page.evaluate("GEN.state === null && image.name === 'hello'"), 60)
-    r["switched"] = page.evaluate("({ gen: GEN.state, kernel: image.name, mode: DBG.mode, imported: !!(symbols && symbols.imported) })")
+    wait_for(lambda: page.evaluate("MKB.GEN.state === null && MKB.image.name === 'hello'"), 60)
+    r["switched"] = page.evaluate("({ gen: MKB.GEN.state, kernel: MKB.image.name, mode: MKB.DBG.mode, imported: !!(MKB.symbols && MKB.symbols.imported) })")
     if r["switched"]["gen"] is not None or r["switched"]["imported"] or r["switched"]["kernel"] != "hello":
         problems.append(f"another kernel while the files were made: {r['switched']}")
     page.close()
@@ -21719,12 +21755,12 @@ def genimport_case(browser, base, shots):
     page = browser.new_page(viewport={"width": 1280, "height": 1000})
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
-    wait_for(lambda: page.evaluate("!!(symbols && image)"), 60)
+    wait_for(lambda: page.evaluate("!!(MKB.symbols && MKB.image)"), 60)
     page.fill("#sym_offset", "0xc0000000")
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported", 30)
     time.sleep(2)
-    r["hand_offset"] = page.evaluate("({ gen: GEN.state, status: $('gen_status').textContent, mode: DBG.mode })")
+    r["hand_offset"] = page.evaluate("({ gen: MKB.GEN.state, status: MKB.$('gen_status').textContent, mode: MKB.DBG.mode })")
     if r["hand_offset"]["gen"] is not None or r["hand_offset"]["status"] or r["hand_offset"]["mode"] != "import":
         problems.append(f"an offset by hand: {r['hand_offset']}")
     page.close()
@@ -21735,10 +21771,10 @@ def genimport_case(browser, base, shots):
     page = nc.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
-    wait_for(lambda: page.evaluate("!!(symbols && image)"), 60)
+    wait_for(lambda: page.evaluate("!!(MKB.symbols && MKB.image)"), 60)
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: page.get_attribute("#gen_status", "data-state") == "failed", 60)
-    r["no_clang"] = page.evaluate("({ gen: GEN.state, status: $('gen_status').textContent, mode: DBG.mode })")
+    r["no_clang"] = page.evaluate("({ gen: MKB.GEN.state, status: MKB.$('gen_status').textContent, mode: MKB.DBG.mode })")
     if r["no_clang"]["gen"] != "failed" or "clang.wasm: HTTP 404" not in r["no_clang"]["status"] or r["no_clang"]["mode"] != "import":
         problems.append(f"without clang.wasm: {r['no_clang']}")
     nc.close()
@@ -21767,19 +21803,19 @@ def suite_genimport(ctx):
 # again, and a replay from boot records them too. The cost: Debian at full
 # JIT speed with the list open against closed (reported).
 MEV_CHECK_RUNS = [("hello", 200000), ("minified-linux", 200000), ("minified-linux-os", 200000), ("debian-6.1-686", 100000000)]
-MEV_DIGEST_JS = """(to) => { const c = MEV.cols, m = MEV.cap - 1; let h = 0x811c9dc5, n = 0;
+MEV_DIGEST_JS = """(to) => { const c = MKB.MEV.cols, m = MKB.MEV.cap - 1; let h = 0x811c9dc5, n = 0;
   const mix = (v) => { h = Math.imul(h ^ (v >>> 0), 0x01000193); h = Math.imul(h ^ Math.floor(v / 4294967296), 0x01000193); };
-  for (const i of MEV.query(to === null ? {} : { to })) { const k = i & m; mix(c.pos[k]); mix(c.meta[k]); mix(c.addr[k]); mix(c.size[k]);
-    mix(c.val[k]); mix(c.valHi[k]); mix(c.eip[k]); mix(c.eipPhys[k]); mix(c.src[k]); for (const ch of MEV.nameOf(c.region[k]).name) mix(ch.charCodeAt(0)); n++; }
-  return { n, hash: (h >>> 0).toString(16), kept: MEV.n - MEV.first(), dropped: MEV.first() }; }"""
-MEV_SUMMARY_JS = """() => { const ev = MEV.query().map((i) => MEV.event(i)); const by = (f) => ev.filter(f);
+  for (const i of MKB.MEV.query(to === null ? {} : { to })) { const k = i & m; mix(c.pos[k]); mix(c.meta[k]); mix(c.addr[k]); mix(c.size[k]);
+    mix(c.val[k]); mix(c.valHi[k]); mix(c.eip[k]); mix(c.eipPhys[k]); mix(c.src[k]); for (const ch of MKB.MEV.nameOf(c.region[k]).name) mix(ch.charCodeAt(0)); n++; }
+  return { n, hash: (h >>> 0).toString(16), kept: MKB.MEV.n - MKB.MEV.first(), dropped: MKB.MEV.first() }; }"""
+MEV_SUMMARY_JS = """() => { const ev = MKB.MEV.query().map((i) => MKB.MEV.event(i)); const by = (f) => ev.filter(f);
   const cpu = by((e) => e.initiator === 'cpu'), emu = by((e) => e.initiator === 'emulator');
-  return { n: ev.length, counts: MEV.counts.slice(), emulator: emu.map((e) => [e.pos, e.addr, e.bytes, e.source, e.regionName]),
-    cpuRegions: [...new Set(cpu.map((e) => e.regionName))], unnamed: cpu.filter((e) => !MEV.nameOf(e.region).known).length,
+  return { n: ev.length, counts: MKB.MEV.counts.slice(), emulator: emu.map((e) => [e.pos, e.addr, e.bytes, e.source, e.regionName]),
+    cpuRegions: [...new Set(cpu.map((e) => e.regionName))], unnamed: cpu.filter((e) => !MKB.MEV.nameOf(e.region).known).length,
     vga: cpu.filter((e) => e.write && e.addr >= 0xb8000 && e.addr < 0xc0000).length,
-    described: cpu.slice(-3).map((e) => MEV.describe(e)), facts: MEV.facts.map((f) => f.text), e820: MEV.e820.length,
-    firmware: MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text),
-    check: MEV.check && { checks: MEV.check.checks, changed: MEV.check.changed, failures: MEV.check.failures } }; }"""
+    described: cpu.slice(-3).map((e) => MKB.MEV.describe(e)), facts: MKB.MEV.facts.map((f) => f.text), e820: MKB.MEV.e820.length,
+    firmware: MKB.MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text),
+    check: MKB.MEV.check && { checks: MKB.MEV.check.checks, changed: MKB.MEV.check.changed, failures: MKB.MEV.check.failures } }; }"""
 
 
 def mev_page(browser, scheme="light", phone=False):
@@ -21803,7 +21839,7 @@ def mev_check_case(browser, base, shots, name, every, problems, r):
             problems.append(f"{name}: no end with ?memcheck")
             return
         time.sleep(0.5)
-        page.evaluate("() => { MEV.check.next = 0; MEV.tick(stepper); }")  # the stretch since the last check
+        page.evaluate("() => { MKB.MEV.check.next = 0; MKB.MEV.tick(MKB.stepper); }")  # the stretch since the last check
         s = page.evaluate(MEV_SUMMARY_JS)
         r[name] = {k: s[k] for k in ("n", "counts", "check", "cpuRegions", "unnamed", "vga", "e820", "firmware", "described")}
         c = s["check"] or {}
@@ -21843,18 +21879,18 @@ def mev_negative_case(browser, base, shots, problems, r):
         if not mev_to_end(page, base, "hello", "memcheck=200000"):
             problems.append("negative: hello did not end")
             return
-        out = page.evaluate("""() => { const cpu = MEV.cpu; MEV.check.next = 0; MEV.tick(stepper); const before = MEV.check.failures.length;
+        out = page.evaluate("""() => { const cpu = MKB.MEV.cpu; MKB.MEV.check.next = 0; MKB.MEV.tick(MKB.stepper); const before = MKB.MEV.check.failures.length;
           cpu.mem8[0x7123] ^= 0x5a;                                   // behind the API's back
-          emulator.write_memory(new Uint8Array([1, 2, 3]), 0x9000);   // the embedding page: an emulator event
+          MKB.emulator.write_memory(new Uint8Array([1, 2, 3]), 0x9000);   // the embedding page: an emulator event
           cpu.dma_write(0x1e << 3, new Uint8Array([4, 5, 6]), 0xa010); // a device (the IDE controller's PCI address)
           cpu.dma_write32(0x1e << 3, 0xb000, 0x12345678);
           const v = cpu.dma_read32s(0x1e << 3, 0xb000), b = cpu.dma_read16(0x10002, 0xb000), z = cpu.dma_read8(0x10002, 0xb003);
           cpu.dma_write16(0x10002, 0xc000, 0xbeef); cpu.dma_zero(0x10002, 0xd000, 4096); const rd = Array.from(cpu.dma_read(0x10002, 0xc000, 2));
-          MEV.check.next = 0; MEV.tick(stepper);
-          const ev = MEV.query({ limit: 9 }).map((i) => MEV.event(i));
-          return { before, failures: MEV.check.failures.slice(before), v: v >>> 0, b, z, rd,
+          MKB.MEV.check.next = 0; MKB.MEV.tick(MKB.stepper);
+          const ev = MKB.MEV.query({ limit: 9 }).map((i) => MKB.MEV.event(i));
+          return { before, failures: MKB.MEV.check.failures.slice(before), v: v >>> 0, b, z, rd,
             events: ev.map((e) => [e.initiator, e.write, e.addr, e.size, e.value === undefined ? null : e.value, e.bytes === undefined ? null : e.bytes, e.source]),
-            pages: [0xa, 0xb, 0xc, 0xd, 0x9].map((p) => MEV.query({ page: p }).length) }; }""")
+            pages: [0xa, 0xb, 0xc, 0xd, 0x9].map((p) => MKB.MEV.query({ page: p }).length) }; }""")
         r["negative"] = out
         got = sorted({f["page"] for f in out["failures"]})
         if got != [7]:
@@ -21887,10 +21923,10 @@ def mev_repeat_case(browser, base, shots, problems, r):
             digests.append(page.evaluate(MEV_DIGEST_JS, None))
             if i == 0:
                 continue
-            N = page.evaluate("stepper.steps")
-            entry = page.evaluate("REV.cps.length ? REV.cps[0].steps : null")
+            N = page.evaluate("MKB.stepper.steps")
+            entry = page.evaluate("MKB.REV.cps.length ? MKB.REV.cps[0].steps : null")
             r["paused"] = {"steps": N, "history": entry}
-            picks = page.evaluate("""(from) => { const ev = MEV.query({ from, initiator: 'cpu', write: true }).map((i) => MEV.event(i))
+            picks = page.evaluate("""(from) => { const ev = MKB.MEV.query({ from, initiator: 'cpu', write: true }).map((i) => MKB.MEV.event(i))
                 .filter((e, k, a) => !k || a[k - 1].pos !== e.pos); // one per instruction (a rep movs writes many)
               return [0.1, 0.5, 0.9].map((f) => ev[Math.floor(f * (ev.length - 1))]).filter(Boolean).map((e) => ({ pos: e.pos, eip: e.eip, addr: e.addr })); }""",
                                   (entry or 0) + 1)
@@ -21900,9 +21936,9 @@ def mev_repeat_case(browser, base, shots, problems, r):
                 return
             cur = N
             for e in reversed(picks):
-                page.evaluate("(n) => revStepBack(n)", cur - e["pos"])
-                wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused'"), 300, 0.1)
-                at = page.evaluate("""() => ({ steps: stepper.steps, eip: stepper.cpu.instruction_pointer[0] >>> 0, last: MEV.n ? MEV.event(MEV.n - 1).pos : -1,
+                page.evaluate("(n) => MKB.revStepBack(n)", cur - e["pos"])
+                wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused'"), 300, 0.1)
+                at = page.evaluate("""() => ({ steps: MKB.stepper.steps, eip: MKB.stepper.cpu.instruction_pointer[0] >>> 0, last: MKB.MEV.n ? MKB.MEV.event(MKB.MEV.n - 1).pos : -1,
                   status: document.getElementById('dbg_status').textContent.slice(0, 200) })""")
                 cur = at["steps"]
                 r.setdefault("back", []).append(at)
@@ -21910,20 +21946,20 @@ def mev_repeat_case(browser, base, shots, problems, r):
                     problems.append(f"repeat: stepped back to {at['steps']:,} EIP {at['eip']:#x}, the event is at {e['pos']:,} EIP {e['eip']:#x}")
                 if at["last"] >= e["pos"]:
                     problems.append(f"repeat: after the step back to {e['pos']:,} the log still has an event at {at['last']:,}")
-            page.evaluate(f"doStep({N} - stepper.steps)")
-            wait_for(lambda: page.evaluate(f"stepper.steps === {N} && !REV.busy && runState === 'paused'"), 300, 0.2)
+            page.evaluate(f"MKB.doStep({N} - MKB.stepper.steps)")
+            wait_for(lambda: page.evaluate(f"MKB.stepper.steps === {N} && !MKB.REV.busy && MKB.runState === 'paused'"), 300, 0.2)
             again = page.evaluate(MEV_DIGEST_JS, None)
             r["forward again"] = again
             if again != digests[1]:
                 problems.append(f"repeat: forward to {N:,} again: {again} vs the run {digests[1]}")
             orig = page.evaluate(MEV_DIGEST_JS, N)
-            run = page.evaluate("runNow()")
-            page.evaluate("(run) => { replayRun(run); }", run)
+            run = page.evaluate("MKB.runNow()")
+            page.evaluate("(run) => { MKB.replayRun(run); }", run)
             if not replay_wait(page, 600):
                 problems.append("repeat: the replay from boot did not finish")
             else:
                 rep = page.evaluate(MEV_DIGEST_JS, N)
-                r["replay"] = {"run": orig, "replay": rep, "steps": page.evaluate("stepper.steps")}
+                r["replay"] = {"run": orig, "replay": rep, "steps": page.evaluate("MKB.stepper.steps")}
                 if rep != orig:
                     problems.append(f"repeat: the replay from boot recorded {rep}, the run {orig}")
             page.screenshot(path=str(shots / "memevents-repeat-390-dark.png"))
@@ -21946,12 +21982,12 @@ def mev_ui_case(browser, base, shots, problems, r):
             page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0&mips=10", timeout=180000)
             wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 0.5)
             show_tab(page, "memory")  # keys go to the VM while the Machine tab is shown
-            closed = page.evaluate("({ on: MEV.on, n: MEV.n })")
+            closed = page.evaluate("({ on: MKB.MEV.on, n: MKB.MEV.n })")
             page.focus("#tab_events")
             page.keyboard.press("Enter")
-            wait_for(lambda: page.evaluate("MEV.on && !document.getElementById('panel_events').hidden"), 10)
+            wait_for(lambda: page.evaluate("MKB.MEV.on && !document.getElementById('panel_events').hidden"), 10)
             time.sleep(0.6)
-            look = page.evaluate("""() => ({ on: MEV.on, items: document.querySelectorAll('#mev_rows tr').length,
+            look = page.evaluate("""() => ({ on: MKB.MEV.on, items: document.querySelectorAll('#mev_rows tr').length,
               regions: document.querySelectorAll('#mev_regions tr').length, status: document.getElementById('mev_status').textContent,
               first: (document.querySelector('#mev_rows tr') || {}).textContent || '', hscroll: document.documentElement.scrollWidth > innerWidth + 1 })""")
             page.screenshot(path=str(shots / f"memevents-list-{w}-{scheme}.png"))
@@ -21966,7 +22002,7 @@ def mev_ui_case(browser, base, shots, problems, r):
             if look["hscroll"]:
                 problems.append(f"ui {w}: horizontal scroll")
             page.uncheck("#mev_on")
-            if not wait_for(lambda: not page.evaluate("MEV.on"), 10):
+            if not wait_for(lambda: not page.evaluate("MKB.MEV.on"), 10):
                 problems.append(f"ui {w}: Record cleared, still recording")
             if errs:
                 problems.append(f"ui {w}: page errors {errs[:3]}")
@@ -21983,7 +22019,7 @@ def mev_speed_case(browser, base, shots, debian, problems, r):
         ctx, page, errs = mev_page(browser)
         try:
             page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips=10{q}", timeout=180000)
-            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+            if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 180, 0.5):
                 problems.append(f"speed {tag}: not paused at the reset vector")
                 continue
             page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, True])
@@ -21991,7 +22027,7 @@ def mev_speed_case(browser, base, shots, debian, problems, r):
             if not wait_for(lambda: page.evaluate("window.__jd.done"), 400, 0.2):
                 problems.append(f"speed {tag}: did not reach {JITDET_CAP:,}")
                 continue
-            s = page.evaluate("() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MEV.n }; }")
+            s = page.evaluate("() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MKB.MEV.n }; }")
             r[f"speed {tag}"] = s
             if errs:
                 problems.append(f"speed {tag}: page errors {errs[:3]}")
@@ -22006,27 +22042,27 @@ def mev_speed_case(browser, base, shots, debian, problems, r):
             problems.append("speed: with the list open nothing was recorded")
 
 
-MEV_TABLES_JS = """() => { const m = MEV.cpu.mem8, out = {};
+MEV_TABLES_JS = """() => { const m = MKB.MEV.cpu.mem8, out = {};
   const w32 = (k, v) => { m[k] = v; m[k + 1] = v >>> 8; m[k + 2] = v >>> 16; m[k + 3] = v >>> 24; };
   const str = (k, s) => [...s].forEach((c, j) => { m[k + j] = c.charCodeAt(0); });
-  const named = (a) => { const r = MEV.nameOf(MEV.regionOf(a)); return [r.name, r.std, r.known]; };
+  const named = (a) => { const r = MKB.MEV.nameOf(MKB.MEV.regionOf(a)); return [r.name, r.std, r.known]; };
   // A PCI class the class table does not have.
-  out.pci = pciClassName(0xfe, 0x00);
+  out.pci = MKB.pciClassName(0xfe, 0x00);
   // An E820 answer with the carry flag set (an error), and one without the
   // SMAP signature: no entry; then a good one: an entry.
-  const e820 = [MEV.e820.length];
+  const e820 = [MKB.MEV.e820.length];
   for (const info of [0x300, 0x000, 0x100]) {
-    MEV.observe({ pos: stepper.steps, kind: 'e820', buf: 0, ebx: 0, info, bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0] });
-    e820.push(MEV.e820.length);
+    MKB.MEV.observe({ pos: MKB.stepper.steps, kind: 'e820', buf: 0, ebx: 0, info, bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0] });
+    e820.push(MKB.MEV.e820.length);
   }
   out.e820 = e820;
   // Above RAM, before any standard names it.
   out.none = named(0x40000000);
   // Filters of query(): by initiator and by region.
-  const all = MEV.query().map((i) => MEV.event(i));
-  const vga = MEV.regionOf(0xb8000);
-  out.query = [MEV.query({ initiator: 'cpu' }).length, all.filter((e) => e.initiator === 'cpu').length,
-    MEV.query({ region: vga }).length, all.filter((e) => e.region === vga).length, all.length];
+  const all = MKB.MEV.query().map((i) => MKB.MEV.event(i));
+  const vga = MKB.MEV.regionOf(0xb8000);
+  out.query = [MKB.MEV.query({ initiator: 'cpu' }).length, all.filter((e) => e.initiator === 'cpu').length,
+    MKB.MEV.query({ region: vga }).length, all.filter((e) => e.region === vga).length, all.length];
   // ACPI tables (ACPI 6.x 5.2.5-5.2.12): an RSDP in the EBDA's first KiB, its
   // RSDT with a MADT (a processor entry, then an I/O APIC) and an HPET table.
   const ebda = (m[0x40e] | m[0x40f] << 8) << 4, R = ebda || 0xe0000, T = 0x70000, A = 0x70100, H = 0x70200;
@@ -22036,10 +22072,10 @@ MEV_TABLES_JS = """() => { const m = MEV.cpu.mem8, out = {};
   m[A + 44] = 0; m[A + 45] = 8;
   m[A + 52] = 1; m[A + 53] = 12; m[A + 54] = 5; w32(A + 56, 0xfec00000); w32(A + 60, 0);
   str(H, 'HPET'); w32(H + 44, 0xfed00000);
-  MEV.acpi = null;
-  MEV.acpiTried = -1e15;
-  MEV.acpiTry(stepper.steps);
-  out.firmware = MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text);
+  MKB.MEV.acpi = null;
+  MKB.MEV.acpiTried = -1e15;
+  MKB.MEV.acpiTry(MKB.stepper.steps);
+  out.firmware = MKB.MEV.facts.filter((f) => f.kind === 'firmware').map((f) => f.text);
   out.hpet = named(0xfed00010);
   out.ioapic = named(0xfec00010);
   out.lapic = named(0xfee00010);
@@ -22106,29 +22142,29 @@ def suite_memevents(ctx):
 # a zero page written, two words swapped, a byte written and put back, two
 # words changed by amounts that cancel in a sum. Its own copies of RAM (not
 # the page's) give the pages that must be reported.
-SCANP_SETUP_JS = """() => { const P = 4096, pages = emuRam / P, T = [];
+SCANP_SETUP_JS = """() => { const P = 4096, pages = MKB.emuRam / P, T = [];
   for (let i = 0; i < 9; i++) T.push(pages - 24 + i);
   for (let i = 0; i < 8; i++) { const b = new Uint8Array(P); for (let k = 0; k < P; k++) b[k] = (i * 37 + k * 13 + (k >> 7)) & 0xff || 1;
-    emulator.write_memory(b, T[i] * P); }
-  emulator.write_memory(new Uint8Array(P), T[8] * P);
+    MKB.emulator.write_memory(b, T[i] * P); }
+  MKB.emulator.write_memory(new Uint8Array(P), T[8] * P);
   return { pages, T }; }"""
-SCANP_COPY_JS = "() => { window.__scanCopy = emulator.read_memory(0, emuRam).slice(); return emuRam; }"
+SCANP_COPY_JS = "() => { window.__scanCopy = MKB.emulator.read_memory(0, MKB.emuRam).slice(); return MKB.emuRam; }"
 # Pages that differ between the test's copy and RAM now, and the non-zero ones.
-SCANP_WANT_JS = """() => { const P = 4096, a = window.__scanCopy, b = emulator.read_memory(0, emuRam), changed = [], used = [];
-  for (let p = 0; p < emuRam / P; p++) { let c = false, u = false;
+SCANP_WANT_JS = """() => { const P = 4096, a = window.__scanCopy, b = MKB.emulator.read_memory(0, MKB.emuRam), changed = [], used = [];
+  for (let p = 0; p < MKB.emuRam / P; p++) { let c = false, u = false;
     for (let i = p * P; i < p * P + P; i++) { if (a[i] !== b[i]) c = true; if (b[i]) u = true; if (c && u) break; }
     if (c) changed.push(p); if (u) used.push(p); }
   return { changed, used }; }"""
 SCANP_GOT_JS = """() => { const f = document.getElementById('footprint'), l = document.getElementById('listing');
   const idx = (a) => { const o = []; if (a) for (let p = 0; p < a.length; p++) if (a[p]) o.push(p); return o; };
-  return { changed: idx(changedPages), used: idx(usedPages), fpChanged: f.dataset.changed, fpNonzero: f.dataset.nonzero,
+  return { changed: idx(MKB.changedPages), used: idx(MKB.usedPages), fpChanged: f.dataset.changed, fpNonzero: f.dataset.nonzero,
     page: l.dataset.page, lchanged: l.dataset.changed, marks: l.querySelectorAll('mark').length,
     info: document.getElementById('dump_info').textContent }; }"""
 # (marks: a changed byte is marked twice, in the hex and in the ASCII column.)
 # A scan with the Page tab shown, read in the same task: a later drawing of
 # the listing (the Page tab draws again once it has its width) says "since
 # the last scan" instead of the scan's own "since the previous scan".
-SCANP_SCAN_JS = "() => { scan(); return (" + SCANP_GOT_JS + ")(); }"
+SCANP_SCAN_JS = "() => { MKB.scan(); return (" + SCANP_GOT_JS + ")(); }"
 # The grid's cell of page p has a pixel of the "changed" mark's colour.
 SCANP_MARK_JS = """(p) => { const c = document.getElementById('pages'), cell = Number(c.dataset.cell), cols = Number(c.dataset.cols);
   const px = c.getContext('2d').getImageData((p % cols) * cell, Math.floor(p / cols) * cell, cell, cell).data;
@@ -22145,7 +22181,7 @@ def scanpages_case(browser, base, shots, name, problems, r):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#memory")
-    if not wait_for(lambda: page.evaluate("typeof emuReady !== 'undefined' && emuReady && runState === 'paused'"), 120):
+    if not wait_for(lambda: page.evaluate("typeof window.MKB?.emuReady !== 'undefined' && MKB.emuReady && MKB.runState === 'paused'"), 120):
         problems.append(f"{name}: not paused at the reset vector")
         page.close()
         return
@@ -22186,20 +22222,20 @@ def scanpages_case(browser, base, shots, name, problems, r):
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "0" or "0 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {A:#x} right after the scan: {got['lchanged']} changed, {got['info']!r}")
-    page.evaluate(f"emulator.write_memory(new Uint8Array([0xee]), {A * 4096 + 100})")
-    page.evaluate("inspect()")
+    page.evaluate(f"MKB.emulator.write_memory(new Uint8Array([0xee]), {A * 4096 + 100})")
+    page.evaluate("MKB.inspect()")
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {A:#x} with one byte written after the scan: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     # Other pages: last word, zeroed, two words swapped, written and put back,
     # two words changed by +k and -k*31 (a 31-multiply sum would not see it),
     # and a zero page written.
-    page.evaluate(f"""() => {{ const P = 4096, w = (b, a) => emulator.write_memory(new Uint8Array(b), a);
+    page.evaluate(f"""() => {{ const P = 4096, w = (b, a) => MKB.emulator.write_memory(new Uint8Array(b), a);
       w([1, 2, 3, 4], {B} * P + P - 4);
-      emulator.write_memory(new Uint8Array(P), {N2} * P);
-      const e = emulator.read_memory({E} * P, 8).slice(); w([...e.subarray(4, 8), ...e.subarray(0, 4)], {E} * P);
-      const f = emulator.read_memory({F} * P + 7, 1)[0]; w([f ^ 0x55], {F} * P + 7); w([f], {F} * P + 7);
-      const g = new DataView(emulator.read_memory({G} * P, 8).slice().buffer);
+      MKB.emulator.write_memory(new Uint8Array(P), {N2} * P);
+      const e = MKB.emulator.read_memory({E} * P, 8).slice(); w([...e.subarray(4, 8), ...e.subarray(0, 4)], {E} * P);
+      const f = MKB.emulator.read_memory({F} * P + 7, 1)[0]; w([f ^ 0x55], {F} * P + 7); w([f], {F} * P + 7);
+      const g = new DataView(MKB.emulator.read_memory({G} * P, 8).slice().buffer);
       g.setInt32(0, g.getInt32(0, true) + 31, true); g.setInt32(4, g.getInt32(4, true) - 1, true);
       w(new Uint8Array(g.buffer), {G} * P);
       w([9], {Z} * P + 4000); }}""")
@@ -22210,7 +22246,7 @@ def scanpages_case(browser, base, shots, name, problems, r):
     if got["page"] != str(A) or got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: the scan's drawing of page {A:#x}: page {got['page']}, {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     show_tab(page, "memory")
-    page.evaluate("drawGrid()")
+    page.evaluate("MKB.drawGrid()")
     marks = {p: page.evaluate(SCANP_MARK_JS, p) for p in T}
     r[f"{name} grid marks"] = {hex(p): v for p, v in marks.items()}
     if any(marks[p] != (p in wanted) for p in T):
@@ -22222,14 +22258,14 @@ def scanpages_case(browser, base, shots, name, problems, r):
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "0" or "0 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {B:#x} selected after the scan: {got['lchanged']} changed, {got['info']!r}")
-    page.evaluate(f"emulator.write_memory(new Uint8Array([0x77, 0x78]), {B * 4096 + 2000})")
-    page.evaluate("inspect()")
+    page.evaluate(f"MKB.emulator.write_memory(new Uint8Array([0x77, 0x78]), {B * 4096 + 2000})")
+    page.evaluate("MKB.inspect()")
     got = page.evaluate(SCANP_GOT_JS)
     if got["lchanged"] != "2" or got["marks"] != 4 or "2 changed since the last scan" not in got["info"]:
         problems.append(f"{name}: page {B:#x} with two bytes written after its selection: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     # U, written after the scan and selected then (code copied and then
     # jumped to): its byte changed since the scan is marked too.
-    page.evaluate(f"emulator.write_memory(new Uint8Array([0x42]), {U * 4096 + 9})")
+    page.evaluate(f"MKB.emulator.write_memory(new Uint8Array([0x42]), {U * 4096 + 9})")
     open_page(page, U)
     settle()
     got = page.evaluate(SCANP_GOT_JS)
@@ -22241,16 +22277,16 @@ def scanpages_case(browser, base, shots, name, problems, r):
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: the scan's drawing of page {U:#x}: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     page.evaluate(SCANP_COPY_JS)
-    page.evaluate(f"emulator.write_memory(new Uint8Array([0x43]), {U * 4096 + 10})")
+    page.evaluate(f"MKB.emulator.write_memory(new Uint8Array([0x43]), {U * 4096 + 10})")
     scanned = page.evaluate(SCANP_SCAN_JS)
     got = check("a scan after a second write to the selected page", [U], scanned)
     if got["lchanged"] != "1" or got["marks"] != 2 or "1 changed since the previous scan" not in got["info"]:
         problems.append(f"{name}: page {U:#x} written between two scans while selected: {got['lchanged']} changed, {got['marks']} marks, {got['info']!r}")
     page.evaluate(SCANP_COPY_JS)
     # One copy of RAM, the same buffer from scan to scan (P1a: no copy per scan).
-    page.evaluate("window.__scanBuf = typeof scanCopy === 'undefined' ? null : scanCopy")
+    page.evaluate("window.__scanBuf = typeof window.MKB?.scanCopy === 'undefined' ? null : MKB.scanCopy")
     scanned = page.evaluate(SCANP_SCAN_JS)
-    one = page.evaluate("!!window.__scanBuf && scanCopy === window.__scanBuf && scanCopy.length === emuRam && typeof scanPrev === 'undefined'")
+    one = page.evaluate("!!window.__scanBuf && MKB.scanCopy === window.__scanBuf && MKB.scanCopy.length === MKB.emuRam && typeof scanPrev === 'undefined'")
     if not one:
         problems.append(f"{name}: a scan made a new copy of RAM or kept a second one")
     got = check("a scan with nothing written since", [], scanned)
@@ -22290,14 +22326,14 @@ def suite_scanpages(ctx):
 # as with the debug list (the map changes nothing); screenshots at 1280 and
 # 390 px, light and dark, and a filmstrip of a replay; the cost at full JIT
 # speed on Debian with the map shown against closed.
-MM_STATE_JS = """() => { const M = MMAP, segs = M.segs; const st = stepper;
+MM_STATE_JS = """() => { const M = MKB.MMAP, segs = M.segs; const st = MKB.stepper;
   let gaps = 0; for (let k = 1; k < segs.length; k++) if (segs[k].lo !== segs[k - 1].hi || segs[k].c0 !== segs[k - 1].c1) gaps++;
   const dec = (b, from, n) => { let s = ''; for (let i = from; i < from + n; i += 2) s += String.fromCharCode(b[i] || 32); return s; };
   let diff = 0; for (let i = 0; i < M.text.length; i += 2) if (M.text[i] !== st.text[i] || M.text[i + 1] !== st.text[i + 1]) diff++;
   return { segs: segs.length, first: segs.length ? segs[0].lo : -1, last: segs.length ? segs[segs.length - 1].hi : -1, cells: segs.length ? segs[segs.length - 1].c1 : 0, gaps,
     small: segs.filter((g) => g.kind !== 'none' && g.cells < 16).map((g) => M.segName(g)),
     nostd: segs.filter((g) => g.kind !== 'none' && !/\\(.+\\)/.test(M.segName(g))).map((g) => M.segName(g)),
-    idx: M.idx, n: MEV.n, live: M.live, on: MEV.on, frames: M.frames, raf: !!M.raf, track: M.trackFrom, samples: M.samples.length,
+    idx: M.idx, n: MKB.MEV.n, live: M.live, on: MKB.MEV.on, frames: M.frames, raf: !!M.raf, track: M.trackFrom, samples: M.samples.length,
     textDiff: diff, textFrom: M.textFrom, screen: dec(M.text, M.textTop * 160, 4000),
     story: [...document.querySelectorAll('#mm_story li')].map((l) => l.textContent),
     storyLinks: document.querySelectorAll('#mm_story .srclink').length,
@@ -22316,7 +22352,7 @@ def mm_cell_xy(page, d):
     """Viewport point of map cell d."""
     page.locator("#mm_map").scroll_into_view_if_needed()
     box = page.locator("#mm_map").bounding_box()
-    x, y = page.evaluate("(d) => [MMAP.cellX[d], MMAP.cellY[d]]", d)
+    x, y = page.evaluate("(d) => [MKB.MMAP.cellX[d], MKB.MMAP.cellY[d]]", d)
     return box["x"] + (x + 0.5) / 128 * box["width"], box["y"] + (y + 0.5) / 128 * box["height"]
 
 
@@ -22385,27 +22421,27 @@ def mm_ui_case(browser, base, shots, problems, r):
             problems.append("ui: no end")
             return
         mm_frames(page)
-        n = page.evaluate("MEV.n")
+        n = page.evaluate("MKB.MEV.n")
         # Replay: the loader's drop first. On a slow CI runner (runs
         # 43649993796, 43658380830: no drop, 7,972 events replayed) a frame
         # comes 100 ms after the last and applies ~160 events; the 40
         # newest animations once pushed the loader's drops out before they
         # were drawn. That frame, made here: the drop must be in it.
-        slow = page.evaluate("""() => { MMAP.play(true); MMAP.frame(MMAP.t + 100);
-          return { idx: MMAP.idx, anims: MMAP.anims.length,
-                   drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]) }; }""")
+        slow = page.evaluate("""() => { MKB.MMAP.play(true); MKB.MMAP.frame(MKB.MMAP.t + 100);
+          return { idx: MKB.MMAP.idx, anims: MKB.MMAP.anims.length,
+                   drops: MKB.MMAP.anims.filter((a) => a.type === 'drop').map((a) => MKB.MEV.reasons[MKB.MEV.cols.src[a.i & (MKB.MEV.cap - 1)]]) }; }""")
         r["replay slow frame"] = slow
         if "kernel protected-mode part" not in slow["drops"]:
             problems.append(f"ui: a replay frame 100 ms after the start lost the kernel's drop: {slow}")
-        page.evaluate("MMAP.play(false)")
+        page.evaluate("MKB.MMAP.play(false)")
         # Sampled in the page, at the frame the drop is on the map.
         page.click("#mm_play")
         drop = page.evaluate("""() => new Promise((done) => {
-          const t0 = realNow();
+          const t0 = MKB.realNow();
           const look = () => {
-            const s = { drops: MMAP.anims.filter((a) => a.type === 'drop').map((a) => MEV.reasons[MEV.cols.src[a.i & (MEV.cap - 1)]]),
-              heat: MMAP.heat[2 * 16384 + MMAP.cellOf(0x100000)], playing: MMAP.playing, status: document.getElementById('mm_status').textContent };
-            if (s.drops.includes('kernel protected-mode part') && s.heat >= 0.3 || realNow() - t0 > 5000)
+            const s = { drops: MKB.MMAP.anims.filter((a) => a.type === 'drop').map((a) => MKB.MEV.reasons[MKB.MEV.cols.src[a.i & (MKB.MEV.cap - 1)]]),
+              heat: MKB.MMAP.heat[2 * 16384 + MKB.MMAP.cellOf(0x100000)], playing: MKB.MMAP.playing, status: document.getElementById('mm_status').textContent };
+            if (s.drops.includes('kernel protected-mode part') && s.heat >= 0.3 || MKB.realNow() - t0 > 5000)
               done(s);
             else
               requestAnimationFrame(look);
@@ -22422,13 +22458,13 @@ def mm_ui_case(browser, base, shots, problems, r):
             page.evaluate("document.getElementById('mm').scrollIntoView()")
             p = shots / f"memmap-replay-{k}-1280-dark.png"
             page.screenshot(path=str(p))
-            film.append(page.evaluate("[MMAP.idx, MMAP.anims.length]"))
+            film.append(page.evaluate("[MKB.MMAP.idx, MKB.MMAP.anims.length]"))
         r["filmstrip"] = film
         if len({f[0] for f in film}) < 3:
             problems.append(f"ui: the replay does not move: {film}")
         # a replay that reaches the log's end goes live again
-        if not wait_for(lambda: page.evaluate("MMAP.live && !MMAP.playing && MMAP.idx === MEV.n"), 30, 0.2):
-            problems.append(f"ui: the replay did not end live: {page.evaluate('[MMAP.live, MMAP.playing, MMAP.idx, MEV.n]')}")
+        if not wait_for(lambda: page.evaluate("MKB.MMAP.live && !MKB.MMAP.playing && MKB.MMAP.idx === MKB.MEV.n"), 30, 0.2):
+            problems.append(f"ui: the replay did not end live: {page.evaluate('[MKB.MMAP.live, MKB.MMAP.playing, MKB.MMAP.idx, MKB.MEV.n]')}")
         # the slider: the first event, then Live
         page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = '0'; s.dispatchEvent(new Event('input')); }")
         mm_frames(page)
@@ -22442,18 +22478,18 @@ def mm_ui_case(browser, base, shots, problems, r):
             problems.append(f"ui: Live: {live['idx']} of {n}, {live['screen'][:60]!r}")
         r["1280 labels"] = mm_labels_check(page, "ui 1280", problems)
         # a RAM page the CPU wrote (sampled): its cell lists the stretch
-        a = page.evaluate("MMAP.samples.length ? MMAP.samples[MMAP.samples.length - 1].pages[0] * 4096 : -1")
+        a = page.evaluate("MKB.MMAP.samples.length ? MKB.MMAP.samples[MKB.MMAP.samples.length - 1].pages[0] * 4096 : -1")
         if a < 0:
             problems.append("ui: no CPU RAM write sampled")
         else:
-            x, y = mm_cell_xy(page, page.evaluate("(a) => MMAP.cellOf(a)", a))
+            x, y = mm_cell_xy(page, page.evaluate("(a) => MKB.MMAP.cellOf(a)", a))
             page.mouse.click(x, y)
             wrote = page.evaluate("[...document.querySelectorAll('#mm_info li')].map((l) => l.textContent).filter((t) => t.startsWith('CPU wrote here between'))")
             r["sampled cell"] = {"page": hex(a), "rows": wrote[:2]}
             if not wrote:
                 problems.append(f"ui: the cell of sampled page {hex(a)} lists no CPU write")
         # a click on the colour text memory's cell: its events
-        d = page.evaluate("MMAP.cellOf(0xb8000)")
+        d = page.evaluate("MKB.MMAP.cellOf(0xb8000)")
         x, y = mm_cell_xy(page, d)
         page.mouse.click(x, y)
         info = page.evaluate("""() => ({ head: document.querySelector('#mm_info p').textContent, rows: document.querySelectorAll('#mm_info li').length,
@@ -22464,9 +22500,9 @@ def mm_ui_case(browser, base, shots, problems, r):
         # go there: the newest event of the cell; the machine steps back to it
         target = page.evaluate("""() => { const b = document.querySelector('#mm_info .mm-go'); const pos = Number(b.title.match(/instruction ([\\d,]+)/)[1].replace(/,/g, ''));
           b.click(); return pos; }""")
-        ok = wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused' && stepper.steps <= %d" % target), 300, 0.2)
+        ok = wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused' && MKB.stepper.steps <= %d" % target), 300, 0.2)
         mm_frames(page)
-        back = page.evaluate("({ steps: stepper.steps, n: MEV.n, idx: MMAP.idx, live: MMAP.live, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
+        back = page.evaluate("({ steps: MKB.stepper.steps, n: MKB.MEV.n, idx: MKB.MMAP.idx, live: MKB.MMAP.live, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
         r["go there"] = {"target": target, **back}
         if not ok or back["steps"] != target or back["idx"] != back["n"] or back["n"] >= n:
             problems.append(f"ui: go there to {target:,}: {back}")
@@ -22481,15 +22517,15 @@ def mm_ui_case(browser, base, shots, problems, r):
         page.keyboard.press("PageDown")
         page.keyboard.press("PageDown")
         page.keyboard.press("Enter")
-        kb = page.evaluate("({ cursor: document.getElementById('mm_cursor').textContent, head: (document.querySelector('#mm_info p') || {}).textContent || '', pick: MMAP.pick })")
+        kb = page.evaluate("({ cursor: document.getElementById('mm_cursor').textContent, head: (document.querySelector('#mm_info p') || {}).textContent || '', pick: MKB.MMAP.pick })")
         r["keyboard"] = kb
         if not kb["cursor"] or not kb["head"].startswith("0x") or kb["pick"] < 0:
             problems.append(f"ui: keyboard: {kb}")
         # the region list: a region's button shows its first cell's events;
         # pointing at the map names the cell, leaving it clears that
         page.click("#mm_regions li:nth-child(1) button")
-        reg = page.evaluate("({ pick: MMAP.pick, head: document.querySelector('#mm_info p').textContent })")
-        x, y = mm_cell_xy(page, page.evaluate("MMAP.cellOf(0xb8000)"))
+        reg = page.evaluate("({ pick: MKB.MMAP.pick, head: document.querySelector('#mm_info p').textContent })")
+        x, y = mm_cell_xy(page, page.evaluate("MKB.MMAP.cellOf(0xb8000)"))
         page.mouse.move(x, y)
         hov = page.get_attribute("#mm_map", "title")
         page.mouse.move(x, y - 2000 if y > 2000 else 1)
@@ -22501,12 +22537,12 @@ def mm_ui_case(browser, base, shots, problems, r):
         page.check("#mm_first")
         page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
         mm_frames(page)
-        ft = page.evaluate("""() => { const g = MMAP.segs[MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MMAP.touched[d]) lit++;
+        ft = page.evaluate("""() => { const g = MKB.MMAP.segs[MKB.MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MKB.MMAP.touched[d]) lit++;
           // the CPU's sampled RAM writes (layer 3) light whole regions too: the
           // segment of the last sampled page, every cell
-          const s = MMAP.samples[MMAP.samples.length - 1], h = s ? MMAP.segs[MMAP.segOf(s.pages[0] * 4096)] : null; let ram = 0;
-          if (h) for (let d = h.c0; d < h.c1; d++) if (MMAP.touched[d] & 8) ram++;
-          return { cells: g.cells, lit, story: MMAP.story.length, ramCells: h ? h.cells : 0, ramLit: ram }; }""")
+          const s = MKB.MMAP.samples[MKB.MMAP.samples.length - 1], h = s ? MKB.MMAP.segs[MKB.MMAP.segOf(s.pages[0] * 4096)] : null; let ram = 0;
+          if (h) for (let d = h.c0; d < h.c1; d++) if (MKB.MMAP.touched[d] & 8) ram++;
+          return { cells: g.cells, lit, story: MKB.MMAP.story.length, ramCells: h ? h.cells : 0, ramLit: ram }; }""")
         r["first touch"] = ft
         if ft["lit"] != ft["cells"]:
             problems.append(f"ui: only first touch lights {ft['lit']} of the text region's {ft['cells']} cells")
@@ -22519,7 +22555,7 @@ def mm_ui_case(browser, base, shots, problems, r):
         page.click("#mm summary")
         mm_frames(page)
         time.sleep(0.3)
-        closed = page.evaluate("({ on: MEV.on, raf: !!MMAP.raf, track: MMAP.trackFrom, open: MMAP.open })")
+        closed = page.evaluate("({ on: MKB.MEV.on, raf: !!MKB.MMAP.raf, track: MKB.MMAP.trackFrom, open: MKB.MMAP.open })")
         r["closed"] = closed
         if closed["on"] or closed["raf"] or closed["track"] != -1 or closed["open"]:
             problems.append(f"ui: closed, the map still runs: {closed}")
@@ -22563,7 +22599,7 @@ def mm_ui_case(browser, base, shots, problems, r):
 
 def mm_labels_check(page, tag, problems):
     """The labels drawn last: whole (no ellipsis, the lines give the text back) and inside the map."""
-    drawn = page.evaluate("MMAP.labelsDrawn || []")
+    drawn = page.evaluate("MKB.MMAP.labelsDrawn || []")
     for lb in drawn:
         if any(ln.endswith("…") for ln in lb["lines"]) or " ".join(lb["lines"]) != lb["text"]:
             problems.append(f"{tag}: a label cut short: {lb}")
@@ -22579,15 +22615,15 @@ def mm_glow_check(page, shots, problems, r):
     memory (it cleared the screen and printed its banner): only painted
     characters glow, the cleared cells stay black. An earlier build washed
     every written cell in the glow's amber (olive on the dark page)."""
-    at = page.evaluate("""() => { let last = -1; const c = MEV.cols, m = MEV.cap - 1;
-      for (let i = MEV.first(); i < MEV.n; i++) { const k = i & m;
-        if ((c.meta[k] & 3) === 0 && (c.meta[k] & 4) && c.addr[k] >= 0xb8000 && c.addr[k] < 0xc0000 && MEV.nameOf(MEV.regionOf(c.eipPhys[k] >>> 0)).kind !== 'ram') last = i; }
-      return last - MEV.first(); }""")
+    at = page.evaluate("""() => { let last = -1; const c = MKB.MEV.cols, m = MKB.MEV.cap - 1;
+      for (let i = MKB.MEV.first(); i < MKB.MEV.n; i++) { const k = i & m;
+        if ((c.meta[k] & 3) === 0 && (c.meta[k] & 4) && c.addr[k] >= 0xb8000 && c.addr[k] < 0xc0000 && MKB.MEV.nameOf(MKB.MEV.regionOf(c.eipPhys[k] >>> 0)).kind !== 'ram') last = i; }
+      return last - MKB.MEV.first(); }""")
     page.evaluate("(i) => { const s = document.getElementById('mm_time'); s.value = String(i + 1); s.dispatchEvent(new Event('input')); }", at)
     mm_frames(page, 2)
     px = page.evaluate("""() => { const cv = document.getElementById('mm_text'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
       let wash = 0; for (let i = 0; i < d.length; i += 4) if (d[i] > 40 && d[i + 1] > 35 && d[i + 2] < 0.6 * d[i + 1]) wash++;
-      return { wash: wash / (d.length / 4), text: MMAP.text.slice(0, 160).filter((b, i) => !(i & 1) && b > 32).length }; }""")
+      return { wash: wash / (d.length / 4), text: MKB.MMAP.text.slice(0, 160).filter((b, i) => !(i & 1) && b > 32).length }; }""")
     page.evaluate("document.getElementById('mm_text').scrollIntoView()")
     page.screenshot(path=str(shots / "memmap-390-dark-bios-text.png"))
     r["390 dark glow"] = {"event": at, **px}
@@ -22605,7 +22641,7 @@ def mm_same_case(browser, base, shots, problems, r):
                 problems.append(f"same: no end with {q}")
                 return
             time.sleep(0.5)
-            steps = page.evaluate("stepper.steps")
+            steps = page.evaluate("MKB.stepper.steps")
             out[q] = page.evaluate(MEV_DIGEST_JS, steps)
         finally:
             ctx.close()
@@ -22623,7 +22659,7 @@ def mm_speed_case(browser, base, shots, debian, problems, r):
         ctx, page, errs = mev_page(browser)
         try:
             page.goto(f"{base}/index.html?kernel={name}&paused=1&speed=full&count=0&mips=10{q}", timeout=180000)
-            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 180, 0.5):
+            if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 180, 0.5):
                 problems.append(f"speed {tag}: not paused at the reset vector")
                 continue
             show_tab(page, "memory")
@@ -22632,8 +22668,8 @@ def mm_speed_case(browser, base, shots, debian, problems, r):
             if not wait_for(lambda: page.evaluate("window.__jd.done"), 400, 0.2):
                 problems.append(f"speed {tag}: did not reach {JITDET_CAP:,}")
                 continue
-            s = page.evaluate("""() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MEV.n,
-              frames: MMAP.frames, drawMs: Math.round(MMAP.drawMs), samples: MMAP.samples.length }; }""")
+            s = page.evaluate("""() => { const w = window.__jd; return { mips: +(((w.c - w.c0) >>> 0) / (w.at - w.t0) / 1000).toFixed(1), events: MKB.MEV.n,
+              frames: MKB.MMAP.frames, drawMs: Math.round(MKB.MMAP.drawMs), samples: MKB.MMAP.samples.length }; }""")
             r[f"speed {tag}"] = s
             if errs:
                 problems.append(f"speed {tag}: page errors {errs[:3]}")
@@ -22686,11 +22722,11 @@ QS_STATE_JS = """() => ({
     fits: li.scrollWidth <= li.clientWidth + 1 }])),
   progress: document.getElementById('qs_progress').textContent, badge: document.getElementById('qs_badge').textContent,
   toast: document.getElementById('qs_toast').textContent, note: document.getElementById('qs_note').textContent,
-  wins: QUESTS.wins, bursts: QUESTS.burstBits || 0, since: MEV.since, open: QUESTS.open,
+  wins: MKB.QUESTS.wins, bursts: MKB.QUESTS.burstBits || 0, since: MKB.MEV.since, open: MKB.QUESTS.open,
   meter: [document.getElementById('qs_meter').getAttribute('aria-valuenow'), document.getElementById('qs_meter').getAttribute('aria-valuemax')],
-  hl: MMAP.hl && { ranges: MMAP.hl.ranges, label: MMAP.hl.label, cells: MMAP.hl.cells }, mapOpen: document.getElementById('mm').open,
+  hl: MKB.MMAP.hl && { ranges: MKB.MMAP.hl.ranges, label: MKB.MMAP.hl.label, cells: MKB.MMAP.hl.cells }, mapOpen: document.getElementById('mm').open,
   stored: (() => { try { return localStorage.getItem('mkb-quests'); } catch (e) { return 'no storage'; } })(),
-  hscroll: document.documentElement.scrollWidth > innerWidth + 1, steps: stepper && stepper.steps, run: runState })"""
+  hscroll: document.documentElement.scrollWidth > innerWidth + 1, steps: MKB.stepper && MKB.stepper.steps, run: MKB.runState })"""
 
 
 def qs_open(browser, base, name, scheme="light", phone=False, q="quests=1", storage=True):
@@ -22724,10 +22760,10 @@ def qs_answer(page, qid, text):
 
 def qs_click_addr(page, addr):
     """Click the live memory map's cell of addr, the cell in the middle of the viewport."""
-    d = page.evaluate("(a) => MMAP.cellOf(a)", addr)
+    d = page.evaluate("(a) => MKB.MMAP.cellOf(a)", addr)
     page.locator("#mm_map").scroll_into_view_if_needed()
     box = page.locator("#mm_map").bounding_box()
-    x, y = page.evaluate("(d) => [MMAP.cellX[d], MMAP.cellY[d]]", d)
+    x, y = page.evaluate("(d) => [MKB.MMAP.cellX[d], MKB.MMAP.cellY[d]]", d)
     cy = box["y"] + (y + 0.5) / 128 * box["height"]
     page.evaluate(f"window.scrollBy(0, {cy - page.viewport_size['height'] / 2})")
     box = page.locator("#mm_map").bounding_box()
@@ -22737,7 +22773,7 @@ def qs_click_addr(page, addr):
 
 def qs_hint_wait(page):
     """Until the map has drawn the hint (live, it draws about 20 frames a second)."""
-    wait_for(lambda: page.evaluate("!!(MMAP.hl && MMAP.hl.cells > 0)"), 5, 0.05)
+    wait_for(lambda: page.evaluate("!!(MKB.MMAP.hl && MKB.MMAP.hl.cells > 0)"), 5, 0.05)
 
 
 def qs_story(page):
@@ -22818,7 +22854,7 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
             problems.append(f"minified: no celebration: {s['wins']} wins, {s['bursts']} bursts, toast {s['toast']!r}, meter {s['meter']}")
         page.screenshot(path=str(shots / "quests-solved-1280-light.png"))
         # a solved quest takes no more answers
-        again = page.evaluate("() => { QUESTS.answer(QUESTS.cards.get('loader'), 1); return [QUESTS.wins, document.querySelector('#qs_list li[data-q=loader]').dataset.state]; }")
+        again = page.evaluate("() => { MKB.QUESTS.answer(MKB.QUESTS.cards.get('loader'), 1); return [MKB.QUESTS.wins, document.querySelector('#qs_list li[data-q=loader]').dataset.state]; }")
         if again != [1, "solved"]:
             problems.append(f"minified: a solved quest answered again: {again}")
         # the option ROM: its hint blinks the video BIOS ROM; its first bytes
@@ -22889,13 +22925,13 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
         if not target:
             problems.append("minified: no story line of the kernel's code touching the text memory")
         else:
-            ok = wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused' && stepper.steps <= %d" % target[0]), 300, 0.2)
-            landed = page.evaluate("stepper.steps")
+            ok = wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused' && MKB.stepper.steps <= %d" % target[0]), 300, 0.2)
+            landed = page.evaluate("MKB.stepper.steps")
             # the first access can be a read: Step on to the first write
             steps = 0
             while qs_state(page)["cards"]["paint"]["state"] != "solved" and steps < 40:
                 machine_do(page, "click", "#dbg_step")
-                wait_for(lambda: page.evaluate("runState === 'paused'"), 10, 0.05)
+                wait_for(lambda: page.evaluate("MKB.runState === 'paused'"), 10, 0.05)
                 time.sleep(0.6)
                 steps += 1
             s = qs_state(page)
@@ -22955,7 +22991,7 @@ def qs_late_case(browser, base, shots, entries, problems, r):
         if c["state"] != "boot" or not c["boot"] or "Boot again" not in c["why"] or s["cards"]["loader"]["state"] != "open":
             problems.append(f"late: first paint opened late: {c}")
         qs_card(page, "paint", ".qs-boot").click()
-        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind") and page.evaluate("MEV.since === 0"), 600, 0.5):
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind") and page.evaluate("MKB.MEV.since === 0"), 600, 0.5):
             problems.append(f"late: no end after Boot again, page errors {errs[:3]}")
             return
         ok = qs_wait(page, "paint", "open", 20)
@@ -23059,7 +23095,7 @@ def qs_debian_case(browser, base, shots, name, problems, r):
         for q in ("pciclass", "barsize"):
             qs_card(page, q, ".qs-hintbtn").click()
             # a new hint: its cells drawn
-            page.evaluate("MMAP.hl.cells = 0")
+            page.evaluate("MKB.MMAP.hl.cells = 0")
             qs_hint_wait(page)
             hl[q] = qs_state(page)["hl"]
         r["pci hints"] = hl
@@ -23147,7 +23183,7 @@ def suite_quests(ctx):
 # share one row, the table's rows become cards, no horizontal scroll.
 MT_LOOK_JS = """() => { const shown = document.querySelector('.tabbar [role=tab][aria-selected=true]');
   const rows = [...document.querySelectorAll('#mev_rows tr')];
-  return { tab: shown && shown.dataset.tab, hash: location.hash, on: MEV.on, n: MEV.n, gen: MEV.gen, quests: QUESTS.open,
+  return { tab: shown && shown.dataset.tab, hash: location.hash, on: MKB.MEV.on, n: MKB.MEV.n, gen: MKB.MEV.gen, quests: MKB.QUESTS.open,
     status: document.getElementById('mev_status').textContent, record: document.getElementById('mev_on').checked,
     heads: [...document.querySelectorAll('#mev_table thead th')].map((t) => t.textContent.trim()),
     rows: rows.map((tr) => ({ n: Number(tr.dataset.n || 0), cells: Object.fromEntries([...tr.cells].map((td) => [td.dataset.col, td.textContent.trim()])) })),
@@ -23180,7 +23216,7 @@ MT_READ_JS = """(sel) => { const ch = (c) => (c.match(/[\\d.]+/g) || []).map(Num
 
 
 def mt_look(page):
-    page.evaluate("MEV.render()")
+    page.evaluate("MKB.MEV.render()")
     return page.evaluate(MT_LOOK_JS)
 
 
@@ -23246,7 +23282,7 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
         ctx, page, errs = mev_page(browser, scheme)
         try:
             page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0&mips=10&paused=1", timeout=180000)
-            if not wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && runState === 'paused'"), 120, 0.3):
+            if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 120, 0.3):
                 problems.append(f"hidden {scheme}: hello not paused at the reset vector")
                 continue
             before = mt_look(page)
@@ -23256,8 +23292,8 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             show_tab(page, "machine")
             page.click("#dbg_continue")
             seen_on = []
-            ok = wait_for(lambda: seen_on.append(page.evaluate("MEV.on")) or page.get_attribute("#end_banner", "data-kind"), 120, 0.2)
-            hidden = page.evaluate("({ n: MEV.n, on: MEV.on, cpu: MEV.counts[0], tab: document.querySelector('.tabbar [aria-selected=true]').dataset.tab })")
+            ok = wait_for(lambda: seen_on.append(page.evaluate("MKB.MEV.on")) or page.get_attribute("#end_banner", "data-kind"), 120, 0.2)
+            hidden = page.evaluate("({ n: MKB.MEV.n, on: MKB.MEV.on, cpu: MKB.MEV.counts[0], tab: document.querySelector('.tabbar [aria-selected=true]').dataset.tab })")
             show_tab(page, "events")
             time.sleep(0.6)
             back = mt_look(page)
@@ -23298,7 +23334,7 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                     rd["border"] == wr["border"] or int(wr["weight"]) <= int(rd["weight"]):
                 problems.append(f"read/write {scheme}: a read row and a write row do not differ in marker, fill, border and weight: {rw}")
             page.screenshot(path=str(shots / f"memtabs-events-1280-{scheme}.png"))
-            line =page.evaluate("MEV.describe(MEV.event(MEV.query({ initiator: 'emulator' }).find((i) => MEV.event(i).source === 'kernel protected-mode part')))")
+            line =page.evaluate("MKB.MEV.describe(MKB.MEV.event(MKB.MEV.query({ initiator: 'emulator' }).find((i) => MKB.MEV.event(i).source === 'kernel protected-mode part')))")
             # filter chips, the search box, grouping
             page.click("#mev_who [data-v=emulator]")
             emu = mt_look(page)["rows"]
@@ -23344,24 +23380,24 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 tr = page.locator("#mev_rows tr").nth(row)
                 tr.locator(".mev-act", has_text="map").click()
                 time.sleep(0.5)
-                onmap = page.evaluate("({ tab: document.querySelector('.tabbar [aria-selected=true]').dataset.tab, open: document.getElementById('mm').open, pick: MMAP.pick, range: MMAP.pick >= 0 ? MMAP.cellRange(MMAP.pick) : null })")
+                onmap = page.evaluate("({ tab: document.querySelector('.tabbar [aria-selected=true]').dataset.tab, open: document.getElementById('mm').open, pick: MKB.MMAP.pick, range: MKB.MMAP.pick >= 0 ? MKB.MMAP.cellRange(MKB.MMAP.pick) : null })")
                 r[f"actions {scheme}"]["map"] = onmap
                 if onmap["tab"] != "memory" or not onmap["open"] or not onmap["range"] or not (0xb8000 <= onmap["range"][1] - 1 and onmap["range"][0] < 0xc0000):
                     problems.append(f"actions {scheme}: map from the row: {onmap}")
                 show_tab(page, "events")
                 time.sleep(0.6)
-                steps = page.evaluate("stepper.steps")
+                steps = page.evaluate("MKB.stepper.steps")
                 page.locator("#mev_rows tr").nth(row).locator(".mev-act", has_text="rewind").click()
-                wait_for(lambda: page.evaluate("!REV.busy && runState === 'paused'"), 120, 0.2)
-                landed = page.evaluate("stepper.steps")
+                wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused'"), 120, 0.2)
+                landed = page.evaluate("MKB.stepper.steps")
                 r[f"actions {scheme}"]["steps"] = [steps, landed]
                 if not landed < steps:
                     problems.append(f"actions {scheme}: rewind from {steps} landed at {landed}")
                 # (M5) the rewind restored instruction 0's checkpoint, whose
                 # state the loader made before the first instruction: its
                 # events at 0 stay in the log and in the table
-                loader = page.evaluate("""() => ({ cp0: REV.cps.length ? REV.cps[0].steps : null,
-                  log: MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MEV.event(i).source) })""")
+                loader = page.evaluate("""() => ({ cp0: MKB.REV.cps.length ? MKB.REV.cps[0].steps : null,
+                  log: MKB.MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MKB.MEV.event(i).source) })""")
                 page.click("#mev_who [data-v=emulator]")
                 loader["rows"] = [x["cells"].get("who", "") for x in mt_look(page)["rows"]]
                 page.click("#mev_who [data-v='']")
@@ -23374,7 +23410,7 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120, 0.3)
                 show_tab(page, "events")
                 time.sleep(0.6)
-                again = page.evaluate("MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MEV.event(i).source)")
+                again = page.evaluate("MKB.MEV.query({ initiator: 'emulator', to: 1 }).map((i) => MKB.MEV.event(i).source)")
                 if again != loader["log"]:
                     problems.append(f"actions {scheme}: the loader's events at 0 after running on {again}, after the rewind {loader['log']}")
             else:
@@ -23391,14 +23427,14 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             # a device's DMA (no shipped kernel makes one: written through
             # libv86's device API, as mev_negative_case does), a search
             # that finds nothing, what each standard is
-            page.evaluate("MEV.cpu.dma_write(0x1e << 3, new Uint8Array([1, 2, 3]), 0xa010)")
-            page.evaluate("MEV.cpu.dma_write(0x12 << 3, new Uint8Array([4]), 0xa020)")
+            page.evaluate("MKB.MEV.cpu.dma_write(0x1e << 3, new Uint8Array([1, 2, 3]), 0xa010)")
+            page.evaluate("MKB.MEV.cpu.dma_write(0x12 << 3, new Uint8Array([4]), 0xa020)")
             # the live memory map (opened by map above) pulses them in: the IDE
             # controller's from the edge (it has no memory BAR region),
             # labelled; the display controller's from its BAR0 region
             show_tab(page, "memory")
-            pulse = wait_for(lambda: page.evaluate("""MMAP.anims.some((a) => a.layer === 1 && a.edge && MEV.event(a.i).source === 'PCI 00:1e.0') &&
-              MMAP.anims.some((a) => a.layer === 1 && !a.edge && MEV.event(a.i).source === 'PCI 00:12.0' && MMAP.segName(MMAP.segs[MMAP.cellSeg[a.from]]).startsWith('PCI 00:12.0 BAR0'))"""), 10, 0.05)
+            pulse = wait_for(lambda: page.evaluate("""MKB.MMAP.anims.some((a) => a.layer === 1 && a.edge && MKB.MEV.event(a.i).source === 'PCI 00:1e.0') &&
+              MKB.MMAP.anims.some((a) => a.layer === 1 && !a.edge && MKB.MEV.event(a.i).source === 'PCI 00:12.0' && MKB.MMAP.segName(MKB.MMAP.segs[MKB.MMAP.cellSeg[a.from]]).startsWith('PCI 00:12.0 BAR0'))"""), 10, 0.05)
             page.screenshot(path=str(shots / f"memtabs-dma-pulse-1280-{scheme}.png"))
             show_tab(page, "events")
             if not pulse:
@@ -23407,10 +23443,10 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             dev = mt_look(page)["rows"]
             page.click("#mev_who [data-v='']")
             page.fill("#mev_search", "no such thing here")
-            none = page.evaluate("MEV.render(), [document.querySelectorAll('#mev_rows tr').length, document.getElementById('mev_more').textContent]")
+            none = page.evaluate("MKB.MEV.render(), [document.querySelectorAll('#mev_rows tr').length, document.getElementById('mev_more').textContent]")
             page.fill("#mev_search", "")
             stds = page.evaluate("""() => ['IBM PC memory map', 'E820 type 1', 'PCI configuration mechanism #1', 'MultiProcessor Specification table',
-              'ACPI MADT', 'IA32_APIC_BASE power-up value (Intel SDM)', ''].map((s) => MEV.stdText(s))""")
+              'ACPI MADT', 'IA32_APIC_BASE power-up value (Intel SDM)', ''].map((s) => MKB.MEV.stdText(s))""")
             r[f"device {scheme}"] = {"rows": [x["cells"] for x in dev[:2]], "none": none, "stds": [t[:40] for t in stds]}
             ide = [x for x in dev if x["cells"]["who"].startswith("DevicePCI 00:1e.0, mass storage controller, IDE (PCI class 01:01)")]
             if len(dev) != 2 or len(ide) != 1 or "3 bytes" not in ide[0]["cells"]["size"] or "checksum" not in ide[0]["cells"]["value"] or \
@@ -23426,7 +23462,7 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
             # (on the group's label) changes no filter
             page.click("#mev_who [data-v=cpu]")
             page.click("#mev_who .mev-chiplabel")
-            kept = page.evaluate("MEV.filter.who")
+            kept = page.evaluate("MKB.MEV.filter.who")
             page.click("#mev_who [data-v='']")
             if not line.startswith("0  emulator  write  0x00100000") or not line.endswith("kernel protected-mode part"):
                 problems.append(f"device {scheme}: describe() of the loader's event: {line!r}")
@@ -23434,21 +23470,21 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 problems.append(f"device {scheme}: a click on the Who label changed the filter to {kept!r}")
             # (the live memory map opened above records for itself)
             page.uncheck("#mev_on")
-            off = page.evaluate("MEV.needs.has('list')")
+            off = page.evaluate("MKB.MEV.needs.has('list')")
             show_tab(page, "memory")
             show_tab(page, "events")
             still = mt_look(page)
-            still["list"] = page.evaluate("MEV.needs.has('list')")
+            still["list"] = page.evaluate("MKB.MEV.needs.has('list')")
             if off or still["list"] or still["record"]:
                 problems.append(f"hidden {scheme}: Record cleared: the list records {off} then {still['list']}, box {still['record']}")
             page.check("#mev_on")
-            if not page.evaluate("MEV.on"):
+            if not page.evaluate("MKB.MEV.on"):
                 problems.append(f"hidden {scheme}: Record ticked again, not recording")
             # a kernel switch: a new log, the quests count for the new kernel
             if scheme == "light" and "minified-linux" in entries:
-                gen = page.evaluate("MEV.gen")
+                gen = page.evaluate("MKB.MEV.gen")
                 machine_do(page, "select_option", "#kernel", "minified-linux")
-                ok = wait_for(lambda: page.evaluate("image && image.name") == "minified-linux" and page.get_attribute("#end_banner", "data-kind"), 600, 0.5)
+                ok = wait_for(lambda: page.evaluate("MKB.image && MKB.image.name") == "minified-linux" and page.get_attribute("#end_banner", "data-kind"), 600, 0.5)
                 time.sleep(0.6)
                 s = mt_look(page)
                 text = [x["cells"].get("value", "") for x in s["rows"]]
@@ -23474,12 +23510,12 @@ def mt_hidden_case(browser, base, shots, entries, problems, r):
                 page.screenshot(path=str(shots / f"memtabs-quests-1280-{scheme}.png"))
                 # "Watch this run" cleared by the user stays cleared (and is remembered)
                 page.uncheck("#qs_on")
-                off = page.evaluate("[QUESTS.open, MEV.needs.has('quests'), localStorage.getItem('mkb-quests-open')]")
+                off = page.evaluate("[MKB.QUESTS.open, MKB.MEV.needs.has('quests'), localStorage.getItem('mkb-quests-open')]")
                 show_tab(page, "memory")
                 show_tab(page, "quests")
-                still = page.evaluate("[QUESTS.open, document.getElementById('qs_on').checked]")
+                still = page.evaluate("[MKB.QUESTS.open, document.getElementById('qs_on').checked]")
                 page.check("#qs_on")
-                again = page.evaluate("[QUESTS.open, MEV.needs.has('quests')]")
+                again = page.evaluate("[MKB.QUESTS.open, MKB.MEV.needs.has('quests')]")
                 r["watch box"] = [off, still, again]
                 if off != [False, False, "0"] or still != [False, False] or again != [True, True]:
                     problems.append(f"switch: Watch this run cleared {off}, after a tab change {still}, ticked {again}")
@@ -23612,7 +23648,7 @@ def srcedit_press(page, sel, phone):
 
 def srcedit_open(page, path, phone):
     """The whole file in the Source panel, then Edit: the editor with its text."""
-    page.evaluate("(p) => openSourceFile(p)", path)
+    page.evaluate("(p) => MKB.openSourceFile(p)", path)
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok" and page.get_attribute("#src_body", "data-file") == path, 60)
     t0 = time.monotonic()
     if not srcedit_state(page)["editing"]:
@@ -23623,14 +23659,14 @@ def srcedit_open(page, path, phone):
 
 def srcedit_ready(page, name):
     """The overlay read from storage and the kernel shown (paths() are the shown kernel's)."""
-    page.wait_for_function("typeof srcOverlay !== 'undefined' && srcOverlay.ready", timeout=60000)
-    page.evaluate("srcOverlay.ready")
-    page.wait_for_function("(n) => srcKernelKey() === n", arg=name, timeout=60000)
+    page.wait_for_function("typeof window.MKB?.srcOverlay !== 'undefined' && MKB.srcOverlay.ready", timeout=60000)
+    page.evaluate("MKB.srcOverlay.ready")
+    page.wait_for_function("(n) => MKB.srcKernelKey() === n", arg=name, timeout=60000)
 
 
 def srcedit_overlay(page):
-    return page.evaluate("""async () => { await srcOverlay.ready; const paths = srcOverlay.paths(), out = {};
-      for (const p of paths) out[p] = [await srcOverlay.read(p), await srcOverlay.original(p)];
+    return page.evaluate("""async () => { await MKB.srcOverlay.ready; const paths = MKB.srcOverlay.paths(), out = {};
+      for (const p of paths) out[p] = [await MKB.srcOverlay.read(p), await MKB.srcOverlay.original(p)];
       return { paths, files: out }; }""")
 
 
@@ -23913,7 +23949,7 @@ def srcedit_run(browser, base, shots, name, scheme, phone, tmp):
     if ov3 != ov:
         problems.append(f"{tag}: after a reload srcOverlay has {ov3['paths']}, before {ov['paths']}")
     # Not editing, the panel says the file has edits; its Diff shows them.
-    page.evaluate("(p) => openSourceFile(p)", path)
+    page.evaluate("(p) => MKB.openSourceFile(p)", path)
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 60)
     wait_for(lambda: srcedit_state(page)["barShown"], 10)
     st = srcedit_state(page)
@@ -23952,7 +23988,7 @@ def srcedit_run(browser, base, shots, name, scheme, phone, tmp):
         st = srcedit_state(page)
         if not st["editing"] or st["value"] != change[header]:
             problems.append(f"{tag}: the list's {header} did not open in the editor: editing {st['editing']}, {st['value'][:60]!r}")
-        page.evaluate("(p) => openSourceFile(p)", path)
+        page.evaluate("(p) => MKB.openSourceFile(p)", path)
         wait_for(lambda: srcedit_state(page)["value"] == change[path], 15)
 
     # 10. Revert (press twice) one file, then Revert all.
@@ -24030,8 +24066,8 @@ def srcedit_nostore_run(browser, base, shots):
     if "again" not in armed or page.text_content("#ed_revert_all") != "Revert all" or srcedit_overlay(page)["paths"] != [path]:
         problems.append(f"no IndexedDB: the armed Revert all ({armed!r}) did not expire: {page.text_content('#ed_revert_all')!r}")
     # The API: write (a line taken out: a deletion-only diff), patch, revert.
-    api = page.evaluate("""async ([p, t]) => { await srcOverlay.write(p, t); const patch = srcOverlay.patch();
-      await srcOverlay.revert(p); return [patch, srcOverlay.paths(), await srcOverlay.read(p) === await srcOverlay.original(p)]; }""",
+    api = page.evaluate("""async ([p, t]) => { await MKB.srcOverlay.write(p, t); const patch = MKB.srcOverlay.patch();
+      await MKB.srcOverlay.revert(p); return [patch, MKB.srcOverlay.paths(), await MKB.srcOverlay.read(p) === await MKB.srcOverlay.original(p)]; }""",
                         [path, orig.split("\n", 1)[1]])
     first = orig.split("\n", 1)[0]
     added = [x for x in api[0].split("\n") if x.startswith("+") and not x.startswith("+++")]
@@ -24040,7 +24076,7 @@ def srcedit_nostore_run(browser, base, shots):
     # Edit opened at a picked line: the caret is on it.
     page.click("#src_edit")
     wait_for(lambda: not srcedit_state(page)["editing"], 5)
-    page.evaluate("(p) => openSourceLine(p, 12)", path)
+    page.evaluate("(p) => MKB.openSourceLine(p, 12)", path)
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
     page.click("#src_edit")
     wait_for(lambda: "line 12," in srcedit_state(page)["state"], 10)
@@ -24139,10 +24175,10 @@ def srcedit_paths_run(browser, base, tmp):
         f"@@ -{n} +{n} @@\n-{lines[-1]}+{lines[-1]}\\ No newline at end of file\n"
     want = "".join(lines[:k]) + moved + "".join(lines[k + 1:])[:-1]
     state, text = upload("offset", body)
-    got = page.evaluate("(p) => srcOverlay.read(p)", path)
+    got = page.evaluate("(p) => MKB.srcOverlay.read(p)", path)
     if state != "applied" or got != want:
         problems.append(f"upload offset: {state} {text!r}, text as wanted {got == want}")
-    page.evaluate("(p) => srcOverlay.revert(p)", path)
+    page.evaluate("(p) => MKB.srcOverlay.revert(p)", path)
 
     # 3. The API's patches, each through git apply on the shipped file.
     two = lines[:]
@@ -24154,11 +24190,11 @@ def srcedit_paths_run(browser, base, tmp):
     if 70 * (n - 1) <= 2000:
         problems.append(f"{path}: {n} lines are too few for more than 2000 differences")
     api = page.evaluate("""async ([p, two, big]) => { const out = {};
-      await srcOverlay.write(p, two); out.two = srcOverlay.patch(); await srcOverlay.revert(p);
-      await srcOverlay.write(p, null); await srcOverlay.write('e2/empty.h', ''); out.del = srcOverlay.patch();
-      out.delPaths = srcOverlay.paths(); await srcOverlay.revert(p); await srcOverlay.revert('e2/empty.h');
-      const t0 = performance.now(); await srcOverlay.write(p, big); out.big = srcOverlay.patch(); out.bigMs = performance.now() - t0;
-      await srcOverlay.revert(p); out.left = srcOverlay.paths(); return out; }""", [path, "".join(two), big])
+      await MKB.srcOverlay.write(p, two); out.two = MKB.srcOverlay.patch(); await MKB.srcOverlay.revert(p);
+      await MKB.srcOverlay.write(p, null); await MKB.srcOverlay.write('e2/empty.h', ''); out.del = MKB.srcOverlay.patch();
+      out.delPaths = MKB.srcOverlay.paths(); await MKB.srcOverlay.revert(p); await MKB.srcOverlay.revert('e2/empty.h');
+      const t0 = performance.now(); await MKB.srcOverlay.write(p, big); out.big = MKB.srcOverlay.patch(); out.bigMs = performance.now() - t0;
+      await MKB.srcOverlay.revert(p); out.left = MKB.srcOverlay.paths(); return out; }""", [path, "".join(two), big])
     r["rewrite patch ms"] = round(api["bigMs"])
     for stem, want_after in (("two", {path: "".join(two)}), ("del", {"e2/empty.h": ""}), ("big", {path: big})):
         p = tmp / f"srcedit-api-{stem}.patch"
@@ -24179,22 +24215,22 @@ def srcedit_paths_run(browser, base, tmp):
     ov = srcedit_overlay(page)
     if not ok or state != "applied" or ov["paths"] != [path] or ov["files"][path][0] is not None:
         problems.append(f"upload deleting the file in the editor: {state} {text!r}, overlay {ov['paths']}")
-    page.evaluate("(p) => srcOverlay.revert(p)", path)
+    page.evaluate("(p) => MKB.srcOverlay.revert(p)", path)
     state, text = upload("new", "diff --git a/e2/new.h b/e2/new.h\nnew file mode 100644\n--- /dev/null\n+++ b/e2/new.h\n@@ -0,0 +1 @@\n+#define E2 1\n")
-    page.evaluate("(p) => openSourceFile(p)", "e2/new.h")
+    page.evaluate("(p) => MKB.openSourceFile(p)", "e2/new.h")
     if not wait_for(lambda: (lambda s: s["editing"] and s["value"] == "#define E2 1\n")(srcedit_state(page)), 15):
         problems.append(f"the uploaded new file in the editor: {state} {text!r}, {srcedit_state(page)['value'][:40]!r}")
-    page.evaluate("srcOverlay.revert('e2/new.h')")
+    page.evaluate("MKB.srcOverlay.revert('e2/new.h')")
     if not wait_for(lambda: not srcedit_state(page)["editing"], 5) or srcedit_overlay(page) != clean:
         problems.append(f"reverting the new file in the editor: editing {srcedit_state(page)['editing']}, {srcedit_overlay(page)['paths']}")
 
     # 5. Edit on, the panel moves to a file with no text: Edit turns off and
     # stays off on the next file.
     ok, _ = srcedit_open(page, path, False)
-    page.evaluate("(p) => openSourceFile(p)", "no/such.c")
+    page.evaluate("(p) => MKB.openSourceFile(p)", "no/such.c")
     wait_for(lambda: page.get_attribute("#src_body", "data-file") == "no/such.c" and not srcedit_state(page)["editing"], 15)
     st = srcedit_state(page)
-    page.evaluate("(p) => openSourceFile(p)", path)
+    page.evaluate("(p) => MKB.openSourceFile(p)", path)
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok" and page.get_attribute("#src_body", "data-file") == path, 30)
     st2 = srcedit_state(page)
     if not ok or st["editing"] or st["pressed"] != "false" or st2["editing"]:
@@ -24203,19 +24239,19 @@ def srcedit_paths_run(browser, base, tmp):
     # 6. Ctrl+S in the editor stores what was typed before the typing pause.
     srcedit_open(page, path, False)
     cs = page.evaluate("""(p) => { const ta = document.getElementById('ed_text'); ta.setRangeText('/* S */', 0, 0, 'end');
-      ta.dispatchEvent(new Event('input')); const pending = ED.timer !== 0 && !srcOverlay.paths().includes(p);
+      ta.dispatchEvent(new Event('input')); const pending = MKB.ED.timer !== 0 && !MKB.srcOverlay.paths().includes(p);
       const ev = new KeyboardEvent('keydown', { key: 's', ctrlKey: true, cancelable: true, bubbles: true }); ta.dispatchEvent(ev);
-      return [pending, ev.defaultPrevented, ED.timer, srcOverlay.paths().includes(p)]; }""", path)
+      return [pending, ev.defaultPrevented, MKB.ED.timer, MKB.srcOverlay.paths().includes(p)]; }""", path)
     if cs != [True, True, 0, True]:
         problems.append(f"Ctrl+S: [typed not yet stored, default prevented, timer, stored] = {cs}")
-    page.evaluate("(p) => srcOverlay.revert(p)", path)
+    page.evaluate("(p) => MKB.srcOverlay.revert(p)", path)
     # Edit pressed (editing off) right after typing, before the pause: what
     # was typed is stored, and the editor's status line is left alone.
     srcedit_open(page, path, False)
     off = page.evaluate("""async (p) => { const ta = document.getElementById('ed_text'); ta.setRangeText('/* off */', 0, 0, 'end');
-      ta.dispatchEvent(new Event('input')); const pending = ED.timer !== 0; document.getElementById('src_edit').click();
-      await srcOverlay.ready; await new Promise((res) => setTimeout(res, 100));
-      return [pending, ED.on, (await srcOverlay.read(p)).startsWith('/* off */')]; }""", path)
+      ta.dispatchEvent(new Event('input')); const pending = MKB.ED.timer !== 0; document.getElementById('src_edit').click();
+      await MKB.srcOverlay.ready; await new Promise((res) => setTimeout(res, 100));
+      return [pending, MKB.ED.on, (await MKB.srcOverlay.read(p)).startsWith('/* off */')]; }""", path)
     if off != [True, False, True]:
         problems.append(f"Edit off right after typing: [save pending, editing, stored] = {off}")
     # The Source tab showing a file's diff, that file reverted: the diff goes.
@@ -24243,7 +24279,7 @@ def srcedit_paths_run(browser, base, tmp):
         page.on("pageerror", lambda e: errs.append(str(e)[:200]))
         page.goto(f"{base}/index.html?kernel=hello&paused=1#source")
         srcedit_ready(page, "hello")
-        page.evaluate("async (p) => srcOverlay.write(p, '/* idb */\\n' + await srcOverlay.original(p))", path)
+        page.evaluate("async (p) => MKB.srcOverlay.write(p, '/* idb */\\n' + await MKB.srcOverlay.original(p))", path)
         count = page.text_content("#ed_count")
         r[f"idb {what}"] = count
         if why not in count or "reload" not in count or errs:
@@ -24293,7 +24329,7 @@ RB_STATE_JS = """() => { const shown = (e) => !!e && !e.hidden && e.getClientRec
   return { state: $('rb_status').dataset.state || '', status: $('rb_status').textContent, go: !$('rb_go').disabled,
     goPanel: !$('rb_go_panel').disabled, title: $('rb_go').title, label: $('rb_go_panel').textContent.trim(),
     panelShown: shown($('rb_go_panel')), progress: shown($('rb_progress')), log: $('rb_log').textContent, logShown: shown($('rb_log')),
-    files: shown($('rb_files')), back: shown($('rb_back')), kernel: image ? image.name : null, from: image ? image.from || null : null,
+    files: shown($('rb_files')), back: shown($('rb_back')), kernel: MKB.image ? MKB.image.name : null, from: MKB.image ? MKB.image.from || null : null,
     hscroll: document.documentElement.scrollWidth > innerWidth + 1, seen: window.rbSeen || [] }; }"""
 
 # Every text the status line shows, with the progress bar's value.
@@ -24343,10 +24379,10 @@ def rb_buildlog_open(page, phone):
     wait_for(lambda: page.evaluate("document.getElementById('rb_buildlog').getClientRects().length > 0"), 5)
 
 RB_LINES_JS = """async (name) => {
-  const s = symbols.symbols.find((x) => x.name === name);
+  const s = MKB.symbols.symbols.find((x) => x.name === name);
   if (!s) return null;
-  let f = dbgFunction(s.paddr);
-  for (let i = 0; i < 300 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = dbgFunction(s.paddr); }
+  let f = MKB.dbgFunction(s.paddr);
+  for (let i = 0; i < 300 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = MKB.dbgFunction(s.paddr); }
   const lines = f.state === 'ok' ? [...new Set(f.rows.flatMap(([, , fr]) => fr.map((x) => (x.file || '') + ':' + x.line)))] : [f.state, f.why];
   return { paddr: s.paddr, vaddr: s.vaddr, lines }; }"""
 
@@ -24553,10 +24589,10 @@ def rebuild_run(browser, base, shots, tmp):
     page.screenshot(path=str(shots / "rebuild-1280-machine-light.png"))
 
     # 3. Symbols, DWARF lines, disasm, source: the edit's.
-    wait_for(lambda: page.evaluate("GEN.state === 'done' && DBG.mode === 'shards' && SRC.mode === 'shipped' && /indexed in this browser/.test(SRC.info || '')"), 120)
-    k = page.evaluate("""() => ({ gen: GEN.state, dbg: DBG.mode, info: DBG.info, src: SRC.mode, srcInfo: SRC.info,
-      generated: !!(symbols.imported && symbols.imported.generated), file: symbols.imported && symbols.imported.file,
-      insns: disasm ? disasm.insns.length : 0, syms: symbols.symbols.map((s) => s.name) })""")
+    wait_for(lambda: page.evaluate("MKB.GEN.state === 'done' && MKB.DBG.mode === 'shards' && MKB.SRC.mode === 'shipped' && /indexed in this browser/.test(MKB.SRC.info || '')"), 120)
+    k = page.evaluate("""() => ({ gen: MKB.GEN.state, dbg: MKB.DBG.mode, info: MKB.DBG.info, src: MKB.SRC.mode, srcInfo: MKB.SRC.info,
+      generated: !!(MKB.symbols.imported && MKB.symbols.imported.generated), file: MKB.symbols.imported && MKB.symbols.imported.file,
+      insns: MKB.disasm ? MKB.disasm.insns.length : 0, syms: MKB.symbols.symbols.map((s) => s.name) })""")
     r["data"] = {x: k[x] for x in ("gen", "dbg", "info", "src", "insns")}
     if k["gen"] != "done" or k["dbg"] != "shards" or not k["generated"] or k["file"] != elf_path.split("/")[-1] or not k["insns"]:
         problems.append(f"the rebuilt kernel's data files: {r['data']}, generated {k['generated']}, file {k['file']}")
@@ -24580,11 +24616,11 @@ def rebuild_run(browser, base, shots, tmp):
     for fn, s in (("e4_marker", "return 4;"), ("hello_main", RB_TO), ("hello_main", "int row = BDA_CURSOR_ROW")):
         if not lines.get(fn) or at(s) not in lines[fn]["lines"]:
             problems.append(f"{fn}'s DWARF lines {lines.get(fn) and lines[fn]['lines']} lack {at(s)} ({s!r} in the edited file)")
-    wait_for(lambda: page.evaluate("srcFile('boot/hello.c').state") == "ok", 30)
-    if page.evaluate("srcFile('boot/hello.c').lines") != wl:
+    wait_for(lambda: page.evaluate("MKB.srcFile('boot/hello.c').state") == "ok", 30)
+    if page.evaluate("MKB.srcFile('boot/hello.c').lines") != wl:
         problems.append("the source the listings read is not the edited text")
     pa = lines["e4_marker"]["paddr"] if lines.get("e4_marker") else 0
-    page.evaluate(f"jumpTo({pa})")
+    page.evaluate(f"MKB.jumpTo({pa})")
     wait_for(lambda: "return 4;" in page.inner_text("#listing"), 30)
     lst = page.inner_text("#listing")
     if shown_tab(page) != "page" or "e4_marker" not in lst or "return 4;" not in lst:
@@ -24621,7 +24657,7 @@ def rebuild_run(browser, base, shots, tmp):
         if copied != page.evaluate("document.getElementById('rb_buildlog').textContent"):
             problems.append(f"Copy of the build log put {copied[:200]!r} on the clipboard")
     # The Source panel: the edited text, said to be the one built.
-    page.evaluate("(p) => openSourceFile(p)", RB_FILE)
+    page.evaluate("(p) => MKB.openSourceFile(p)", RB_FILE)
     if srcedit_state(page)["editing"]:
         rb_press(page, "#src_edit", False)
     wait_for(lambda: "rebuilt here from your text" in srcedit_state(page)["state"], 15)
@@ -24749,7 +24785,7 @@ def rebuild_phone_run(browser, base, shots, tmp):
             problems.append(f"390: the open build log: shown {lg['logShown']}, right {lg['right']} of {lg['vw']}, sideways scroll {lg['hscroll']}")
     rb_press(page, "#rb_back", True)
     wait_for(lambda: rb_state(page)["kernel"] == "hello", 30)
-    page.evaluate("srcOverlay.revert('boot/hello.c')")
+    page.evaluate("MKB.srcOverlay.revert('boot/hello.c')")
     ctx.close()
     # No build kits on the site: the reason, no button to press.
     nc = browser.new_context(viewport={"width": 1280, "height": 1000})
@@ -24817,7 +24853,7 @@ def rebuild_edges_run(browser, base):
     page.goto(f"{base}/index.html?kernel=hello#source")
     srcedit_ready(page, "hello")
     wait_for(lambda: rb_state(page)["go"], 60)
-    page.evaluate("async () => { await srcOverlay.write('boot/e4_new.h', '#define E4 1\\n'); await srcOverlay.write('boot/hello.c', null); }")
+    page.evaluate("async () => { await MKB.srcOverlay.write('boot/e4_new.h', '#define E4 1\\n'); await MKB.srcOverlay.write('boot/hello.c', null); }")
     rb_press(page, "#rb_go", False)
     st = rb_wait(page, ("failed", "done"), 60)
     r["refused"] = st["status"]
@@ -24960,7 +24996,7 @@ def rbl_build(page, sel, phone, timeout=600, open_log=False):
     if st["state"] == "done":
         wait_for(lambda: page.evaluate("rbScr.at") is not None, 120, 0.1)
     at = page.evaluate("clearInterval(rbScrTimer), rbScr.at")
-    st["speed"] = page.evaluate("[document.getElementById('dbg_speed').value, prefSpeed, runState]")
+    st["speed"] = page.evaluate("[document.getElementById('dbg_speed').value, MKB.prefSpeed, MKB.runState]")
     return st, s_end, at and round(at, 1)
 
 
@@ -25060,10 +25096,10 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     page.emulate_media(color_scheme=scheme)
 
     # 3. The data files made in this browser: symbols, disassembly, DWARF, source.
-    if not wait_for(lambda: page.evaluate("GEN.state === 'done' && DBG.mode === 'shards' && SRC.mode === 'shipped' && /indexed in this browser/.test(SRC.info || '')"), 300):
-        problems.append(f"{tag}: the data files: {page.evaluate('[GEN.state, GEN.note, DBG.mode, SRC.mode, SRC.info]')}")
-    k = page.evaluate("""() => ({ gen: GEN.state, dbg: DBG.mode, generated: !!(symbols.imported && symbols.imported.generated),
-      file: symbols.imported && symbols.imported.file, insns: disasm ? disasm.insns.length : 0, nsyms: symbols.symbols.length })""")
+    if not wait_for(lambda: page.evaluate("MKB.GEN.state === 'done' && MKB.DBG.mode === 'shards' && MKB.SRC.mode === 'shipped' && /indexed in this browser/.test(MKB.SRC.info || '')"), 300):
+        problems.append(f"{tag}: the data files: {page.evaluate('[MKB.GEN.state, MKB.GEN.note, MKB.DBG.mode, MKB.SRC.mode, MKB.SRC.info]')}")
+    k = page.evaluate("""() => ({ gen: MKB.GEN.state, dbg: MKB.DBG.mode, generated: !!(MKB.symbols.imported && MKB.symbols.imported.generated),
+      file: MKB.symbols.imported && MKB.symbols.imported.file, insns: MKB.disasm ? MKB.disasm.insns.length : 0, nsyms: MKB.symbols.symbols.length })""")
     r["data"] = k
     if not k["generated"] or k["file"] != elf_path.split("/")[-1] or k["insns"] < 1000 or k["nsyms"] < 500:
         problems.append(f"{tag}: the rebuilt kernel's data files: {k}")
@@ -25090,11 +25126,11 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     old_panic = f"{RBL_FILE}:{next(i for i, l in enumerate(orig.split(chr(10)), 1) if 'cannot execute /init' in l)}"
     if old_panic in lines.get("kernel_init", []):
         problems.append(f"{tag}: kernel_init's DWARF lines still have the shipped file's {old_panic}")
-    wait_for(lambda: page.evaluate(f"srcFile('{RBL_FILE}').state") == "ok", 30)
-    if page.evaluate(f"srcFile('{RBL_FILE}').lines") != wl:
+    wait_for(lambda: page.evaluate(f"MKB.srcFile('{RBL_FILE}').state") == "ok", 30)
+    if page.evaluate(f"MKB.srcFile('{RBL_FILE}').lines") != wl:
         problems.append(f"{tag}: the source the listings read is not the edited text")
     # The Source panel: the edited text, said to be the one built.
-    page.evaluate("(p) => openSourceFile(p)", RBL_FILE)
+    page.evaluate("(p) => MKB.openSourceFile(p)", RBL_FILE)
     if srcedit_state(page)["editing"]:
         rb_press(page, "#src_edit", phone)
     if not wait_for(lambda: "rebuilt here from your text" in srcedit_state(page)["state"] and "kernel_write" in page.inner_text("#src_body"), 30):
@@ -25130,7 +25166,7 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     t0 = time.monotonic()
     rb_press(page, "#rb_go", phone)
     st = rb_wait(page, ("done", "failed"), 900)
-    r["unchanged"] = {"status": st["status"], "s": round(time.monotonic() - t0, 1), "speed": page.evaluate("[document.getElementById('dbg_speed').value, prefSpeed, runState]")}
+    r["unchanged"] = {"status": st["status"], "s": round(time.monotonic() - t0, 1), "speed": page.evaluate("[document.getElementById('dbg_speed').value, MKB.prefSpeed, MKB.runState]")}
     n = len(kit["objects"])
     if st["state"] != "done" or "identical to CI's build" not in st["status"] or f"{n} objects compiled" not in st["status"]:
         problems.append(f"{tag}: the unchanged rebuild: {st['state']} {st['status']!r} {st['log'][:300]!r}")

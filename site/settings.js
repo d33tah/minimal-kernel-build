@@ -11,11 +11,11 @@
 //
 // Loaded before app.js; its functions run after app.js has set up.
 
+import { num, $ } from "./util.js";
+import { image, REF_KEY, prefSpeed, setCompactTabs, compactDefault } from "./page.js";
 import { dbgIdbOp, dbgForget } from "./dbginfo.js";
 import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
 import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./settings.js";
 
 const SET_PREFIX = "mkb-";
 const SET_IDB_ROW = "idb:" + "mkb-dwarf";
@@ -211,4 +211,3 @@ function initSettings() {
 }
 
 export { renderSettings, initSettings };
-bridge(thisModule);

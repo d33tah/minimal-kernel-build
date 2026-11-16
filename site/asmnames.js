@@ -25,8 +25,6 @@
 
 import { dwWhere, dwTypeName, dwVarDeclText, dwarfLocalFrames, dwLocAt, dwTypeSize, dwPathIn } from "./dwarf.js";
 import { dwSetFrameBase, dwLocation, dwExprText } from "./unwind.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./asmnames.js";
 
 const ASM_REGS = { eax: 0, ecx: 1, edx: 2, ebx: 3, esp: 4, ebp: 5, esi: 6, edi: 7 };
 const ASM_PREFIXES = new Set(["lock", "rep", "repe", "repz", "repne", "repnz", "notrack", "bnd", "data16", "data32", "addr16", "addr32",
@@ -269,4 +267,3 @@ function asmOperandNames(text, pa, env) {
 }
 
 export { ASM_REGS, asmMemOps, asmSymLookup, asmBranchTarget, asmTargetName, asmOperandNames };
-bridge(thisModule);

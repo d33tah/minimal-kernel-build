@@ -634,6 +634,20 @@ jobs:
   clang-native:
     uses: ./.github/workflows/clang-native.yml
 
+  # The page's scripts are ES modules that import what they use: ESLint
+  # (site/eslint.config.mjs, pinned in site/package-lock.json) fails on a
+  # name no module declares or imports, on a new global (window.foo = ...;
+  # window.MKB in debug.js is the one handle) and on an import cycle.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: ESLint (no-undef, no-implicit-globals, import/no-cycle)
+      working-directory: site
+      run: |
+        npm ci --no-audit --no-fund
+        npx eslint .
+
   site:
     needs: [kernels, debian-initrd, v86, clang-wasm]
     runs-on: ubuntu-latest

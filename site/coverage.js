@@ -11,14 +11,14 @@
 // address ranges, in any frame (the call line of inlined code too), the
 // way the Source panel counts it (dwarf.js dwarfEachLine).
 
+import { $, num, hex } from "./util.js";
+import { provideCoverage, stepper, coverageFor, jumpTo, image } from "./page.js";
 import { download } from "./graph.js";
 import { dwarfEachLine } from "./dwarf.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
 import { openSourceFile } from "./source.js";
 import { fnDetailEl } from "./fnfacts.js";
 import { BM, bmMarks, bmStarEl, bmAddButton, bmDraftFn, bmDraftLine } from "./bookmarks.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./coverage.js";
 
 const COV = { open: new Set(), sort: "path", q: "", run: null, tree: null, key: "", exporting: false };
 const COV_MAX_ROWS = 1500;
@@ -401,5 +401,5 @@ function initCoverage() {
 	}, 1000);
 }
 
+provideCoverage({ covRun, covRender });
 export { COV, covTree, covRun, covRender, covShow, initCoverage };
-bridge(thisModule);

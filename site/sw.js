@@ -11,16 +11,17 @@ const V = "dev";
 const SHELL = "mkb-shell-" + V;
 const DATA = "mkb-data-" + V;
 
-// Fetched at install. The app shell: what index.html loads, v86 and its
-// BIOSes. Then the small kernels, so hello and the minified Linux boot
-// offline even if only one of them was opened (about 3.5 MB). The rest
-// (DWARF shards, C source, Debian's 5 MB bzImage and initrd, the iced
-// disassembler) is kept when the page first fetches it. site/check-pwa.py
-// checks that every file here exists in the deployed site and that every
-// asset of index.html is here.
+// Fetched at install. The app shell: what index.html loads and the modules
+// app.js imports, v86 and its BIOSes. Then the small kernels, so hello and
+// the minified Linux boot offline even if only one of them was opened
+// (about 3.5 MB). The rest (DWARF shards, C source, Debian's 5 MB bzImage
+// and initrd, the iced disassembler) is kept when the page first fetches
+// it. site/check-pwa.py checks that every file here exists in the deployed
+// site and that every asset of index.html and every module it imports is
+// here.
 const PRECACHE_PLAIN = ["index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png"];
 const PRECACHE_STAMPED = [
-	"style.css", "bridge.js", "clock.js", "v86/libv86.js", "jumps.js", "stepper.js", "graph.js", "dwarf.js", "unwind.js", "asmnames.js",
+	"style.css", "util.js", "page.js", "debug.js", "clock.js", "v86/libv86.js", "jumps.js", "stepper.js", "graph.js", "dwarf.js", "unwind.js", "asmnames.js",
 	"dbginfo.js", "source.js", "srcedit.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "memevents.js", "memmap.js", "quests.js", "vars.js",
 	"fnfacts.js", "settings.js", "snapshots.js", "replay.js", "reverse.js", "bookmarks.js", "clang.js", "kit.js", "genimport.js", "rebuild.js", "snapworker.js", "lz4frame.js", "lz4/lz4_wasm_bg.wasm", "app.js", "pwa.js", "kernels.json", "v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin",
 ];

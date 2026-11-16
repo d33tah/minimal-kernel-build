@@ -5,6 +5,56 @@ version and checksums in `THIRD_PARTY.md`, `fetch-v86.sh` and
 `gen-v86.sh`, which builds `v86.wasm` with `v86-det.patch`). Plain HTML,
 JS and CSS with relative URLs; no build step, no libraries besides v86.
 
+## Scripts: ES modules, no globals
+
+Every script of the page is an ES module that imports what it uses by
+name; the browser loads them as they are (no bundler, so a line in the
+coverage report is a line of the file). `index.html` loads `clock.js`
+(first: v86 takes its clock when `libv86.js` loads), v86's `libv86.js` (a
+classic script: the global `V86`) and `app.js`, which imports the rest
+(`clock.js` again: one module, run once). A module imports only from
+modules below it, in this order, so there is no import cycle:
+
+    util page | unwind dwarf clock asmnames wasi kgen lz4frame kit clang
+    jumps stepper dbginfo source memevents fastforward cpustate symimport
+    livedis vars srcedit fnfacts genimport graph settings rebuild memmap
+    quests replay reverse snapshots bookmarks coverage pwa | debug app
+
+- `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
+- `page.js`: what the modules share without a cycle. app.js's state that
+  others read (`stepper`, `symbols`, `runState`, `tab`...), each with a
+  setter, since an imported binding is read-only (`setStepper(s)`, not
+  `stepper = s`); and the functions a module calls in one above it
+  (app.js's `jumpTo`, `setStatus`..., reverse.js's `revMark` for
+  stepper.js): their module hands them over when it loads
+  (`provideApp({ ... })` before `init()` runs, `provideReverse` and so on
+  at the end of the others), and the module below calls them at run time.
+- `debug.js`: `window.MKB`, the page's one global of its own. The tests
+  and the browser's console read any module's export through it, live
+  (`MKB.stepper.steps`, `MKB.runState`, `MKB.G.layout`); `MKB.foo = x`
+  calls the module's `setFoo` and throws when there is none (the tests
+  put stand-ins in that way: `MKB.snapWorker = ...`). Nothing in the page
+  reads it.
+- The Workers (`dwarfworker.js`, `genworker.js`, `clangworker.js`,
+  `snapworker.js`) are module Workers; `sw.js`, the service worker, is a
+  classic script in its own global scope.
+- Node runs `dwarf.js`, `unwind.js`, `asmnames.js`, `kgen.js`, `wasi.js`,
+  `kit.js`, `jumps.js`, `stepper.js` and `srcedit.js` as modules too
+  (`package.json` has `"type": "module"`): `gen-dwarf.js`, `gen-src.js`
+  and the `.mjs` tests import them.
+- `stamp.py` (the deploy) puts `?v=<commit>` on the import specifiers as
+  on index.html's tags, so a module is fetched and run once, under one
+  URL; `check-pwa.py` follows the imports from index.html and fails when
+  sw.js does not precache one of them.
+- CI's job `lint` runs ESLint (`eslint.config.mjs`, versions pinned in
+  `package-lock.json`): `no-undef` (a name nothing declares or imports),
+  `no-implicit-globals`, no `window.foo = ...` or `Object.defineProperty(window, ...)`
+  outside `debug.js`, and `import/no-cycle`. Locally: `cd site && npm ci &&
+  npx eslint .`. The misc suite checks the page's own globals after a boot
+  are exactly `MKB` and `V86`, and that index.html loads only those three scripts.
+
+## Kernels and RAM
+
 Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and
 `?mem=BYTES` asks for any multiple of 4 KiB (e.g. `?mem=1052672` for
 1028 KiB). The boot header check warns when the kernel's

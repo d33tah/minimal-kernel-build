@@ -71,10 +71,10 @@ RUN_JS = """async ({ names, repeat, probe }) => {
   const hex = async (b) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map((x) => x.toString(16).padStart(2, '0')).join('');
   const res = { ua: navigator.userAgent, jobs: [] };
   // A Worker that does not start fails its requests (it once hung them).
-  const bad = new ClangWorker('no-such-worker.js');
+  const bad = new MKB.ClangWorker('no-such-worker.js');
   try { await bad.list(); res.badWorker = 'resolved'; } catch (e) { res.badWorker = e.message; }
   bad.terminate();
-  const cc = new ClangWorker();
+  const cc = new MKB.ClangWorker();
   try { await cc.run(['clang', '--version']); res.unloaded = 'resolved'; } catch (e) { res.unloaded = e.message; }
   try { await cc.load('clang/no-such.wasm'); res.missing = 'resolved'; } catch (e) { res.missing = e.message; }
   // Times are the Worker's (the page's performance.now() is clock.js's virtual clock).
@@ -146,7 +146,7 @@ RUN_JS = """async ({ names, repeat, probe }) => {
   }
   if (probe) {
     // wasi-probe.c (wasi-sdk) on the same layer, in a Worker of its own.
-    const pw = new ClangWorker();
+    const pw = new MKB.ClangWorker();
     await pw.load('__clang_fixtures/wasi-probe.wasm');
     const r = await pw.run(['wasi-probe'], { cwd: '/probe', stdin: 'probe\\n' });
     res.probe = { code: r.code, stdout: r.stdout, stderr: r.stderr, ms: r.ms };
@@ -163,7 +163,7 @@ RUN_TOOLS_JS = """async ({ names, base, cut }) => {
   const hex = async (b) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map((x) => x.toString(16).padStart(2, '0')).join('');
   const get = async (p) => { const r = await fetch(base + p); if (!r.ok) throw new Error(p + ': HTTP ' + r.status); return r; };
   const res = { jobs: [] };
-  let cc = new ClangWorker();
+  let cc = new MKB.ClangWorker();
   try { await cc.run(['kallsyms'], { module: 'kallsyms' }); res.unloaded = 'resolved'; } catch (e) { res.unloaded = e.message; }
   for (const n of names) {
     const f = await (await get(n)).json();
@@ -172,7 +172,7 @@ RUN_TOOLS_JS = """async ({ names, base, cut }) => {
     // A Worker per run: with one for all, Debian's 245 MB inputs and the
     // wasm memories of the runs piled up until Chromium's renderer crashed.
     cc.terminate();
-    cc = new ClangWorker();
+    cc = new MKB.ClangWorker();
     job.load = await cc.load(f.module === 'clang' ? 'clang/clang.wasm' : base + f.module, f.module);
     const files = await Promise.all(f.files.map(async ([p, h]) => [f.cwd + '/' + p, new Uint8Array(await (await get('blobs/' + h)).arrayBuffer())]));
     job.inBytes = files.reduce((s, x) => s + x[1].length, 0);
@@ -228,9 +228,10 @@ def check_tools(res, problems, tag):
 AUTO_HTML = """<!doctype html>
 <meta charset="utf-8">
 <title>clang.wasm without automation</title>
-<script>const withV = (u) => u;</script>
-<script type="module" src="clang.js"></script>
 <script type="module">
+// RUN_JS reads ClangWorker through MKB, as on the page (debug.js).
+import { ClangWorker } from "./clang.js";
+window.MKB = { ClangWorker };
 (async () => {
   let res;
   try { res = await (%s)(%s); } catch (e) { res = { error: String(e), jobs: [] }; }
@@ -564,7 +565,7 @@ def main():
                     page.route("**/__tool_fixtures/**", tool_fixture)
 
                 page.goto(f"{base}/index.html?kernel=hello")
-                page.wait_for_function("typeof ClangWorker === 'function'")
+                page.wait_for_function("typeof window.MKB?.ClangWorker === 'function'")
                 rss = PeakRss()
                 t0 = time.monotonic()
                 try:

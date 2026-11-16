@@ -59,6 +59,24 @@ for kind, ref in re.findall(r'\b(href|src)="((?![a-z]+:|/|#)[^"]+)"', html):
             bad.append(f"index.html loads {ref}: stamp {query!r}, sw.js's V wants {want!r}")
     elif path not in plain:
         bad.append(f"index.html links {path}, sw.js does not precache it (PRECACHE_PLAIN)")
+# The modules those scripts import (app.js imports the page's other modules),
+# with the same stamp: offline, the page needs every one of them.
+todo = [ref.partition("?")[0] for _, ref in re.findall(r'\b(src)="((?![a-z]+:|/|#)[^"]+\.js[^"]*)"', html)]
+seen = set()
+while todo:
+    f = todo.pop()
+    if f in seen or not (site / f).is_file():
+        continue
+    seen.add(f)
+    for ref in re.findall(r'''^(?:import|export)\b[^"']*?\bfrom\s*["'](\./[^"']+)["']|^import\s*["'](\./[^"']+)["']''', (site / f).read_text(), re.M):
+        ref = ref[0] or ref[1]
+        path, _, query = ref[2:].partition("?")
+        if path not in stamped:
+            bad.append(f"{f} imports {path}, sw.js does not precache it (PRECACHE_STAMPED)")
+        want = "" if v == "dev" else "v=" + v
+        if query != want:
+            bad.append(f"{f} imports {ref}: stamp {query!r}, sw.js's V wants {want!r}")
+        todo.append(path)
 # Files the page fetches itself (app.js withV): v86's wasm and BIOSes.
 for f in ("v86/v86.wasm", "v86/seabios.bin", "v86/vgabios.bin", "kernels.json"):
     if f not in stamped:

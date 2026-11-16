@@ -14,9 +14,9 @@
 // count, like the executed-addresses bitmap; code v86's JIT runs records
 // nothing.
 
+import { hex, escHtml, $ } from "./util.js";
+import { disasm, symbols, kernelSymLookup, stepper, dbgHas, dbgFrames, srcLinkHtml, srcLinkEl, navJump, jumpTo } from "./page.js";
 import { asmTargetName } from "./asmnames.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./jumps.js";
 
 // Kinds, as stored by the stepper (a bit per kind in a path's mask).
 const JK = { jcc: 1, jmp: 2, call: 3, ret: 4, loop: 5, int: 6, iret: 7, sys: 8, ijmp: 9, icall: 10,
@@ -845,4 +845,3 @@ export { JK, JK_TEXT, JK_ARC, jumpOf, jumpsToPhys, jumpsStatic, jumpsStubArrays,
 	jumpPaths, jumpHit, jumpHitScroll, setJumpHit, setJumpHitScroll, jumpsFor, jumpsJitNote, jumpBadgesHtml,
 	jumpInlineMax, jumpInlineHtml, jumpStubAttrs, drawJumpArcs, jumpsDrawn, jumpPopClose, jumpGo, renderEipJumps,
 	initJumps };
-bridge(thisModule);

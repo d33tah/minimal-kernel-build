@@ -8,6 +8,9 @@
 // Values are read from guest RAM when drawn: kernel virtual addresses are
 // physical + the kernel's offset (0xC0000000 for i386 Linux).
 
+import { V86_KERNEL_ADDR, hex, $, escHtml } from "./util.js";
+import { emulator, emuReady, emuRam, currentPhys, stepper, symbols, symbolAt, symButton, image, tab, runState,
+	insnStart, FRAME_METHODS, navJump, showTab, jumpTo } from "./page.js";
 import { DWT, dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLocAt, dwarfScopesAt } from "./dwarf.js";
 import { dwSetFrameBase, dwLocation } from "./unwind.js";
 import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
@@ -15,8 +18,6 @@ import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgCfiRow, dbgLocalGroups,
 import { srcLinkEl } from "./source.js";
 import { virtOffset, kernelSymLookup } from "./livedis.js";
 import { pageWalk } from "./cpustate.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./vars.js";
 
 const WATCH_KEY = "mkb-watch:";
 // Shown as one-tap suggestions when the kernel has them.
@@ -1246,4 +1247,3 @@ function setupVars() {
 
 export { WATCH_KEY, watchList, watchKernel, setWatchKernel, varsOffset, watchLoad, renderWatches,
 	renderLocals, opEnv, opNamesHtml, insnHtml, varsTaskNow, varsTasks, renderTaskRow, varTypeOf, setupVars };
-bridge(thisModule);

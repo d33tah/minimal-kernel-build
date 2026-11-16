@@ -61,14 +61,14 @@ EDIT = {"path": "boot/hello.c", "from": "Hello, World!", "to": "Hello, Kit!!!"}
 
 RUN_JS = """async ({ name, keep, edit }) => {
   const b64 = (u) => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
-  const src = kitSource('kits/');
+  const src = MKB.kitSource('kits/');
   const k = await src.kit(name);
   const go = async (opts) => {
-    const cc = new ClangWorker();
+    const cc = new MKB.ClangWorker();
     try {
       const l = await cc.load();
       const seen = [];
-      const r = await kitBuild(cc, k, src, Object.assign({ keep, onstep: (e) => seen.push(e.kind) }, opts));
+      const r = await MKB.kitBuild(cc, k, src, Object.assign({ keep, onstep: (e) => seen.push(e.kind) }, opts));
       r.loadMs = l.ms;
       r.events = seen.length;
       r.keep = r.files.map(([p, b]) => [p, b64(b)]);
@@ -85,7 +85,7 @@ RUN_JS = """async ({ name, keep, edit }) => {
     const f = k.files.find((x) => x[0] === edit.path);
     const text = new TextDecoder().decode(await src.get(f[1]));
     res.edit = await go({ compile: 'changed', verify: false, edits: { [edit.path]: text.replace(edit.from, edit.to) } });
-    res.editUsers = kitUsers(k).get(edit.path);
+    res.editUsers = MKB.kitUsers(k).get(edit.path);
   }
   return res;
 }"""
@@ -93,24 +93,24 @@ RUN_JS = """async ({ name, keep, edit }) => {
 ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
   const res = {};
   const err = async (f) => { try { await f(); return 'resolved'; } catch (e) { return e.message; } };
-  const src = kitSource('kits/');
+  const src = MKB.kitSource('kits/');
   res.missingKit = await err(() => src.kit('no-such-kit'));
   res.format = await err(() => src.kit('__format2'));
   res.tampered = await err(() => src.get(tampered));
   res.raw = (await src.get(raw)).length;
   try { res.flaky = (await src.get(flaky)).length; } catch (e) { res.flaky = e.message; }
   res.down = await err(() => src.get('always-503'));
-  res.sed = sed.map(([, args, input]) => { try { return kitLatin1(kitSed(args, kitBytes(input))); } catch (e) { return 'error: ' + e.message; } });
-  res.sedErrors = sedErrors.map(([args]) => { try { kitSed(args, kitBytes('a\\n')); return 'resolved'; } catch (e) { return e.message; } });
+  res.sed = sed.map(([, args, input]) => { try { return MKB.kitLatin1(MKB.kitSed(args, MKB.kitBytes(input))); } catch (e) { return 'error: ' + e.message; } });
+  res.sedErrors = sedErrors.map(([args]) => { try { MKB.kitSed(args, MKB.kitBytes('a\\n')); return 'resolved'; } catch (e) { return e.message; } });
 
   // Synthetic kits on blobs in memory.
   const enc = new TextEncoder();
   const blobs = {};
-  const put = async (text) => { const b = enc.encode(text); const h = await kitHash(b); blobs[h] = b; return [h, b.length]; };
+  const put = async (text) => { const b = enc.encode(text); const h = await MKB.kitHash(b); blobs[h] = b; return [h, b.length]; };
   const mem = { get: async (h) => blobs[h].slice(), moduleUrl: () => 'kits/no-such-module.wasm' };
   const kit = (over) => Object.assign({ format: 1, name: 'synthetic', dir: '/s', files: [], objects: [], steps: [], modules: {}, products: [] }, over);
   const step = (over) => Object.assign({ inputs: [], outputs: [], fresh: [], mkdir: [] }, over);
-  const cc = new ClangWorker();
+  const cc = new MKB.ClangWorker();
   await cc.load();
   // sed on a file argument into a variable, cat of stdin into a file,
   // cat-size of two files.
@@ -118,26 +118,26 @@ ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
   const want = enc.encode('x\\nq\\ny\\n\\x06\\x00\\x00\\x00');
   const k1 = kit({ files: [['a.txt', ha, na, 0]], steps: [
     step({ tool: 'sed', argv: ['sed', '-n', 's/x/y/p', 'a.txt'], inputs: ['a.txt'], stdout: { var: 'v0' } }),
-    step({ tool: 'cat', argv: ['cat'], stdin: 'v0', stdout: { file: 'out/b.txt' }, outputs: [['out/b.txt', await kitHash(enc.encode('y\\n'))]], mkdir: ['out'] }),
+    step({ tool: 'cat', argv: ['cat'], stdin: 'v0', stdout: { file: 'out/b.txt' }, outputs: [['out/b.txt', await MKB.kitHash(enc.encode('y\\n'))]], mkdir: ['out'] }),
     step({ tool: 'cat-size', argv: ['cat', 'a.txt', 'out/b.txt'], stdout: { file: 'c.bin' }, inputs: ['a.txt'], fresh: ['c.bin'] }),
-  ], products: [['c.bin', await kitHash(want), want.length]] });
-  const r1 = await kitBuild(cc, k1, mem, {});
+  ], products: [['c.bin', await MKB.kitHash(want), want.length]] });
+  const r1 = await MKB.kitBuild(cc, k1, mem, {});
   res.glue = { products: r1.products, steps: r1.steps.map((s) => s.outputs || null) };
   // A .S object (clang -### and its two jobs), compiled; one that does
   // not assemble and one whose source is missing fail with clang's message.
   const [hs, ns] = await put('.text\\nnop\\n');
   const [hb, nb] = await put('.text\\nnot_an_instruction\\n');
   const obj = (src) => ({ out: 'x.o', argv: ['clang', '--target=i386-linux-gnu', '-c', '-o', 'x.o', src], deps: [0], sha256: '', size: 0 });
-  const r2 = await kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [obj('x.S')] }), mem, { compile: 'all' });
+  const r2 = await MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [obj('x.S')] }), mem, { compile: 'all' });
   res.asm = { size: r2.objects[0].size, tmp: (await cc.list()).files.filter((f) => f[0].startsWith('/s/.kit-tmp/')).length };
-  res.asmBad = await err(() => kitBuild(cc, kit({ files: [['y.S', hb, nb, 0]], objects: [obj('y.S')] }), mem, { compile: 'all' }));
-  res.asmMissing = await err(() => kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [Object.assign(obj('z.S'), { deps: [] })] }), mem, { compile: 'all' }));
-  res.stepFails = await err(() => kitBuild(cc, kit({ steps: [step({ tool: 'clang', argv: ['ld.lld', '-o', 'v', 'missing.o'] })] }), mem, {}));
-  res.noModule = await err(() => kitBuild(cc, kit({ steps: [step({ tool: 'kallsyms', argv: ['scripts/kallsyms'] })] }), mem, {}));
-  res.badModule = await err(() => kitBuild(cc, kit({ modules: { kallsyms: { sha256: 'x', size: 1 } }, steps: [step({ tool: 'kallsyms', argv: ['scripts/kallsyms'] })] }), mem, {}));
-  res.notInKit = await err(() => kitBuild(cc, k1, mem, { edits: { 'b.c': 'int x;' } }));
-  res.badCompile = await err(() => kitBuild(cc, k1, mem, { compile: 'some' }));
-  res.noFile = await err(() => kitBuild(cc, kit({ steps: [step({ tool: 'cat', argv: ['cat', 'nothing.txt'] })] }), mem, {}));
+  res.asmBad = await err(() => MKB.kitBuild(cc, kit({ files: [['y.S', hb, nb, 0]], objects: [obj('y.S')] }), mem, { compile: 'all' }));
+  res.asmMissing = await err(() => MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [Object.assign(obj('z.S'), { deps: [] })] }), mem, { compile: 'all' }));
+  res.stepFails = await err(() => MKB.kitBuild(cc, kit({ steps: [step({ tool: 'clang', argv: ['ld.lld', '-o', 'v', 'missing.o'] })] }), mem, {}));
+  res.noModule = await err(() => MKB.kitBuild(cc, kit({ steps: [step({ tool: 'kallsyms', argv: ['scripts/kallsyms'] })] }), mem, {}));
+  res.badModule = await err(() => MKB.kitBuild(cc, kit({ modules: { kallsyms: { sha256: 'x', size: 1 } }, steps: [step({ tool: 'kallsyms', argv: ['scripts/kallsyms'] })] }), mem, {}));
+  res.notInKit = await err(() => MKB.kitBuild(cc, k1, mem, { edits: { 'b.c': 'int x;' } }));
+  res.badCompile = await err(() => MKB.kitBuild(cc, k1, mem, { compile: 'some' }));
+  res.noFile = await err(() => MKB.kitBuild(cc, kit({ steps: [step({ tool: 'cat', argv: ['cat', 'nothing.txt'] })] }), mem, {}));
   cc.terminate();
   return res;
 }"""
@@ -319,7 +319,7 @@ def main():
                        lambda route: route.fulfill(status=next(answers, 200), body=flaky_gz))
             page.route("**/kits/blobs/always-503.gz", lambda route: route.fulfill(status=503, body="busy"))
             page.goto(f"{base}/index.html?kernel=hello")
-            page.wait_for_function("typeof ClangWorker === 'function' && typeof kitBuild === 'function'")
+            page.wait_for_function("typeof window.MKB?.ClangWorker === 'function' && typeof window.MKB?.kitBuild === 'function'")
             rss = PeakRss()
             t0 = time.monotonic()
             results[bname] = {}

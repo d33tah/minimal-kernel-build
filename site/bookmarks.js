@@ -22,6 +22,10 @@
 // storage they last until the page is reloaded, and the list says so.
 
 import { realNow } from "./clock.js";
+import { hex, PAGE, num, $, escHtml } from "./util.js";
+import { provideBookmarks, image, symbols, pageLabel, pageClass, stepper, emulator, runState, pageAt, tab,
+	selectedPage, navListingAnchor, grid, memCellStyle, hideTip, runBadgeOpen, navJump, selectPage, openFunction,
+	jumpTo, kernels, loadKernel, setStatus, emuReady, emuRam, inspect, renderContext, covRender, vmHasKeys } from "./page.js";
 import { jumpHit, setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { graphNodeAt, selectedNode, download, G, graphTick } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
@@ -29,8 +33,6 @@ import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./s
 import { kernelSymLookup } from "./livedis.js";
 import { snapKernelKey, snapKernelName, snapshots, saveSnapshot, restoreSnapshot } from "./snapshots.js";
 import { runNow, replayRun, runStatus } from "./replay.js";
-import { bridge } from "./bridge.js";
-import * as thisModule from "./bookmarks.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
@@ -918,6 +920,6 @@ function initBookmarks() {
 	bmRender();
 }
 
+provideBookmarks({ bmLineStar, bmFnNames, bmTip });
 export { BM, bmDraftFn, bmDraftLine, bmMarks, bmTip, bmStarEl, bmCodeStar, bmFnStar, bmLineStar, bmFnNames,
 	bmAddButton, bmRenderPages, bmFromHash, bmMenuFit, initBookmarks };
-bridge(thisModule);

@@ -22589,6 +22589,31 @@ def mm_ui_case(browser, base, shots, problems, r):
             r["sampled cell"] = {"page": hex(a), "rows": wrote[:2]}
             if not wrote:
                 problems.append(f"ui: the cell of sampled page {hex(a)} lists no CPU write")
+        # only first touch, before "go there" below: the map samples the
+        # CPU's RAM writes once per map frame (at most ~20 a second), so on a
+        # runner whose frames starve while the JIT runs the whole boot can be
+        # one sample that ends past the step back's target, which drops it
+        # (run 43893874205: 0 samples left, "0 of 0 cells"). Here at the
+        # log's end the samples checked above are all there.
+        # only first touch at the log's end: whole regions lit once
+        page.check("#mm_first")
+        page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
+        mm_frames(page)
+        ft = page.evaluate("""() => { const g = MKB.MMAP.segs[MKB.MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MKB.MMAP.touched[d]) lit++;
+          // the CPU's sampled RAM writes (layer 3) light whole regions too: the
+          // segment of the last sampled page, every cell
+          const s = MKB.MMAP.samples[MKB.MMAP.samples.length - 1], h = s ? MKB.MMAP.segs[MKB.MMAP.segOf(s.pages[0] * 4096)] : null; let ram = 0;
+          if (h) for (let d = h.c0; d < h.c1; d++) if (MKB.MMAP.touched[d] & 8) ram++;
+          return { cells: g.cells, lit, story: MKB.MMAP.story.length, ramCells: h ? h.cells : 0, ramLit: ram, samples: MKB.MMAP.samples.length,
+                   samplePos: MKB.MMAP.samples.map((x) => x.pos) }; }""")
+        r["first touch"] = ft
+        if ft["lit"] != ft["cells"]:
+            problems.append(f"ui: only first touch lights {ft['lit']} of the text region's {ft['cells']} cells")
+        if not ft["ramCells"] or ft["ramLit"] != ft["ramCells"]:
+            problems.append(f"ui: only first touch at the log's end lights {ft['ramLit']} of {ft['ramCells']} cells of the last sampled RAM page's region")
+        page.evaluate("document.getElementById('mm').scrollIntoView()")
+        page.screenshot(path=str(shots / "memmap-firsttouch-1280-dark.png"))
+        page.uncheck("#mm_first")
         # a click on the colour text memory's cell: its events
         d = page.evaluate("MKB.MMAP.cellOf(0xb8000)")
         x, y = mm_cell_xy(page, d)
@@ -22603,7 +22628,7 @@ def mm_ui_case(browser, base, shots, problems, r):
           b.click(); return pos; }""")
         ok = wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused' && MKB.stepper.steps <= %d" % target), 300, 0.2)
         mm_frames(page)
-        back = page.evaluate("({ steps: MKB.stepper.steps, n: MKB.MEV.n, idx: MKB.MMAP.idx, live: MKB.MMAP.live, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
+        back = page.evaluate("({ steps: MKB.stepper.steps, n: MKB.MEV.n, idx: MKB.MMAP.idx, live: MKB.MMAP.live, samples: MKB.MMAP.samples.length, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
         r["go there"] = {"target": target, **back}
         if not ok or back["steps"] != target or back["idx"] != back["n"] or back["n"] >= n:
             problems.append(f"ui: go there to {target:,}: {back}")
@@ -22634,24 +22659,6 @@ def mm_ui_case(browser, base, shots, problems, r):
         r["region list"] = {**reg, "hover": hov}
         if reg["pick"] != 0 or not reg["head"].startswith("0x0-0x") or "colour text (CGA)" not in (hov or ""):
             problems.append(f"ui: region list or pointing: {reg} {hov!r}")
-        # only first touch: whole regions lit once
-        page.check("#mm_first")
-        page.evaluate("() => { const s = document.getElementById('mm_time'); s.value = s.max; s.dispatchEvent(new Event('input')); }")
-        mm_frames(page)
-        ft = page.evaluate("""() => { const g = MKB.MMAP.segs[MKB.MMAP.segOf(0xb8000)]; let lit = 0; for (let d = g.c0; d < g.c1; d++) if (MKB.MMAP.touched[d]) lit++;
-          // the CPU's sampled RAM writes (layer 3) light whole regions too: the
-          // segment of the last sampled page, every cell
-          const s = MKB.MMAP.samples[MKB.MMAP.samples.length - 1], h = s ? MKB.MMAP.segs[MKB.MMAP.segOf(s.pages[0] * 4096)] : null; let ram = 0;
-          if (h) for (let d = h.c0; d < h.c1; d++) if (MKB.MMAP.touched[d] & 8) ram++;
-          return { cells: g.cells, lit, story: MKB.MMAP.story.length, ramCells: h ? h.cells : 0, ramLit: ram }; }""")
-        r["first touch"] = ft
-        if ft["lit"] != ft["cells"]:
-            problems.append(f"ui: only first touch lights {ft['lit']} of the text region's {ft['cells']} cells")
-        if not ft["ramCells"] or ft["ramLit"] != ft["ramCells"]:
-            problems.append(f"ui: only first touch at the log's end lights {ft['ramLit']} of {ft['ramCells']} cells of the last sampled RAM page's region")
-        page.evaluate("document.getElementById('mm').scrollIntoView()")
-        page.screenshot(path=str(shots / "memmap-firsttouch-1280-dark.png"))
-        page.uncheck("#mm_first")
         # closing: nothing recorded or drawn
         page.click("#mm summary")
         mm_frames(page)

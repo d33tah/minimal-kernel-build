@@ -18,6 +18,7 @@ import { SourceTabPanel } from "./sourcepanel.jsx";
 import { SourceAside } from "./sourceaside.jsx";
 import { CallsPanel } from "./callspanel.jsx";
 import { MachinePanel } from "./machinepanel.jsx";
+import { RunBadgeMenu } from "./runbadge.jsx";
 
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
@@ -33,6 +34,7 @@ function mountShell() {
 	mount($("src_panel"), <SourceAside />);
 	mount($("panel_calls"), <CallsPanel />);
 	mount($("panel_machine"), <MachinePanel />);
+	mount($("runbadge"), <RunBadgeMenu />);
 }
 
 export { mountShell };

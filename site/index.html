@@ -53,33 +53,7 @@
 
 <!-- H1: one small fixed toggle; its face shows whether the VM runs and how
      fast, its menu holds Back and Forward, the run state and Pause/Continue. -->
-<div id="runbadge" class="runbadge" data-state="off">
-  <div id="runbadge_menu" class="rbmenu" hidden>
-    <button id="runbadge_state" type="button" class="rbwords" title="Open the Machine tab: the screen and the run controls">no machine</button>
-    <div class="rbrow">
-      <button id="runbadge_pause" type="button" disabled>Pause</button>
-    </div>
-    <div id="runbadge_pwa" class="rbpwa" hidden></div>
-    <!-- K1: the bookmarks, here because the menu is reachable from every tab, next to Back and Forward. -->
-    <button id="bm_open" type="button" class="bmopen" aria-expanded="false" aria-controls="bm_box">&#9733; Bookmarks <span id="bm_count"></span></button>
-    <div id="bm_box" class="bmbox" hidden>
-      <div class="bmtools"><button id="bm_here" type="button" title="Bookmark the machine's position: EIP and the instruction count (with a snapshot if you like)">&#9734; This position</button>
-        <input id="bm_filter" type="search" placeholder="filter by name" aria-label="filter the bookmarks by name"></div>
-      <ul id="bm_list" class="bmlist" aria-label="Bookmarks"></ul>
-      <p id="bm_store" class="note" hidden></p>
-      <div class="bmtools"><button id="bm_export" type="button" title="Save every bookmark (all kernels) as a JSON file">Export</button>
-        <button id="bm_import" type="button" title="Add the bookmarks of an exported JSON file">Import</button><input id="bm_import_file" type="file" accept=".json,application/json" hidden></div>
-      <p id="bm_status" class="note" role="status"></p>
-    </div>
-    <nav id="nav_hist" class="navhist" aria-label="Jump history">
-      <button id="nav_back" type="button">&lsaquo; Back</button><button id="nav_fwd" type="button">Forward &rsaquo;</button>
-    </nav>
-  </div>
-  <button id="runbadge_toggle" class="rbtog" type="button" data-state="off" aria-expanded="false" aria-controls="runbadge_menu" aria-label="Menu: no machine. Back, Forward, Pause" title="Menu: no machine. Back, Forward, Pause">
-    <span class="rbtop" aria-hidden="true"><span class="rbbars"></span><span class="rbdot"></span><span class="rbnews" hidden></span></span>
-    <span id="runbadge_speed" class="rbspeed" aria-hidden="true">off</span>
-  </button>
-</div>
+<div id="runbadge" class="runbadge" data-state="off"></div>
 
 <div id="bm_dialog" class="bmdlg" role="dialog" aria-labelledby="bm_dlg_h" hidden>
   <b id="bm_dlg_h">&#9734; Add a bookmark</b>

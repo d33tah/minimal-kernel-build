@@ -361,6 +361,36 @@ no global (the misc suite's `globals` case). ESLint runs
 `eslint-plugin-react-hooks` (rules of hooks, exhaustive deps and the
 React Compiler's checks) on the `*.jsx` files.
 
+### UI interaction speed (bench_ui.py)
+
+`bench_ui.py` clicks through the same actions on two or more built
+sites, runs alternating, and compares each with the first: tab switches,
+Events filter chips, a wheel zoom on the Calls timeline, opening the
+Source panel from a file:line link and typing in the Source editor
+(minified Linux after Run to start_kernel; real mouse and keyboard
+input). It reports the renderer main thread's CPU time each action
+causes and the time to the end of the next frame. `--redraw` times the
+Calls zoom and redraw alone in a loop in the page, without the noise of
+a measuring window. Measured on d-claude (R5, 2026-11-17), 43308392f
+(before R1-R4: classic scripts, no React) against 27c798f20 (after R4),
+the CI site artifacts of both, 12 alternating runs each (`--redraw`: 10):
+
+| action | work 43308392f | work 27c798f20 | next frame 43308392f | next frame 27c798f20 |
+| --- | --- | --- | --- | --- |
+| tab switch (8 tabs) | 56.93 ms | 54.75 ms (-3.8%) | 33.6 ms | 34.5 ms (+2.8%) |
+| Events filter chip | 15.09 ms | 11.89 ms (-21.2%) | 14.4 ms | 11.8 ms (-18.3%) |
+| Calls zoom (window) | 4.74 ms | 4.99 ms (+5.3%) | | |
+| Calls zoom + redraw (`--redraw`) | 1.768 ms | 1.784 ms (+0.9%) | | |
+| Source panel open | 15.97 ms | 15.75 ms (-1.4%) | 17.4 ms | 17.3 ms (-0.3%) |
+| typing, per key | 3.28 ms | 3.25 ms (-0.8%) | 13.0 ms | 12.9 ms (-0.8%) |
+
+The windowed zoom number moves by more than its difference between runs
+(run medians 3.6 to 6.4 ms on either build); the loop that times the same
+handler and redraw without the window finds them within 1%. The next
+frame is counted in whole frames of 16.7 ms, so it differs only where an
+action crosses a frame boundary more or less often. Run it on an idle
+machine: a kernel build next to it made the windows meaningless.
+
 ## Kernels and RAM
 
 Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and

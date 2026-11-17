@@ -38,6 +38,9 @@ import * as fastforward from "./fastforward.js";
 import * as cpustate from "./cpustate.js";
 import * as memevents from "./memevents.js";
 import * as memmap from "./memmap.js";
+import * as memmaplayout from "./memmaplayout.js";
+import * as memmapdraw from "./memmapdraw.js";
+import * as memmaplist from "./memmaplist.js";
 import * as quests from "./quests.jsx";
 import * as vars from "./vars.js";
 import * as varseval from "./varseval.js";
@@ -74,9 +77,9 @@ import * as page from "./page.js";
 const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
 	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, asmnames,
 	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
-	memevents, memmap, quests, vars, varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, replay,
-	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav,
-	symview, run, runto, boot, tips, kernel, page ];
+	memevents, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars, varseval, vartasks, varlocals, varops,
+	fnfacts, settings, snapshots, replay, reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan,
+	memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

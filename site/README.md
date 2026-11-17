@@ -6,6 +6,77 @@ version and checksums in `THIRD_PARTY.md`, `fetch-v86.sh` and
 modules and CSS with relative URLs; one build step, the bundle below, and
 React for the views moved to components (R3).
 
+## Architecture
+
+An overview; the sections after it have the details.
+
+Layers, bottom up (each imports only from layers below it):
+
+1. The machine: v86's `libv86.js` (a classic script, the global `V86`) and
+   `v86.wasm`, whose step exports `v86patch.js` adds at load; `clock.js`,
+   loaded before v86, gives it the page's virtual clock.
+2. Models without DOM, most of them run by Node and the Workers too: the
+   stepper (`stepper.js`, `stepbase.js`, the Calls frames in `frames.js`),
+   jump paths (`jumps.js`), DWARF and CFI (`dwarf*.js`, `dwexpr.js`,
+   `unwind.js`, `asmnames.js`), the build (`kgen.js`, `kit.js`, `wasi.js`,
+   `clang.js`), patches (`edpatch.js`), snapshots' records
+   (`snaprecord.js`, `snapworker.js`).
+3. State and API (`store.js`, `page.js`): the values the modules share,
+   each a live binding with a setter that also updates the store and
+   tells its subscribers, and `api` for the few calls that would close an
+   import cycle. Nothing per instruction writes the store.
+4. Controllers and views, one or more modules per tab, that draw into the
+   page's elements by id and into canvases: Memory (`memview.js`,
+   `memmap*.js`, `scan.js`), Page (`listing.js`, `jumpview.js`), Debugger
+   (`debugui.js`, `vars*.js`, `varlocals.js`, `cpustate.js`), Calls
+   (`graph*.js`, `calltree.js`), Source (`source.js`, `src*.js`,
+   `srcedit.js`, `coverage.js`), Snapshots (`snapshots.js`,
+   `snapdiff.js`, `replay.js`, `reverse.js`), Events (`memevents.js`,
+   `mev*.js`), bookmarks, tips, the jump history.
+5. React components (`*.jsx`, mounted by `shell.jsx`): the tab bar,
+   Settings, Quests, Events and the Rebuild box. They read the store
+   through `useStore(key)` (`ui.jsx`) or a controller's
+   `subscribe`/`rev` (`QUESTS`, `MEV`, `RB`).
+6. The entry: `app.js` (`init()`), and `debug.js`, which exposes every
+   module's exports as `window.MKB` for the tests and the console.
+
+Three kinds of markup:
+
+- React components (above) for the parts whose content follows state.
+- Static markup: the tabs' fixed elements are JSX in `markup/` that
+  `build.mjs` renders to HTML at build time (`markup/html.js`) into
+  `index.html` (from `index.src.html`); the page does not load these files.
+  The views fill those elements by id.
+- Canvases: the VGA screen (v86), the Memory grid and live map, the Calls
+  timeline, minimap and top graph, drawn by their modules.
+
+Build: `build.mjs` bundles `app.js` and everything it imports (esbuild,
+pinned in `package-lock.json`) into `app.bundle.js` with a source map,
+the page's own code not minified, and writes `index.html`; `--check`
+builds again and compares (the bytes are reproducible). The deploy stamps
+`?v=<commit>` on every script URL and import (`stamp.py`); `check-pwa.py`
+fails when `sw.js` does not precache a module the page imports. Workers load their
+modules unbundled.
+
+Coverage (jscov): every browser test run in CI's coverage jobs records
+V8's precise coverage (`jscov.py`); `jscov/report.js` maps it through the
+source map onto the source files and fails below the floors in
+`jscov-baseline.json` or on a line that ran nowhere and is not listed,
+with its reason, in `jscov-uncovered.tsv`. A row carries a hash of its
+lines; `node site/jscov/relist.js` moves rows with their code after an
+edit (the site job runs it with `--check`).
+
+Tests: `test_browser.py` (Playwright, suites per feature, screenshots at
+1280 and 390 px in light and dark), Node tests in the site job
+(`test_frames.mjs`, `test_store.mjs`, `test_srcedit.mjs`,
+`jscov/test_lines.js`) and in their jobs (`test_kit.mjs`), the Python
+checks of the generated data (`test_dwarf.py`, `test_jumps.py`,
+`test_kernel_data.py`), `test_pwa_install.py`, and the static checks:
+ESLint (`no-undef`, `no-unused-vars`, `import/no-cycle`, React's hooks
+rules), `check-ids.py`, `check-text.py`, `check-legend.py`,
+`check-pwa.py`. CI (`.github/workflows/pages.yml`) runs all of them; the
+section "Testing" below lists them.
+
 ## Scripts: ES modules, no globals
 
 Every script of the page is an ES module that imports what it uses by
@@ -35,14 +106,50 @@ before it stamps and deploys the bundle and the page. The coverage report (jscov
 follows the source map, so its lines and the list of lines the tests do
 not run are those of the source files, not of the bundle. The Workers load
 their modules themselves, unbundled. A module imports only from
-modules below it, in this order, so there is no import cycle:
+modules below it, so there is no import cycle (ESLint's import/no-cycle
+checks it). The bundle's 83 modules by depth (1 + the deepest module a
+module imports; R4, scratchpad tool layers.mjs):
 
-    util store page | unwind dwarf clock asmnames wasi kgen lz4frame kit
-    clang jumps stepper dbginfo source ui memevents fastforward cpustate
-    symimport livedis vars srcedit fnfacts genimport graph rebuild
-    memmap quests events replay reverse snapshots bookmarks coverage pwa | header
-    scan memview listing debugui tabs settings nav symview run runto boot
-    tips kernel | debug shell app
+    0  clock dwarfread dwexpr edpatch frames mevregions store util v86patch
+    1  clang dwarffuncs dwarftables kit page stepbase tips unwind
+    2  dwarf dwarflocals header pwa scan
+    3  asmnames dbginfo dwarftypes
+    4  dbgimport jumps livedis mevview srclinks srctext
+    5  fnfacts jumpview memevents srcswitch stepper symimport ui varseval
+    6  fastforward genimport memmaplayout source varops vartasks
+    7  cpustate graphdata memmapdraw srcedit
+    8  graphlayout graphnav replay varlocals
+    9  calltree reverse snaprecord vars
+    10 events graph memmaplist snapdiff
+    11 graphinit memmap rebuild snapshots
+    12 bookmarks quests
+    13 bminit coverage memview tabs
+    14 listing
+    15 debugui nav
+    16 settings symview
+    17 run shell
+    18 boot runto
+    19 kernel
+    20 debug
+    21 app
+
+R4 split every module over ~800 lines by concern, moving code as it is
+(whole statements and class or object members; a class's methods by
+concern are a chain of classes, an object's are spread into it):
+stepper.js into v86patch, frames, stepbase and stepper; graph.js into
+graphdata, graphlayout, calltree, graphnav, graph and graphinit;
+dwarf.js into dwarfread, dwarftables, dwarffuncs, dwarflocals,
+dwarftypes and dwarf (DwarfReader extends DwarfReaderFuncs extends
+DwarfReaderBase); unwind.js into dwexpr and unwind; source.js into
+srctext, srclinks, srcswitch and source; vars.js into varseval,
+vartasks, varlocals, varops and vars; memmap.js into memmaplayout,
+memmapdraw, memmaplist and memmap (MMAP spreads MM_LAYOUT, MM_DRAW,
+MM_LISTS); memevents.js into mevregions, mevview and memevents (MEV
+spreads MEV_REGIONS, MEV_VIEW); snapshots.js into snaprecord, snapdiff
+and snapshots; dbginfo.js into dbginfo and dbgimport; srcedit.js into
+edpatch and srcedit; jumps.js into jumps and jumpview; bookmarks.js
+into bookmarks and bminit. Each module's head comment says what it has
+and where the rest went.
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
@@ -75,8 +182,10 @@ modules below it, in this order, so there is no import cycle:
 - The Workers (`dwarfworker.js`, `genworker.js`, `clangworker.js`,
   `snapworker.js`) are module Workers; `sw.js`, the service worker, is a
   classic script in its own global scope.
-- Node runs `dwarf.js`, `unwind.js`, `asmnames.js`, `kgen.js`, `wasi.js`,
-  `kit.js`, `jumps.js`, `stepper.js` and `srcedit.js` as modules too
+- Node runs the DWARF modules (`dwarf.js` and the `dwarf*.js` below it,
+  `dwexpr.js`, `unwind.js`, `asmnames.js`), `kgen.js`, `wasi.js`, `kit.js`,
+  `jumps.js`, `stepper.js` (with `frames.js`, `stepbase.js`,
+  `v86patch.js`), `edpatch.js` and `store.js` as modules too
   (`package.json` has `"type": "module"`): `gen-dwarf.js`, `gen-src.js`
   and the `.mjs` tests import them.
 - `stamp.py` (the deploy) puts `?v=<commit>` on the import specifiers as
@@ -92,7 +201,7 @@ modules below it, in this order, so there is no import cycle:
   are exactly `MKB` and `V86` (React adds none), and that index.html loads
   only those three scripts.
 - Code that runs per instruction (stepper.js's `Stepper.record`,
-  `jumpAfter`, the `Frames` methods) reads only private consts: V8 folds
+  `jumpAfter`, frames.js's `Frames` methods) reads only private consts: V8 folds
   a module's private `const` into optimized code, but loads an exported or
   imported binding through its cell on every use (a small method reading
   an exported const ran 3x slower than one reading a private one). So
@@ -100,7 +209,9 @@ modules below it, in this order, so there is no import cycle:
   module that uses them copies them into its own consts
   (`const { FR_BITS } = STEP_CONST`), as stepper.js does with `JK` and
   `realNow`. Before this, R1's modules cost the Debian kernel ~3% of its
-  step rate.
+  step rate. R4's splits kept that: frames.js keeps its `FR_*` private,
+  the Calls modules copy what their loops read from `STEP_CONST`, and
+  only cold code (the constructor, the VGA hook) reads an imported const.
 
 ## Page state and API
 
@@ -193,7 +304,7 @@ canvases) is a component of its markup, written in JSX, in `markup/`:
 Machine (machinepanel.jsx), Memory (memorypanel.jsx), Page
 (pagepanel.jsx), Debugger (debuggerpanel.jsx), Calls (callspanel.jsx),
 Source (sourcepanel.jsx), Snapshots (snapshotspanel.jsx), About
-(about.jsx; `check-legend.py` reads the legend's samples there), the
+(about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first
 lines (`@jsxRuntime classic`, `@jsx h`): `markup/html.js`, whose `h()`

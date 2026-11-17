@@ -1,15 +1,15 @@
-// srcedit.js's diff, patch writer and patch reader against git (E2):
+// edpatch.js's diff, patch writer and patch reader against git (E2):
 // random texts and random edits (lines added, removed, changed, the last
 // newline taken or given, new and deleted files, empty files). Each patch
-// srcedit.js writes must `git apply` to the edited text, and each patch git
-// writes must give the edited text through srcedit.js's reader.
+// edpatch.js writes must `git apply` to the edited text, and each patch git
+// writes must give the edited text through edpatch.js's reader.
 // Usage: node site/test_srcedit.mjs [ROUNDS]
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { edFilePatch, edParse, edApplyHunks } from "./srcedit.js";
+import { edFilePatch, edParse, edApplyHunks } from "./edpatch.js";
 
 const rounds = Number(process.argv[2] || 300);
 let seed = 12345;

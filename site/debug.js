@@ -8,6 +8,9 @@ import * as util from "./util.js";
 import * as clock from "./clock.js";
 import * as jumps from "./jumps.js";
 import * as stepper from "./stepper.js";
+import * as v86patch from "./v86patch.js";
+import * as frames from "./frames.js";
+import * as stepbase from "./stepbase.js";
 import * as graph from "./graph.js";
 import * as dwarf from "./dwarf.js";
 import * as unwind from "./unwind.js";
@@ -51,10 +54,10 @@ import * as kernel from "./kernel.js";
 import * as page from "./page.js";
 
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
-const MODULES = [util, clock, jumps, stepper, graph, dwarf, unwind, asmnames, dbginfo, source, srcedit, coverage,
-	symimport, livedis, fastforward, cpustate, memevents, memmap, quests, vars, fnfacts, settings, snapshots, replay,
-	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview,
-	run, runto, boot, tips, kernel, page];
+const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, dwarf, unwind, asmnames, dbginfo,
+	source, srcedit, coverage, symimport, livedis, fastforward, cpustate, memevents, memmap, quests, vars, fnfacts,
+	settings, snapshots, replay, reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan, memview,
+	listing, debugui, tabs, nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

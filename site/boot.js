@@ -7,8 +7,10 @@ import { CLOCK, GUEST, realNow } from "./clock.js";
 import { withV, $, V86_KERNEL_ADDR, V86_INITRD_ADDR, kib } from "./util.js";
 import { wasmPatchError, setWasmPatchError, image, setStepper, setEmuReady, setRunState, emulator, setUsedPages,
 	setChangedPages, setEmuRam, initrd, setEmulator, emuRam, stepper, prefSpeed, entryPhase, setEntryPhase,
-	setCounting, setCountStart, setCountMs, setCountSteps, startPaused, disasm, setStartPaused, provide } from "./page.js";
-import { patchV86Wasm, Stepper } from "./stepper.js";
+	setCounting, setCountStart, setCountMs, setCountSteps, startPaused, disasm, setStartPaused,
+	provide } from "./page.js";
+import { patchV86Wasm } from "./v86patch.js";
+import { Stepper } from "./stepper.js";
 import { graphReset } from "./graph.js";
 import { initrdNote } from "./symimport.js";
 import { setFfActive, ffEnabled, ffTarget, jitDetInstall, fastForward, ffAbort, ffInfo } from "./fastforward.js";

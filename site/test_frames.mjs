@@ -1,4 +1,4 @@
-// stepper.js's Frames (the Calls frames in typed-array chunks) against a
+// frames.js's Frames (the Calls frames in typed-array chunks) against a
 // plain-array model: random pushes, ends, child counts, truncations and
 // clears, with values that fit no column (counts past 2^32, ends before
 // starts, depths and tasks past 2^16, entry addresses that are no 32-bit
@@ -6,7 +6,8 @@
 // has it, reads past the end give undefined, and full chunks cost
 // FR_BYTES per frame.
 // Usage: node site/test_frames.mjs [ROUNDS]
-import { Frames, STEP_CONST, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
+import { Frames, frStartAt, frEndAt, frSmallAt, FramePath } from "./frames.js";
+import { STEP_CONST } from "./stepper.js";
 
 const { FR_SIZE, FR_BYTES } = STEP_CONST;
 const rounds = Number(process.argv[2] || 40);

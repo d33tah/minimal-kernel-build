@@ -17,7 +17,8 @@ import { renderFnRows } from "./fnfacts.js";
 import { bmFnNames, bmStarEl, bmAddButton, bmDraftFn } from "./bookmarks.js";
 import { scan } from "./scan.js";
 import { drawGrid, symDesc } from "./memview.js";
-import { inspect, listingFollow, setNavScrollWant, listingLineAt, scrollListingTo, sheetBand, insnIndex } from "./listing.js";
+import { inspect, listingFollow, setNavScrollWant, listingLineAt, scrollListingTo, sheetBand,
+	insnIndex } from "./listing.js";
 import { fastStepping, updateDebugUi, renderContext } from "./debugui.js";
 import { writeHash, showTab } from "./tabs.jsx";
 import { navJump, NAV_SCROLL_MS, navAt, navDepth, setNavDepth } from "./nav.js";

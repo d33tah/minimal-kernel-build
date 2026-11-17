@@ -13,7 +13,8 @@
 import { realNow } from "./clock.js";
 import { $, hex, num } from "./util.js";
 import { runState, tab, image, api, state } from "./page.js";
-import { STEP_CONST, frStartAt, frEndAt, frSmallAt, FramePath } from "./stepper.js";
+import { frStartAt, frEndAt, frSmallAt, FramePath } from "./frames.js";
+import { STEP_CONST } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes, dbgTitle } from "./dbginfo.js";
 import { srcChainNodes } from "./source.js";
 import { ffInfo } from "./fastforward.js";

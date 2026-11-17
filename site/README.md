@@ -1188,7 +1188,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
   relocation stub) gets no frame; its instructions count to the caller's
   self time.
 
-  The frames are kept in typed-array columns (`Frames` in stepper.js,
+  The frames are kept in typed-array columns (`Frames` in frames.js,
   `stepper.fr`), in chunks of 65,536 frames: start as a 32-bit offset
   from its chunk's first frame, end as a 32-bit offset from the start,
   instructions in closed children, ESP, symbol, parent, entry address,
@@ -1835,7 +1835,7 @@ per call, mostly through its JIT, and exports no single-step function
 `v86.wasm` still has a name section, which names two internal functions:
 `v86::cpu::cpu::read_imm8` (fetch the byte at EIP through the TLB / page
 walk, raise #PF on a fault, EIP += 1) and `v86::gen::interpreter::run`
-(execute one instruction given its first byte). `stepper.js` adds both to
+(execute one instruction given its first byte). `v86patch.js` adds both to
 the module's export section when the page loads it (`patchV86Wasm`, about
 20 ms; the code section is untouched, so the checksum in `gen-v86.sh`
 still covers what runs; the build keeps npm's v0 symbol names, which these

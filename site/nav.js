@@ -17,7 +17,7 @@ import { kernelSymLookup } from "./livedis.js";
 import { pageSnapView, setPageSnapView } from "./snapdiff.js";
 import { drawGrid } from "./memview.js";
 import { navScrollWant, listingLineAt, setNavScrollWant, setLive } from "./listing.js";
-import { navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";
+import { TAB_LOOK, navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";
 
 // ---- jump history ---------------------------------------------------------
 
@@ -74,7 +74,7 @@ function listingKeep(h) {
 }
 
 function navLabel(v) {
-	let where = "the " + $("tab_" + v.tab).getAttribute("aria-label") + " tab";
+	let where = "the " + TAB_LOOK[v.tab][1] + " tab";
 	if (v.tab === "page") {
 		const at = v.hit >= 0 && Math.floor(v.hit / PAGE) === v.page ? v.hit : navListingAnchor();
 		const name = at >= 0 && symbols ? asmTargetName(at, kernelSymLookup()) : "";

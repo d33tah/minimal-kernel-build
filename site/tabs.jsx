@@ -5,7 +5,8 @@
 
 import { useLayoutEffect } from "react";
 import { hex, PAGE, $ } from "./util.js";
-import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs, markTabShown, provide } from "./page.js";
+import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelectedPage, setCompactTabs,
+	markTabShown, provide } from "./page.js";
 import { srcPanel, srcShowFile } from "./source.js";
 import { bmFromHash } from "./bookmarks.js";
 import { useStore } from "./ui.jsx";
@@ -162,5 +163,5 @@ const setHashOwn = (v) => { hashOwn = v; };
 // The page API's entries of this module (page.js).
 provide({ showTab, writeHash });
 
-export { navHashNow, hashOwn, showTab, writeHash, vmKeys, initCompactTabs, readHash, compactDefault,
+export { TAB_LOOK, navHashNow, hashOwn, showTab, writeHash, vmKeys, initCompactTabs, readHash, compactDefault,
 	chooseCompactTabs, setHashOwn, TabBar };

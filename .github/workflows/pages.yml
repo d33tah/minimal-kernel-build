@@ -412,7 +412,7 @@ jobs:
           tool-fixtures
           out-kernel
           kits-debian
-        key: debian-clang-v2-9aad4025973f-10477b04dc15-526c469c5148-${{ steps.inputs.outputs.js }}-${{ hashFiles('site/gen-debian-clang.sh', 'site/gen-debian-source.sh', 'site/gen-debian-initrd.sh', 'site/gen-host-tools.py', 'site/hosttools/**', 'site/gen-clang-native.sh', 'site/gen-clang-wasm.sh', 'site/capture-host-tools.py', 'site/gen-kit.py', 'site/qemu_screen_check.py', 'site/check-code-identity.py', 'site/gen-symbols.py', 'site/test_dwarf.py', 'site/deps-hash.py') }}
+        key: debian-clang-v2-9aad4025973f-10477b04dc15-526c469c5148-${{ steps.inputs.outputs.js }}-${{ hashFiles('site/gen-debian-clang.sh', 'site/gen-debian-source.sh', 'site/gen-debian-initrd.sh', 'site/gen-host-tools.py', 'site/hosttools/**', 'site/gen-clang-native.sh', 'site/gen-clang-wasm.sh', 'site/capture-host-tools.py', 'site/gen-kit.py', 'site/qemu_screen_check.py', 'site/check-code-identity.py', 'site/gen-symbols.py', 'site/test_dwarf.py', 'site/tests/__init__.py', 'site/tests/dwarf/**', 'site/deps-hash.py') }}
 
     - name: Install packages
       if: steps.cache.outputs.cache-hit != 'true'

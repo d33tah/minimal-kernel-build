@@ -21,7 +21,7 @@ case, and collects four pieces of evidence:
 
 Plus our own requirement: a service worker controls the page (offline).
 
-Without --base it serves a deployed copy of site/ (test_browser.pwa_deploy)
+Without --base it serves a deployed copy of site/ (pwa_deploy in tests/browser/pwa.py)
 at http://localhost:PORT/minimal-kernel-build/ and, unless --no-controls,
 four broken copies that must FAIL, each for its own reason (otherwise the
 test does not discriminate): the manifest link removed, the icons 404, the
@@ -52,7 +52,7 @@ import time
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
 import jscov
-import test_browser as tb
+from tests.browser import common as tb, pwa
 
 SITE = tb.SITE
 SUBPATH = "minimal-kernel-build"
@@ -117,7 +117,7 @@ def deploy_copy(parent, name, change=None):
     root = parent / name
     d = root / SUBPATH
     d.mkdir(parents=True)
-    tb.pwa_deploy(d, tb.PWA_V[0])
+    pwa.pwa_deploy(d, pwa.PWA_V[0])
     if change:
         change(d)
     return root
@@ -337,7 +337,7 @@ def main():
             httpd = None
             if base is None:
                 root = deploy_copy(parent, label, control[0] if control else None)
-                httpd, _ = tb.pwa_server(root)
+                httpd, _ = pwa.pwa_server(root)
                 base = f"http://localhost:{httpd.server_address[1]}/{SUBPATH}"
             log(f"== {label}: {base}")
             try:

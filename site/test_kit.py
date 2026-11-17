@@ -54,7 +54,7 @@ import urllib.request
 from playwright.sync_api import BrowserType, sync_playwright
 
 import jscov
-import test_browser as tb
+from tests.browser import common as tb
 from test_clang_worker import PeakRss
 
 SITE = tb.SITE

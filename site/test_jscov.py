@@ -31,7 +31,7 @@ import time
 from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
 import jscov
-from test_browser import serve, wait_for
+from tests.browser.common import serve, wait_for
 
 SITE = pathlib.Path(__file__).resolve().parent
 

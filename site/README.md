@@ -3041,6 +3041,19 @@ Screenshots `rebuild-*-buildlog-{light,dark}`.
     python3 site/test_browser.py
     python3 site/test_browser.py --suites debian,dwarf,dwarf_import,types
 
+`test_browser.py` holds the command line, the `SUITES` table and `main`;
+each suite's code is in `tests/browser/NAME.py` (`suite_NAME` and what only
+it uses; `tasks.py` has tasks and tasks_minified). A suite too long for one
+file has its parts next to it (`misc_import.py`, `snapdiff_run.py`,
+`dwarf_forms_ui.py`, ...), whose shared code is in its first part. Code two
+suites share is in the module of the earlier one in `SUITES`; code three or
+more use (or `main` and two) is in `tests/browser/common.py`. A new suite:
+a new module with `suite_NAME(ctx)`, a row in `SUITES`, and its name in one
+of the workflow's browser-test groups. `test_dwarf.py` is laid out the
+same way: its `main` there, each option's check in `tests/dwarf/` (`types.py`
+for --types, `cfi.py` for --cfi and --eh-frame, ...), the readers several
+use in `tests/dwarf/common.py`. No file there is over 800 lines.
+
 `test_kernel_data.py` (also in the workflow's site job) fails when a
 kernel in kernels.json lacks a file one of the debug features fetches:
 symbols, line and inline shards, C source, types, the coverage tree's

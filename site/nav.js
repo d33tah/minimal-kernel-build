@@ -13,7 +13,7 @@ import { asmTargetName } from "./asmnames.js";
 import { srcSwClose } from "./srcswitch.js";
 import { srcPanel, setSrcPanel, renderSourcePanel } from "./source.js";
 import { kernelSymLookup } from "./livedis.js";
-import { pageSnapView, setPageSnapView } from "./snapshots.js";
+import { pageSnapView, setPageSnapView } from "./snapdiff.js";
 import { drawGrid } from "./memview.js";
 import { navScrollWant, listingLineAt, setNavScrollWant, setLive } from "./listing.js";
 import { navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";

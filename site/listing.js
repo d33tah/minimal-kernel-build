@@ -16,7 +16,7 @@ import { ffBreaks } from "./fastforward.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { varTypeOf } from "./vars.js";
 import { fnLabelOf } from "./fnfacts.js";
-import { pageSnapView, pageSnapBanner } from "./snapshots.js";
+import { pageSnapView, pageSnapBanner } from "./snapdiff.js";
 import { bmCodeStar, bmFnStar } from "./bookmarks.js";
 import { scanBase } from "./scan.js";
 import { symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid } from "./memview.js";

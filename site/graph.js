@@ -557,7 +557,7 @@ function graphStatus() {
 		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") +
 		(st.framesFull ? "; the timeline stopped at " + num(st.framesFull) +
 			" calls because the tab's JavaScript heap was 80% full (the counters keep counting)" : "") +
-		(typeof ffInfo === "object" && ffInfo && ffInfo.reached && !ffInfo.runTo ?
+		(ffInfo && ffInfo.reached && !ffInfo.runTo ?
 			"; the first " + num(ffInfo.steps) + " instructions (BIOS, setup, decompressor) were fast-forwarded with the JIT, the timeline starts at " + ffInfo.name : "") + ".";
 }
 

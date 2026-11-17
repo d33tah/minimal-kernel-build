@@ -442,7 +442,7 @@ function diffTip(pa, raw, got) {
 		const m = emulator.read_memory(a, n);
 		return m.every((b, i) => b === parseInt(raw.substr(i * 2, 2), 16));
 	};
-	if (typeof ffBreaks !== "undefined" && ffBreaks && got.some((b, i) => b === 0xf4 && ffBreaks.has(pa + i)))
+	if (ffBreaks && got.some((b, i) => b === 0xf4 && ffBreaks.has(pa + i)))
 		return head + "Run to has put HLT bytes (f4) over this instruction as breakpoints while the JIT runs to it; " +
 			"they are put back when it stops.";
 	const d = stubShift();

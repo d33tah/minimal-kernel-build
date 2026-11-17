@@ -258,7 +258,7 @@ const QUEST_LIST = [
 		},
 		hintLabel: "colour text memory",
 		done(run) {
-			return typeof stepper !== "undefined" && !!stepper && runState === "paused" && stepper.steps === run.paint.pos;
+			return !!stepper && runState === "paused" && stepper.steps === run.paint.pos;
 		},
 		won(run) {
 			const e = run.paint, st = MEV.st;
@@ -494,7 +494,7 @@ const QUESTS = {
 	},
 
 	tick() {
-		const k = typeof image === "object" && image ? image.name : "";
+		const k = image ? image.name : "";
 		if (k !== this.kernel) {
 			this.kernel = k;
 			this.render();

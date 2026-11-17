@@ -112,8 +112,7 @@ async function setForget(k) {
 	if (k.startsWith(WATCH_KEY) && k === WATCH_KEY + watchKernel) {
 		setWatchKernel(undefined); // reload the (now empty) list
 		watchLoad();
-		if (typeof renderWatches === "function")
-			renderWatches();
+		renderWatches();
 	}
 }
 

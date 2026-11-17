@@ -120,8 +120,7 @@ async function init() {
 			renderContext();
 		if (tab === "page")
 			listingStale();
-		if (typeof renderGraphInfo === "function")
-			renderGraphInfo();
+		renderGraphInfo();
 	});
 	updateDebugUi();
 	initCompactTabs();

@@ -81,7 +81,7 @@ const MM_LISTS = {
 			if (i >= 0)
 				out.push(" " + st.symName[i]);
 			// starts reading the DWARF of that code; drawn again when it is in
-			const f = typeof dbgFrames === "function" ? dbgFrames(e.eipPhys) : null;
+			const f = dbgFrames(e.eipPhys);
 			if (f && f.state === "loading")
 				this.linesPending = true;
 			if (f && f.state === "ok" && f.frames[0].file)

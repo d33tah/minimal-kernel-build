@@ -88,7 +88,7 @@ function bmValid(b) {
 
 // This kernel's identity, null while it is computed (bmChanged runs again then).
 function bmKey() {
-	const k = typeof snapKernelKey === "function" ? snapKernelKey() : null;
+	const k = snapKernelKey();
 	if (!k && image && image.snapKeyP && BM.keyWait !== image.snapKeyP) {
 		BM.keyWait = image.snapKeyP;
 		image.snapKeyP.then(() => bmChanged());
@@ -161,9 +161,9 @@ function bmDraftPos() {
 	const i = pa >= 0 ? stepper.symbolOf(pa) : -1;
 	const sym = i >= 0 ? stepper.symName[i] + (pa > stepper.symStart[i] ? "+" + hex(pa - stepper.symStart[i]) : "") : "";
 	const key = bmKey();
-	const snap = typeof snapshots !== "undefined" ? snapshots.find((s) => s.meta && s.meta.icount === icount && key && s.kernelKey === key) : null;
+	const snap = snapshots.find((s) => s.meta && s.meta.icount === icount && key && s.kernelKey === key);
 	// The run up to here (J4): Replay boots again and replays it to here.
-	const run = typeof runNow === "function" ? runNow() : null;
+	const run = runNow();
 	const steps = stepper.steps;
 	return { kind: "pos", t: { pa, eip, steps, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}) },
 		name: snapKernelName() + " @" + steps.toLocaleString("en") + (sym ? " " + sym : " " + hex(eip)) };
@@ -759,11 +759,9 @@ function bmChanged() {
 		renderSourcePanel();
 	if (tab === "source")
 		api.source.covRender();
-	if (typeof G !== "undefined") {
-		G.dirty = true;
-		if (tab === "calls")
-			graphTick();
-	}
+	G.dirty = true;
+	if (tab === "calls")
+		graphTick();
 }
 
 // The menu grows upward from the toggle: it may take the room above it.

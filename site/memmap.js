@@ -128,8 +128,7 @@ const MMAP = {
 				localStorage.setItem(MM_KEY, open ? "1" : "0");
 			} catch (e) { /* no storage */ }
 		}
-		if (typeof MEV === "object")
-			MEV.need("map", open);
+		MEV.need("map", open);
 		if (open)
 			this.attach();
 		else

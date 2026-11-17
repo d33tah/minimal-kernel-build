@@ -344,7 +344,7 @@ function parseLinear(st, text) {
 	if (/^(0x)?[0-9a-f]+$/i.test(text))
 		return parseInt(text, 16) >>> 0;
 	const i = st.symName.indexOf(text);
-	if (i >= 0 && typeof symbols === "object" && symbols && symbols.symbols) {
+	if (i >= 0 && symbols && symbols.symbols) {
 		const s = symbols.symbols.find((x) => x.name === text);
 		if (s)
 			return s.vaddr >>> 0;

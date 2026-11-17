@@ -16,7 +16,7 @@ const WATCH_MAX_ELEMENTS = 64;
 const WATCH_MAX_STRING = 96;
 const watchOpen = new Set(); // "expression/path" of expanded rows
 
-const varsReady = () => typeof emulator !== "undefined" && emulator && emuReady;
+const varsReady = () => emulator && emuReady;
 
 // Virtual - physical of the kernel's data (0 for hello).
 const varsOffset = () => virtOffset(V86_KERNEL_ADDR);

@@ -38,7 +38,7 @@ import { realNow } from "./clock.js";
 const KIT_FORMAT = 1;
 
 // Real time: on the page, performance.now() is clock.js's virtual clock.
-const kitNow = typeof realNow === "function" ? realNow : () => performance.now();
+const kitNow = realNow;
 
 async function kitHash(bytes) {
 	const h = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));

@@ -43,12 +43,12 @@ const fnParts = (e) => e[7].map((r) => { const out = []; for (let k = 0; k < r.l
 
 // "start_kernel+0x23" for code at pa (the ELF symbols), "" without one.
 function fnSymAt(pa) {
-	const st = typeof stepper !== "undefined" ? stepper : null;
+	const st = stepper;
 	if (st) {
 		const i = st.symbolOf(pa);
 		return i >= 0 ? st.symName[i] + (pa > st.symStart[i] ? "+0x" + (pa - st.symStart[i]).toString(16) : "") : "";
 	}
-	const s = typeof symbols !== "undefined" && symbols ? api.symbols.symbolAt(symbols.symbols, pa) : null;
+	const s = symbols ? api.symbols.symbolAt(symbols.symbols, pa) : null;
 	return s ? s.name + (pa > s.paddr ? "+0x" + (pa - s.paddr).toString(16) : "") : "";
 }
 

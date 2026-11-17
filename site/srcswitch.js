@@ -15,7 +15,7 @@ const SRC_RECENT_MAX = 8;
 let srcRecentMem = {};
 
 // A kernel rebuilt in the page (rebuild.js) is its source's: image.from.
-const srcKernelKey = () => (typeof image !== "undefined" && image ? image.from || image.name : "");
+const srcKernelKey = () => (image ? image.from || image.name : "");
 
 function srcRecent() {
 	let all = srcRecentMem;

@@ -523,7 +523,7 @@ function renderEnd() {
 	const e = stepper && stepper.end;
 	b.hidden = !e;
 	b.textContent = e ? endText() : "";
-	if (b.dataset.kind !== (e ? e.kind : "") && typeof G === "object")
+	if (b.dataset.kind !== (e ? e.kind : ""))
 		G.dirty = true; // the timeline's "now" marker becomes "end"
 	b.dataset.kind = e ? e.kind : "";
 	b.dataset.code = stepper && stepper.exit ? stepper.exit.code : "";
@@ -584,7 +584,7 @@ function renderRunBadge() {
 		panic: "kernel panic (the end of the run)",
 		run: (runState === "jit" ? "running at full speed (JIT)" : (entryPhase ? "stepping to the kernel entry, then " + speed : "running at " + speed)) +
 			behindText() }[state];
-	const newer = typeof PWA !== "undefined" && PWA.newer ? PWA.newer : "";
+	const newer = PWA.newer ? PWA.newer : "";
 	const text = words + (stepper && runState !== "off" ? " \u00b7 " + num(stepper.steps) + " instructions" : "");
 	box.dataset.state = state;
 	box.dataset.vm = ffActive ? "ff" : runState;
@@ -612,7 +612,7 @@ function renderRunBadge() {
 // The "new version" notice (pwa.js) in the menu too: the Machine tab's copy
 // is out of sight on the other tabs.
 function renderRunBadgePwa() {
-	const el = $("runbadge_pwa"), newer = typeof PWA !== "undefined" && PWA.newer;
+	const el = $("runbadge_pwa"), newer = PWA.newer;
 	el.hidden = !newer;
 	el.textContent = "";
 	if (newer) {

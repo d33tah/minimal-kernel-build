@@ -410,7 +410,7 @@ const MEV = {
 				const i = this.st.symbolOf(e.eipPhys);
 				if (i >= 0)
 					at += " " + this.st.symName[i];
-				const f = typeof dbgFrames === "function" ? dbgFrames(e.eipPhys, true) : null;
+				const f = dbgFrames(e.eipPhys, true);
 				if (f && f.state === "ok" && f.frames[0].file)
 					at += " " + f.frames[0].file + ":" + f.frames[0].line;
 			}

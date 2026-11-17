@@ -76,7 +76,7 @@ bookmarks.js	568	33ddae1b	bmNote without #bm_status: the element is in index.htm
 bookmarks.js	576	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
 bookmarks.js	608	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
 bookmarks.js	709	6b17f7cd	bmRender without #bm_list: the element is in index.html
-bookmarks.js	855-857	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
+bookmarks.js	853-855	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
 coverage.js	58	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
 coverage.js	344	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
 cpustate.js	454-456	da4d8a32	a machine-state section whose reader throws: each reads fixed fields of v86's CPU object (pinned v86 0.5.471); a throw would need a v86 build without one of them
@@ -171,7 +171,7 @@ fastforward.js	369	cdfb4b72	a boot during that stepping: a race
 fastforward.js	371-374	bcf5d2e0	as 351
 fastforward.js	403	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
 fastforward.js	432	cdfb4b72	a boot during the breakpoint run: a race
-fnfacts.js	51	e2dfd3f2	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+fnfacts.js	51	c19d25fb	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 fnfacts.js	142	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
 genimport.js	57	d6863760	E1 track: a failure of an import already replaced by another (race)
 genimport.js	67	d6863760	E1 track: the result of an import already replaced by another (race)
@@ -232,7 +232,7 @@ memmaplayout.js	286	1a59a2ac	not run by the memmap suite yet (M track: a test wo
 memmaplayout.js	292	4a8ee3c1	a CPU event without a physical EIP: every CPU event v86.wasm reports carries the EIP's physical address
 memmaplayout.js	314	bb28909b	sometimes: a map frame with no instruction since the last sample: frames while paused or between the JIT's slices; ran up to run 43925425362, not in 43965158938 (frame timing)
 memmaplayout.js	336-338	9909f574	not run by the memmap suite yet (M track: a test would need more than 4M page numbers of CPU RAM writes kept (MM_SAMPLE_CAP), i.e. a long Debian run with the map open)
-memmap.js	213-216	9934dde1	sync() seeing a new machine or a new log first at a frame: MEV.install attaches the open map when a machine starts (attach() resets it then) and a closed map attaches when it is opened, so a frame only sees steps back; defensive
+memmap.js	212-215	9934dde1	sync() seeing a new machine or a new log first at a frame: MEV.install attaches the open map when a machine starts (attach() resets it then) and a closed map attaches when it is opened, so a frame only sees steps back; defensive
 memmapdraw.js	21-22	74f33fd0	a colour token written as rgb()/rgba(): style.css gives every token the map reads as #rrggbb
 memmapdraw.js	291-293	20301117	the text canvas resized: index.html gives #mm_text 640 x 400, exactly MM_COLS x 8 by MM_ROWS x 16
 memmaplist.js	105	66603ecb	goTo() without a stepper: the go-there buttons exist only in the cell list of a booted machine
@@ -307,12 +307,12 @@ snapworker.js	312	ddb69209	a page read of now that the last diff does not list: 
 srctext.js	19-21	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
 srctext.js	31	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
 srctext.js	38	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
-srctext.js	60	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
-srctext.js	67	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
-srctext.js	74	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
-srctext.js	153	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
-srctext.js	190	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
-srctext.js	257	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
+srctext.js	59	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
+srctext.js	66	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
+srctext.js	73	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
+srctext.js	152	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
+srctext.js	189	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
+srctext.js	256	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
 source.js	75	f9555e97	a frame's line past the end of its source file: the shipped kernels' sources hold every line their DWARF names; only an imported vmlinux with other sources; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 source.js	132	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
 source.js	135	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line

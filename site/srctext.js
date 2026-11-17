@@ -42,8 +42,7 @@ async function srcUseShipped(entry) {
 }
 
 function srcChanged() {
-	if (typeof dbgChanged === "function")
-		dbgChanged();
+	dbgChanged();
 	srcStatus();
 }
 

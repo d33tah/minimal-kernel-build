@@ -151,7 +151,7 @@ dwarftables.js	397	90159e94	a shard that is not MKBD 1 or 2: shards are written 
 dwarftables.js	415	b101b0d5	MKBD version 1 shard: every shipped shard is version 2
 dwarftables.js	440	a34ac93b	MKBD version 1 shard: every shipped shard is version 2
 dwarfworker.js	83	c8b20a61	a type unit (DW_UT_type/split_type, -fdebug-types-section with DWARF 5) in the lines request: no fixture has type units; their references (DW_FORM_ref_sig8) are not resolved by dwarf.js, so such an import is not supported beyond file:line
-fastforward.js	44	b3a1b191	a kernel without startup_32: every shipped kernel's symbols have it; only an imported symbol file lacking it reaches the _text fallback
+fastforward.js	44	b3a1b191	sometimes: ran in run 44114343482 (kit job, rebuild_debian: a boot of the rebuilt Debian while its symbols came from its ELF), not in 44099591689: a kernel without startup_32: every shipped kernel's symbols have it; only an imported symbol file lacking it reaches the _text fallback
 fastforward.js	93-95	ceea7302	new WebAssembly.Module() refused for a JIT block: Chromium compiles modules of this size synchronously on the main thread; the fallback is for browsers with a smaller synchronous limit
 fastforward.js	107-109	ba5085bf	waiting for an asynchronously compiled block: only after the fallback at 83
 fastforward.js	111	626deafb	a JIT request flushed by another caller while this one waited: a race between two JIT users; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"

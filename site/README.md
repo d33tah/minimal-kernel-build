@@ -371,22 +371,24 @@ Source panel from a file:line link and typing in the Source editor
 input). It reports the renderer main thread's CPU time each action
 causes and the time to the end of the next frame. `--redraw` times the
 Calls zoom and redraw alone in a loop in the page, without the noise of
-a measuring window. Measured on d-claude (R5, 2026-11-17), 43308392f
-(before R1-R4: classic scripts, no React) against 27c798f20 (after R4),
-the CI site artifacts of both, 12 alternating runs each (`--redraw`: 10):
+a measuring window. Measured on d-claude (R5, 2026-11-17, idle host),
+43308392f (before R1-R4: classic scripts, no React) against 27c798f20
+(after R4), the CI site artifacts of both, 12 alternating runs each:
 
 | action | work 43308392f | work 27c798f20 | next frame 43308392f | next frame 27c798f20 |
 | --- | --- | --- | --- | --- |
-| tab switch (8 tabs) | 56.93 ms | 54.75 ms (-3.8%) | 33.6 ms | 34.5 ms (+2.8%) |
-| Events filter chip | 15.09 ms | 11.89 ms (-21.2%) | 14.4 ms | 11.8 ms (-18.3%) |
-| Calls zoom (window) | 4.74 ms | 4.99 ms (+5.3%) | | |
-| Calls zoom + redraw (`--redraw`) | 1.768 ms | 1.784 ms (+0.9%) | | |
-| Source panel open | 15.97 ms | 15.75 ms (-1.4%) | 17.4 ms | 17.3 ms (-0.3%) |
-| typing, per key | 3.28 ms | 3.25 ms (-0.8%) | 13.0 ms | 12.9 ms (-0.8%) |
+| tab switch (8 tabs) | 53.82 ms | 52.16 ms (-3.1%) | 31.6 ms | 32.0 ms (+1.2%) |
+| Events filter chip | 14.52 ms | 11.53 ms (-20.6%) | 13.7 ms | 11.2 ms (-18.1%) |
+| Calls zoom (window) | 4.78 ms | 4.95 ms (+3.6%) | | |
+| Calls zoom + redraw (`--redraw`) | 1.775 ms | 1.764 ms (-0.6%) | | |
+| Source panel open | 16.22 ms | 15.91 ms (-1.9%) | 17.4 ms | 17.2 ms (-1.1%) |
+| typing, per key | 3.21 ms | 3.26 ms (+1.4%) | 11.9 ms | 12.0 ms (+0.8%) |
 
-The windowed zoom number moves by more than its difference between runs
-(run medians 3.6 to 6.4 ms on either build); the loop that times the same
-handler and redraw without the window finds them within 1%. The next
+An earlier run of the same 12 pairs gave tab -3.8% / +2.8%, chip -21.2% /
+-18.3%, Source panel -1.4% / -0.3%, typing -0.8% / -0.8% and the windowed
+zoom +5.3%: that number moves more between runs than between the builds
+(run medians 3.6 to 6.4 ms on either), so `--redraw` times the same
+handler and redraw without the window (+0.9% there, -0.6% here). The next
 frame is counted in whole frames of 16.7 ms, so it differs only where an
 action crosses a frame boundary more or less often. Run it on an idle
 machine: a kernel build next to it made the windows meaningless.

@@ -35,7 +35,7 @@ import { realNow } from "./clock.js";
 import { $ } from "./util.js";
 import { provide, state, tab } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
-import { srcLinkEl } from "./source.js";
+import { srcLinkEl } from "./srclinks.js";
 import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
 import { revStepBack } from "./reverse.js";
 

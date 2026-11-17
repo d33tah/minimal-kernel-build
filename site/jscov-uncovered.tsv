@@ -36,13 +36,13 @@ run.js	280	7f4f045e	pause() without a ready machine: the Pause control is disabl
 run.js	331	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
 run.js	392-396	fed2b717	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
 run.js	428	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
-symview.js	88	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
-symview.js	122	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
-symview.js	148	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
-symview.js	173	c514e459	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
-symview.js	325-332	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
-debugui.js	82-86	f4b1cd10	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
-debugui.js	438	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+symview.js	89	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
+symview.js	123	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
+symview.js	149	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
+symview.js	174	c514e459	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
+symview.js	326-333	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
+debugui.js	83-87	f4b1cd10	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
+debugui.js	439	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
 runto.js	38	1d380376	doStep without a stepper or during a reverse step: the Step control is disabled then
 runto.js	41	0b4124ba	doStep when the machine went away while pausing: a race with Boot
 runto.js	72-74	eafb485c	Step's own 5 s check: stepper.run gets the time left as its own limit and returns "time" first; this only fires when a slice ends by count just after 5 s (the 5 s limit itself is tested: misc panic_text)
@@ -100,7 +100,7 @@ dbginfo.js	476	2c0239a6	a types table without function facts: written by an olde
 dbginfo.js	764	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
 dbginfo.js	768	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
 dbginfo.js	806	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
-debug.js	79	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
+debug.js	82	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarfread.js	36	d99af19c	the size of DW_FORM_strx3/addrx3 (3-byte indexes): needs a unit with 65,536 or more string or address indexes; the kernels the suites read have none (clang writes strx1/strx2/addrx); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 dwarfread.js	52	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
 dwarfread.js	226-227	5456a1c5	reading a DW_FORM_strx3/addrx3 value: as 49; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -248,8 +248,8 @@ quests.jsx	171	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look:
 quests.jsx	241	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.jsx	460	f86b4bd8	localStorage.setItem throwing (storage blocked or full) when the Quests panel is opened or closed: the quests suite's no-storage case does not open or close it; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 quests.jsx	480-481	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
-rebuild.jsx	308-309	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
-rebuild.jsx	378	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
+rebuild.jsx	309-310	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
+rebuild.jsx	379	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	109	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	179-181	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	192	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
@@ -304,37 +304,37 @@ snapshots.js	1043	f8bff038	same race as 947 for the Page tab buttons
 snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
 snapworker.js	312	ddb69209	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
-source.js	35-37	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
-source.js	47	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
-source.js	54	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
-source.js	76	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
-source.js	83	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
-source.js	90	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
-source.js	169	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
-source.js	206	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
-source.js	273	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
-source.js	497	f9555e97	a frame's line past the end of its source file: the shipped kernels' sources hold every line their DWARF names; only an imported vmlinux with other sources; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-source.js	554	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
-source.js	557	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
-source.js	653	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
-source.js	689	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
-source.js	861,863	6bb7dbb9	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
-source.js	875,877	9b16c2ca	localStorage.setItem throwing (storage blocked or full): as line 848
-source.js	923	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race
-source.js	929,931	4f2fd304	unwindHere throwing: unwind.js answers stop reasons instead of throwing for the stacks the suites reach; a defensive catch
-source.js	1113	c48c3b85	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
-source.js	1180	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
-srcedit.js	128	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
-srcedit.js	216-218	5f7242f3	unreachable: edDiff takes the common head off before edMiddle, so the middle's first lines differ and the backtrace never ends inside a snake at d = 0
-srcedit.js	251	8b2e458e	edFilePatch of equal texts: in the page its callers pass only stored edits, and edPut drops an edit equal to its base; site/test_srcedit.mjs (Node) calls it with equal texts
-srcedit.js	488	4f0af11e	edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
-srcedit.js	529	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
-srcedit.js	586	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-srcedit.js	595	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
-srcedit.js	612	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
-srcedit.js	781	d861a51e	Download with no edits: the button is disabled while there are none
-srcedit.js	794	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	860	5601638c	the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+srctext.js	19-21	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
+srctext.js	31	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
+srctext.js	38	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
+srctext.js	60	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
+srctext.js	67	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
+srctext.js	74	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
+srctext.js	153	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
+srctext.js	190	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
+srctext.js	257	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
+source.js	75	f9555e97	a frame's line past the end of its source file: the shipped kernels' sources hold every line their DWARF names; only an imported vmlinux with other sources; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+source.js	132	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
+source.js	135	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
+source.js	231	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
+source.js	267	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
+srcswitch.js	24,26	6bb7dbb9	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
+srcswitch.js	38,40	9b16c2ca	localStorage.setItem throwing (storage blocked or full): as line 848
+srcswitch.js	86	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race
+srcswitch.js	92,94	4f2fd304	unwindHere throwing: unwind.js answers stop reasons instead of throwing for the stacks the suites reach; a defensive catch
+source.js	496	c48c3b85	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
+source.js	549	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
+srcedit.js	130	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
+srcedit.js	218-220	5f7242f3	unreachable: edDiff takes the common head off before edMiddle, so the middle's first lines differ and the backtrace never ends inside a snake at d = 0
+srcedit.js	253	8b2e458e	edFilePatch of equal texts: in the page its callers pass only stored edits, and edPut drops an edit equal to its base; site/test_srcedit.mjs (Node) calls it with equal texts
+srcedit.js	490	4f0af11e	edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
+srcedit.js	531	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
+srcedit.js	588	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+srcedit.js	597	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
+srcedit.js	614	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
+srcedit.js	783	d861a51e	Download with no edits: the button is disabled while there are none
+srcedit.js	796	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
+srcedit.js	862	5601638c	the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 v86patch.js	61	63341348	v86.wasm with no or several functions matching a step export's pattern: the shipped v86.wasm is pinned and built by the workflow, so each pattern matches once
 v86patch.js	66	25f3f9cf	v86.wasm without an export section: as line 74
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it

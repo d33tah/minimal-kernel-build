@@ -16,7 +16,7 @@ import { dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLoc
 import { dwSetFrameBase, dwLocation } from "./unwind.js";
 import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
 import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgCfiRow, dbgLocalGroups, dbgTitle, dbgOnChange } from "./dbginfo.js";
-import { srcLinkEl } from "./source.js";
+import { srcLinkEl } from "./srclinks.js";
 import { virtOffset, kernelSymLookup } from "./livedis.js";
 import { pageWalk } from "./cpustate.js";
 

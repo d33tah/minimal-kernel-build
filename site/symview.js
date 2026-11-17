@@ -10,7 +10,8 @@ import { stepper, runState, emuRam, flashes, setFlashes, selectedPage, tab, setS
 import { setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { cfiRowText } from "./unwind.js";
 import { dbgOnChange, dbgFrames, dbgHas, dbgTitle, dbgUnwind, dbgCfiInfo } from "./dbginfo.js";
-import { openSource, renderSourceRows, srcLinkEl } from "./source.js";
+import { srcLinkEl } from "./srclinks.js";
+import { openSource, renderSourceRows } from "./source.js";
 import { pageWalk, phys32 } from "./cpustate.js";
 import { renderTaskRow } from "./vars.js";
 import { renderFnRows } from "./fnfacts.js";

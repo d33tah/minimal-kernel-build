@@ -13,7 +13,7 @@ import { stepper, symbols, api, provide } from "./page.js";
 import { dwFuncProto } from "./dwarflocals.js";
 import { cfiFrameText } from "./unwind.js";
 import { dbgCfiFrame, dbgFrames, dbgFnFactsAt, dbgFnFactsFor, dbgHas, dbgFnHolds } from "./dbginfo.js";
-import { srcLinkEl } from "./source.js";
+import { srcLinkEl } from "./srclinks.js";
 
 // Inlined copies listed before "and N more".
 const FN_COPIES_SHOWN = 40;

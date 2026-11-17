@@ -23,7 +23,9 @@
 import { $ } from "./util.js";
 import { image, api, provide } from "./page.js";
 import { dbgOnChange } from "./dbginfo.js";
-import { srcKernelKey, srcFile, SRC, srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
+import { srcFile, SRC } from "./srctext.js";
+import { srcKernelKey } from "./srcswitch.js";
+import { srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
 
 const ED_DB = "mkb-srcedit";
 const ED_STORE = "edits";

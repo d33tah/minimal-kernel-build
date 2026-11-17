@@ -5,7 +5,7 @@
 import { kib, $, withV, httpWhy } from "./util.js";
 import { image, setImage, setSymbols, setDisasm, initrd, setInitrd, provide } from "./page.js";
 import { dbgUseShards } from "./dbginfo.js";
-import { srcUseShipped } from "./source.js";
+import { srcUseShipped } from "./srctext.js";
 import { ramForInitrd, initrdNote, showImported, restoreImported, restoreCmdline, analyzeInitrd } from "./symimport.js";
 import { renderSnapshots } from "./snapshots.js";
 import { setStatus, ram, parseHeader, DEFAULT_RAM, showHeader, kernelEnd } from "./header.js";

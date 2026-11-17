@@ -12,7 +12,8 @@ import { jumpsDrawn, renderEipJumps, jumpsFor, jumpInlineMax, jumpPaths, jumpInl
 	jumpBadgesHtml } from "./jumps.js";
 import { G } from "./graphdata.js";
 import { dbgHas, dbgFrames } from "./dbginfo.js";
-import { srcFocusKeep, srcLineHtml, srcLinkEl } from "./source.js";
+import { srcFocusKeep, srcLinkEl } from "./srclinks.js";
+import { srcLineHtml } from "./source.js";
 import { liveDecode, iced, icedError, loadIced, bitnessAt, decodeLive, virtOffset } from "./livedis.js";
 import { ffActive, ffInfo } from "./fastforward.js";
 import { renderCpuState } from "./cpustate.js";

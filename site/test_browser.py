@@ -6967,7 +6967,7 @@ def state_link_shown(page):
 
 def srclinks_case(browser, base, shots):
     """Every file:line the Debugger shows is a link to the Source panel at
-    that line, through one helper (source.js srcLinkEl/srcLinkHtml): the
+    that line, through one helper (srclinks.js srcLinkEl/srcLinkHtml): the
     state line, the Run to status, the source row and its inline chain,
     the call stack, the Code at EIP C lines, the locals' frame headers, the
     function facts (defined at, starts at), a watch's "defined at"; the

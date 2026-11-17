@@ -17,7 +17,7 @@
 import { withV, $ } from "./util.js";
 import { image, symbols, setSymbols, setDisasm, disasm, api, provide } from "./page.js";
 import { dbgIdbOp, dbgUseShards, dbgChanged } from "./dbginfo.js";
-import { srcUseShipped, SRC } from "./source.js";
+import { srcUseShipped, SRC } from "./srctext.js";
 import { MAP_KEY, showImported } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
 

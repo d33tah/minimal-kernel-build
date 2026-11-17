@@ -27,6 +27,9 @@ import * as unwind from "./unwind.js";
 import * as asmnames from "./asmnames.js";
 import * as dbginfo from "./dbginfo.js";
 import * as source from "./source.js";
+import * as srctext from "./srctext.js";
+import * as srclinks from "./srclinks.js";
+import * as srcswitch from "./srcswitch.js";
 import * as srcedit from "./srcedit.js";
 import * as coverage from "./coverage.js";
 import * as symimport from "./symimport.js";
@@ -66,9 +69,9 @@ import * as page from "./page.js";
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
 	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, asmnames,
-	dbginfo, source, srcedit, coverage, symimport, livedis, fastforward, cpustate, memevents, memmap, quests, vars,
-	fnfacts, settings, snapshots, replay, reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan,
-	memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips, kernel, page ];
+	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
+	memevents, memmap, quests, vars, fnfacts, settings, snapshots, replay, reverse, bookmarks, clang, kit, genimport,
+	rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

@@ -19,7 +19,7 @@
 //   { op: "src", dwarf: [[name, Uint8Array]], tree: [[path, Blob]], origin, notes }
 //       dwarf: the "gen" answer's dwarf/ files (names without "dwarf/");
 //       tree: a source tree's files (the kernel tree may be one level or
-//       more down, as source.js srcPickedFile finds it)
+//       more down, as srctext.js srcPickedFile finds it)
 //       -> { files: [["src/<path>.gz" | "src/index.json", Uint8Array]],
 //          missing, pastEnd, log }
 //   meanwhile { id, progress: text }; any failure -> { id, error }

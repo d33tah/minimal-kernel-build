@@ -10,7 +10,8 @@ import { jumpHit, jumpPopClose, setJumpHit, setJumpHitScroll } from "./jumps.js"
 import { graphSelName, graphCapture } from "./graphnav.js";
 import { graphRestore } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
-import { srcPanel, srcSwClose, setSrcPanel, renderSourcePanel } from "./source.js";
+import { srcSwClose } from "./srcswitch.js";
+import { srcPanel, setSrcPanel, renderSourcePanel } from "./source.js";
 import { kernelSymLookup } from "./livedis.js";
 import { pageSnapView, setPageSnapView } from "./snapshots.js";
 import { drawGrid } from "./memview.js";

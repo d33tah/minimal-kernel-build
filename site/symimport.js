@@ -9,7 +9,7 @@
 import { V86_KERNEL_ADDR, hex, $, kib, V86_INITRD_ADDR } from "./util.js";
 import { image, setSymbols, symbols, setDisasm, disasm, kernels, initrd, setInitrd, api } from "./page.js";
 import { dbgFresh, dbgHas, DBG, dbgImport, dbgRestore, dbgForget } from "./dbginfo.js";
-import { srcFresh } from "./source.js";
+import { srcFresh } from "./srctext.js";
 import { showHeader, ram, setStatus } from "./header.js";
 
 const PAGE_OFFSET_I386 = 0xC0000000;

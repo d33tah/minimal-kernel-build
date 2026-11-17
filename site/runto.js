@@ -8,7 +8,7 @@ import { $, num, hex, V86_KERNEL_ADDR } from "./util.js";
 import { runState, stepper, symbols, disasm, runToFrom, setRunToFrom, setRunToMoved, setRunTo, setRunToLabel,
 	entryPhase, setPrefSpeed, prefSpeed, counting, setCounting, setCountNote, provide } from "./page.js";
 import { dbgFrames, dbgLineCodeWait } from "./dbginfo.js";
-import { srcLinkEl } from "./source.js";
+import { srcLinkEl } from "./srclinks.js";
 import { ffActive, ffYield, ffEnabled, ffTarget, codeRange, setFfInfo, fastForward, ffAbort, fastRunTo } from "./fastforward.js";
 import { fnSymAt } from "./fnfacts.js";
 import { replayActive, replayStop, inputFlush, inputMark, inputRoom, inputTaint } from "./replay.js";

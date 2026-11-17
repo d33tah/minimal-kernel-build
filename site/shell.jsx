@@ -19,12 +19,10 @@ import { QuestsPanel } from "./quests.jsx";
 import { EventsPanel } from "./events.jsx";
 import { RebuildPanel, RebuildPanelButton } from "./rebuild.jsx";
 
-// Mount a tab's component the first time the store's `tab` names it.
+// Mount a tab's component the first time the store's `tab` names it
+// (mountShell runs before init() reads the URL's tab: the Machine tab is
+// the one shown then).
 function mountOnTab(name, id, element) {
-	if (state.get("tab") === name) {
-		mount($(id), element);
-		return;
-	}
 	const off = state.subscribe(() => {
 		if (state.get("tab") !== name)
 			return;

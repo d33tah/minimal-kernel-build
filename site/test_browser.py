@@ -22940,6 +22940,11 @@ def qs_minified_case(browser, base, shots, entries, problems, r):
             problems.append("minified: no end")
             return
         qs_wait(page, "paint", "open")
+        # The cards follow the quests' half-second look: the run's end (the
+        # banner) shows as "try Debian" on the next one (run 43988655649
+        # read them between the banner and that look: still "wait").
+        for q in ("pciclass", "barsize", "ioapic"):
+            qs_wait(page, q, "never", 10)
         s = qs_state(page)
         r["minified start"] = {k: v["state"] for k, v in s["cards"].items()}
         for q in ("loader", "rom", "ramend", "paint"):

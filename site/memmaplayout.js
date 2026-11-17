@@ -4,7 +4,8 @@
 // layout of the address space into segments, and applying the log of
 // memory events to the cells (MMAP's methods, spread into MMAP).
 
-import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
+import { pciBdf } from "./mevregions.js";
+import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA } from "./memevents.js";
 
 const MM_ORDER = 7, MM_N = 1 << MM_ORDER, MM_CELLS = MM_N * MM_N;
 const MM_MIN_CELLS = 16, MM_GAP_CELLS = 24, MM_RAM_SHARE = 0.6;

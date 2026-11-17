@@ -27,7 +27,8 @@ import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { $ } from "./util.js";
 import { stepper, runState, image, tab, state, api } from "./page.js";
-import { PCI_CLASSES, MEV, MEV_CPU, MEV_M_WRITE, pciBdf, pciClassName } from "./memevents.js";
+import { PCI_CLASSES, pciBdf, pciClassName } from "./mevregions.js";
+import { MEV, MEV_CPU, MEV_M_WRITE } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { Tip } from "./ui.jsx";
 

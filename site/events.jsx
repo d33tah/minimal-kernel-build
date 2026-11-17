@@ -5,7 +5,8 @@
 
 import { useSyncExternalStore } from "react";
 import { api } from "./page.js";
-import { MEV, MEV_INITIATORS, mevHex } from "./memevents.js";
+import { mevHex } from "./mevregions.js";
+import { MEV, MEV_INITIATORS } from "./memevents.js";
 import { SrcLink, Tip } from "./ui.jsx";
 import { revStepBack } from "./reverse.js";
 

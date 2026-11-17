@@ -733,10 +733,9 @@ state.subscribe(() => {
 }, ["tabShows"]);
 
 // The page API's entries of this module (page.js).
-provide({ currentPhys, renderContext, speedReset, updateDebugUi, syncSrcToggle, REF_KEY, clockMips,
-	flushScreen, FLAG_BITS, runBadgeOpen, renderRunBadgePwa });
+provide({ currentPhys, renderContext, speedReset, updateDebugUi, syncSrcToggle, clockMips, flushScreen, FLAG_BITS,
+	runBadgeOpen, renderRunBadgePwa });
 
-export { renderContext, updateDebugUi, clockMips, finishEntry, speed, speedReset, flushScreen, watchJitEnd,
+export { REF_KEY, renderContext, updateDebugUi, clockMips, finishEntry, speed, speedReset, flushScreen, watchJitEnd,
 	endText, fastStepping, highRate, COUNT_LIMIT_MS, SPEED_KEY, renderClock, MIPS_KEY, renderCounters, COUNT_KEY,
-	syncSrcToggle, watchPanicText, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, initRunBadge, REF_KEY, currentPhys,
-	FLAG_BITS, renderRunBadgePwa, runBadgeOpen };
+	syncSrcToggle, watchPanicText, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, initRunBadge };

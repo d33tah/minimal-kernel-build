@@ -175,4 +175,4 @@ function genSrcMade(mine, pick, r) {
 }
 
 provide({ kfetch, genSrcPicked, genImport, genRestore });
-export { GEN, kfetch, genImport, genRestore, genSrcPicked };
+export { GEN, kfetch, genImport };

@@ -32,6 +32,8 @@ import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./s
 import { kernelSymLookup } from "./livedis.js";
 import { snapKernelKey, snapKernelName, snapshots, saveSnapshot, restoreSnapshot } from "./snapshots.js";
 import { runNow, replayRun, runStatus } from "./replay.js";
+import { setStatus } from "./header.js";
+import { hideTip } from "./tips.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
@@ -132,7 +134,7 @@ function bmDraftCode(pa) {
 }
 
 function bmDraftPage(p) {
-	const label = typeof api.memory.pageLabel === "function" && pageClass.length ? api.memory.pageLabel(p) : "";
+	const label = pageClass.length ? api.memory.pageLabel(p) : "";
 	return { kind: "page", t: { page: p }, name: "page " + hex(p) + (label ? " " + label : "") };
 }
 
@@ -341,8 +343,7 @@ function bmAsk(draft) {
 		bmNote("Nothing to bookmark here: pick a line, a page, a box or a frame first.");
 		return;
 	}
-	if (typeof api.show.hideTip === "function")
-		api.show.hideTip();
+	hideTip();
 	api.show.runBadgeOpen(false);
 	BM.draft = draft;
 	const d = $("bm_dialog");
@@ -436,7 +437,7 @@ function bmSwitch(b) {
 	$("kernel").value = k.name;
 	bmNote("Switching to " + k.name + " for “" + b.name + "”...");
 	api.machine.loadKernel(k).catch((e) => {
-		api.show.setStatus(String(e));
+		setStatus(String(e));
 		if (BM.pending && BM.pending.b === b)
 			BM.pending = null;
 		bmNote("Switching to " + k.name + " for “" + b.name + "” failed: " + ((e && e.message) || e) + ".");
@@ -747,7 +748,7 @@ function bmChanged() {
 	BM.marks = null;
 	bmRender();
 	bmRenderPages();
-	if (typeof api.show.inspect === "function" && tab === "page" && selectedPage >= 0)
+	if (tab === "page" && selectedPage >= 0)
 		api.show.inspect();
 	if (tab === "debugger")
 		api.show.renderContext();
@@ -925,5 +926,5 @@ function initBookmarks() {
 }
 
 provide({ bmLineStar, bmFnNames, bmTip });
-export { BM, bmDraftFn, bmDraftLine, bmMarks, bmTip, bmStarEl, bmCodeStar, bmFnStar, bmLineStar, bmFnNames,
-	bmAddButton, bmRenderPages, bmFromHash, bmMenuFit, initBookmarks };
+export { BM, bmDraftFn, bmDraftLine, bmMarks, bmStarEl, bmCodeStar, bmFnStar, bmFnNames, bmAddButton,
+	bmRenderPages, bmFromHash, bmMenuFit, initBookmarks };

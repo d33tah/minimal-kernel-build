@@ -32,6 +32,7 @@ import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
 import { Tip } from "./ui.jsx";
+import { setStatus } from "./header.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -391,7 +392,7 @@ function initRebuild() {
 	rbLoadIndex();
 }
 
-const rbBack = () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => api.show.setStatus(String(e)));
+const rbBack = () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e)));
 
 // The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
 function RebuildPanel() {
@@ -432,4 +433,4 @@ function RebuildPanelButton() {
 }
 
 provide({ rbSync });
-export { rbSync, initRebuild, RB, RebuildPanel, RebuildPanelButton };
+export { initRebuild, RebuildPanel, RebuildPanelButton };

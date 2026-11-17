@@ -5,10 +5,9 @@
 
 import { CLOCK, GUEST, realNow } from "./clock.js";
 import { withV, $, V86_KERNEL_ADDR, V86_INITRD_ADDR, kib } from "./util.js";
-import { wasmPatchError, setWasmPatchError, image, setStepper, setEmuReady, setRunState, emulator, usedPages,
-	setUsedPages, changedPages, setChangedPages, setEmuRam, initrd, setEmulator, emuRam, stepper, prefSpeed,
-	entryPhase, setEntryPhase, setCounting, countStart, setCountStart, countMs, setCountMs, countSteps,
-	setCountSteps, startPaused, disasm, setStartPaused, provide } from "./page.js";
+import { wasmPatchError, setWasmPatchError, image, setStepper, setEmuReady, setRunState, emulator, setUsedPages,
+	setChangedPages, setEmuRam, initrd, setEmulator, emuRam, stepper, prefSpeed, entryPhase, setEntryPhase,
+	setCounting, setCountStart, setCountMs, setCountSteps, startPaused, disasm, setStartPaused, provide } from "./page.js";
 import { patchV86Wasm, Stepper } from "./stepper.js";
 import { graphReset } from "./graph.js";
 import { initrdNote } from "./symimport.js";
@@ -18,7 +17,7 @@ import { varsTaskNow } from "./vars.js";
 import { setPageSnapView, setSnapDiff, renderSnapDiff, renderSnapshots } from "./snapshots.js";
 import { inputBoot, replayActive } from "./replay.js";
 import { ram, checkImage, setStatus, kernelEnd } from "./header.js";
-import { scanCopy, setScanCopy, setAutoscan } from "./scan.js";
+import { setScanCopy, setAutoscan } from "./scan.js";
 import { computePageClasses, drawGrid } from "./memview.js";
 import { setLive, inspect, insnIndex } from "./listing.js";
 import { updateDebugUi, clockMips, finishEntry } from "./debugui.js";

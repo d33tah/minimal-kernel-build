@@ -2437,8 +2437,7 @@ function dwarfDecode(b) {
 	return t;
 }
 
-export { dwDisplayPath, DwarfReader, DWT, DwarfTypes, DwarfFuncs, dwFuncShard, dwFuncBase, dwarfScopeGroups,
-	dwarfScopesAt, dwLocAt, dwarfLocalFrames, dwStrip, dwTypeSize, dwTypeName, dwFuncProto, dwVarIndex,
-	dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, dwWhere, dwPathIn, dwarfElf, dwarfSectionOf, dwarfSections,
-	dwarfTable, dwarfPack, dwarfRow, dwarfFrames, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath,
-	dwarfFunction, dwarfDecode };
+export { DwarfReader, DWT, DwarfTypes, DwarfFuncs, dwFuncShard, dwFuncBase, dwarfScopesAt, dwLocAt,
+	dwarfLocalFrames, dwStrip, dwTypeSize, dwTypeName, dwFuncProto, dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick,
+	dwWhere, dwPathIn, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfPack, dwarfRow, dwarfFrames,
+	dwarfEachLine, dwarfFileCode, dwarfResolvePath, dwarfFunction, dwarfDecode };

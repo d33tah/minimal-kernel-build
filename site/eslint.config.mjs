@@ -20,8 +20,37 @@ const NEW_GLOBAL = [
 	},
 ];
 
+// no-unused-vars does not see a name used only as a JSX tag (<TabBar />) or,
+// with markup/'s classic runtime, the pragma's h and Fragment: this marks
+// them used (what eslint-plugin-react's jsx-uses-vars does).
+const jsxUsesVars = {
+	meta: { type: "problem", schema: [] },
+	create(context) {
+		const used = (name, node) => context.sourceCode.markVariableAsUsed(name, node);
+		const pragmas = (node) => {
+			used("h", node);
+			used("Fragment", node);
+		};
+		return {
+			JSXOpeningElement(node) {
+				let n = node.name;
+				while (n.type === "JSXMemberExpression")
+					n = n.object;
+				if (n.type === "JSXIdentifier" && /^[A-Z]/.test(n.name))
+					used(n.name, node);
+				pragmas(node);
+			},
+			JSXOpeningFragment: pragmas,
+		};
+	},
+};
+const local = { rules: { "jsx-uses-vars": jsxUsesVars } };
+
 const rules = {
 	"no-undef": "error",
+	// R4: no leftover imports, constants or helpers.
+	"no-unused-vars": ["error", { args: "none", caughtErrors: "none", ignoreRestSiblings: true }],
+	"local/jsx-uses-vars": "error",
 	"no-implicit-globals": ["error", { lexicalBindings: true }],
 	"no-restricted-syntax": ["error", ...NEW_GLOBAL],
 	"import/no-cycle": ["error", { ignoreExternal: true }],
@@ -42,7 +71,7 @@ export default [
 			parserOptions: { ecmaFeatures: { jsx: true } },
 			globals: { ...globals.browser, V86: "readonly" },
 		},
-		plugins: { import: importPlugin },
+		plugins: { import: importPlugin, local },
 		settings: { "import/resolver": { node: { extensions: [".js", ".jsx", ".mjs"] } } },
 		rules,
 	},
@@ -55,7 +84,7 @@ export default [
 			ecmaVersion: 2024,
 			parserOptions: { ecmaFeatures: { jsx: true } },
 		},
-		plugins: { import: importPlugin },
+		plugins: { import: importPlugin, local },
 		settings: { "import/resolver": { node: { extensions: [".js", ".jsx", ".mjs"] } } },
 		rules,
 	},
@@ -76,7 +105,7 @@ export default [
 		// Node: the generators and the Node tests (they also import page modules).
 		files: ["gen-dwarf.js", "gen-src.js", "*.mjs"],
 		languageOptions: { sourceType: "module", ecmaVersion: 2024, globals: { ...globals.node } },
-		plugins: { import: importPlugin },
+		plugins: { import: importPlugin, local },
 		rules,
 	},
 	{

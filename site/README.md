@@ -144,12 +144,12 @@ calls in a module above it in the import order, grouped by concern:
 | group | entries (examples) |
 |---|---|
 | `api.machine` | `boot`, `loadKernel`, `useImage`, `currentPhys`, `clockMips`, `FLAG_BITS`, `v86Restore`, snapshots' `snapWorker` |
-| `api.memory` | `ram`, `drawMaps`, `drawGrid`, `pageAt`, `pageLabel`, `symbolsInPage`, `MMAP` |
+| `api.memory` | `drawMaps`, `drawGrid`, `pageAt`, `pageLabel`, `symbolsInPage`, `MMAP` |
 | `api.symbols` | `symbolAt`, `symButton`, `insnIndex`, `insnStart`, `unwindHere`, `kernelSymLookup`, `dbgHas`, `dbgFrames` |
 | `api.source` | `srcLinkHtml`, `srcLinkEl`, `coverageFor`, `kfetch`, `genImport`, `covRun`, `rbSync` |
 | `api.events` | `MEV` (memory events) |
-| `api.step` | `pause`, `resume`, `pauseAll`, `runToTargets`, `runToLine`, `afterStop`, `revMark`, `revStepBack`, `REV` |
-| `api.show` | `setStatus`, `showTab`, `selectPage`, `inspect`, `navJump`, `jumpTo`, `openFunction`, `writeHash`, `updateDebugUi`, bookmarks' `bmTip` |
+| `api.step` | `pause`, `resume`, `pauseAll`, `runToTargets`, `runToLine`, `afterStop`, `revMark`, `REV` |
+| `api.show` | `showTab`, `selectPage`, `inspect`, `navJump`, `jumpTo`, `openFunction`, `writeHash`, `updateDebugUi`, bookmarks' `bmTip` |
 
 `page.js` lists every entry (`API_ENTRIES`); the module that has one
 provides it when it loads (`provide({ jumpTo, openFunction })`, which
@@ -160,6 +160,15 @@ it). The misc suite's `store` case checks the snapshot, the
 subscriptions, `publishMachine` after a step, that unknown keys and
 entries throw, and that every entry is provided after a boot;
 `test_store.mjs` (the site job) checks `store.js` alone.
+
+An entry exists only for a call that would close an import cycle: a
+module that can import the function without one imports it (R4 made six
+entries imports: `setStatus`, `ram`, `showHeader`, `hideTip`, `REF_KEY`,
+`revStepBack`). Since every entry is provided before `init()` runs, the
+page's modules call them without checking `typeof` first; only the
+modules Node runs too (`stepper.js`, `jumps.js`, where nothing provides
+them) check. ESLint's `no-unused-vars` (with a small local rule that
+counts a JSX tag as a use) keeps unused imports, constants and helpers out.
 
 ## React shell
 

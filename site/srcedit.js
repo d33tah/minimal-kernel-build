@@ -863,5 +863,4 @@ function initSrcEdit() {
 }
 
 provide({ edPanelShown });
-export { ED_DIFF_MAX, ED, edFilePatch, edParse, edApplyHunks, edPanelShown, edState, edFlush, srcOverlay,
-	initSrcEdit };
+export { ED_DIFF_MAX, ED, edFilePatch, edParse, edApplyHunks, edState, edFlush, srcOverlay, initSrcEdit };

@@ -321,7 +321,7 @@ async function fastForward(target, name) {
 // instruction has run, the interrupt came just before it.
 // The build's bytes of the instruction at phys (disasm.json), or null.
 function expectedBytes(phys) {
-	if (!disasm || !disasm.insns || typeof api.symbols.insnIndex !== "function")
+	if (!disasm || !disasm.insns)
 		return null;
 	const i = api.symbols.insnIndex(phys), ins = disasm.insns[i];
 	if (!ins || ins[0] !== phys)

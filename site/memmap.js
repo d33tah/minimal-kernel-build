@@ -33,10 +33,11 @@
 
 import { realNow } from "./clock.js";
 import { $ } from "./util.js";
-import { api, provide, state, tab } from "./page.js";
+import { provide, state, tab } from "./page.js";
 import { dbgFrames } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 import { MEV, MEV_M_BULK, MEV_M_WRITE, MEV_ISA_DMA, pciBdf } from "./memevents.js";
+import { revStepBack } from "./reverse.js";
 
 const MM_ORDER = 7, MM_N = 1 << MM_ORDER, MM_CELLS = MM_N * MM_N;
 const MM_MIN_CELLS = 16, MM_GAP_CELLS = 24, MM_RAM_SHARE = 0.6;
@@ -1104,10 +1105,10 @@ const MMAP = {
 	},
 
 	goTo(pos) {
-		if (!MEV.st || typeof api.step.revStepBack !== "function")
+		if (!MEV.st)
 			return;
 		if (pos < MEV.st.steps)
-			api.step.revStepBack(MEV.st.steps - pos);
+			revStepBack(MEV.st.steps - pos);
 	},
 
 	showCell(d) {

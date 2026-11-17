@@ -266,4 +266,4 @@ function asmOperandNames(text, pa, env) {
 	return out;
 }
 
-export { ASM_REGS, asmMemOps, asmSymLookup, asmBranchTarget, asmTargetName, asmOperandNames };
+export { asmSymLookup, asmBranchTarget, asmTargetName, asmOperandNames };

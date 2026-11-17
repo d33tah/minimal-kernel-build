@@ -253,4 +253,4 @@ function fnLabelOf(sym) {
 }
 
 provide({ fnFactsText });
-export { fnSymAt, fnFactsText, renderFnRows, fnDetailEl, fnLabelOf };
+export { fnSymAt, renderFnRows, fnDetailEl, fnLabelOf };

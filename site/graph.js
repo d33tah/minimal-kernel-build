@@ -1692,4 +1692,4 @@ function initGraph() {
 export { G, SWITCH, IRQ_COLOUR, PALETTE, graphReset, runStart, fEnd, recTo, hiddenFrame, frameCounts,
 	timelineLayout, layoutDeepest, taskInfo, taskGuesses, drawTimeline, selectedNode, graphCapture, graphRestore,
 	graphSelName, graphNodeAt, timelineFrameAt, timelineSummary, sandwich, drawTop, timelineDepth, graphTick,
-	graphShow, frameTitle, renderGraphInfo, graphData, download, initGraph };
+	frameTitle, renderGraphInfo, graphData, download, initGraph };

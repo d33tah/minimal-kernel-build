@@ -5,9 +5,8 @@
 
 import { realNow, CLOCK } from "./clock.js";
 import { $, num, hex, V86_KERNEL_ADDR } from "./util.js";
-import { runState, stepper, symbols, disasm, runToFrom, setRunToFrom, runToMoved, setRunToMoved, runTo,
-	setRunTo, runToLabel, setRunToLabel, entryPhase, setPrefSpeed, prefSpeed, counting, setCounting, setCountNote,
-	provide } from "./page.js";
+import { runState, stepper, symbols, disasm, runToFrom, setRunToFrom, setRunToMoved, setRunTo, setRunToLabel,
+	entryPhase, setPrefSpeed, prefSpeed, counting, setCounting, setCountNote, provide } from "./page.js";
 import { dbgFrames, dbgLineCodeWait } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";
 import { ffActive, ffYield, ffEnabled, ffTarget, codeRange, setFfInfo, fastForward, ffAbort, fastRunTo } from "./fastforward.js";
@@ -298,4 +297,4 @@ function initDebugger() {
 // The page API's entries of this module (page.js).
 provide({ runToStopped, runToLine, pauseAll, runToTargets });
 
-export { initDebugger, pauseAll, doStep, runToTargets, runToLine };
+export { initDebugger, pauseAll, doStep };

@@ -687,7 +687,7 @@ function lineCoverage(pl) {
 function renderSourcePanel() {
 	if (!srcPanel)
 		return;
-	const { fn, path, line } = srcPanel;
+	const { path, line } = srcPanel;
 	const body = $("src_body");
 	let pl = panelLines();
 	const file = srcFile(path);
@@ -911,8 +911,6 @@ function srcFileCounts(info) {
 	if (fl.state !== "ok" || info.k < 0)
 		return { run: null, code: null };
 	const code = fl.F.files[info.k][1];
-	if (typeof api.source.covRun !== "function")
-		return { run: null, code };
 	const run = api.source.covRun(fl.F);
 	return { run: run.tint && run.linesKnown ? run.fileRun[info.k].size : null, code, why: run.tint ? "" : run.why };
 }

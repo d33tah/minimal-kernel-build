@@ -79,7 +79,7 @@ const varsMissing = (pa) => varsCellAt(pa) ? "<optimized out>" : "(not in RAM)";
 // outside its symbols (BIOS, setup, decompressor) and its C entry never
 // stepped. Its variables then hold whatever RAM holds there.
 function varsNotStarted() {
-	const eip = typeof api.machine.currentPhys === "function" ? api.machine.currentPhys() : -1;
+	const eip = api.machine.currentPhys();
 	if (!stepper || !symbols || eip < 0)
 		return false;
 	const entry = symbols.symbols.find((s) => s.name === "start_kernel" || s.name === "hello_main");

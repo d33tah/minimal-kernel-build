@@ -7,6 +7,7 @@ import { useSyncExternalStore } from "react";
 import { api } from "./page.js";
 import { MEV, MEV_INITIATORS, mevHex } from "./memevents.js";
 import { SrcLink, Tip } from "./ui.jsx";
+import { revStepBack } from "./reverse.js";
 
 const num = (n) => n.toLocaleString("en-US");
 
@@ -21,7 +22,7 @@ function AddrLinks({ lo, hi, ram }) {
 	const text = hi - lo > 1 ? mevHex(lo) + "-" + mevHex(hi - 1) : mevHex(lo);
 	return (
 		<span className="mev-addr">
-			{lo < ram && typeof api.show.selectPage === "function" ?
+			{lo < ram ?
 				<Act text={text} tip={"Open page " + mevHex(lo >>> 12 << 12) + " in the Page tab (hex and code)"}
 					onClick={() => api.show.selectPage(lo >>> 12)} /> : text}
 			{" "}<Act text="map" tip={"Show " + mevHex(lo) + " on the live memory map (Memory tab)"} onClick={() => MEV.showOnMap(lo)}
@@ -48,9 +49,9 @@ function EventRow({ row, ram }) {
 		<tr className="mev-row" data-who={e.initiator} data-n={String(g.n)}>
 			<Td col="step" label="Step">
 				<span>{num(e.pos)}{g.n > 1 && <Sub text={g.from === e.pos ? "one instruction" : "from " + num(g.from)} />}</span>
-				{row.rewind && typeof api.step.revStepBack === "function" && <>{" "}<Act text="rewind" cls="mev-act"
+				{row.rewind && <>{" "}<Act text="rewind" cls="mev-act"
 					tip={"Step back to instruction " + num(e.pos) + ", the one that did this (reverse history)"}
-					onClick={() => api.step.revStepBack(MEV.st.steps - e.pos)} /></>}
+					onClick={() => revStepBack(MEV.st.steps - e.pos)} /></>}
 			</Td>
 			<Td col="who" label="Who">
 				<span className="mev-who"><span className={"sw mm-sw mm-l" + MEV_INITIATORS.indexOf(e.initiator)} />{" "}

@@ -553,5 +553,5 @@ const symDesc = (st, i, a) => {
 // The page API's entries of this module (page.js).
 provide({ drawGrid, symbolAt, drawMaps, pageLabel, symbolsInPage, pageAt, memCellStyle });
 
-export { symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid, computePageClasses, symDesc,
-	drawMaps, initLegend, pageAt, showHover, REGION_NAMES, SECTION_NAMES, memCellStyle };
+export { symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid, computePageClasses, symDesc, drawMaps,
+	initLegend, pageAt, showHover, REGION_NAMES, SECTION_NAMES };

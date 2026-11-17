@@ -121,10 +121,10 @@ const publishMachine = () => { machine++; state.set("machine", machine); };
 // stand-in is provided the same way. An entry is undefined until provided.
 const API_ENTRIES = {
 	// The emulated machine: boot, load a kernel, CPU and clock, snapshots.
-	machine: ["boot", "loadKernel", "useImage", "showHeader", "currentPhys", "clockMips", "flushScreen", "FLAG_BITS",
+	machine: ["boot", "loadKernel", "useImage", "currentPhys", "clockMips", "flushScreen", "FLAG_BITS",
 		"v86Restore", "snapKernelKey", "snapWorker"],
 	// Guest memory and the Memory tab's map and grid.
-	memory: ["ram", "drawMaps", "drawGrid", "pageAt", "pageLabel", "symbolsInPage", "memCellStyle", "MMAP"],
+	memory: ["drawMaps", "drawGrid", "pageAt", "pageLabel", "symbolsInPage", "memCellStyle", "MMAP"],
 	// Symbols, instructions and debug info (DWARF: frames, functions).
 	symbols: ["symbolAt", "symButton", "insnIndex", "insnStart", "unwindHere", "FRAME_METHODS", "kernelSymLookup",
 		"dbgHas", "dbgFrames", "fnFactsText"],
@@ -135,12 +135,12 @@ const API_ENTRIES = {
 	events: ["MEV"],
 	// Run, pause, step, Run to, and reverse execution (rewind).
 	step: ["pause", "resume", "pauseAll", "afterStop", "runToTargets", "runToLine", "runToStopped", "speedReset",
-		"REF_KEY", "revMark", "revStepBack", "revJit", "revBranch", "REV", "REV_JIT_MS_PER_INSN", "REV_JIT_MS_PER_CALL"],
+		"revMark", "revJit", "revBranch", "REV", "REV_JIT_MS_PER_INSN", "REV_JIT_MS_PER_CALL"],
 	// What the page shows: tabs, the page listing, jumps, the status line,
 	// bookmarks, popovers.
-	show: ["setStatus", "showTab", "selectPage", "inspect", "renderPage", "renderContext", "renderSymbols",
+	show: ["showTab", "selectPage", "inspect", "renderPage", "renderContext", "renderSymbols",
 		"updateDebugUi", "navJump", "jumpTo", "openFunction", "writeHash", "listingHold", "listingKeep",
-		"navListingAnchor", "setLive", "hideTip", "runBadgeOpen",
+		"navListingAnchor", "setLive", "runBadgeOpen",
 		"renderRunBadgePwa", "bmLineStar", "bmFnNames", "bmTip"],
 };
 const api = {};
@@ -164,10 +164,10 @@ function provide(o) {
 
 export { state, kernels, image, initrd, emulator, emuRam, emuReady, symbols, disasm, pageClass, grid, selectedPage,
 	tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine, setKernels, setImage,
-	setInitrd, setEmulator, setEmuRam, setEmuReady, setSymbols, setDisasm, setPageClass, setGrid,
-	setSelectedPage, setTab, setVmHasKeys, setStepper, setRunState, setCounting, setCountNote, setStartPaused,
-	setPrefSpeed, publishMachine, usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo,
-	runToLabel, runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant,
-	setUsedPages, setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo,
-	setRunToLabel, setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes,
-	setNavBuilt, setOpenFnWant, compactTabs, setCompactTabs, tabShows, markTabShown, api, provide };
+	setInitrd, setEmulator, setEmuRam, setEmuReady, setSymbols, setDisasm, setPageClass, setGrid, setSelectedPage,
+	setTab, setVmHasKeys, setStepper, setRunState, setCounting, setCountNote, setStartPaused, setPrefSpeed,
+	publishMachine, usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo, runToLabel,
+	runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, setUsedPages,
+	setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo, setRunToLabel,
+	setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes, setNavBuilt,
+	setOpenFnWant, compactTabs, setCompactTabs, markTabShown, api, provide };

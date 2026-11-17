@@ -25,4 +25,4 @@ function staticHtml() {
 	return Object.fromEntries(Object.entries(STATIC).map(([id, C]) => [id, C().html]));
 }
 
-export { STATIC, staticHtml };
+export { staticHtml };

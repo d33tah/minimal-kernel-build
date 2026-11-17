@@ -775,4 +775,4 @@ async function kgenSrc(getDwarf, readSrc, opts) {
 	return { files, missing, pastEnd, named, checked };
 }
 
-export { SHARD_BITS, kgPyJson, kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc };
+export { kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc };

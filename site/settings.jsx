@@ -14,12 +14,13 @@
 
 import { useReducer, useState, useEffect } from "react";
 import { num, $ } from "./util.js";
-import { image, setCompactTabs, api } from "./page.js";
+import { image, setCompactTabs } from "./page.js";
 import { dbgIdbOp, dbgForget } from "./dbginfo.js";
 import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
 import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
 import { compactDefault, chooseCompactTabs } from "./tabs.jsx";
 import { useStore } from "./ui.jsx";
+import { REF_KEY } from "./debugui.js";
 
 const SET_PREFIX = "mkb-";
 const SET_IDB_ROW = "idb:" + "mkb-dwarf";
@@ -77,8 +78,8 @@ function setDescribe(k) {
 		}
 		return "Watch expressions for " + k.slice(WATCH_KEY.length) + " in the Debugger tab: " + (w.join(", ") || "none") + ".";
 	}
-	if (k.startsWith(api.step.REF_KEY)) {
-		const rest = k.slice(api.step.REF_KEY.length);
+	if (k.startsWith(REF_KEY)) {
+		const rest = k.slice(REF_KEY.length);
 		const i = rest.lastIndexOf("-");
 		const clock = rest.slice(i + 1);
 		return "Instructions from the kernel entry to Still alive measured for " + rest.slice(0, i) + " with the " +
@@ -247,4 +248,4 @@ function SettingsPanel() {
 	);
 }
 
-export { SettingsPanel, resetSettings, setForget };
+export { SettingsPanel };

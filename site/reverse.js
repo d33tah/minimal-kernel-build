@@ -694,7 +694,6 @@ function initReverse() {
 	revRender();
 }
 
-provide({ revMark, revStepBack, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
-export { REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, REV, revReset, revRate, revTick, revRoom, revMark,
-	revStepRoom, revJitTick, revJit, revFind, revBlob, revStepBack, revStepTo, revNeedsJit, revBranch, revRender,
-	initReverse };
+provide({ revMark, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
+export { REV, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
+	revStepTo, revNeedsJit, revBranch, revRender, initReverse };

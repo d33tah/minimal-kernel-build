@@ -4,8 +4,8 @@
 
 import { realNow } from "./clock.js";
 import { $, PAGE, hex } from "./util.js";
-import { tab, selectedPage, symbols, navBuilt, openFnWant, setOpenFnWant, setSelectedPage, setNavBuilt,
-	setVmHasKeys, vmHasKeys, provide } from "./page.js";
+import { tab, selectedPage, symbols, navBuilt, setOpenFnWant, setSelectedPage, setNavBuilt, setVmHasKeys,
+	vmHasKeys, provide } from "./page.js";
 import { jumpHit, jumpPopClose, setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { graphSelName, graphCapture, graphRestore } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
@@ -14,7 +14,7 @@ import { kernelSymLookup } from "./livedis.js";
 import { pageSnapView, setPageSnapView } from "./snapshots.js";
 import { drawGrid } from "./memview.js";
 import { navScrollWant, listingLineAt, setNavScrollWant, setLive } from "./listing.js";
-import { navHashNow, hashOwn, setHashOwn, showTab, writeHash } from "./tabs.jsx";
+import { navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";
 
 // ---- jump history ---------------------------------------------------------
 
@@ -240,5 +240,4 @@ const setNavDepth = (v) => { navDepth = v; };
 // The page API's entries of this module (page.js).
 provide({ navJump, listingHold, listingKeep, navListingAnchor });
 
-export { navJump, NAV_SCROLL_MS, navAt, navDepth, initNav, navList, navListingAnchor, listingHold, listingKeep,
-	setNavDepth };
+export { navJump, NAV_SCROLL_MS, navAt, navDepth, initNav, navList, navListingAnchor, setNavDepth };

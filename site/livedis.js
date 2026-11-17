@@ -51,10 +51,8 @@ function loadIced() {
 				icedError = String(e);
 				console.warn("iced-x86:", e);
 			}
-			if (typeof api.show.inspect === "function")
-				api.show.inspect(); // redraw the listing that asked for it
-			if (typeof api.show.renderContext === "function")
-				api.show.renderContext();
+			api.show.inspect(); // redraw the listing that asked for it
+			api.show.renderContext();
 			return iced;
 		})();
 	return icedLoading;

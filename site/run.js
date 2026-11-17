@@ -5,9 +5,9 @@
 
 import { CLOCK, realNow } from "./clock.js";
 import { $, V86_KERNEL_ADDR } from "./util.js";
-import { setCounting, countMs, setCountMs, countSteps, setCountSteps, setCountNote, runTo, setRunTo, prevRegs,
-	setPrevRegs, flashes, setFlashes, stepper, counting, entryPhase, emulator, emuReady, setRunState, runState,
-	jitLoopId, setJitLoopId, runToMoved, runToFrom, setRunToMoved, api, runToLabel, provide } from "./page.js";
+import { setCounting, countMs, setCountMs, countSteps, setCountSteps, setCountNote, runTo, setRunTo, setPrevRegs,
+	setFlashes, stepper, counting, entryPhase, emulator, emuReady, setRunState, runState, jitLoopId, setJitLoopId,
+	runToMoved, runToFrom, setRunToMoved, api, runToLabel, provide } from "./page.js";
 import { jitPending, jitFlush, JIT, jitChunk, ffActive, setFfAbort } from "./fastforward.js";
 import { replayMode, inputFlush, replayFinish, inputMark, inputTaint, inputRoom, replayAfterStop, replayActive } from "./replay.js";
 import { REV, revNeedsJit, revStepTo, revJitTick, revTick, revRoom, revStepRoom, revRate } from "./reverse.js";

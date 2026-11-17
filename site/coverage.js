@@ -402,4 +402,4 @@ function initCoverage() {
 }
 
 provide({ covRun, covRender });
-export { COV, covTree, covRun, covRender, initCoverage };
+export { COV, covTree, covRender, initCoverage };

@@ -4,14 +4,13 @@
 // line, and the guest's RAM.
 
 import { $, V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR } from "./util.js";
-import { initrd, image, provide } from "./page.js";
+import { initrd, image } from "./page.js";
 
 // Where v86 0.5.471 puts a bzImage (src/kernel.js, load_kernel): the
 // real-mode part at 0x80000, the command line at 0x8e000, the 32-bit part
 // at 1 MiB whatever loadflags/code32_start say.
 const V86_SETUP_ADDR = 0x80000;
 const V86_CMDLINE_ADDR = 0x8e000;
-const V86_HEAP_END = 0x8de00;
 const DEFAULT_RAM = 2 * 1024 * 1024;
 
 function setStatus(text) {
@@ -128,9 +127,6 @@ function showHeader() {
 function ram() {
 	return Number($("memory").value);
 }
-
-// The page API's entries of this module (page.js).
-provide({ setStatus, ram, showHeader });
 
 export { ram, V86_SETUP_ADDR, V86_CMDLINE_ADDR, kernelEnd, checkImage, setStatus, parseHeader, DEFAULT_RAM,
 	showHeader };

@@ -4,7 +4,6 @@
 
 import { realNow } from "./clock.js";
 import { $ } from "./util.js";
-import { provide } from "./page.js";
 
 // ---- popovers --------------------------------------------------------------
 
@@ -233,8 +232,5 @@ function initTips() {
 	window.addEventListener("scroll", follow, { passive: true, capture: true });
 	window.addEventListener("resize", follow);
 }
-
-// The page API's entries of this module (page.js).
-provide({ hideTip });
 
 export { initTips, hideTip };

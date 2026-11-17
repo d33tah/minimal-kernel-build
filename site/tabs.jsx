@@ -162,5 +162,5 @@ const setHashOwn = (v) => { hashOwn = v; };
 // The page API's entries of this module (page.js).
 provide({ showTab, writeHash });
 
-export { navHashNow, hashOwn, showTab, writeHash, vmKeys, initCompactTabs, readHash, TABS, compactDefault,
+export { navHashNow, hashOwn, showTab, writeHash, vmKeys, initCompactTabs, readHash, compactDefault,
 	chooseCompactTabs, setHashOwn, TabBar };

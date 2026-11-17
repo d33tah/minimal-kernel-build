@@ -35,11 +35,11 @@ import { jitPending, jitFlush } from "./fastforward.js";
 import { pageWalk, v86ResetHidden, v86Restore } from "./cpustate.js";
 import { runNow, inputReset, INPUT, inputRestore, replayRun, runStatus } from "./replay.js";
 import { REV, revReset } from "./reverse.js";
+import { setStatus } from "./header.js";
 
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
 const SNAP_STORE = "snaps";
-const SNAP_HEX_ALL = 64;  // the hexdump shows only changed rows above this many
 const SNAP_LZ4_LEVEL = 1; // lz4-wasm has one compressor: LZ4's fast one, what `lz4 -1` (the default) runs
 
 let snapshots = [];
@@ -588,7 +588,7 @@ function snapSwitch(s) {
 		$("memory").add(new Option(kib(s.ram), String(s.ram)));
 	$("snap_status").textContent = "Switching to " + k.name + " with " + kib(s.ram) + "...";
 	api.machine.loadKernel(k, String(s.ram)).catch((e) => {
-		api.show.setStatus(String(e));
+		setStatus(String(e));
 		$("snap_status").textContent = "Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".";
 	});
 }

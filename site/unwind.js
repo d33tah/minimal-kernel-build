@@ -917,5 +917,5 @@ function cfiRowText(row) {
 	return "CFA=" + cfa + (regs.length ? ": " + regs.join(", ") : "");
 }
 
-export { CFI_REGS, cfiParse, cfiFromElf, cfiPack, cfiFind, cfiDecode, cfiRow, cfiFrameInfo, cfiFrameText,
-	dwOpEnd, dwExprText, dwExpr, dwLocation, dwSetFrameBase, unwind, cfiStep, cfiRowText };
+export { CFI_REGS, cfiFromElf, cfiPack, cfiDecode, cfiRow, cfiFrameInfo, cfiFrameText, dwOpEnd, dwExprText,
+	dwLocation, dwSetFrameBase, unwind, cfiRowText };

@@ -38,6 +38,7 @@ import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPau
 import { setCmdlineFromUrl } from "./symimport.js";
 import { ffEnabled } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
+import { showHeader } from "./header.js";
 
 const RUN_FORMAT = "mkb-run";
 // 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
@@ -315,7 +316,7 @@ function runNow() {
 		return null;
 	return {
 		format: RUN_FORMAT, version: RUN_VERSION, build: VERSION || "", ...INPUT.settings,
-		kernelKey: typeof api.machine.snapKernelKey === "function" ? api.machine.snapKernelKey() : null,
+		kernelKey: api.machine.snapKernelKey(),
 		log: INPUT.log.map((e) => ({ ...e })), taint: INPUT.taint, end: runEnd(stepper),
 	};
 }
@@ -388,7 +389,7 @@ async function replayRun(run) {
 	runStatus("Booting " + run.kernel + " to replay it...", "running");
 	if (same) {
 		$("memory").value = mem;
-		api.machine.showHeader();
+		showHeader();
 		api.memory.drawMaps();
 		await api.machine.boot();
 	} else {
@@ -406,7 +407,7 @@ function replayFinish() {
 	const want = rp.run.end, got = runEnd(st);
 	const names = { at: "instruction count", t: "virtual clock", icount: "v86's counter", eip: "EIP", ram: "RAM", screen: "screen" };
 	const diff = Object.keys(names).filter((k) => got[k] !== want[k]);
-	const key = typeof api.machine.snapKernelKey === "function" ? api.machine.snapKernelKey() : null;
+	const key = api.machine.snapKernelKey();
 	if (rp.run.kernelKey && key && rp.run.kernelKey !== key)
 		diff.unshift("kernel");
 	rp.ok = diff.length === 0 && rp.late.length === 0;

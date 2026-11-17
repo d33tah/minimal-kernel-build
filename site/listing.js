@@ -599,4 +599,4 @@ state.subscribe(() => {
 provide({ renderPage, coverageFor, inspect, selectPage, insnIndex, setLive });
 
 export { inspect, navScrollWant, listingLineAt, setLive, insnIndex, listingFollow, scrollListingTo, sheetBand,
-	diffTip, diffBytesHtml, selectPage, coverageFor, setNavScrollWant };
+	diffTip, diffBytesHtml, selectPage, setNavScrollWant };

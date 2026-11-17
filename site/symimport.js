@@ -10,6 +10,7 @@ import { V86_KERNEL_ADDR, hex, $, kib, V86_INITRD_ADDR } from "./util.js";
 import { image, setSymbols, symbols, setDisasm, disasm, kernels, initrd, setInitrd, api } from "./page.js";
 import { dbgFresh, dbgHas, DBG, dbgImport, dbgRestore, dbgForget } from "./dbginfo.js";
 import { srcFresh } from "./source.js";
+import { showHeader, ram, setStatus } from "./header.js";
 
 const PAGE_OFFSET_I386 = 0xC0000000;
 const MAP_KEY = "mkb-map-";
@@ -391,7 +392,7 @@ async function forgetImported() {
 	}
 	const k = kernels.find((x) => x.name === (image && image.name));
 	if (k)
-		api.machine.loadKernel(k).catch((e) => api.show.setStatus(String(e)));
+		api.machine.loadKernel(k).catch((e) => setStatus(String(e)));
 	else {
 		setSymbols(null);
 		showImported();
@@ -587,7 +588,7 @@ function ramForInitrd() {
 	if (!initrd)
 		return;
 	const need = V86_INITRD_ADDR + initrd.bytes.length;
-	if (api.memory.ram() > need)
+	if (ram() > need)
 		return;
 	const opt = [...$("memory").options].map((o) => Number(o.value)).filter((v) => v > need).sort((a, b) => a - b)[0];
 	if (opt)
@@ -604,14 +605,14 @@ function initInitrd() {
 		$("initrd_file").value = "";
 		ramForInitrd();
 		initrdNote();
-		api.machine.showHeader();
+		showHeader();
 		api.memory.drawMaps();
 		await api.machine.boot();
 	});
 	$("initrd_clear").addEventListener("click", async () => {
 		setInitrd(null);
 		initrdNote();
-		api.machine.showHeader();
+		showHeader();
 		api.memory.drawMaps();
 		await api.machine.boot();
 	});

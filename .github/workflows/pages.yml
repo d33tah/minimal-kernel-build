@@ -1265,6 +1265,17 @@ jobs:
         name: kits
         path: site/kits
 
+    - uses: actions/download-artifact@v4
+      with:
+        name: kit-debian
+        path: kit-debian
+
+    - name: The Debian kit in kits/ (as the site job)
+      run: |
+        cp -n kit-debian/blobs/* site/kits/blobs/
+        cp kit-debian/debian-6.1-686-clang.json site/kits/
+        python3 site/gen-kit.py --index site/kits
+
     - uses: actions/cache@v4
       with:
         path: ~/.cache/ms-playwright
@@ -1284,6 +1295,16 @@ jobs:
       run: |
         site/gen-clang-wasm.sh --check
         "$RUNNER_TEMP/venv/bin/python" site/test_kit.py --browsers chromium,firefox,webkit --out kit-images --boot --json kit.json
+
+    # The editable Debian (plan E6): link only (CI's bytes), an edit of
+    # init/main.c booted in qemu to its string and the initramfs prompt, a
+    # header edit compiling exactly its users; times and memory in the log.
+    - name: The Debian kit in the page's Worker (Chromium, Firefox)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+        TERM: xterm
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_kit.py --debian --browsers chromium,firefox --out kit-images --boot'
 
     # Rebuild and boot as a user (plans E4 and E5, rebuild.js): edit hello
     # and the minified Linux -O0/-Os in the page, rebuild, boot, every debug

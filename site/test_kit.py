@@ -39,12 +39,15 @@ qemu-system-i386 and qemu-system-x86_64 for --boot.
 
 import argparse
 import base64
+import collections
 import gzip
 import hashlib
 import json
+import os
 import pathlib
 import subprocess
 import sys
+import threading
 import time
 import urllib.request
 
@@ -305,6 +308,151 @@ def boot(out, browsers, problems):
             problems.append(f"boot {name}: {expect} not on the screen")
 
 
+# The editable Debian (plan E6): too large to compile every object, so link
+# only (CI's bytes), an edit of init/main.c (one object, recordmcount after
+# it, a string on the screen) and a header edit (exactly its users), with
+# the time and the memory: the largest wasm memory of a run and the
+# browser's RSS.
+DEBIAN = "debian-6.1-686-clang"
+DEBIAN_EDIT = {"path": "init/main.c", "from": "Run %s as init process", "to": "Run %s as init (edited in the page)"}
+
+DEBIAN_JS = """async ({ name, edit, header }) => {
+  const b64 = (u) => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+  const src = MKB.kitSource('kits/');
+  const k = await src.kit(name);
+  const img = k.shipped.path;
+  const go = async (opts) => {
+    const cc = new MKB.ClangWorker();
+    try {
+      const l = await cc.load();
+      const r = await MKB.kitBuild(cc, k, src, Object.assign({ verify: false, keep: [img] }, opts));
+      r.loadMs = l.ms;
+      r.keep = r.files.map(([p, b]) => [p, b64(b)]);
+      delete r.files;
+      return r;
+    } finally {
+      cc.terminate();
+    }
+  };
+  const text = async (p) => new TextDecoder().decode(await src.get(k.files.find((x) => x[0] === p)[1]));
+  const res = {};
+  res.link = await go({});
+  res.edit = await go({ compile: 'changed', edits: { [edit.path]: (await text(edit.path)).replace(edit.from, edit.to) } });
+  res.header = await go({ compile: 'changed', edits: { [header]: (await text(header)) + '\\n/* edited in the page */\\n' } });
+  res.headerUsers = MKB.kitUsers(k).get(header);
+  return res;
+}"""
+
+
+class PeakPss:
+    """Every 0.2 s the PSS of this process's descendants (the browser's
+    processes; shared pages counted once, unlike RSS): the largest sum and
+    the largest single process (the renderer, its Worker included)."""
+
+    def __init__(self):
+        self.sum = self.one = 0
+        self.stop = threading.Event()
+        self.t = threading.Thread(target=self.loop, daemon=True)
+        self.t.start()
+
+    def loop(self):
+        while not self.stop.is_set():
+            kids = collections.defaultdict(list)
+            for d in pathlib.Path("/proc").iterdir():
+                if d.name.isdigit():
+                    try:
+                        st = (d / "stat").read_text()
+                        kids[int(st[st.rindex(")") + 2:].split()[1])].append(int(d.name))
+                    except (OSError, ValueError):
+                        pass
+            total, todo = 0, list(kids[os.getpid()])
+            while todo:
+                pid = todo.pop()
+                todo += kids[pid]
+                try:
+                    pss = next(int(x.split()[1]) for x in pathlib.Path(f"/proc/{pid}/smaps_rollup").read_text().splitlines()
+                               if x.startswith("Pss:")) << 10
+                except (OSError, StopIteration, ValueError):
+                    continue
+                total += pss
+                self.one = max(self.one, pss)
+            self.sum = max(self.sum, total)
+            self.stop.wait(0.2)
+
+    def done(self):
+        self.stop.set()
+        self.t.join()
+        return self
+
+
+def debian(args, base, out):
+    """The Debian kit in each browser (DEBIAN_JS); returns the problems."""
+    get = (lambda p: urllib.request.urlopen(f"{base}/{p}", timeout=120).read()) if args.base else \
+        (lambda p: (pathlib.Path(args.kits) / p[len("kits/"):]).read_bytes())
+    k = json.loads(get(f"kits/{DEBIAN}.json"))
+    users = {}
+    for o in k["objects"]:
+        for d in o["deps"]:
+            users.setdefault(k["files"][d][0], []).append(o["out"])
+    # A header a few objects include (the dependency map at work).
+    header = min((p for p, u in users.items() if p.endswith(".h") and p.startswith("include/linux/") and 2 <= len(u) <= 6),
+                 key=lambda p: (len(users[p]), p))
+    want = {p: h for p, h, _ in k["products"]}
+    problems = []
+    with sync_playwright() as p:
+        for bname in args.browsers.split(","):
+            bt = getattr(p, bname)
+            browser = bt.launch(channel="chromium") if bname == "chromium" else RAW_LAUNCH(bt)
+            ctx = browser.new_context(service_workers="block")
+            page = ctx.new_page()
+            page.set_default_timeout(args.timeout * 1000)
+            page.goto(f"{base}/index.html?kernel=hello")
+            page.wait_for_function("typeof window.MKB?.kitBuild === 'function'")
+            time.sleep(2)
+            idle = PeakPss()
+            time.sleep(1)
+            idle.done()
+            rss, pss = PeakRss(), PeakPss()
+            try:
+                res = page.evaluate(DEBIAN_JS, {"name": DEBIAN, "edit": DEBIAN_EDIT, "header": header})
+            except Exception as e:  # noqa: BLE001 (any page failure is a test failure)
+                problems.append(f"{bname} {DEBIAN}: {e}")
+                rss.done()
+                pss.done()
+                browser.close()
+                continue
+            peak = rss.done()
+            pss.done()
+            ua = page.evaluate("navigator.userAgent")
+            browser.close()
+            link, edit, hdr = res["link"], res["edit"], res["header"]
+            prods = {pp: h for pp, h, _, _ in link["products"]}
+            if prods != want:
+                problems.append(f"{bname}: link only: products {prods}, CI's {want}")
+            if link["objects"]:
+                problems.append(f"{bname}: link only compiled {len(link['objects'])} objects")
+            img = dict((pp, b64(b)) for pp, b in edit["keep"])[k["shipped"]["path"]]
+            (out / f"{bname}-{DEBIAN}-edited.bzImage").write_bytes(img)
+            eo = edit["objects"]
+            if [o["out"] for o in eo] != ["init/main.o"] or eo[0]["sha256"] == eo[0]["wantg"] or \
+                    any(h == w for _, h, _, w in edit["products"]):
+                problems.append(f"{bname}: edit of init/main.c: {[(o['out'], o['sha256'][:12]) for o in eo]}, {edit['products']}")
+            got = sorted(o["out"] for o in hdr["objects"])
+            if got != sorted(res["headerUsers"]) or got != sorted(users[header]):
+                problems.append(f"{bname}: header edit of {header} compiled {got}, its users {sorted(users[header])}")
+            s = lambda ms: f"{ms / 1000:.1f} s"
+            print(f"{bname}: {ua}\n  link only: {link['fetched']} blobs ({link['fetchedBytes'] >> 20} MiB) fetched in {s(link['fetchMs'])}, "
+                  f"{len(link['steps'])} steps in {s(link['linkMs'])}, total {s(link['ms'])}, products "
+                  f"{'SAME' if prods == want else 'DIFFERENT'}; largest wasm memory {link['wasmPeak'] >> 20} MiB\n"
+                  f"  edit of init/main.c: {len(eo)} object compiled in {s(edit['compileMs'])}, link {s(edit['linkMs'])}, "
+                  f"total {s(edit['ms'])}; largest wasm memory {edit['wasmPeak'] >> 20} MiB\n"
+                  f"  header {header}: {len(got)} objects compiled ({', '.join(got)}) in {s(hdr['compileMs'])}, total {s(hdr['ms'])}\n"
+                  f"  memory of the browser: PSS summed {pss.sum >> 20} MiB at most (the page idle before: {idle.sum >> 20} MiB), "
+                  f"largest process {pss.one >> 20} MiB (idle {idle.one >> 20} MiB); RSS summed {peak >> 20} MiB; "
+                  f"clang.wasm load {link['loadMs']:.0f} ms", flush=True)
+    return problems
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kits", default=str(SITE / "kits"), help="the kits (served as kits/ next to the page)")
@@ -315,9 +463,39 @@ def main():
     ap.add_argument("--boot", action="store_true", help="boot the bzImages in qemu")
     ap.add_argument("--json", help="write the results here")
     ap.add_argument("--timeout", type=float, default=1800)
+    ap.add_argument("--debian", action="store_true", help="only the editable Debian's kit (DEBIAN_JS)")
     args = ap.parse_args()
     names = [n for n in KITS if not args.only or n in args.only.split(",")]
     base = args.base.rstrip("/") if args.base else None
+    if args.debian:
+        out = pathlib.Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        httpd = None
+        if not base:
+            httpd = tb.serve()
+            base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        jscov.install("kit-debian")
+        problems = debian(args, base, out)
+        if httpd:
+            httpd.shutdown()
+        if args.boot:
+            img = out / f"{args.browsers.split(',')[0]}-{DEBIAN}-edited.bzImage"
+            initrd = SITE / "kernels" / DEBIAN / "initrd.img"
+            want = DEBIAN_EDIT["to"].replace("%s", "/init")
+            r = subprocess.run([sys.executable, str(SITE / "qemu_screen_check.py"), "--qemu=qemu-system-i386", f"--kernel={img}",
+                                "--mem=128M", f"--initrd={initrd}", "--append=nokaslr console=tty0 cryptomgr.notests break",
+                                "--timeout=900", f"--expect={want}", "--expect=(initramfs)"],
+                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            print(f"  boot of the edited bzImage in qemu: {'ok' if r.returncode == 0 else 'FAILED'} ({want!r}, then (initramfs))", flush=True)
+            if r.returncode:
+                print(r.stdout[-3000:])
+                problems.append(f"boot {DEBIAN} edited: {want!r} and (initramfs) not on the screen")
+        if problems:
+            print("\n".join(problems), file=sys.stderr)
+            print("FAIL", file=sys.stderr)
+            return 1
+        print("PASS")
+        return 0
     get = (lambda p: urllib.request.urlopen(f"{base}/{p}", timeout=120).read()) if base else \
         (lambda p: (SITE / p).read_bytes() if p.startswith("kernels/") else (pathlib.Path(args.kits) / p[len("kits/"):]).read_bytes())
     kits = {n: json.loads(get(f"kits/{n}.json")) for n in names}

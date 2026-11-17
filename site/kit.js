@@ -513,7 +513,9 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	else if (compile)
 		throw new Error("kitBuild: compile is false, \"all\" or \"changed\"");
 	const objects = kit.objects.filter((o) => recompile.has(o.out));
-	const res = { name: kit.name, objects: [], steps: [], products: [], files: [], fetched: 0, fetchedBytes: 0 };
+	const res = { name: kit.name, objects: [], steps: [], products: [], files: [], fetched: 0, fetchedBytes: 0, wasmPeak: 0 };
+	// The largest wasm memory of a run (bytes): the link's, for Debian.
+	const peak = (r) => { res.wasmPeak = Math.max(res.wasmPeak, r.mem || 0); };
 
 	// The files: what the steps read, plus the dependencies of the objects
 	// compiled here; the other objects come prebuilt.
@@ -579,6 +581,7 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		say({ kind: "command", argv: o.argv });
 		const tc = kitNow();
 		const r = tool === "clang" ? await kitClang(cc, o.argv, ro) : await cc.run(o.argv, ro);
+		peak(r);
 		say({ kind: "output", code: r.code, ms: kitNow() - tc, stdout: r.stdout || "", stderr: r.stderr || "" });
 		if (r.code !== 0)
 			fail(o.out + ": " + o.argv[0], r);
@@ -590,6 +593,7 @@ async function kitBuild(cc, kit, src, opts = {}) {
 			say({ kind: "command", argv: p.argv });
 			const tp = kitNow();
 			const rp = await cc.run(p.argv, { cwd: dir, env, module: p.tool, outputs: [abs(o.out)] });
+			peak(rp);
 			say({ kind: "output", code: rp.code, ms: kitNow() - tp, stdout: rp.stdout || "", stderr: rp.stderr || "" });
 			if (rp.code !== 0)
 				fail(o.out + ": " + p.argv[0], rp);
@@ -633,6 +637,7 @@ async function kitBuild(cc, kit, src, opts = {}) {
 			await load(s.tool);
 			const ro = { cwd: dir, env, module: s.tool, stdin: stdin || "" };
 			r = argv[0] === "clang" ? await kitClang(cc, argv, ro) : await cc.run(argv, ro);
+			peak(r);
 			out = r.stdoutBytes;
 		}
 		// Where its stdout went: a file, the next step (a pipe or the

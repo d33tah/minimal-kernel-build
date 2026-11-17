@@ -2971,6 +2971,12 @@ desktop or laptop with 4 GB of RAM and about 2 GB free for the browser;
 not a phone. The -g link (all objects with DWARF, 156 MB gzipped to
 fetch, about 3.4 GB of browser memory in E0) is not offered.
 
+While the page builds, the machine is paused (it ran at full speed in the
+same tab and made Debian's link ten times slower on 2 cores); it runs again
+when the build fails, and the built kernel boots anyway. An unchanged
+rebuild of this kit (CI's bytes, the page's bzImage) takes the shipped
+kernel's data files as they are: its ELF has no DWARF of its own.
+
 What the rebuilt kernel's debugger shows: its symbols, disassembly and
 the DWARF of the objects compiled in the page (an object compiled here
 keeps its debug sections), made in this browser; the other units have no

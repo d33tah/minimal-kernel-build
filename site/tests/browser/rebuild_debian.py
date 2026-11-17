@@ -57,10 +57,15 @@ def build(page, sel, msg, timeout=900):
     seconds to msg on the screen or None)."""
     page.evaluate(RB_WATCH_JS)
     page.evaluate(WATCH_JS, msg)
+    # The machine's run state while the build runs (the page pauses it).
+    page.evaluate("""() => { clearInterval(window.rbRunTimer); window.rbRun = { before: MKB.runState, during: [] };
+      window.rbRunTimer = setInterval(() => { if (document.getElementById('rb_status').dataset.state === 'running'
+        && !rbRun.during.includes(MKB.runState)) rbRun.during.push(MKB.runState); }, 100); }""")
     t0 = time.monotonic()
     rb_press(page, sel, False)
     wait_for(lambda: rb_state(page)["state"] in ("done", "failed"), timeout, 0.2)
     st = rb_state(page)
+    st["run during the build"] = page.evaluate("clearInterval(rbRunTimer), rbRun")
     s_end = round(time.monotonic() - t0, 1)
     if st["state"] == "done" and msg:
         wait_for(lambda: page.evaluate("rbScr.at") is not None, 1200, 0.2)
@@ -160,11 +165,11 @@ def run(browser, base, shots, tmp, problems, r):
         f'#cov_tree .covrow[data-kind="file"][data-path="{header}"]').count() > 0, 10)}
     page.fill("#cov_filter", "")
 
-    # 2. Back to the shipped kernel (its file list), paused as a user would
-    # before a build (the VM at full speed in the same tab made the builds
-    # 10x slower on CI's 2 cores: run 44094339542), a header edit: its
-    # users and init/main.c's (still edited) are compiled, no other.
-    back_paused(page, r, "back 1")
+    # 2. Back to the shipped kernel (its file list), running: the page
+    # pauses it for the build itself (a VM at full speed in the same tab
+    # made the builds 10x slower on CI's 2 cores: run 44094339542). A
+    # header edit: its users and init/main.c's (still edited) are compiled.
+    back_running(page, r, "back 1")
     if not rbl_open(page, header, False):
         problems.append(f"Edit did not open {header}")
     else:
@@ -173,19 +178,22 @@ def run(browser, base, shots, tmp, problems, r):
         st, s_end, _ = build(page, "#rb_go_panel", "")
         compiled = rbl_compiled(st["seen"])
         want_objs = sorted(set(users[header]) | set(users[FILE]))
-        r["header"] = {"status": st["status"], "compiled": compiled, "kit users": want_objs, "s to the build's end": s_end}
+        r["header"] = {"status": st["status"], "compiled": compiled, "kit users": want_objs, "s to the build's end": s_end,
+                       "machine": st["run during the build"]}
+        paused_during(st, problems, "the header edit's build")
         if st["state"] != "done" or sorted(compiled) != want_objs or f"{len(want_objs)} objects compiled" not in st["status"]:
             problems.append(f"the header edit: {st['state']} {st['status']!r}, compiled {compiled}, the kit's users {want_objs}")
 
-    # 3. Back to the shipped kernel, paused, Revert all, Rebuild and boot:
+    # 3. Back to the shipped kernel (running), Revert all, Rebuild and boot:
     # CI's bytes (the shipped kernel's boot to the prompt is step 0's).
-    back_paused(page, r, "back 2")
+    back_running(page, r, "back 2")
     show_tab(page, "source")
     rb_press(page, "#ed_revert_all", False)
     rb_press(page, "#ed_revert_all", False)
     wait_for(lambda: srcedit_overlay(page)["paths"] == [], 10)
     st, s_end, _ = build(page, "#rb_go", "")
-    r["unchanged"] = {"status": st["status"], "s": s_end}
+    r["unchanged"] = {"status": st["status"], "s": s_end, "machine": st["run during the build"]}
+    paused_during(st, problems, "the unchanged rebuild's build")
     if st["state"] != "done" or "identical to CI's build" not in st["status"] or "0 objects compiled" not in st["status"]:
         problems.append(f"the unchanged rebuild: {st['state']} {st['status']!r}")
     _, elf = rb_download(page, "#rb_dl_elf", False, tmp)
@@ -196,6 +204,19 @@ def run(browser, base, shots, tmp, problems, r):
                             "the page's bzImage": img == rb_shipped_image(base, entry)}
     if not all(r["unchanged bytes"].values()):
         problems.append(f"the unchanged rebuild is not CI's: {r['unchanged bytes']}")
+    # Its data files are the shipped kernel's (the same bytes): the whole
+    # file list, and DWARF lines of a function of any unit.
+    if "Its data files are the shipped kernel's" not in st["status"]:
+        problems.append(f"the unchanged rebuild's status does not say it uses the shipped data files: {st['status']!r}")
+    show_tab(page, "source")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 120)
+    page.fill("#cov_filter", header.split("/")[-1])
+    listed_after = wait_for(lambda: page.locator(f'#cov_tree .covrow[data-kind="file"][data-path="{header}"]').count() > 0, 30)
+    page.fill("#cov_filter", "")
+    lines = page.evaluate(RB_LINES_JS, "do_sys_open")
+    r["unchanged: data files"] = {"file list has " + header: listed_after, "do_sys_open lines": lines and lines["lines"][:4]}
+    if not listed_after or not lines or not any(x.startswith("fs/open.c:") for x in lines["lines"]):
+        problems.append(f"the unchanged rebuild's data files: {r['unchanged: data files']}")
     rb_shots(page, shots, "rebuild-debian-1280-source", problems, "Source tab")
     if errors:
         problems.append(f"page errors: {errors[:3]}")
@@ -203,16 +224,20 @@ def run(browser, base, shots, tmp, problems, r):
     return
 
 
-def back_paused(page, r, key):
-    """Back to the shipped kernel, then Pause (Machine tab) once it runs."""
+def back_running(page, r, key):
+    """Back to the shipped kernel, which boots and runs (not paused here:
+    the page pauses it for the build)."""
     show_tab(page, "source")
     rb_press(page, "#rb_back", False)
     wait_for(lambda: rb_state(page)["kernel"] == NAME, 60)
-    show_tab(page, "machine")
-    wait_for(lambda: page.is_enabled("#dbg_pause"), 120, 0.2)
-    if page.is_enabled("#dbg_pause"):
-        page.click("#dbg_pause")
-    r[key] = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30, 0.2)
+    r[key] = wait_for(lambda: page.evaluate("MKB.runState") in ("jit", "stepped"), 120, 0.2)
+
+
+def paused_during(st, problems, what):
+    """The machine ran before the press and was paused while the page built."""
+    run = st.get("run during the build") or {}
+    if run.get("before") not in ("jit", "stepped") or run.get("during") != ["paused"]:
+        problems.append(f"{what}: the machine before the build {run.get('before')!r}, during it {run.get('during')} (want running, then paused only)")
 
 
 def suite_rebuild_debian(ctx):

@@ -109,7 +109,16 @@ async function loadKernel(entry, memFromUrl) {
 	await boot();
 }
 
+// The source and DWARF shards kernels.json lists for entry, for the shown
+// image (an unchanged rebuild of a kit without debug sections is the
+// shipped kernel's bytes: rebuild.jsx, plan E6).
+async function shippedDebugFor(entry) {
+	await srcUseShipped(entry);
+	dbgUseShards(entry);
+	syncSrcToggle();
+}
+
 // The page API's entries of this module (page.js).
 provide({ loadKernel, useImage });
 
-export { loadKernel, useImage };
+export { loadKernel, useImage, loadSymbols, loadDisasm, shippedDebugFor };

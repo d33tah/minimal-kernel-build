@@ -22,7 +22,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { withV, httpWhy, $, kib } from "./util.js";
-import { image, setDisasm, kernels, api, provide } from "./page.js";
+import { image, setDisasm, kernels, api, provide, runState } from "./page.js";
 import { download } from "./graph.js";
 import { dbgFresh, dbgOnChange } from "./dbginfo.js";
 import { dbgImport } from "./dbgimport.js";
@@ -33,6 +33,7 @@ import { parseSymbolFile, applySymbols } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
+import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
 import { Tip } from "./ui.jsx";
 import { setStatus } from "./header.js";
 
@@ -258,6 +259,19 @@ async function rbRun() {
 	const all = RB.all;
 	rbLogStart();
 	rbLogNote("Rebuild of " + from + " in this browser, " + (all ? "every object compiled" : "the objects that include an edited file compiled") + ".");
+	// The machine is paused while the page builds: a VM at full speed in
+	// the same tab made Debian's link 10x slower on 2 cores (CI run
+	// 44094339542). It runs again if the build fails, and the built kernel
+	// boots anyway.
+	const wasRunning = runState === "jit" || runState === "stepped";
+	if (wasRunning) {
+		await api.step.pause("Paused for the rebuild.");
+		rbLogNote("The machine is paused while the page builds.");
+	}
+	const resumeIfFailed = () => {
+		if (wasRunning && image === shown && runState === "paused")
+			api.step.resume();
+	};
 	const cc = new ClangWorker();
 	let r, kit, edits;
 	try {
@@ -296,6 +310,7 @@ async function rbRun() {
 		rbLogNote("Failed: " + e.message.replace(/\n[\s\S]*/, ""));
 		rbLogSum(false);
 		rbFailed(from, e);
+		resumeIfFailed();
 		return;
 	}
 	rbLogSum(false);
@@ -338,22 +353,32 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const elfName = elfPath.replace(/^.*\//, "");
 	RB.last = { from, bytes, elf, elfName, same };
 	const mem = $("memory").value;
-	setDisasm(null);
+	// CI's bytes from a kit whose objects have no debug sections (Debian):
+	// the ELF has no DWARF, and the shipped kernel's data files are this
+	// kernel's (same bytes), so they are used as they are.
+	const entry = same && kit.objects.some((o) => o.gsha256) ? kernels.find((x) => x.name === from) : null;
+	const [disasm, syms] = entry ? await Promise.all([loadDisasm(entry), loadSymbols(entry)]) : [null, undefined];
+	setDisasm(disasm);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
-	api.machine.useImage(from + RB_SUFFIX, bytes.slice().buffer, mem);
+	api.machine.useImage(from + RB_SUFFIX, bytes.slice().buffer, mem, syms);
 	image.from = from;
 	image.edits = edits;
 	RB.shownFor = image; // the build log and the status stay with it
-	const elfFile = new File([elf], elfName);
-	const map = await parseSymbolFile(elfFile, "auto");
-	applySymbols(map);
-	srcFresh("picked", "");
-	SRC.name = "the edited tree of " + from;
-	SRC.entries = r.tree;
-	SRC.info = from + "'s tree with your " + nEdits + " edit" + (nEdits === 1 ? "" : "s") + " (" + r.tree.size + " files)";
-	srcChanged();
-	dbgImport(elfFile, map.offset, null);
-	const gen = genImport(elfFile, null);
+	let gen = null;
+	if (entry) {
+		await shippedDebugFor(entry);
+	} else {
+		const elfFile = new File([elf], elfName);
+		const map = await parseSymbolFile(elfFile, "auto");
+		applySymbols(map);
+		srcFresh("picked", "");
+		SRC.name = "the edited tree of " + from;
+		SRC.entries = r.tree;
+		SRC.info = from + "'s tree with your " + nEdits + " edit" + (nEdits === 1 ? "" : "s") + " (" + r.tree.size + " files)";
+		srcChanged();
+		dbgImport(elfFile, map.offset, null);
+		gen = genImport(elfFile, null);
+	}
 	rbSync();
 	const sha = (h) => h.slice(0, 12);
 	const s = (x) => (x / 1000).toFixed(1) + " s";
@@ -365,7 +390,8 @@ async function rbBoot(from, kit, edits, r, ms) {
 		"built from your " + nEdits + " changed file" + (nEdits === 1 ? "" : "s") + ": bzImage " + sha(r.products.find((p) => p[0] === imgPath)[1]) +
 		", CI's is " + sha(kit.shipped.sha256);
 	RB.last.text = "Booted " + image.name + ": " + kib(bytes.length) + " bzImage " + which + "; " + how + ".";
-	rbShow(RB.last.text + " Making its data files (symbols, disassembly, DWARF, source)…", "booted", 0.97);
+	rbShow(RB.last.text + (entry ? " Its data files are the shipped kernel's (the same bytes)." :
+		" Making its data files (symbols, disassembly, DWARF, source)…"), entry ? "done" : "booted", entry ? undefined : 0.97);
 	RB.files = true;
 	RB.changed();
 	// The screen: in the Machine tab, under the Source panel's sheet on a phone.
@@ -374,6 +400,8 @@ async function rbBoot(from, kit, edits, r, ms) {
 		closeSource();
 	$("screen_container").scrollIntoView({ block: "nearest" });
 	await api.machine.boot();
+	if (!gen)
+		return;
 	await gen;
 	await GEN.srcDone;
 	if (image.from !== from || RB.busy)

@@ -379,34 +379,56 @@ jobs:
         path: tool-fixtures/
 
   # Debian 6.1 686 rebuilt from its source package and config with the
-  # native clang 22.1.0 (gen-debian-clang.sh, LLVM=1, bzImage only): the
-  # kernel the page will rebuild in the browser (plan step E6). It boots in
-  # qemu to the root-fs panic, and objects of it compiled again by
-  # clang.wasm equal the build's. The page's Debian sample stays Debian's
-  # own GCC-built binary.
+  # native clang 22.1.0 (gen-debian-clang.sh, LLVM=1, bzImage only, gzip
+  # by kgzip): the kernel the page rebuilds in the browser (plan step E6).
+  # It boots in qemu to the root-fs panic and, with Debian's initramfs, to
+  # the (initramfs) prompt; objects of it compiled again by clang.wasm
+  # equal the build's. The page's Debian sample stays Debian's own
+  # GCC-built binary. Everything this job writes is cached by the hash of
+  # what it is made from (source package, image package, scripts, clang
+  # pins, initramfs script): an unchanged input skips the ~7 min build.
   debian-clang:
-    needs: [clang-native, clang-wasm]
+    needs: [clang-native, clang-wasm, debian-initrd]
     runs-on: ubuntu-latest
     container: debian:trixie
     steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: |
+          out
+          clang-fixtures
+          tool-fixtures
+        key: debian-clang-v1-9aad4025973f-10477b04dc15-526c469c5148-${{ hashFiles('site/gen-debian-clang.sh', 'site/gen-debian-source.sh', 'site/gen-debian-initrd.sh', 'site/gen-host-tools.py', 'site/hosttools/**', 'site/gen-clang-native.sh', 'site/gen-clang-wasm.sh', 'site/check-wasm-objects.mjs', 'site/capture-host-tools.py', 'site/gen-kit.py', 'site/wasi.js', 'site/qemu_screen_check.py') }}
+
     - name: Install packages
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         apt-get update
         apt-get install -y build-essential flex bison bc libelf-dev libssl-dev python3 cpio kmod xz-utils patch curl nodejs qemu-system-x86
 
-    - uses: actions/checkout@v4
-
     - uses: actions/download-artifact@v4
+      if: steps.cache.outputs.cache-hit != 'true'
       with:
         name: clang-native
         path: site/clang-native
 
     - uses: actions/download-artifact@v4
+      if: steps.cache.outputs.cache-hit != 'true'
       with:
         name: clang-wasm
         path: site/clang
 
+    - uses: actions/download-artifact@v4
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        name: debian-initrd
+        path: debian-initrd
+
     - name: Native clang 22.1.0 first in PATH
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         site/gen-clang-native.sh --check
         site/gen-clang-wasm.sh --check
@@ -417,11 +439,13 @@ jobs:
     # The kernels job's pinned source package (same cache key) and the
     # image package for its config.
     - uses: actions/cache/restore@v4
+      if: steps.cache.outputs.cache-hit != 'true'
       with:
         path: debian-src
         key: debian-src-6.1.176-1-9aad4025973f-10477b04dc15
 
     - name: Debian source and config
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         mkdir -p debian-src
         get() { # file, pool path, sha256
@@ -440,10 +464,26 @@ jobs:
         dpkg-deb --fsys-tarfile "$RUNNER_TEMP/image.deb" | tar -x -O ./boot/config-6.1.0-50-686 > "$RUNNER_TEMP/config"
         site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$RUNNER_TEMP/deb"
 
+    # The wasi-sdk of gen-clang-wasm.sh for the host tools in wasm, and
+    # kgzip (zlib) for the build host and for wasm before the build: the
+    # build compresses the image with it.
+    - name: wasi-sdk and kgzip
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        eval "$(/usr/bin/grep -E '^WASI_SDK(_URL|_SHA256)?=' site/gen-clang-wasm.sh)"
+        curl -sSfL --retry 5 -o "$RUNNER_TEMP/wasi-sdk.tgz" "$WASI_SDK_URL"
+        echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tgz" | sha256sum -c
+        tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/wasi-sdk.tgz"
+        echo "$RUNNER_TEMP/$WASI_SDK" > "$RUNNER_TEMP/wasi-sdk-dir"
+        site/gen-host-tools.py --wasi-sdk "$RUNNER_TEMP/$WASI_SDK" kgzip "$RUNNER_TEMP/hostwasm/kgzip"
+        echo "$RUNNER_TEMP/hostwasm/kgzip" >> "$GITHUB_PATH"
+
     - name: Build with clang 22
+      if: steps.cache.outputs.cache-hit != 'true'
       run: site/gen-debian-clang.sh "$RUNNER_TEMP/deb" "$RUNNER_TEMP/config"
 
-    - name: Boot in qemu (to the root-fs panic)
+    - name: Boot in qemu (to the root-fs panic, and to the initramfs prompt)
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         d="$RUNNER_TEMP/deb"
         mkdir -p out
@@ -455,12 +495,18 @@ jobs:
         if sed '/Kernel panic - not syncing/q' out/boot.log | /usr/bin/grep -E "WARNING:|BUG:|Oops|Call Trace"; then
           echo "the clang-built Debian kernel warned before the root-fs panic" >&2; exit 1
         fi
+        # With Debian's initramfs and the page's command line ("break": its
+        # init stops at a shell), on qemu's VGA screen as in the page.
+        site/qemu_screen_check.py --qemu=qemu-system-i386 --kernel="$d/arch/x86/boot/bzImage" --mem=128M \
+          --initrd=debian-initrd/initrd.img --append="nokaslr console=tty0 cryptomgr.notests break" \
+          --timeout=900 --log=out/boot-initramfs.log --expect="(initramfs)" | tee out/boot-initramfs.txt
 
     # recordmcount rewrites the kernel's objects after the compile (the
     # command kbuild keeps in .cmd), so those are compared with the native
     # compiler's output of the same command; the decompressor's objects
     # (no mcount calls) with the build's.
     - name: Objects compiled again by clang.wasm equal the native clang's
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         node site/check-wasm-objects.mjs --self-test --native-rerun site/clang/clang.wasm "$RUNNER_TEMP/deb" \
           fs/open.o kernel/sched/core.o
@@ -477,14 +523,11 @@ jobs:
     # the two objects above, kallsyms and sorttable in the vmlinux link,
     # relocs, mkpiggy, tools/build and llvm-objcopy of the bzImage.
     - name: Host tools in wasm and what the build's tools read and wrote
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        eval "$(/usr/bin/grep -E '^WASI_SDK(_URL|_SHA256)?=' site/gen-clang-wasm.sh)"
-        curl -sSfL --retry 5 -o "$RUNNER_TEMP/wasi-sdk.tgz" "$WASI_SDK_URL"
-        echo "$WASI_SDK_SHA256  $RUNNER_TEMP/wasi-sdk.tgz" | sha256sum -c
-        tar -C "$RUNNER_TEMP" -xzf "$RUNNER_TEMP/wasi-sdk.tgz"
         d="$RUNNER_TEMP/deb"
         m="$RUNNER_TEMP/hostwasm/debian"
-        site/gen-host-tools.py --wasi-sdk "$RUNNER_TEMP/$WASI_SDK" kbuild "$d" "$m"
+        site/gen-host-tools.py --wasi-sdk "$(cat "$RUNNER_TEMP/wasi-sdk-dir")" kbuild "$d" "$m"
         start=$(date +%s)
         site/capture-host-tools.py --name debian --tree "$d" --out tool-fixtures \
           --tool scripts/kallsyms --tool scripts/sorttable --tool 'scripts/recordmcount=fs/open.o,kernel/sched/core.o' \
@@ -503,12 +546,15 @@ jobs:
     # budget; its kit is step E6): the objects of vmlinux and the boot
     # image, and the sources and headers they include.
     - name: Kit size of the clang-built Debian
+      if: steps.cache.outputs.cache-hit != 'true'
       run: python3 site/gen-kit.py --budget "$RUNNER_TEMP/deb"
 
     - name: Collect
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         d="$RUNNER_TEMP/deb"
-        cp "$d/arch/x86/boot/bzImage" "$d/.config" "$d/config.diff" out/
+        cp "$d/arch/x86/boot/bzImage" "$d/config.diff" out/
+        cp "$d/.config" out/config
         ls -l out
 
     - uses: actions/upload-artifact@v4

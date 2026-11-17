@@ -11,6 +11,9 @@ to make a bzImage.
                                                     arch/x86/boot/compressed/mkpiggy
   gen-host-tools.py --wasi-sdk DIR hello TREE OUT    hello's tools/build
   gen-host-tools.py --wasi-sdk DIR nasm OUT          nasm from its pinned release tarball
+  gen-host-tools.py --wasi-sdk DIR kgzip OUT         hosttools/kgzip.c with the pinned zlib,
+                                                    for wasm and for the build host (the
+                                                    editable Debian's KGZIP)
   gen-host-tools.py --check OUT                      OUT/nasm.wasm and OUT/LICENSE.nasm are
                                                     the pinned build (offline)
 
@@ -68,6 +71,12 @@ NASM_SUMS = {
     "nasm.wasm": "0b0afa818c430f4914a8e9c3cc1067b5af4e74cf95219e123abad42707862447",
     "LICENSE.nasm": "1563996c52e220e15ef2418e67d39488255aa8c28c89e617074d3afe3ee329e0",
 }
+
+# zlib for kgzip (hosttools/kgzip.c): the deflate half of the release.
+ZLIB_VERSION = "1.3.1"
+ZLIB_URL = f"https://github.com/madler/zlib/releases/download/v{ZLIB_VERSION}/zlib-{ZLIB_VERSION}.tar.gz"
+ZLIB_TAR_SHA256 = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+ZLIB_DEFLATE = ["adler32", "crc32", "deflate", "trees", "zutil"]
 
 # The most wasm memory a kernel tool may grow to. Debian's largest input is
 # its 245 MB vmlinux; without a limit, recordmcount on fs/open.o cut to
@@ -219,6 +228,27 @@ def build_nasm(w, out):
     return {"nasm": {"wasm": "nasm.wasm", "version": NASM_VERSION, "tarball_sha256": NASM_TAR_SHA256}}
 
 
+def build_kgzip(w, out):
+    """hosttools/kgzip.c with zlib's deflate from the pinned release, for
+    wasm32-wasip1 (kgzip.wasm, the page) and for the build host (kgzip,
+    the KGZIP of the Debian build in CI): the same source, so the same
+    bytes out (test_kit.mjs compares them through the kit)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tar = pathlib.Path(tmp) / "zlib.tar.gz"
+        fetch(ZLIB_URL, tar, ZLIB_TAR_SHA256)
+        with tarfile.open(tar) as t:
+            t.extractall(tmp, filter="data")
+        src = pathlib.Path(tmp) / f"zlib-{ZLIB_VERSION}"
+        files = [str(SHIM / "kgzip.c")] + [str(src / f"{n}.c") for n in ZLIB_DEFLATE]
+        flags = ["-O2", "-I", str(src)]
+        subprocess.run(w.cc + flags + files + ["-Wl,--strip-all", "-o", str(out / "kgzip.wasm")], check=True)
+        subprocess.run([os.environ.get("HOSTCC", "cc")] + flags + files + ["-o", str(out / "kgzip")], check=True)
+        shutil.copy(src / "LICENSE", out / "LICENSE.zlib")
+    print(f"kgzip (zlib {ZLIB_VERSION}) -> {out / 'kgzip.wasm'} ({(out / 'kgzip.wasm').stat().st_size} B), {out / 'kgzip'}")
+    return {"kgzip": {"wasm": "kgzip.wasm", "native": "kgzip", "zlib": ZLIB_VERSION, "tarball_sha256": ZLIB_TAR_SHA256,
+                      "source_sha256": {"hosttools/kgzip.c": sha256(SHIM / "kgzip.c")}}}
+
+
 def check_nasm(out):
     bad = [f"{n}: {sha256(out / n) if (out / n).exists() else 'missing'}, pinned {want}"
            for n, want in NASM_SUMS.items() if not (out / n).exists() or sha256(out / n) != want]
@@ -233,13 +263,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--wasi-sdk", help="wasi-sdk 29 directory (gen-clang-wasm.sh's tarball)")
     ap.add_argument("--check", metavar="OUT", help="check OUT/nasm.wasm and OUT/LICENSE.nasm against the pins")
-    ap.add_argument("kind", nargs="?", choices=["kbuild", "hello", "nasm"])
-    ap.add_argument("paths", nargs="*", help="TREE OUT (kbuild, hello) or OUT (nasm)")
+    ap.add_argument("kind", nargs="?", choices=["kbuild", "hello", "nasm", "kgzip"])
+    ap.add_argument("paths", nargs="*", help="TREE OUT (kbuild, hello) or OUT (nasm, kgzip)")
     a = ap.parse_args()
     if a.check:
         return check_nasm(pathlib.Path(a.check))
-    if not a.kind or not a.wasi_sdk or len(a.paths) != (1 if a.kind == "nasm" else 2):
-        ap.error("need --wasi-sdk DIR and kbuild TREE OUT | hello TREE OUT | nasm OUT")
+    if not a.kind or not a.wasi_sdk or len(a.paths) != (1 if a.kind in ("nasm", "kgzip") else 2):
+        ap.error("need --wasi-sdk DIR and kbuild TREE OUT | hello TREE OUT | nasm OUT | kgzip OUT")
     out = pathlib.Path(a.paths[-1]).resolve()
     out.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as work:
@@ -248,6 +278,8 @@ def main():
             built = build_kbuild(w, a.paths[0], out)
         elif a.kind == "hello":
             built = build_hello(w, a.paths[0], out)
+        elif a.kind == "kgzip":
+            built = build_kgzip(w, out)
         else:
             built = build_nasm(w, out)
     old = json.loads((out / "tools.json").read_text()) if (out / "tools.json").exists() else {}

@@ -293,12 +293,16 @@ def replay(path, expect):
     return screen.contains_in_order(expect), screen
 
 
-def boot(qemu, kernel, mem, expect, timeout, log):
+def boot(qemu, kernel, mem, expect, timeout, log, initrd=None, append=None):
     """Run qemu on a pty of ROWS x COLS until the strings are on its screen."""
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", ROWS, COLS, 0, 0))
     env = dict(os.environ, TERM=os.environ.get("TERM") or "xterm")
     cmd = [qemu, "-kernel", kernel, "-display", "curses", "-m", mem]
+    if initrd:
+        cmd += ["-initrd", initrd]
+    if append is not None:
+        cmd += ["-append", append]
     print("spawn " + " ".join(cmd), flush=True)
     proc = subprocess.Popen(cmd, stdin=slave, stdout=slave, stderr=slave,
                             env=env, start_new_session=True, close_fds=True)
@@ -352,13 +356,15 @@ def main():
     ap.add_argument("--timeout", type=float, default=60.0,
                     help="seconds (60: under load the TCG boot without KVM can take well over 10 s)")
     ap.add_argument("--log", help="write qemu's raw terminal output here")
+    ap.add_argument("--initrd", help="qemu's -initrd")
+    ap.add_argument("--append", help="qemu's -append (the kernel command line)")
     a = ap.parse_args()
     if a.replay:
         ok, screen = replay(a.replay, a.expect)
     else:
         if not a.kernel:
             ap.error("--kernel is required without --replay")
-        ok, screen = boot(a.qemu, a.kernel, a.mem, a.expect, a.timeout, a.log)
+        ok, screen = boot(a.qemu, a.kernel, a.mem, a.expect, a.timeout, a.log, a.initrd, a.append)
     print("screen:")
     print(screen.text().rstrip("\n"))
     print(("PASS: on the screen in order: " if ok else "FAIL: not on the screen in order: ")

@@ -15,7 +15,8 @@
 import { useReducer, useState, useEffect } from "react";
 import { num, $ } from "./util.js";
 import { image, setCompactTabs } from "./page.js";
-import { dbgIdbOp, dbgForget } from "./dbginfo.js";
+import { dbgIdbOp } from "./dbginfo.js";
+import { dbgForget } from "./dbgimport.js";
 import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
 import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
 import { compactDefault, chooseCompactTabs } from "./tabs.jsx";

@@ -27,6 +27,7 @@ import * as unwind from "./unwind.js";
 import * as dwexpr from "./dwexpr.js";
 import * as asmnames from "./asmnames.js";
 import * as dbginfo from "./dbginfo.js";
+import * as dbgimport from "./dbgimport.js";
 import * as source from "./source.js";
 import * as srctext from "./srctext.js";
 import * as srclinks from "./srclinks.js";
@@ -82,11 +83,11 @@ import * as page from "./page.js";
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
 	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, dwexpr, asmnames,
-	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
-	memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars, varseval, vartasks,
-	varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse, bookmarks, bminit, clang,
-	kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips,
-	kernel, page ];
+	dbginfo, dbgimport, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward,
+	cpustate, memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars, varseval,
+	vartasks, varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse, bookmarks,
+	bminit, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run,
+	runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

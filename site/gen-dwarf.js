@@ -72,7 +72,8 @@ import { dwFuncShard } from "./dwarffuncs.js";
 import { dwFuncProto, dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames,
 	dwLocAt } from "./dwarflocals.js";
 
-import { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, CFI_REGS, dwOpEnd } from "./unwind.js";
+import { CFI_REGS, dwOpEnd } from "./dwexpr.js";
+import { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } from "./unwind.js";
 
 import { kgenDwarf, KgInsnStarts } from "./kgen.js";
 import { asmOperandNames, asmSymLookup } from "./asmnames.js";

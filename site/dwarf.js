@@ -24,7 +24,7 @@
 // lookups of locals, types and variables in dwarflocals.js, DwarfTypes in
 // dwarftypes.js.
 
-import { dwOpEnd } from "./unwind.js";
+import { dwOpEnd } from "./dwexpr.js";
 import { AT, DW_TAG_SUBPROGRAM, DW_TAG_INLINED, DW_TAG_LEXICAL_BLOCK, dwAddrForm, DW_TAG_PARAM, DW_TAG_VARIABLE,
 	u32le } from "./dwarfread.js";
 import { DwarfReaderFuncs } from "./dwarffuncs.js";

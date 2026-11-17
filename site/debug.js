@@ -24,6 +24,7 @@ import * as dwarffuncs from "./dwarffuncs.js";
 import * as dwarflocals from "./dwarflocals.js";
 import * as dwarftypes from "./dwarftypes.js";
 import * as unwind from "./unwind.js";
+import * as dwexpr from "./dwexpr.js";
 import * as asmnames from "./asmnames.js";
 import * as dbginfo from "./dbginfo.js";
 import * as source from "./source.js";
@@ -80,7 +81,7 @@ import * as page from "./page.js";
 
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
-	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, asmnames,
+	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, dwexpr, asmnames,
 	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
 	memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars, varseval, vartasks,
 	varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse, bookmarks, bminit, clang,

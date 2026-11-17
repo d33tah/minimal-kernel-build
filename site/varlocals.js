@@ -5,7 +5,7 @@
 import { emuRam, stepper } from "./page.js";
 import { DWT } from "./dwarfread.js";
 import { dwStrip, dwTypeName, dwTypeSize, dwLocAt } from "./dwarflocals.js";
-import { dwSetFrameBase, dwLocation } from "./unwind.js";
+import { dwSetFrameBase, dwLocation } from "./dwexpr.js";
 import { srcLinkEl } from "./srclinks.js";
 import { pageWalk } from "./cpustate.js";
 import { varsCell, varsRead, le, varsRow } from "./varseval.js";
@@ -16,7 +16,7 @@ import { varsCell, varsRead, le, varsRow } from "./varseval.js";
 // for the innermost, the call instruction for the others) gets the
 // parameters and locals the DWARF has there (dbginfo.js dbgLocals: the
 // scopes around that address, inlined calls as frames of their own, like
-// gdb's backtrace), each read through its location (unwind.js dwLocation:
+// gdb's backtrace), each read through its location (dwexpr.js dwLocation:
 // a register of that frame, memory at an offset of the frame base, the
 // CFA from the call frame information, a computed value, pieces) and
 // shown with the Variables panel's rows. What the DWARF or the frame does

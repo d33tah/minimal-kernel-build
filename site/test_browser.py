@@ -3366,6 +3366,35 @@ def dwarf_import_case(browser, base, shots):
     r["after_reload"] = f"{same}/{len(samples)} EIPs answer as before the reload"
     if page.get_attribute("#sym_status", "data-dwarf") != "cached" or same != len(samples):
         problems.append(f"after a reload: {r['after_reload']}, status {r['reload_status']!r}")
+    # The shipped kernel's dwarf/index.json arriving after the restore began
+    # (a slow server; seen in CI as the dwarf_forms suite's reload failing):
+    # it must not land in the restored import's state (its index, its info).
+    # (In the page: the service worker may answer the fetch, where a route
+    # does not see it. The flag is per tab and taken out below.)
+    page.add_init_script("""(() => { try { if (!sessionStorage.getItem('mkbSlowIndex')) return; } catch (e) { return; } const f = window.fetch;
+      window.fetch = (u, o) => /(^|\\/)kernels\\/minified-linux\\/dwarf\\/index\\.json/.test(String(u))
+        ? new Promise((ok) => setTimeout(ok, 3000)).then(() => { document.documentElement.dataset.slowIndex = 'sent'; return f(u, o); })
+        : f(u, o); })()""")
+    page.evaluate("sessionStorage.setItem('mkbSlowIndex', '1')")
+    page.goto("about:blank")
+    page.goto(url)
+    page.evaluate("sessionStorage.removeItem('mkbSlowIndex')")
+    wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached"
+             and "(remembered for this bzImage)" in page.inner_text("#sym_status"), 60)
+    time.sleep(4)  # past the delayed index.json
+    r["reload_slow_index"] = page.inner_text("#sym_status")
+    if page.get_attribute("html", "data-slow-index") != "sent":
+        problems.append("after a reload with the shipped dwarf/index.json late: the page did not ask for it (the case tests nothing)")
+    got = page.evaluate("""async (pas) => { const out = [];
+        for (const pa of pas) { let f = MKB.dbgFrames(pa);
+            for (let i = 0; i < 50 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = MKB.dbgFrames(pa); }
+            out.push(f); }
+        return out; }""", [p for p, _, _ in samples])
+    same = sum(1 for (p, st, fr), g in zip(samples, got) if g["state"] == st and (g.get("frames") or []) == fr)
+    if (page.get_attribute("#sym_status", "data-dwarf") != "cached" or "remembered from an earlier import" not in r["reload_slow_index"]
+            or "shards" in r["reload_slow_index"] or same != len(samples)):
+        problems.append(f"after a reload with the shipped dwarf/index.json late: {same}/{len(samples)} EIPs answer as before, "
+                        f"status {r['reload_slow_index']!r}")
     show_tab(page, "machine")
     page.click("#sym_forget")
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") != "imported", 30)

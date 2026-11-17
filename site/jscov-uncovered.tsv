@@ -85,21 +85,21 @@ cpustate.js	503	7902552f	a restored state without one of last_result, fpu_status
 cpustate.js	560	bab040fb	a v86.wasm without the gen-v86.sh export: the site ships only the patched build (gen-v86.sh --check in CI)
 cpustate.js	572	11100745	sometimes: a Restore while the stepper has JIT blocks pending: snapshots are restored while paused, after jitFlush ran at the pause, unless a Restore comes while the JIT's last slice is still being flushed (a timing race); ran in run 43602952211 only (of 43588908776, 43600287802, 43602952211, 43605289270)
 dbginfo.js	58-60	56014946	a kernels.json entry without dwarf: test_kernel_data.py requires every shipped kernel to have its DWARF data
-dbginfo.js	96	0104effd	a shard fetch that fails after another kernel was chosen (mine !== DBG): a race of a slow 404 with a kernel switch
-dbginfo.js	145	0104effd	a message from a Worker of an import that was replaced (mine !== DBG): the old Worker is terminated first, so only a message already queued can arrive; a race
-dbginfo.js	186	0104effd	a Worker error of an import that was replaced: same race as line 135
-dbginfo.js	216	0104effd	dbgRestore overtaken by another kernel or import while reading IndexedDB: a race
-dbginfo.js	237	0104effd	dbgRestore overtaken while reading the units: a race
-dbginfo.js	242	0104effd	dbgRestore overtaken while reading the variables: a race
-dbginfo.js	247	0104effd	dbgRestore overtaken while reading the CFI: a race
-dbginfo.js	262	0104effd	dbgRestore overtaken while reading the locals: a race
-dbginfo.js	282	0104effd	types Worker error after an IndexedDB write of a replaced import: a race (types Worker answers after the import changed)
-dbginfo.js	300-301	3d58cc52	the locals request of one unit fails after the types pass read the same unit without error: decodeData with locals runs in both, so a unit that fails fails the types first
-dbginfo.js	355-363	090dd4f6	a unit's locals bring types the types pass did not have: both passes read the same DIEs; the merge is a guard for a table from IndexedDB of an older page version
-dbginfo.js	466	2c0239a6	a types table without function facts: written by an older version of this page into IndexedDB; the current page always adds funcs
-dbginfo.js	754	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
-dbginfo.js	758	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
-dbginfo.js	796	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
+dbginfo.js	99	0104effd	a shard fetch that fails after another kernel was chosen (mine !== DBG): a race of a slow 404 with a kernel switch
+dbginfo.js	153	0104effd	a message from a Worker of an import that was replaced (mine !== DBG): the old Worker is terminated first, so only a message already queued can arrive; a race
+dbginfo.js	194	0104effd	a Worker error of an import that was replaced: same race as line 135
+dbginfo.js	224	0104effd	dbgRestore overtaken by another kernel or import while reading IndexedDB: a race
+dbginfo.js	245	0104effd	dbgRestore overtaken while reading the units: a race
+dbginfo.js	250	0104effd	dbgRestore overtaken while reading the variables: a race
+dbginfo.js	255	0104effd	dbgRestore overtaken while reading the CFI: a race
+dbginfo.js	270	0104effd	dbgRestore overtaken while reading the locals: a race
+dbginfo.js	290	0104effd	types Worker error after an IndexedDB write of a replaced import: a race (types Worker answers after the import changed)
+dbginfo.js	308-309	3d58cc52	the locals request of one unit fails after the types pass read the same unit without error: decodeData with locals runs in both, so a unit that fails fails the types first
+dbginfo.js	363-371	090dd4f6	a unit's locals bring types the types pass did not have: both passes read the same DIEs; the merge is a guard for a table from IndexedDB of an older page version
+dbginfo.js	474	2c0239a6	a types table without function facts: written by an older version of this page into IndexedDB; the current page always adds funcs
+dbginfo.js	762	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
+dbginfo.js	766	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
+dbginfo.js	804	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
 debug.js	65	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarf.js	49	d99af19c	the size of DW_FORM_strx3/addrx3 (3-byte indexes): needs a unit with 65,536 or more string or address indexes; the kernels the suites read have none (clang writes strx1/strx2/addrx); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 dwarf.js	65	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings

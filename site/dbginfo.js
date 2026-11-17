@@ -62,8 +62,14 @@ function dbgUseShards(entry) {
 	DBG.base = entry.dwarf.replace(/\/?$/, "/");
 	// Where the files come from: CI, or genimport.js for an imported vmlinux.
 	DBG.made = entry.made || "precomputed in CI";
+	// The index of this DBG only: when it arrives after another DWARF took
+	// over (an import restored after a reload, dbgRestore), it is dropped;
+	// it once became the restored import's index and info.
+	const mine = DBG;
 	DBG.indexLoad = api.source.kfetch(DBG.base + "index.json").then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
 		.then((ix) => {
+			if (mine !== DBG)
+				return;
 			DBG.index = ix;
 			DBG.shardSet = new Set(ix.shards);
 			// A small kernel's few shards all load now: the Graph colours
@@ -74,9 +80,11 @@ function dbgUseShards(entry) {
 				" shards of " + 2 ** ix.shardBits / 1024 + " KiB, loaded when needed";
 			dbgChanged();
 		}).catch((e) => {
-			DBG.mode = null;
-			DBG.why = "debug info did not load (" + e.message + ")";
-			dbgChanged();
+			if (mine === DBG) {
+				DBG.mode = null;
+				DBG.why = "debug info did not load (" + e.message + ")";
+				dbgChanged();
+			}
 		});
 }
 

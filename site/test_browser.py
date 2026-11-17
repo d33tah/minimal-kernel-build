@@ -96,6 +96,7 @@ from tests.browser.memtabs import suite_memtabs
 from tests.browser.srcedit import suite_srcedit
 from tests.browser.rebuild import suite_rebuild
 from tests.browser.rebuild_linux import suite_rebuild_linux
+from tests.browser.rebuild_debian import suite_rebuild_debian
 
 
 def default_cases():
@@ -184,6 +185,7 @@ SUITES = {
     "srcedit": (suite_srcedit, False),
     "rebuild": (suite_rebuild, False),
     "rebuild_linux": (suite_rebuild_linux, True),
+    "rebuild_debian": (suite_rebuild_debian, False),
 }
 
 

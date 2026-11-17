@@ -2874,7 +2874,8 @@ initramfs list) is not rebuilt; vdso2c (no vdso in these kernels) and
 gen_init_cpio would be host tools in wasm when that matters (Debian, E6).
 Neither kernel compresses its image (hello has no decompressor, the
 minified Linux's `vmlinux.bin.raw` is the raw image with its size), so no
-compressor runs in the page; Debian's xz is for E6.
+compressor runs in the page; the editable Debian's gzip is kgzip in wasm
+(below).
 
 Tests: `test_kit.mjs --unit` (kitSed against GNU sed, kitUsers, the
 errors) and `--build` (the kernels job, Node 20, wasi.js and clang.wasm:
@@ -2886,6 +2887,70 @@ with "Hello, World!" edited to "Hello, Kit!!!", synthetic kits for the
 errors and the `.S` path, and qemu boots of the bzImages the browsers
 wrote (each browser's bytes equal). `gen-kit.py --budget TREE` estimates
 a kit of a built kbuild tree (the debian-clang job prints Debian's).
+
+### The editable Debian (plan E6)
+
+The kernel list has "Debian 6.1 686 rebuilt from its source with clang"
+(`debian-6.1-686-clang`): Debian's source package 6.1.176-1 and the
+config of `linux-image-6.1.0-50-686`, built by the debian-clang job with
+the native clang/lld 22.1.0 that clang.wasm is made from
+(`gen-debian-clang.sh`, `LLVM=1`, bzImage only), booted with Debian's
+initramfs and `break` to the `(initramfs)` prompt. The shipped Debian
+sample stays Debian's own GCC-built binary. What differs from Debian's
+config (`config.diff` in the job's artifact): what olddefconfig drops for
+clang (DRM_AMD_DC, FORTIFY_SOURCE, mcount by the compiler -> recordmcount,
+...), the empty certificate lists (Debian's certificates are not in the
+source), and gzip in place of XZ: the page compresses the image with
+kgzip (`hosttools/kgzip.c` over the pinned zlib 1.3.1, built for the
+build host and for wasm32-wasip1 by `gen-host-tools.py kgzip`; the build
+runs with `KGZIP=kgzip`), at tens of MB/s where XZ in wasm would take
+tens of seconds. `KALLSYMS_EXTRA_PASS=1` keeps the number of kallsyms
+links fixed. Its release is 6.1.176 (Debian's is 6.1.0-50-686), so the
+initramfs does not load Debian's GCC-built modules into it.
+
+Its build kit is made like the minified Linux's, with what this build
+adds: the objects of vmlinux and of the boot image have no debug
+sections (`gen-kit.py --strip`: 342.7 MB of -g objects -> 39.2 MB; make
+links them again and `check-code-identity.py` proves the code equal to
+the -g build's, reading the gzip payload of the bzImage); grep runs in
+the page (`kitGrep`: `scripts/mksysmap`'s `nm -n | grep -v`); kbuild's
+recordmcount runs after a compile in the page (an object's `post` step,
+`--recordmcount`); sorttable reads System.map through its popen of grep
+(`--tool-input`); the data files of the kernel (symbols, DWARF shards,
+source) come from the -g vmlinux. Size: 5269 files (71 MB, 19.2 MB
+gzipped), 2242 objects (31.5 MB, 12.2 MB gzipped), host tools 0.4 MB,
+`kits/debian-6.1-686-clang.json` 0.9 MB gzipped: 32 MB on the site,
+fetched only when this kernel is rebuilt. The job is cached by the hash
+of everything it is made from (`deps-hash.py` follows the imports of its
+Node tools): an unchanged input skips its ~25 minutes.
+
+A rebuild in the page (d-claude, i7-6700, Chromium 159): link only
+(CI's bytes) 29 s: fetch 33 MiB in 5.6 s, the 271 steps (three kallsyms
+links, the final link, sorttable, relocs, kgzip, mkpiggy, the boot code,
+tools/build) in 23 s; an edit of init/main.c 31 s to the bzImage
+(compiling init/main.o and recordmcount 4.5 s). Memory: the largest wasm
+memory of a run is ld.lld's 123 MiB (the -g link took 764 MiB in E0);
+the browser's processes together (PSS) go from 540 MiB with the page
+idle to 1.86 GB at most, the renderer with the Worker 1.4 GB. So: a
+desktop or laptop with 4 GB of RAM and about 2 GB free for the browser;
+not a phone. The -g link (all objects with DWARF, 156 MB gzipped to
+fetch, about 3.4 GB of browser memory in E0) is not offered.
+
+What the rebuilt kernel's debugger shows: its symbols, disassembly and
+the DWARF of the objects compiled in the page (an object compiled here
+keeps its debug sections), made in this browser; the other units have no
+DWARF in the rebuilt ELF, so their lines, locals and the Source tab's file
+list are missing until "Back to the shipped kernel" (which has CI's DWARF
+of every unit). Mapping CI's DWARF to the rebuilt kernel's addresses is
+the open part of E6 (PROGRESS).
+
+Tests: test_kit.mjs (debian-clang job, Node): link only gives CI's
+vmlinux and bzImage, an edit compiles one object, init/main.c compiled
+again (with recordmcount) is CI's -g object. `test_kit.py --debian` (kit
+job, Chromium and Firefox): the same in the page's Worker plus a header
+edit, the times and the memory; the edited bzImage boots in qemu to
+"Run /init as init (edited in the page)" and `(initramfs)`. Suite
+`rebuild_debian` (kit job): the clicks of a user, below.
 
 ### Rebuild and boot (rebuild.js)
 
@@ -2944,7 +3009,7 @@ deleted file, a file that is not in the kit) is refused with its name.
 Download bzImage / Download ELF save the products. "Back to the shipped
 kernel" loads the kernel from the list again. Only the kernels of
 `kits/index.json` have the button (hello, hello -Os, the minified Linux
--O0 and -Os); for others it says why. Nothing of the rebuilt kernel
+-O0 and -Os, the editable Debian); for others it says why. Nothing of the rebuilt kernel
 survives a reload.
 
 Test: suite `rebuild` of `test_browser.py` (job `kit`, which has the kits
@@ -3016,6 +3081,25 @@ compiled, vmlinux and bzImage are the kit's bytes and the bzImage is the
 shipped one but for the 20-byte build-id (`kit.shipped.differs`). It
 reports the seconds from the press to the string on the screen and to the
 data files.
+
+Suite `rebuild_debian` (plan E6, job `kit`) does it on the editable
+Debian at 1280 px: boots it with `speed=full` to `(initramfs)`, edits
+`init/main.c` (`Run %s as init process` -> `Run %s as init (edited in
+the page)`), Rebuild and boot: exactly `init/main.o` compiled
+(recordmcount after it), 273 link steps, the screen shows `Run /init as
+init (edited in the page)` and then `(initramfs)`, the data files are made
+here and the edited line is in the DWARF lines of `run_init_process` and
+`kernel_init`; it records that the rebuilt kernel's file list lacks the
+headers of units not compiled (above). Back to the shipped kernel, a
+header that few objects include (`include/linux/assoc_array_priv.h`):
+exactly its users and `init/main.o` are compiled. Back again, Revert all,
+Rebuild and boot: 0 objects compiled, vmlinux and bzImage are the kit's
+bytes and the bzImage is the page's. On d-claude (shared, with a second
+browser running for part of it): the shipped kernel at `(initramfs)` 216 s
+after the page opened; the edit built in 65 s (fetching 9 s, compiling
+5 s, linking 30 s, clang.wasm and the data files the rest) and its line on
+the screen 233 s after the press: the boot in v86 is most of the
+edit-to-boot time.
 
 The build log is tested in both suites: while the build still runs the
 log already holds command lines (a MutationObserver records the log and

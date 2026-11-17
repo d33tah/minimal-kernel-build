@@ -853,7 +853,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
   entry's code section, only once the build's code is there; otherwise
   the JIT to the entry, then stepping until any of them). Data: the line
   shards (format MKBD 2) carry the is_stmt flag per row and the breakpoint
-  addresses inside rows (`dwarf.js dwarfTable`, `dwarfFileCode`); the page
+  addresses inside rows (`dwarftables.js dwarfTable`, `dwarfFileCode`); the page
   reads the shards files.json lists for the file. An imported vmlinux:
   the Worker finds the compile units whose line program names the file
   and decodes them one at a time (the result is kept per file until the
@@ -892,7 +892,7 @@ as a colour emoji (also checked once in Firefox and WebKit):
   a tapped box, on the Page listing's label line of a function (its
   prototype, the rest in the title) and in every symbol tooltip that names
   the code at an address (call stack, path, previous, call tree, Calls
-  boxes). Data: `dwarf.js DwarfFuncs` collects them with the types (one
+  boxes). Data: `dwarffuncs.js DwarfFuncs` collects them with the types (one
   entry per name and declaration, the parameters of the DIE that declares
   them, type ids of types.json); `gen-dwarf.js` writes
   `funcs-<k>.json.gz` shards by a hash of the name (~100 KB of JSON each),

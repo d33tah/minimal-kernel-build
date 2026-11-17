@@ -17,7 +17,7 @@
 
 import { $, escHtml, hex } from "./util.js";
 import { stepper, image, runState, symbols, api, provide } from "./page.js";
-import { dwarfEachLine } from "./dwarf.js";
+import { dwarfEachLine } from "./dwarftables.js";
 import { dbgChanged, dbgGunzip, dbgHas, dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG,
 	dbgFunction, dbgLineCode, dbgOnChange } from "./dbginfo.js";
 

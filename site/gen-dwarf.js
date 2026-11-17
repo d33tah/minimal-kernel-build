@@ -8,16 +8,16 @@
 //       physical address space that has code (dwarf.js: dwarfEncode);
 //       OUTDIR/types.json, the variables at fixed addresses (each with where
 //       it is defined: DW_AT_decl_file, decl_line) and the types
-//       they reach (dwarf.js: DwarfTypes); OUTDIR/files.json, every source
+//       they reach (dwarftypes.js: DwarfTypes); OUTDIR/files.json, every source
 //       file with its lines that have code and every function with its
 //       lines and instructions, for the page's Coverage tab (see coverage());
 //       OUTDIR/cfi-<hex>.bin, the call frame information (.debug_frame or
 //       .eh_frame) per 64 KiB, for backtraces (unwind.js);
 //       OUTDIR/locals-<hex>.json.gz, the parameters and local variables of
-//       the functions with code in each 64 KiB (dwarf.js dwarfScopeGroups);
+//       the functions with code in each 64 KiB (dwarflocals.js dwarfScopeGroups);
 //       OUTDIR/funcs-<k>.json.gz, every function's facts from
 //       DW_TAG_subprogram (prototype, where declared, linkage, inlining,
-//       its out-of-line code and inlined copies; dwarf.js DwarfFuncs),
+//       its out-of-line code and inlined copies; dwarffuncs.js DwarfFuncs),
 //       sharded by name (dwFuncShard)
 //   site/gen-dwarf.js --lookup OUTDIR < addresses
 //       one JSON line per physical address (hex or decimal) on stdin:
@@ -26,7 +26,7 @@
 //   site/gen-dwarf.js --lines OUTDIR < file:line lines
 //       one JSON line per "path:line" on stdin: its code as the page's
 //       Source panel lists it and the addresses its "Run to" stops at
-//       (dwarf.js dwarfFileCode over the shards files.json names for the
+//       (dwarftables.js dwarfFileCode over the shards files.json names for the
 //       file; test_dwarf.py --lines checks them with llvm-dwarfdump and
 //       llvm-symbolizer)
 //   site/gen-dwarf.js --cfi OUTDIR < addresses
@@ -52,12 +52,12 @@
 //       and llvm-symbolizer)
 //   site/gen-dwarf.js --vars OUTDIR < watch expressions
 //       one JSON line per "[file.c::|Function::]name" on stdin: every
-//       variable of that name with where it is defined (dwarf.js dwVarDecl)
+//       variable of that name with where it is defined (dwarflocals.js dwVarDecl)
 //       and the one the page's Variables panel picks for it (dwVarsPick)
 //       or why none (test_dwarf.py --vars checks them with gdb)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
-//       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
+//       there (dwarflocals.js dwWhere) with the leaf's type (test_dwarf.py --types
 //       checks them with gdb)
 //
 // Reads only the .debug_* sections it needs, a unit at a time (a distro
@@ -67,8 +67,10 @@ import fs from "fs";
 import zlib from "zlib";
 import path from "path";
 import { spawn } from "child_process";
-import { dwFuncShard, dwFuncProto, dwarfElf, dwarfFrames, dwarfFileCode, dwarfDecode,
-	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } from "./dwarf.js";
+import { dwarfElf, dwarfFrames, dwarfFileCode, dwarfDecode } from "./dwarftables.js";
+import { dwFuncShard } from "./dwarffuncs.js";
+import { dwFuncProto, dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames,
+	dwLocAt } from "./dwarflocals.js";
 
 import { cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, CFI_REGS, dwOpEnd } from "./unwind.js";
 

@@ -7,20 +7,22 @@
 //   { type: "open", file, offset }  -> { type: "open", ok, why?, units, versions, index: [[lo, hi, unit], ...] }
 //   { type: "unit", i }             -> { type: "unit", i, table }       (dwarf.js table, physical addresses)
 //   { type: "types" }               -> { type: "types-progress", done, total } now and then, then
-//                                      { type: "types", types }  (dwarf.js DwarfTypes: every unit read once;
+//                                      { type: "types", types }  (dwarftypes.js DwarfTypes: every unit read once;
 //                                      types.funcs: the function facts, DwarfFuncs)
 //   { type: "cfi" }                 -> { type: "cfi", table, source } (unwind.js: .debug_frame or .eh_frame
 //                                      parsed whole, ~2 MB for a distro kernel) or { type: "cfi", why }
 //   { type: "locals", i }           -> { type: "locals", i, groups, base, added } (after "types", in the
-//                                      same Worker: dwarf.js dwarfScopeGroups of unit i with the type ids
+//                                      same Worker: dwarflocals.js dwarfScopeGroups of unit i with the type ids
 //                                      of the types sent; added: types new to that table, appended at base)
 //   { type: "lines", q }            -> { type: "lines", q, path, units, code } (q: a file as typed; code:
-//                                      dwarf.js dwarfFileCode of every unit whose line program names
+//                                      dwarftables.js dwarfFileCode of every unit whose line program names
 //                                      it, each unit decoded and dropped in turn) or { type: "lines", q, why }
 //   any failure                     -> { type: "error", i?, message }
 
-import { dwarfElf, dwarfSections, DwarfReader, DwarfTypes, dwarfSectionOf, dwarfResolvePath, dwarfFileCode,
-	dwarfTable } from "./dwarf.js";
+import { dwarfElf, dwarfSections, dwarfSectionOf, dwarfResolvePath, dwarfFileCode,
+	dwarfTable } from "./dwarftables.js";
+import { DwarfTypes } from "./dwarftypes.js";
+import { DwarfReader } from "./dwarf.js";
 import { cfiFromElf } from "./unwind.js";
 
 let dw = null, toPa = null, elf = null, readFile = null, typesAcc = null, fileUnits = null;

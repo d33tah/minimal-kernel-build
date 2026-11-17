@@ -1,6 +1,9 @@
 "use strict";
-import { dwarfRow, dwarfPack, dwarfEachLine, DwarfTypes, dwarfSectionOf, dwFuncShard, dwarfElf, dwarfSections,
-	DwarfReader, dwarfTable, dwarfDecode } from "./dwarf.js";
+import { dwarfRow, dwarfPack, dwarfEachLine, dwarfSectionOf, dwarfElf, dwarfSections, dwarfTable,
+	dwarfDecode } from "./dwarftables.js";
+import { dwFuncShard } from "./dwarffuncs.js";
+import { DwarfTypes } from "./dwarftypes.js";
+import { DwarfReader } from "./dwarf.js";
 import { cfiPack, cfiFromElf } from "./unwind.js";
 
 // The generators of a kernel's data files, shared by CI's command lines
@@ -286,7 +289,7 @@ function kgLatin1(b) {
 // ---- DWARF (gen-dwarf.js) ------------------------------------------------------------
 
 
-// Line shards: the page only reads them (dwarf.js dwarfDecode, which
+// Line shards: the page only reads them (dwarftables.js dwarfDecode, which
 // also describes the format). The part of table t for [lo, hi): the line
 // row in force at lo is repeated at lo, ranges overlapping it are kept.
 // Strings are re-indexed.
@@ -429,7 +432,7 @@ function kgCfiShards(e, read, put) {
 }
 
 // files.json for the page's Coverage tab. Code lines are counted the way
-// the page counts what ran (dwarf.js dwarfEachLine over the shards):
+// the page counts what ran (dwarftables.js dwarfEachLine over the shards):
 //   files  [[path, lines with code, [shards holding them]], ...] sorted
 //   funcs  [[name, file index or -1, lines, instructions, lo, length,
 //            lo2, length2, ...], ...]: each DWARF function (an outermost
@@ -533,8 +536,8 @@ class KgCoverage {
 	}
 }
 
-// Variables and their types, every unit (dwarf.js DwarfTypes), and the
-// parameters and locals of every function (dwarf.js dwarfScopeGroups):
+// Variables and their types, every unit (dwarftypes.js DwarfTypes), and the
+// parameters and locals of every function (dwarflocals.js dwarfScopeGroups):
 // locals-<hex>.json.gz per 64 KiB of code, { format, fns: [group, ...] }
 // gzipped (88 MB of JSON for a distro kernel, 16 MB gzipped), with each
 // function in every shard its code touches.
@@ -580,7 +583,7 @@ async function kgTypes(dw, e, put, gzip) {
 	return T;
 }
 
-// funcs-<k>.json.gz: the function facts (dwarf.js DwarfFuncs) split by
+// funcs-<k>.json.gz: the function facts (dwarffuncs.js DwarfFuncs) split by
 // name into shards of ~100 KB of JSON (gzipped ~35 KB), each with its own
 // file list: the page fetches the one shard a name hashes to.
 const FUNC_SHARD_BYTES = 100000;

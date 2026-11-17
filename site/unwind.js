@@ -139,7 +139,7 @@ function cfiParse(b, eh, secAddr, toPhys) {
 	return cfiPack(cies.map(({ caf, daf, ra, init }) => ({ caf, daf, ra, init })), fdes, b, biasMixed ? null : bias || 0);
 }
 
-// The CFI of an ELF (dwarf.js dwarfElf): .debug_frame, else .eh_frame.
+// The CFI of an ELF (dwarftables.js dwarfElf): .debug_frame, else .eh_frame.
 // { t, source } or { why }. toPhys: virtual -> physical (the page's
 // offset for an import, the PT_LOAD mapping in CI).
 function cfiFromElf(elf, read, toPhys) {
@@ -708,7 +708,7 @@ function dwLocation(b, ctx, size) {
 }
 
 // The frame base (DW_AT_frame_base) of a function from its location l
-// at the pc (dwarf.js dwLocAt), for DW_OP_fbreg: sets ctx.frameBase, or
+// at the pc (dwarflocals.js dwLocAt), for DW_OP_fbreg: sets ctx.frameBase, or
 // ctx.fbWhy when it cannot be had. GCC's is DW_OP_call_frame_cfa (the
 // CFA), clang's a register (DW_OP_reg4 ESP: its value).
 function dwSetFrameBase(ctx, l) {

@@ -9,12 +9,12 @@
 // the line rows of the DWARF shards holding a recorded address, fetched as
 // needed. A line counts as run when an instruction started in one of its
 // address ranges, in any frame (the call line of inlined code too), the
-// way the Source panel counts it (dwarf.js dwarfEachLine).
+// way the Source panel counts it (dwarftables.js dwarfEachLine).
 
 import { $, num, hex } from "./util.js";
 import { stepper, image, api, provide, state, tab } from "./page.js";
 import { download } from "./graph.js";
-import { dwarfEachLine } from "./dwarf.js";
+import { dwarfEachLine } from "./dwarftables.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
 import { openSourceFile } from "./source.js";
 import { fnDetailEl } from "./fnfacts.js";

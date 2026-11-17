@@ -45,7 +45,7 @@ ELF symbol function.name, which gdb prints demangled oddly), and a mark
 between two sections (gdb's info symbol finds nothing outside sections).
 
 --lines N: the code of source lines (the Source panel's address list and
-its "Run to file:line", `gen-dwarf.js --lines`, dwarf.js dwarfFileCode):
+its "Run to file:line", `gen-dwarf.js --lines`, dwarftables.js dwarfFileCode):
 the lines llvm-symbolizer names at N random addresses inside functions.
 Every sampled address lies in a row the page lists for its line; the
 first and last byte of every row listed (up to 20 per line) and the
@@ -57,7 +57,7 @@ listed rows is a breakpoint address unless the row before it is an
 is_stmt row of the same line.
 
 --funcs N: the facts of N random functions (gen-dwarf.js --funcs, the
-page's dwarf.js DwarfFuncs/dwFuncProto and unwind.js cfiFrameInfo), half
+page's dwarffuncs.js DwarfFuncs/dwFuncProto and unwind.js cfiFrameInfo), half
 with code of their own, half only inlined. gdb, on the function's block
 at its code (or at an inlined copy): its type as ptype prints it, the
 file:line it is declared at, and external exactly when gdb's global
@@ -71,7 +71,7 @@ DW_TAG_inlined_subroutine DIEs with code whose abstract origin is it.
 
 --vars N: where N variables of types.json are defined (half of them
 sharing their name with another variable) and which one `file.c::name`
-picks (`gen-dwarf.js --vars`, the page's dwarf.js dwVarDecl/dwVarsPick):
+picks (`gen-dwarf.js --vars`, the page's dwarflocals.js dwVarDecl/dwVarsPick):
 gdb's symbol of that variable (the global or file-static symbol of that
 name at that address, a static local in its function's block) is
 declared at the same file:line (gdb reads DW_AT_decl_file/decl_line, from

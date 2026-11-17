@@ -9,7 +9,7 @@
 //
 // An operand is named when its address is known:
 //   - an absolute address (`movl 0xc010f540, %eax`, `%fs:0xc12dc0e4`): the
-//     variable and member path there (dwarf.js dwWhere), else the ELF data
+//     variable and member path there (dwarflocals.js dwWhere), else the ELF data
 //     symbol; a per-CPU variable through %fs is the template's name;
 //   - a stack slot (`-0x1c(%ebp)`, `0xc(%esp)`) when the CFI row there
 //     defines the CFA with that register: the operand is CFA + k, and a
@@ -23,7 +23,8 @@
 // Anything else gets no name (heap, stack slots of callers, a struct
 // member through a pointer register: the type of a register is not known).
 
-import { dwWhere, dwTypeName, dwVarDeclText, dwarfLocalFrames, dwLocAt, dwTypeSize, dwPathIn } from "./dwarf.js";
+import { dwWhere, dwTypeName, dwVarDeclText, dwarfLocalFrames, dwLocAt, dwTypeSize,
+	dwPathIn } from "./dwarflocals.js";
 import { dwSetFrameBase, dwLocation, dwExprText } from "./unwind.js";
 
 const ASM_REGS = { eax: 0, ecx: 1, edx: 2, ebx: 3, esp: 4, ebp: 5, esi: 6, edi: 7 };
@@ -194,10 +195,10 @@ function asmLocal(ea, pa, chain, ctx, env, how) {
 // Names of the memory operands of the instruction `text` at physical pa:
 // [{ op, name, kind, va?, rel?, detail }] for the named ones. env:
 //   off          virtual minus physical of the kernel's data
-//   T            dwarf.js DwarfTypes data, or null (only ELF symbols)
+//   T            dwarftypes.js DwarfTypes data, or null (only ELF symbols)
 //   sym(pa)      the ELF data symbol holding pa ({ name, paddr, size,
 //                section }) or null
-//   scopes(pa)   dwarf.js dwarfScopesAt of the locals there, null if
+//   scopes(pa)   dwarflocals.js dwarfScopesAt of the locals there, null if
 //                not known (yet)
 //   row(pa)      unwind.js cfiRow there, or null
 //   cur          at a pause: { pa (EIP), reg(n) (DWARF numbering), cfa }

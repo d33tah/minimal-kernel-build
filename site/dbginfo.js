@@ -2,7 +2,7 @@
 
 // Debug info (DWARF) of the current kernel: file:line and the inlined-at
 // chain at a physical address, for the Debugger, the listings and the
-// Graph tab. Two sources, one lookup (dwarf.js dwarfFrames):
+// Graph tab. Two sources, one lookup (dwarftables.js dwarfFrames):
 //   shipped kernels  kernels/<name>/dwarf/ (site/gen-dwarf.js in CI), one
 //                    shard per 64 KiB, fetched the first time an address
 //                    in it is asked for
@@ -17,8 +17,10 @@
 
 import { withV } from "./util.js";
 import { api, provide } from "./page.js";
-import { dwarfDecode, dwarfLocalFrames, dwarfScopesAt, dwFuncBase, dwFuncShard, dwarfFrames, dwarfFunction,
-	dwarfRow, dwarfResolvePath, dwarfFileCode } from "./dwarf.js";
+import { dwarfDecode, dwarfFrames, dwarfFunction, dwarfRow, dwarfResolvePath,
+	dwarfFileCode } from "./dwarftables.js";
+import { dwFuncBase, dwFuncShard } from "./dwarffuncs.js";
+import { dwarfLocalFrames, dwarfScopesAt } from "./dwarflocals.js";
 import { cfiFrameInfo, cfiRow, cfiDecode, unwind } from "./unwind.js";
 
 const DBG_DB = "mkb-dwarf";
@@ -314,7 +316,7 @@ function dbgTypesWorker() {
 	w.postMessage({ type: "open", file: DBG.file, offset: DBG.offset });
 }
 
-// { state: "ok", T } (dwarf.js DwarfTypes data), { state: "loading", why }
+// { state: "ok", T } (dwarftypes.js DwarfTypes data), { state: "loading", why }
 // or { state: "none", why }. Starts the load: the shipped types.json, or
 // for an import one pass of the Worker over every compile unit.
 function dbgTypes() {
@@ -376,7 +378,7 @@ function dbgSetLocals(i, groups, base, added) {
 }
 
 // The frames at pa (a frame's EIP, or a caller's call instruction) with
-// their parameters and locals (dwarf.js dwarfLocalFrames, innermost
+// their parameters and locals (dwarflocals.js dwarfLocalFrames, innermost
 // first): { state: "ok", frames, T } with T the type table their type ids
 // are in, or { state: "loading" | "none", why }.
 function dbgLocals(pa) {
@@ -384,7 +386,7 @@ function dbgLocals(pa) {
 	return r.state === "ok" ? { state: "ok", frames: dwarfLocalFrames(dwarfScopesAt(r.G, pa)), T: r.T } : r;
 }
 
-// The scope groups (dwarf.js dwarfScopeGroups) with the code at pa:
+// The scope groups (dwarflocals.js dwarfScopeGroups) with the code at pa:
 // { state: "ok", G, T } or { state: "loading" | "none", why }. Shipped
 // kernels: the locals-<hex>.json.gz shard of pa; an import: the unit of
 // pa, from the Worker that read the variables (after it has), kept in
@@ -731,7 +733,7 @@ function dbgTableAt(pa, peek) {
 	return { state: "ok", t, end };
 }
 
-// { state: "ok", frames } (dwarf.js dwarfFrames: innermost first),
+// { state: "ok", frames } (dwarftables.js dwarfFrames: innermost first),
 // { state: "loading" } or { state: "none", why }. peek: only look in what
 // is loaded.
 function dbgFrames(pa, peek) {
@@ -772,7 +774,7 @@ function dbgFunction(pa) {
 
 // ---- line -> address ----------------------------------------------------------
 
-// The code of a source file per line (dwarf.js dwarfFileCode), for the
+// The code of a source file per line (dwarftables.js dwarfFileCode), for the
 // Source panel's address list and "Run to file:line": { state: "ok", path,
 // code: Map line -> { rows, calls, bps, noStmt }, how } or the state of the
 // load. q: the file as shown or as typed ("main.c" if only one file is
@@ -820,7 +822,7 @@ function dbgFileCode(q) {
 }
 
 // The code of path:line: { state: "ok", path, line, rows, calls, bps,
-// noStmt, how } (see dwarf.js dwarfFileCode) or loading / none.
+// noStmt, how } (see dwarftables.js dwarfFileCode) or loading / none.
 function dbgLineCode(q, line) {
 	const r = dbgFileCode(q);
 	if (r.state !== "ok")

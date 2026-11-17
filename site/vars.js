@@ -10,7 +10,9 @@
 
 import { V86_KERNEL_ADDR, hex, $, escHtml } from "./util.js";
 import { emulator, emuReady, emuRam, stepper, symbols, image, tab, runState, api } from "./page.js";
-import { DWT, dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLocAt, dwarfScopesAt } from "./dwarf.js";
+import { DWT } from "./dwarfread.js";
+import { dwStrip, dwVarsPick, dwTypeName, dwTypeSize, dwVarDecls, dwWhere, dwLocAt,
+	dwarfScopesAt } from "./dwarflocals.js";
 import { dwSetFrameBase, dwLocation } from "./unwind.js";
 import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
 import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgCfiRow, dbgLocalGroups, dbgTitle, dbgOnChange } from "./dbginfo.js";
@@ -146,7 +148,7 @@ function varsPerCpu(T, pa) {
 }
 
 // A watch expression: name, Function::name or file.c::name (also gdb's
-// 'file.c'::name; dwarf.js dwVarsPick), then .member, ->member, [index]; a
+// 'file.c'::name; dwarflocals.js dwVarsPick), then .member, ->member, [index]; a
 // leading * dereferences the result. { pa, type, bits?, notes, v (the
 // variable), all (every variable of that name) } or { error }.
 function varsEval(T, expr) {

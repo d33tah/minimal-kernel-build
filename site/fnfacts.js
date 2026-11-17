@@ -1,7 +1,7 @@
 "use strict";
 
 // What DW_TAG_subprogram says about a function (dbginfo.js dbgFnFacts,
-// dwarf.js DwarfFuncs): its prototype, where it is declared, its
+// dwarffuncs.js DwarfFuncs): its prototype, where it is declared, its
 // linkage, whether it was declared inline and inlined, its out-of-line
 // code with the frame the call frame information gives it, and every
 // inlined copy. One render path, fnFactsEl, for the Debugger's function
@@ -10,7 +10,7 @@
 
 import { hex } from "./util.js";
 import { stepper, symbols, api, provide } from "./page.js";
-import { dwFuncProto } from "./dwarf.js";
+import { dwFuncProto } from "./dwarflocals.js";
 import { cfiFrameText } from "./unwind.js";
 import { dbgCfiFrame, dbgFrames, dbgFnFactsAt, dbgFnFactsFor, dbgHas, dbgFnHolds } from "./dbginfo.js";
 import { srcLinkEl } from "./source.js";

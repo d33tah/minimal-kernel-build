@@ -24,7 +24,7 @@
 //          missing, pastEnd, log }
 //   meanwhile { id, progress: text }; any failure -> { id, error }
 
-import { dwarfElf, dwarfSections } from "./dwarf.js";
+import { dwarfElf, dwarfSections } from "./dwarftables.js";
 import { MemFS, wasiRun } from "./wasi.js";
 import { kgElf, kgenSymbols, kgenDisasm, KgInsnStarts, kgenDwarf, kgenSrc } from "./kgen.js";
 

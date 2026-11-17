@@ -6,7 +6,7 @@
 import { $, kib, PAGE, hex, V86_KERNEL_ADDR, V86_INITRD_ADDR, h8 } from "./util.js";
 import { usedPages, pageClass, image, initrd, emulator, emuRam, symbols, setPageClass, setGrid, changedPages,
 	selectedPage, stepper, runState, grid, tab, api, state, provide } from "./page.js";
-import { IRQ_COLOUR, SWITCH, PALETTE } from "./graph.js";
+import { IRQ_COLOUR, SWITCH, PALETTE } from "./graphdata.js";
 import { ffActive } from "./fastforward.js";
 import { pageWalk } from "./cpustate.js";
 import { bmRenderPages } from "./bookmarks.js";

@@ -26,7 +26,9 @@ import { hex, PAGE, num, $, escHtml } from "./util.js";
 import { image, symbols, pageClass, stepper, emulator, runState, tab, selectedPage, grid, kernels, emuReady,
 	emuRam, vmHasKeys, api, state, provide } from "./page.js";
 import { jumpHit, setJumpHit, setJumpHitScroll } from "./jumps.js";
-import { graphNodeAt, selectedNode, download, G, graphTick } from "./graph.js";
+import { G } from "./graphdata.js";
+import { graphNodeAt, selectedNode } from "./graphnav.js";
+import { download, graphTick } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
 import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./source.js";
 import { kernelSymLookup } from "./livedis.js";

@@ -7,7 +7,8 @@ import { $, PAGE, hex } from "./util.js";
 import { tab, selectedPage, symbols, navBuilt, setOpenFnWant, setSelectedPage, setNavBuilt, setVmHasKeys,
 	vmHasKeys, provide } from "./page.js";
 import { jumpHit, jumpPopClose, setJumpHit, setJumpHitScroll } from "./jumps.js";
-import { graphSelName, graphCapture, graphRestore } from "./graph.js";
+import { graphSelName, graphCapture } from "./graphnav.js";
+import { graphRestore } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
 import { srcPanel, srcSwClose, setSrcPanel, renderSourcePanel } from "./source.js";
 import { kernelSymLookup } from "./livedis.js";

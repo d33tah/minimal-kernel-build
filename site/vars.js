@@ -926,7 +926,7 @@ function brtTitle(b) {
 // (stepper.onTaskLeave = varsTaskNow), read again while the task lives (a
 // name changed by exec shows), else found in the task list (init_task.tasks)
 // by its stack when the kernel has that list. A task that exited keeps
-// what was read as it last switched away. graph.js taskNames uses this for
+// what was read as it last switched away. graphdata.js taskNames uses this for
 // the timeline, frames and call tree; the Debugger's "task" row shows the
 // running one.
 
@@ -1021,7 +1021,7 @@ function varsTaskList(L) {
 }
 
 // Per stepper task: { comm, pid, va, how } read from task_struct, or
-// { why } when it cannot be (guess: graph.js names it by its thread function).
+// { why } when it cannot be (guess: graphdata.js names it by its thread function).
 function varsTasks(st) {
 	const r = dbgHas() ? dbgTypes() : { state: "none", why: "this kernel has no DWARF (no task_struct layout)" };
 	const L = r.state === "ok" ? varsTaskLayout(r.T) : { why: r.why };

@@ -10,7 +10,7 @@ import { runTo, entryPhase, stepper, tab, runState, api, disasm, image, symbols,
 	setEntryPhase, jitLoopId, setCounting, state, vmHasKeys, publishMachine, provide } from "./page.js";
 import { jumpsDrawn, renderEipJumps, jumpsFor, jumpInlineMax, jumpPaths, jumpInlineHtml, jumpStubAttrs,
 	jumpBadgesHtml } from "./jumps.js";
-import { G } from "./graph.js";
+import { G } from "./graphdata.js";
 import { dbgHas, dbgFrames } from "./dbginfo.js";
 import { srcFocusKeep, srcLineHtml, srcLinkEl } from "./source.js";
 import { liveDecode, iced, icedError, loadIced, bitnessAt, decodeLive, virtOffset } from "./livedis.js";

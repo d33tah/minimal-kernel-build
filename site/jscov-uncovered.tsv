@@ -59,24 +59,24 @@ tips.js	213	4a771b70	the context menu after a long press on a tip: headless Chro
 asmnames.js	74	f99e340d	sometimes: an operand that ASM_MEM does not parse as memory and that has no parenthesis: the genimport suite (gen-worker job) lists the code where its boot happens to pause, and only some of those listings have such an operand; ran in run 43605289270, not in 43588908776, 43600287802, 43602952211
 asmnames.js	173	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
 asmnames.js	211	091bc534	sometimes: a memory operand naming a 16-bit (or other non-32-bit) base or index register: the suites list 32-bit kernel code almost always; ran in run 43952378680 (its report: a listed line that ran), not in 43872002921, 43925425362 nor 43943538560
-bookmarks.js	128	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
-bookmarks.js	155	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
-bookmarks.js	172	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
-bookmarks.js	180	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
-bookmarks.js	195	68396b62	a Coverage tree function row: the bookmarks tests bookmark the file row; function rows have no bookmark step yet
-bookmarks.js	232	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
-bookmarks.js	322	3bff6978	bmRenderPages without #pages_box: the element is in index.html
-bookmarks.js	330	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
-bookmarks.js	368	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
-bookmarks.js	378-380	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
-bookmarks.js	453-455	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
-bookmarks.js	457	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
-bookmarks.js	460	b368dd8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
-bookmarks.js	565	33ddae1b	bmNote without #bm_status: the element is in index.html
-bookmarks.js	573	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
-bookmarks.js	605	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
-bookmarks.js	706	6b17f7cd	bmRender without #bm_list: the element is in index.html
-bookmarks.js	852-854	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
+bookmarks.js	130	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
+bookmarks.js	157	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
+bookmarks.js	174	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
+bookmarks.js	182	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
+bookmarks.js	197	68396b62	a Coverage tree function row: the bookmarks tests bookmark the file row; function rows have no bookmark step yet
+bookmarks.js	234	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
+bookmarks.js	324	3bff6978	bmRenderPages without #pages_box: the element is in index.html
+bookmarks.js	332	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
+bookmarks.js	370	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
+bookmarks.js	380-382	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
+bookmarks.js	455-457	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
+bookmarks.js	459	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
+bookmarks.js	462	b368dd8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
+bookmarks.js	567	33ddae1b	bmNote without #bm_status: the element is in index.html
+bookmarks.js	575	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
+bookmarks.js	607	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
+bookmarks.js	708	6b17f7cd	bmRender without #bm_list: the element is in index.html
+bookmarks.js	854-856	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
 coverage.js	58	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
 coverage.js	344	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
 cpustate.js	454-456	da4d8a32	a machine-state section whose reader throws: each reads fixed fields of v86's CPU object (pinned v86 0.5.471); a throw would need a v86 build without one of them
@@ -100,7 +100,7 @@ dbginfo.js	474	2c0239a6	a types table without function facts: written by an olde
 dbginfo.js	762	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
 dbginfo.js	766	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
 dbginfo.js	804	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
-debug.js	68	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
+debug.js	74	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarf.js	49	d99af19c	the size of DW_FORM_strx3/addrx3 (3-byte indexes): needs a unit with 65,536 or more string or address indexes; the kernels the suites read have none (clang writes strx1/strx2/addrx); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 dwarf.js	65	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
 dwarf.js	236-237	5456a1c5	reading a DW_FORM_strx3/addrx3 value: as 49; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -183,20 +183,20 @@ genworker.js	95	566a07df	E1 track: an import with more than 20,000 symbols and t
 genworker.js	113	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
 genworker.js	121-123	5fb84bcb	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
 genworker.js	154	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
-graph.js	110	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
-graph.js	154	8cefeadf	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
-graph.js	370-372	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
-graph.js	379	9c01859a	sometimes: taskInfo's fallback name (kthread's last other call, without retpolines): a kthread whose thread function is reached neither from ret_from_fork nor through a thunk; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and recorded one in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	411	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
-graph.js	451	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	546	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
-graph.js	680	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	902	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
-graph.js	951	b109a5bb	timelineSummary without a stepper: a test-only helper (graph_check) always called after a run
-graph.js	957	21e02933	timelineSummary's skip of frames that end before the entry: as line 135, there are none
-graph.js	1003	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
-graph.js	1142-1144	621631a0	drawTop without a stepper: as line 326
-graph.js	1407-1408	00098c34	"called from unknown" in the Calls info: a frame has no caller address only when the first instruction the stepper ever ran starts it; pages start at the reset vector (BIOS, no symbol) and Run to steps its last instructions, so no shipped flow records one (checked: 0 in a whole minified run, 0 after Run to hello_main and 40 steps)
+graphdata.js	80	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
+graphdata.js	124	8cefeadf	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
+graphdata.js	208-210	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
+graphdata.js	217	9c01859a	sometimes: taskInfo's fallback name (kthread's last other call, without retpolines): a kthread whose thread function is reached neither from ret_from_fork nor through a thunk; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and recorded one in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	60	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
+graph.js	100	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	195	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
+graph.js	329	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	506	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
+graphnav.js	94	b109a5bb	timelineSummary without a stepper: a test-only helper (graph_check) always called after a run
+graphnav.js	100	21e02933	timelineSummary's skip of frames that end before the entry: as line 135, there are none
+calltree.js	23	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
+calltree.js	162-164	621631a0	drawTop without a stepper: as line 326
+graph.js	705-706	00098c34	"called from unknown" in the Calls info: a frame has no caller address only when the first instruction the stepper ever ran starts it; pages start at the reset vector (BIOS, no symbol) and Run to steps its last instructions, so no shipped flow records one (checked: 0 in a whole minified run, 0 after Run to hello_main and 40 steps)
 jumps.js	150	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
 jumps.js	583	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
 jumps.js	692-693	70f8592d	a path whose other end has no physical address: every recorded and static transfer of the shipped kernels lands in RAM

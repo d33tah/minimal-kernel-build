@@ -5,6 +5,7 @@ tools in wasm), made from CI's -g build of it.
 
   gen-kit.py --name NAME --tree TREE --out KITS [options] -- MAKE ARGS...
   gen-kit.py --index KITS
+  gen-kit.py --strip TREE OUT.json   (strip(): the kernel objects without DWARF)
 
 After the full build of TREE, the build's tools are replaced by wrappers
 (clang, ld.lld, llvm-ar, llvm-nm, llvm-objcopy, nasm, sed and cat through
@@ -62,6 +63,25 @@ Options:
                             build): the byte ranges where the product FILE
                             differs from it are recorded (the -g build's
                             build-id note)
+  --sources-list FILE       the source files (one path per line, as
+                            --sources-from's git ls-files) of a tree that is
+                            no git checkout (Debian's source package)
+  --path-tool NAME          one more PATH tool to wrap: grep (run by the
+                            page, as sed), or a host tool with --module
+                            NAME=WASM (kgzip)
+  --tool-input PATH=FILE    the --tool PATH also reads FILE (sorttable reads
+                            System.map through its popen of grep)
+  --recordmcount FLAGS      kbuild's cmd_record_mcount: a C object whose
+                            command has FLAGS (CC_FLAGS_FTRACE) gets the post
+                            step ./scripts/recordmcount OBJ (its module:
+                            --module scripts/recordmcount=WASM)
+  --unstripped JSON         {object: SHA-256} of the objects before their
+                            debug sections were stripped (strip-objects.py):
+                            gsha256 of the object, what a compile in the
+                            page makes
+
+An object may have "post": [{tool, argv}] (run on it after its compile, in
+order) and "gsha256" (above).
 """
 
 import argparse
@@ -82,7 +102,7 @@ ME = pathlib.Path(__file__).resolve()
 REAL = ".mkb-real"
 PATH_TOOLS = ["clang", "ld.lld", "llvm-ar", "llvm-nm", "llvm-objcopy", "nasm", "sed", "cat"]
 CLANG_TOOLS = {"clang", "ld.lld", "llvm-ar", "llvm-nm", "llvm-objcopy"}
-BUILTINS = {"sed", "cat"}
+BUILTINS = {"sed", "cat", "grep"}
 SMALL = 1 << 16
 
 
@@ -232,8 +252,10 @@ def capture(a, tree, make):
     log = tmp / "runs.jsonl"
     cfg = {"tree": str(tree), "log": str(log), "real": {}}
     wrappers = []
-    for name in PATH_TOOLS:
+    for name in PATH_TOOLS + a.path_tool:
         real = shutil.which(name)
+        if not real and name == "nasm":
+            continue  # only hello's build runs it; a build that would fails without it
         if not real:
             sys.exit(f"{name}: not in PATH")
         cfg["real"][name] = real
@@ -255,8 +277,14 @@ def capture(a, tree, make):
             w.chmod(0o755)
         if a.touch_objects:
             now = time.time() + 1
+            # Not a host program's objects (kbuild: compiled without
+            # -D__KERNEL__): make would link the program again over its
+            # wrapper (Debian's arch/x86/tools/relocs).
+            cmds = kbuild_objects(tree) if a.kbuild else {}
             for o in tree.rglob("*.o"):
-                os.utime(o, (now, now))
+                c = cmds.get(str(o.relative_to(tree)))
+                if c is None or "-D__KERNEL__" in c[0]:
+                    os.utime(o, (now, now))
             time.sleep(1.1)
         for f in a.clean:
             p = tree / f
@@ -336,12 +364,18 @@ def make_kit(a, tree, runs):
     runs.sort(key=lambda r: r["t0"])
     steps = []
     nvar = 0
+    # Files a tool reads that its arguments do not name (sorttable's popen
+    # of grep on System.map).
+    tool_inputs = {}
+    for e in a.tool_input:
+        k, f = e.split("=", 1)
+        tool_inputs.setdefault(k, []).append(f)
     for r in runs:
         if r.get("skip"):
             continue
-        tool = os.path.basename(r["key"]) if r["key"] in PATH_TOOLS else r["key"]
+        tool = os.path.basename(r["key"]) if r["key"] in PATH_TOOLS + a.path_tool else r["key"]
         r["step"] = {"run": r, "tool": tool, "argv": [r["key"]] + r["args"],
-                     "inputs": [x[0] for x in r["inputs"]] + (r["deps"] or []),
+                     "inputs": [x[0] for x in r["inputs"]] + (r["deps"] or []) + tool_inputs.get(r["key"], []),
                      "outputs": [[p, h] for p, h, _ in r["outputs"]], "fresh": list(r["fresh"]), "uses": []}
     for r in runs:
         if r.get("skip"):
@@ -468,7 +502,9 @@ def make_kit(a, tree, runs):
         for p in deps + extra.get(o, []):
             add(p)
     tracked = set()
-    if a.sources_from:
+    if a.sources_list:
+        tracked = set(pathlib.Path(a.sources_list).read_text().splitlines())
+    elif a.sources_from:
         tracked = set(subprocess.run(["git", "-c", "safe.directory=*", "-C", a.sources_from, "ls-files"], stdout=subprocess.PIPE,
                                      check=True, text=True).stdout.splitlines())
     blobs = pathlib.Path(a.out) / "blobs"
@@ -491,17 +527,6 @@ def make_kit(a, tree, runs):
         h, n = put(p)
         index[p] = len(flist)
         flist.append([p, h, n, 2 if p.startswith("/") else 0 if (not tracked or p in tracked) else 1])
-    olist = []
-    for o in sorted(objects):
-        argv, deps = objects[o]
-        if argv[0] != "clang" and argv[0] != "nasm":
-            sys.exit(f"{a.name}: {o} is made by {argv[0]}")
-        ds = list(dict.fromkeys(d for d in deps + extra.get(o, []) if d != o))
-        missing = [d for d in ds if d not in index]
-        if missing:
-            sys.exit(f"{a.name}: {o}: dependencies not in the kit: {missing}")
-        h, n = put(o)
-        olist.append({"out": o, "argv": argv, "deps": [index[d] for d in ds], "sha256": h, "size": n})
 
     modules = {}
     wasm = dict(x.split("=", 1) for x in a.tool + a.module)
@@ -523,12 +548,32 @@ def make_kit(a, tree, runs):
             shutil.copyfile(wasm[key], dest)
         return mod
 
+    unstripped = json.loads(pathlib.Path(a.unstripped).read_text()) if a.unstripped else {}
+    olist = []
+    for o in sorted(objects):
+        argv, deps = objects[o]
+        if argv[0] != "clang" and argv[0] != "nasm":
+            sys.exit(f"{a.name}: {o} is made by {argv[0]}")
+        ds = list(dict.fromkeys(d for d in deps + extra.get(o, []) if d != o))
+        missing = [d for d in ds if d not in index]
+        if missing:
+            sys.exit(f"{a.name}: {o}: dependencies not in the kit: {missing}")
+        h, n = put(o)
+        ent = {"out": o, "argv": argv, "deps": [index[d] for d in ds], "sha256": h, "size": n}
+        # kbuild's cmd_record_mcount: after the compile of a C object whose
+        # flags have CC_FLAGS_FTRACE, recordmcount rewrites it in place.
+        if a.recordmcount and argv[0] == "clang" and ds and ds[0].endswith(".c") and a.recordmcount in " ".join(argv):
+            ent["post"] = [{"tool": module_of("scripts/recordmcount"), "argv": ["./scripts/recordmcount", o]}]
+        if o in unstripped:
+            ent["gsha256"] = unstripped[o]
+        olist.append(ent)
+
     for o in olist:
         module_of(o["argv"][0])
     out_steps = []
     for st in steps:
         tool = st["tool"]
-        o = {"tool": tool if tool in ("sed", "cat", "cat-size") else module_of(st["run"]["key"]), "argv": st["argv"]}
+        o = {"tool": tool if tool in ("sed", "cat", "grep", "cat-size") else module_of(st["run"]["key"]), "argv": st["argv"]}
         if tool == "cat-size":
             o["argv"] = ["cat"] + [x[0] for x in st["run"]["inputs"]]
         for k in ("stdin", "stdout"):
@@ -606,20 +651,26 @@ def index(kits):
     return 0
 
 
-def budget(tree):
-    """What a kit of a built kbuild tree would weigh (no capture): the
-    objects in vmlinux.a (llvm-ar t) and under arch/x86/boot/ with a
-    compile command, and the files those include, raw and gzipped."""
-    tree = pathlib.Path(tree).resolve()
-    cmds = kbuild_objects(tree)
+def vmlinux_objects(tree, cmds):
+    """The objects of vmlinux (vmlinux.a's members) and of the boot image
+    (arch/x86/boot/, with a compile command) of a built kbuild tree."""
     if (tree / "vmlinux.a").is_file():
         members = subprocess.run(["llvm-ar", "t", str(tree / "vmlinux.a")], stdout=subprocess.PIPE, check=True,
                                  text=True).stdout.split()
     else:
         # No vmlinux.a (before Linux 6.1): every compiled object but the host tools'.
         members = [o for o in cmds if o.endswith(".o") and not o.startswith(("scripts/", "tools/"))]
-    objs = sorted({os.path.relpath(os.path.join(tree, m), tree) for m in members} |
+    return sorted({os.path.relpath(os.path.join(tree, m), tree) for m in members} |
                   {o for o in cmds if o.startswith("arch/x86/boot/") and o.endswith(".o")})
+
+
+def budget(tree):
+    """What a kit of a built kbuild tree would weigh (no capture): the
+    objects in vmlinux.a (llvm-ar t) and under arch/x86/boot/ with a
+    compile command, and the files those include, raw and gzipped."""
+    tree = pathlib.Path(tree).resolve()
+    cmds = kbuild_objects(tree)
+    objs = vmlinux_objects(tree, cmds)
     deps = sorted({d for o in objs if o in cmds for d in cmds[o][1]})
     size = lambda ps: (sum((tree / p).stat().st_size for p in ps),
                        sum(len(gzip.compress((tree / p).read_bytes(), 9)) for p in ps))
@@ -631,9 +682,38 @@ def budget(tree):
     return 0
 
 
+def strip(tree, out):
+    """The debug sections of a built kbuild tree's kernel objects (a
+    compile command with -D__KERNEL__: not the host programs') removed in
+    place (llvm-objcopy --strip-debug), for a kit whose link needs no DWARF
+    (Debian's: 339 MB of -g objects); OUT: {object: SHA-256 before}, for
+    --unstripped. The build's make then links the stripped objects."""
+    tree = pathlib.Path(tree).resolve()
+    before = {}
+    raw = [0, 0]
+    cmds = kbuild_objects(tree)
+    # Only what vmlinux and the boot image link: an object inside another
+    # product (the vDSO, whose build-id hashes its debug info into the
+    # kernel's rodata) keeps its bytes.
+    for o in vmlinux_objects(tree, cmds):
+        p = tree / o
+        if o not in cmds or "-D__KERNEL__" not in cmds[o][0] or not p.is_file():
+            continue
+        b = p.read_bytes()
+        before[o] = sha256(b)
+        subprocess.run(["llvm-objcopy", "--strip-debug", str(p)], check=True)
+        raw[0] += len(b)
+        raw[1] += p.stat().st_size
+    pathlib.Path(out).write_text(json.dumps(before, indent=0, sort_keys=True) + "\n")
+    print(f"stripped {len(before)} objects: {raw[0] / 1e6:.1f} MB -> {raw[1] / 1e6:.1f} MB")
+    return 0
+
+
 def main():
     if len(sys.argv) > 3 and sys.argv[1] == "--wrap":
         return wrap(sys.argv[2], sys.argv[3], sys.argv[4:])
+    if len(sys.argv) == 4 and sys.argv[1] == "--strip":
+        return strip(sys.argv[2], sys.argv[3])
     if len(sys.argv) == 3 and sys.argv[1] == "--index":
         return index(sys.argv[2])
     if len(sys.argv) == 3 and sys.argv[1] == "--budget":
@@ -651,6 +731,11 @@ def main():
     ap.add_argument("--extra-input", action="append", default=[])
     ap.add_argument("--sources-from")
     ap.add_argument("--shipped", action="append", default=[])
+    ap.add_argument("--sources-list")
+    ap.add_argument("--path-tool", action="append", default=[])
+    ap.add_argument("--recordmcount")
+    ap.add_argument("--tool-input", action="append", default=[])
+    ap.add_argument("--unstripped")
     ap.add_argument("--log", help="keep the wrappers' records (JSON lines) here")
     ap.add_argument("make", nargs=argparse.REMAINDER)
     a = ap.parse_args()

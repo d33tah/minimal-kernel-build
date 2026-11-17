@@ -11,7 +11,10 @@ boots), DEBUG_* the copy built with -g. Passes when
      info included, so it differs), and
   2. the plain ELF's binary image is inside PLAIN_IMAGE (the shipped
      bzImage carries this kernel), and the two bzImages are byte-identical
-     except inside that copy's note sections.
+     except inside that copy's note sections. A gzip-compressed bzImage
+     (x86: the payload is vmlinux.bin, an ELF, and its relocations): the
+     payload ELF's binary image is the plain ELF's, the -g bzImage's
+     differs only inside note sections, the relocations are the same.
 --self-test then flips one code byte of the debug files (must fail) and,
 when there is a note, one note byte (must still pass).
 """
@@ -20,6 +23,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import zlib
 
 SHT_NOTE, SHT_NOBITS, SHF_ALLOC = 7, 8, 2
 
@@ -66,6 +70,35 @@ def differ(a, b):
     return [i for i in range(min(len(a), len(b))) if a[i] != b[i]]
 
 
+def gzip_payload(img):
+    """The unpacked gzip member inside a bzImage (vmlinux.bin and its
+    relocations), or None."""
+    at = img.find(b"\x1f\x8b\x08")
+    while at >= 0:
+        try:
+            return zlib.decompressobj(31).decompress(img[at:])
+        except zlib.error:
+            at = img.find(b"\x1f\x8b\x08", at + 1)
+    return None
+
+
+def payload_elf(data):
+    """The size of the 32-bit ELF at the start of data (its section
+    headers end it), or None."""
+    if data is None or data[:5] != b"\x7fELF\x01":
+        return None
+    e_shoff = struct.unpack_from("<I", data, 32)[0]
+    e_shentsize, e_shnum = struct.unpack_from("<HH", data, 46)
+    return e_shoff + e_shentsize * e_shnum
+
+
+def binary_of(elf_bytes):
+    with tempfile.TemporaryDirectory() as t:
+        p = os.path.join(t, "elf")
+        open(p, "wb").write(elf_bytes)
+        return binary(p)
+
+
 def check(plain_bin, debug_bin, notes, plain_img, debug_img):
     """Problems (empty: identical code), and what was checked."""
     problems = []
@@ -76,8 +109,27 @@ def check(plain_bin, debug_bin, notes, plain_img, debug_img):
         problems.append(f"binary images differ outside note sections at {len(bad)} bytes, first at offset {bad[0]:#x}")
     at = plain_img.find(plain_bin)
     if at < 0:
-        problems.append("the plain ELF's binary image is not inside the shipped bzImage")
-        return problems, ""
+        # A gzip-compressed bzImage (the editable Debian): the kernel is
+        # in the payload, so compare the payloads unpacked (the build-id
+        # changes the compressed bytes everywhere after it).
+        # x86's payload is vmlinux.bin (objcopy -S: an ELF) followed by
+        # its relocations.
+        pp, dp = gzip_payload(plain_img), gzip_payload(debug_img)
+        pe, de = payload_elf(pp), payload_elf(dp)
+        if pe is None or binary_of(pp[:pe]) != plain_bin:
+            problems.append("the plain ELF's binary image is not inside the shipped bzImage")
+            return problems, ""
+        if de is None:
+            problems.append("the -g bzImage has no gzip payload with an ELF")
+            return problems, ""
+        dbin = binary_of(dp[:de])
+        bad = outside(differ(plain_bin, dbin), notes) if len(dbin) == len(plain_bin) else [0]
+        if bad:
+            problems.append(f"the bzImages' kernels differ outside note sections at {len(bad)} bytes, first at offset {bad[0]:#x}")
+        if pp[pe:] != dp[de:]:
+            problems.append("the bzImages' relocation lists differ")
+        return problems, (f"gzip payloads: ELF {pe} B whose binary image is the plain ELF's, relocations {len(pp) - pe} B; "
+                          f"the -g bzImage's kernel differs only inside note sections, same relocations")
     if len(plain_img) != len(debug_img):
         problems.append(f"bzImages differ in size: {len(plain_img)} vs {len(debug_img)} bytes")
     d = differ(plain_img, debug_img)

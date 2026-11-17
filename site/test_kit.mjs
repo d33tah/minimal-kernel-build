@@ -37,6 +37,8 @@ class NodeTools {
     const t = performance.now();
     const r = wasiRun(mod, this.fs, { args, cwd, env, stdin: typeof stdin === 'string' ? enc.encode(stdin) : stdin });
     this.runs.push(args[0]);
+    // The largest wasm memory of a run (bytes), and which run it was.
+    if (!this.peak || r.mem > this.peak[0]) this.peak = [r.mem, args[0]];
     return { code: r.code, stdout: dec.decode(r.stdout), stderr: dec.decode(r.stderr), stdoutBytes: r.stdout.slice(),
              mem: r.mem, ms: performance.now() - t, files: outputs.map((p) => [p, this.fs.readFile(p)]) };
   }
@@ -84,6 +86,25 @@ function unit() {
     try { kit.kitSed(args, kit.kitBytes('a\n')); } catch (x) { e = x.message; }
     if (!e || !e.includes(msg)) fail(`sed ${JSON.stringify(args)} must fail with "${msg}": ${e}`);
   }
+  // kitGrep against GNU grep: scripts/mksysmap's filter, and the other options.
+  const syms = 'c1000000 T _text\nc1000010 t .Ltmp1\n00000000 a foo.c\nc1000020 T __crc_bar\nc1000030 W weak\n' +
+    'c1000040 T $x\nc1000050 r __kstrtab_baz\nc1000060 r __kstrtabns_baz\nc1000070 t L0\nc1000080 T start_kernel\nno newline at the end';
+  const GREP_CASES = [
+    ['-v', '-e', ' [aNUw] ', '-e', ' \\$', '-e', ' \\.L', '-e', ' __crc_', '-e', ' __kstrtab_', '-e', ' __kstrtabns_', '-e', ' L0$'],
+    ['-v', 'T'], ['-e', 'r __'], ['-E', 'T (_text|start)'], ['-F', '$x'], ['-vF', '.L'], ['-ve', 'kstrtab'], ['zzz'],
+  ];
+  for (const args of GREP_CASES) {
+    const want = spawnSync('grep', args, { input: syms, encoding: 'latin1' });
+    const got = kit.kitLatin1(kit.kitGrep(args, kit.kitBytes(syms)));
+    if (want.status > 1) fail(`GNU grep ${JSON.stringify(args)} failed: ${want.stderr}`);
+    else if (got !== want.stdout) fail(`grep ${JSON.stringify(args)}: ${JSON.stringify(got)}, GNU ${JSON.stringify(want.stdout)}`);
+  }
+  for (const [args, msg] of [[['-c', 'x'], 'unsupported option -c'], [['-v'], 'no pattern']]) {
+    let e = null;
+    try { kit.kitGrep(args, kit.kitBytes('a\n')); } catch (x) { e = x.message; }
+    if (!e || !e.includes(msg)) fail(`grep ${JSON.stringify(args)} must fail with "${msg}": ${e}`);
+  }
+  console.log(`kitGrep: ${GREP_CASES.length} cases against GNU grep`);
   const k = { objects: [{ out: 'a.o', deps: [0, 2] }, { out: 'b.o', deps: [1, 2] }], files: [['a.c'], ['b.c'], ['x.h']] };
   const u = kit.kitUsers(k);
   if (JSON.stringify([...u]) !== JSON.stringify([['a.c', ['a.o']], ['x.h', ['a.o', 'b.o']], ['b.c', ['b.o']]]))
@@ -124,6 +145,8 @@ async function build(clang, kits, names, compile) {
     console.log(`${name}: ${r.fetched} blobs (${r.fetchedBytes} B), ${r.objects.length} objects compiled ` +
                 `(${badObj.length} different) in ${Math.round(r.compileMs)} ms, ${r.steps.length} steps in ${Math.round(r.linkMs)} ms; ` +
                 r.products.map(([p, h, n, w]) => `${p} ${n} B ${h === w ? 'SAME' : 'DIFFERENT'}`).join(', '));
+    console.log(`${name}: largest wasm memory ${(cc.peak[0] / 2 ** 20).toFixed(0)} MiB (${cc.peak[1]}); ` +
+                `Node RSS ${(process.memoryUsage().rss / 2 ** 20).toFixed(0)} MiB after the build`);
     for (const o of badObj) fail(`${name}: object ${o.out} ${o.sha256}, CI's ${o.want}`);
     for (const s of badStep) fail(`${name}: ${s} differs from CI's`);
     for (const [p, h, , w] of badProd) fail(`${name}: ${p} ${h}, CI's ${w}`);
@@ -142,6 +165,17 @@ async function build(clang, kits, names, compile) {
     const same = e.products.filter(([, h, , w]) => h === w).map((p) => p[0]);
     if (same.length) fail(`${name}: ${cpath} edited, still CI's ${same}`);
     console.log(`${name}: ${cpath} edited: ${e.objects.length} object compiled, products ${e.products.map(([p, , n]) => p + ' ' + n + ' B').join(', ')}, all different`);
+    // A kit of stripped objects (Debian): the same source compiled again
+    // (with recordmcount after it) is CI's object before the strip.
+    if (first.gsha256) {
+      const cc3 = new NodeTools();
+      await cc3.load(clang);
+      const u = await kit.kitBuild(cc3, k, src, { compile: 'changed', edits: { [cpath]: text } });
+      const bad = u.objects.filter((o) => o.sha256 !== o.wantg);
+      for (const o of bad) fail(`${name}: ${o.out} compiled again ${o.sha256}, CI's before the strip ${o.wantg}`);
+      console.log(`${name}: ${cpath} compiled again unchanged: ${u.objects.length - bad.length} of ${u.objects.length} objects are CI's -g bytes ` +
+                  `(post steps: ${first.post ? first.post.map((p) => p.argv[0]).join(', ') : 'none'})`);
+    }
   }
 }
 

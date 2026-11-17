@@ -394,6 +394,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # What the job runs: its scripts (hashFiles below) and the site modules
+    # its Node tools import (deps-hash.py follows the imports).
+    - name: Inputs of the cached job
+      id: inputs
+      run: |
+        apt-get update > /dev/null
+        apt-get install -y python3 > /dev/null
+        echo "js=$(python3 site/deps-hash.py site/gen-dwarf.js site/gen-src.js site/test_kit.mjs site/check-wasm-objects.mjs)" >> "$GITHUB_OUTPUT"
+
     - uses: actions/cache@v4
       id: cache
       with:
@@ -401,13 +410,15 @@ jobs:
           out
           clang-fixtures
           tool-fixtures
-        key: debian-clang-v1-9aad4025973f-10477b04dc15-526c469c5148-${{ hashFiles('site/gen-debian-clang.sh', 'site/gen-debian-source.sh', 'site/gen-debian-initrd.sh', 'site/gen-host-tools.py', 'site/hosttools/**', 'site/gen-clang-native.sh', 'site/gen-clang-wasm.sh', 'site/check-wasm-objects.mjs', 'site/capture-host-tools.py', 'site/gen-kit.py', 'site/wasi.js', 'site/qemu_screen_check.py') }}
+          out-kernel
+          kits-debian
+        key: debian-clang-v2-9aad4025973f-10477b04dc15-526c469c5148-${{ steps.inputs.outputs.js }}-${{ hashFiles('site/gen-debian-clang.sh', 'site/gen-debian-source.sh', 'site/gen-debian-initrd.sh', 'site/gen-host-tools.py', 'site/hosttools/**', 'site/gen-clang-native.sh', 'site/gen-clang-wasm.sh', 'site/capture-host-tools.py', 'site/gen-kit.py', 'site/qemu_screen_check.py', 'site/check-code-identity.py', 'site/gen-symbols.py', 'site/test_dwarf.py', 'site/deps-hash.py') }}
 
     - name: Install packages
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         apt-get update
-        apt-get install -y build-essential flex bison bc libelf-dev libssl-dev python3 cpio kmod xz-utils patch curl nodejs qemu-system-x86
+        apt-get install -y build-essential flex bison bc libelf-dev libssl-dev python3 cpio kmod xz-utils patch curl nodejs qemu-system-x86 llvm
 
     - uses: actions/download-artifact@v4
       if: steps.cache.outputs.cache-hit != 'true'
@@ -463,6 +474,9 @@ jobs:
           526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4
         dpkg-deb --fsys-tarfile "$RUNNER_TEMP/image.deb" | tar -x -O ./boot/config-6.1.0-50-686 > "$RUNNER_TEMP/config"
         site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$RUNNER_TEMP/deb"
+        # The source files (the build kit's "source", the rest "generated").
+        (cd "$RUNNER_TEMP/deb" && find . -type f | sed 's|^\./||' | sort) > "$RUNNER_TEMP/srclist.txt"
+        wc -l "$RUNNER_TEMP/srclist.txt"
 
     # The wasi-sdk of gen-clang-wasm.sh for the host tools in wasm, and
     # kgzip (zlib) for the build host and for wasm before the build: the
@@ -542,12 +556,64 @@ jobs:
         ls tool-fixtures/*.json | wc -l
         du -sh tool-fixtures
 
-    # What a build kit of this kernel would weigh on the site (plan E3's
-    # budget; its kit is step E6): the objects of vmlinux and the boot
-    # image, and the sources and headers they include.
-    - name: Kit size of the clang-built Debian
+    # The page's data files of this kernel (as the kernels job's for the
+    # others): symbols, DWARF shards and the C source from the -g vmlinux;
+    # it boots with Debian's initramfs to its shell, like the Debian sample
+    # with an initramfs.
+    - name: Data files of the clang-built Debian
       if: steps.cache.outputs.cache-hit != 'true'
-      run: python3 site/gen-kit.py --budget "$RUNNER_TEMP/deb"
+      run: |
+        t="$RUNNER_TEMP/deb"
+        d=out-kernel/debian-6.1-686-clang
+        mkdir -p "$d"
+        start=$(date +%s)
+        site/gen-symbols.py --trim "$t/vmlinux" "$d/symbols.json" debian-6.1-686-clang
+        site/gen-dwarf.js "$t/vmlinux" "$d/dwarf"
+        site/test_dwarf.py "$t/vmlinux" "$d/dwarf" --samples 3000 --types 1000 --cfi 3000 --locals 1000 --operands 1000 --lines 1000 --funcs 1000 --vars 1000 \
+          --strip "$(realpath "$t")/"
+        site/gen-src.js "$d/dwarf" "$t" "$d/src" \
+          --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz), built with clang 22.1.0 (site/gen-debian-clang.sh)"
+        cp debian-initrd/initrd.img "$d/initrd.img"
+        printf '%s\n' '{"label": "Debian 6.1 686 rebuilt from its source with clang (editable; initramfs shell)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728}' > "$d/meta.json"
+        du -sh "$d" "$d"/*
+        echo "data files: $(( $(date +%s) - start )) s"
+
+    # The build kit (plan E6, gen-kit.py): the objects of vmlinux and the
+    # boot image without their debug sections (342 MB -g, 39 MB stripped:
+    # the page's link needs no DWARF; an object compiled in the page keeps
+    # its own), linked again by make, which must give the -g build's code
+    # (check-code-identity.py); then the build's steps recorded, and the
+    # kit built again under Node with clang.wasm and the host tools in wasm
+    # (test_kit.mjs): CI's vmlinux and bzImage, an edit, and init/main.c
+    # compiled again with recordmcount after it to CI's -g object.
+    - name: Build kit of the clang-built Debian
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        t="$RUNNER_TEMP/deb"
+        g="$RUNNER_TEMP/g"
+        m="$RUNNER_TEMP/hostwasm/debian"
+        k="$RUNNER_TEMP/hostwasm/kgzip"
+        mkdir -p "$g"
+        cp "$t/vmlinux" "$t/arch/x86/boot/bzImage" "$g/"
+        python3 site/gen-kit.py --strip "$t" "$g/unstripped.json"
+        site/gen-debian-clang.sh --make "$t" > "$g/relink.log" 2>&1 || { tail -30 "$g/relink.log"; exit 1; }
+        site/check-code-identity.py "$t/vmlinux" "$t/arch/x86/boot/bzImage" "$g/vmlinux" "$g/bzImage"
+        ls -l "$t/vmlinux" "$g/vmlinux"
+        start=$(date +%s)
+        python3 site/gen-kit.py --name debian-6.1-686-clang --tree "$t" --out kits-debian --kbuild --touch-objects \
+          --sources-list "$RUNNER_TEMP/srclist.txt" --path-tool grep --path-tool kgzip --module kgzip="$k/kgzip.wasm" \
+          --tool scripts/kallsyms="$m/kallsyms.wasm" --tool scripts/sorttable="$m/sorttable.wasm" --tool-input scripts/sorttable=System.map \
+          --tool arch/x86/tools/relocs="$m/relocs.wasm" --tool arch/x86/boot/tools/build="$m/build.wasm" \
+          --tool arch/x86/boot/compressed/mkpiggy="$m/mkpiggy.wasm" \
+          --module scripts/recordmcount="$m/recordmcount.wasm" "--recordmcount=-pg -mfentry" --unstripped "$g/unstripped.json" \
+          --product vmlinux --product arch/x86/boot/bzImage --shipped arch/x86/boot/bzImage="$t/arch/x86/boot/bzImage" \
+          -- "$PWD/site/gen-debian-clang.sh" --make "$t" | cut -c1-400
+        echo "kit capture: $(( $(date +%s) - start )) s"
+        cp "$t/arch/x86/boot/bzImage" out-kernel/debian-6.1-686-clang/bzImage
+        cp "$k/LICENSE.zlib" kits-debian/
+        python3 site/gen-kit.py --index kits-debian
+        node site/test_kit.mjs --build site/clang/clang.wasm kits-debian debian-6.1-686-clang
+        du -sh kits-debian
 
     - name: Collect
       if: steps.cache.outputs.cache-hit != 'true'
@@ -571,6 +637,16 @@ jobs:
       with:
         name: tool-fixtures-debian
         path: tool-fixtures/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kernel-debian-clang
+        path: out-kernel/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kit-debian
+        path: kits-debian/
 
   # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
   # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
@@ -695,7 +771,7 @@ jobs:
         npx eslint .
 
   site:
-    needs: [kernels, debian-initrd, v86, clang-wasm]
+    needs: [kernels, debian-clang, debian-initrd, v86, clang-wasm]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -719,6 +795,28 @@ jobs:
       with:
         name: kits
         path: site/kits
+
+    # Debian rebuilt from its source with clang (plan E6): the kernel, its
+    # data files and its initramfs, and its build kit (fetched by the page
+    # only when it rebuilds this kernel) merged into kits/.
+    - uses: actions/download-artifact@v4
+      with:
+        name: kernel-debian-clang
+        path: site/kernels
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: kit-debian
+        path: kit-debian
+
+    - name: The Debian kit in kits/
+      run: |
+        cp -n kit-debian/blobs/* site/kits/blobs/
+        cp kit-debian/debian-6.1-686-clang.json kit-debian/LICENSE.zlib site/kits/
+        python3 site/gen-kit.py --index site/kits
+        # GitHub Pages: at most 100 MB per file, 1 GB per site.
+        find site -type f -size +95M | sed 's/^/too large for GitHub Pages: /' | { ! /usr/bin/grep .; }
+        du -sh site site/kits
 
     # A variant of the Debian sample: same bzImage and symbols, with its
     # initramfs; "break" stops Debian's init at the (initramfs) shell.

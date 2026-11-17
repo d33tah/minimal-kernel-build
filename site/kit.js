@@ -24,9 +24,11 @@
 // stdin } before it runs and { kind: "output", code, ms, stdout, stderr,
 // to, bytes } after it (also when it failed): to is the file its stdout
 // went to, "" for the next step, null when stdout is in the event.
+// An object may have post steps (kbuild's recordmcount, a module of the
+// kit), run on it after its compile.
 // The kit's steps run in order: clang.wasm's tools, a module of
-// the kit (a host tool), and three run here: sed (kitSed, a GNU sed
-// subset), cat, and cat-size (cat, then the inputs' total size as 4
+// the kit (a host tool), and four run here: sed (kitSed, a GNU sed
+// subset), grep (kitGrep: -v, -e, -E, -F), cat, and cat-size (cat, then the inputs' total size as 4
 // little-endian bytes: kbuild's size_append). A step's stdout goes to a
 // file or into a variable (the next step's stdin, or a value an argument
 // has: the shell's 0x$(nm | sed)).
@@ -380,6 +382,61 @@ function kitSed(args, input) {
 	return kitBytes(out);
 }
 
+// --- grep: the subset kbuild's scripts/mksysmap uses ---
+
+// grep ARGS on input (stdin, or the file arguments' bytes one after the
+// other): -v, -e PATTERN (repeated), -E, -F; a basic or extended regular
+// expression as sed's. The selected lines, each with its newline.
+function kitGrepArgs(args) {
+	let invert = false, ere = false, fixed = false;
+	const pats = [], names = [];
+	for (let i = 0; i < args.length; i++) {
+		const a = args[i];
+		if (a.length > 1 && a[0] === "-" && a[1] !== "-") {
+			for (let j = 1; j < a.length; j++) {
+				if (a[j] === "v")
+					invert = true;
+				else if (a[j] === "E")
+					ere = true;
+				else if (a[j] === "F")
+					fixed = true;
+				else if (a[j] === "e") {
+					pats.push(j + 1 < a.length ? a.slice(j + 1) : args[++i]);
+					break;
+				} else {
+					throw new Error("grep: unsupported option -" + a[j]);
+				}
+			}
+		} else if (!pats.length) {
+			pats.push(a);
+		} else {
+			names.push(a);
+		}
+	}
+	if (!pats.length)
+		throw new Error("grep: no pattern");
+	return { invert, ere, fixed, pats, names };
+}
+
+function kitGrep(args, input) {
+	const { invert, ere, fixed, pats } = kitGrepArgs(args);
+	const res = pats.map((p) => fixed ? new RegExp(p.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&")) : kitSedRegex(p, ere));
+	const text = kitLatin1(input || new Uint8Array(0));
+	const lines = text.split("\n");
+	if (text.endsWith("\n") || text === "")
+		lines.pop();
+	let out = "";
+	for (const line of lines) {
+		const hit = res.some((re) => {
+			re.lastIndex = 0;
+			return re.test(line);
+		});
+		if (hit !== invert)
+			out += line + "\n";
+	}
+	return kitBytes(out);
+}
+
 // --- the build ---
 
 // The words of one job line of clang -### ("a" "b\"c": backslash escapes).
@@ -525,8 +582,20 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		say({ kind: "output", code: r.code, ms: kitNow() - tc, stdout: r.stdout || "", stderr: r.stderr || "" });
 		if (r.code !== 0)
 			fail(o.out + ": " + o.argv[0], r);
-		const b = r.files[0][1];
-		res.objects.push({ out: o.out, sha256: await kitHash(b), want: o.sha256, size: b.length, ms: r.ms });
+		let b = r.files[0][1];
+		// What kbuild runs on the object after the compile (recordmcount:
+		// it rewrites the object in place).
+		for (const p of o.post || []) {
+			await load(p.tool);
+			say({ kind: "command", argv: p.argv });
+			const tp = kitNow();
+			const rp = await cc.run(p.argv, { cwd: dir, env, module: p.tool, outputs: [abs(o.out)] });
+			say({ kind: "output", code: rp.code, ms: kitNow() - tp, stdout: rp.stdout || "", stderr: rp.stderr || "" });
+			if (rp.code !== 0)
+				fail(o.out + ": " + p.argv[0], rp);
+			b = rp.files[0][1];
+		}
+		res.objects.push({ out: o.out, sha256: await kitHash(b), want: o.sha256, wantg: o.gsha256, size: b.length, ms: r.ms });
 		if (opts.onstep)
 			opts.onstep({ kind: "object", out: o.out, done: res.objects.length, of: objects.length });
 	}
@@ -550,6 +619,9 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		if (s.tool === "sed") {
 			const names = kitSedArgs(argv.slice(1)).names;
 			out = kitSed(argv.slice(1), names.length ? kitConcat(await read(names)) : stdin);
+		} else if (s.tool === "grep") {
+			const names = kitGrepArgs(argv.slice(1)).names;
+			out = kitGrep(argv.slice(1), names.length ? kitConcat(await read(names)) : stdin);
 		} else if (s.tool === "cat" || s.tool === "cat-size") {
 			const parts = argv.length > 1 ? await read(argv.slice(1)) : [stdin || new Uint8Array(0)];
 			if (s.tool === "cat-size") {
@@ -597,5 +669,5 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	return res;
 }
 
-export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitUsers,
-	kitBuild };
+export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitGrepArgs, kitGrep,
+	kitUsers, kitBuild };

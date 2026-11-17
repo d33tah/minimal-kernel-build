@@ -90,7 +90,7 @@ RUN_JS = """async ({ name, keep, edit }) => {
   return res;
 }"""
 
-ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
+ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky, grep }) => {
   const res = {};
   const err = async (f) => { try { await f(); return 'resolved'; } catch (e) { return e.message; } };
   const src = MKB.kitSource('kits/');
@@ -130,6 +130,26 @@ ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
   const obj = (src) => ({ out: 'x.o', argv: ['clang', '--target=i386-linux-gnu', '-c', '-o', 'x.o', src], deps: [0], sha256: '', size: 0 });
   const r2 = await MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [obj('x.S')] }), mem, { compile: 'all' });
   res.asm = { size: r2.objects[0].size, tmp: (await cc.list()).files.filter((f) => f[0].startsWith('/s/.kit-tmp/')).length };
+  // An object's post step (Debian's recordmcount; here llvm-objcopy of
+  // clang.wasm on the object), and grep steps (mksysmap's) on a file and
+  // on the previous step's output.
+  const r4 = await MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [Object.assign(obj('x.S'),
+    { post: [{ tool: 'clang', argv: ['llvm-objcopy', '--add-section', '.mkb=x.S', 'x.o'] }] })] }), mem, { compile: 'all' });
+  res.post = { size: r4.objects[0].size, plain: r2.objects[0].size };
+  res.postBad = await err(() => MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [Object.assign(obj('x.S'),
+    { post: [{ tool: 'clang', argv: ['llvm-objcopy', '--no-such-option', 'x.o'] }] })] }), mem, { compile: 'all' }));
+  const [hg, ng] = await put('c1 T _text\\nc2 t .Lx\\nc3 a f.c\\nc4 T start\\n');
+  const k3 = kit({ files: [['m.txt', hg, ng, 0]], steps: [
+    step({ tool: 'grep', argv: ['grep', '-v', '-e', ' [aNUw] ', '-e', ' \\\\.L', 'm.txt'], inputs: ['m.txt'], stdout: { file: 'g1.txt' } }),
+    step({ tool: 'sed', argv: ['sed', '-n', 'p', 'm.txt'], inputs: ['m.txt'], stdout: { var: 'v1' } }),
+    step({ tool: 'grep', argv: ['grep', '-E', 'T (_text|start)'], stdin: 'v1', stdout: { file: 'g2.txt' } }),
+  ], products: [['g1.txt', '', 0], ['g2.txt', '', 0]] });
+  await MKB.kitBuild(cc, k3, mem, { keep: ['g1.txt', 'g2.txt'] }).then((r) => {
+    res.grep = r.files.map(([, b]) => new TextDecoder().decode(b));
+  });
+  res.grepCases = grep.map(([args, input]) => { try { return MKB.kitLatin1(MKB.kitGrep(args, MKB.kitBytes(input))); } catch (e) { return 'error: ' + e.message; } });
+  res.grepBad = await err(async () => MKB.kitGrep(['-c', 'x'], MKB.kitBytes('a')));
+  res.grepNone = await err(async () => MKB.kitGrep(['-v'], MKB.kitBytes('a')));
   res.asmBad = await err(() => MKB.kitBuild(cc, kit({ files: [['y.S', hb, nb, 0]], objects: [obj('y.S')] }), mem, { compile: 'all' }));
   res.asmMissing = await err(() => MKB.kitBuild(cc, kit({ files: [['x.S', hs, ns, 0]], objects: [Object.assign(obj('z.S'), { deps: [] })] }), mem, { compile: 'all' }));
   res.stepFails = await err(() => MKB.kitBuild(cc, kit({ steps: [step({ tool: 'clang', argv: ['ld.lld', '-o', 'v', 'missing.o'] })] }), mem, {}));
@@ -143,6 +163,19 @@ ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky }) => {
 }"""
 
 
+# kitGrep in the page against GNU grep: scripts/mksysmap's filter (the
+# Debian kit runs it) and the other options.
+GREP_SYMS = ("c1000000 T _text\nc1000010 t .Ltmp1\n00000000 a foo.c\nc1000020 T __crc_bar\nc1000030 W weak\n"
+             "c1000040 T $x\nc1000050 r __kstrtab_baz\nc1000070 t L0\nc1000080 T start_kernel\nno newline")
+GREP_CASES = [[a, GREP_SYMS] for a in (
+    ["-v", "-e", " [aNUw] ", "-e", " \\$", "-e", " \\.L", "-e", " __crc_", "-e", " __kstrtab_", "-e", " __kstrtabns_", "-e", " L0$"],
+    ["-v", "T"], ["-E", "T (_text|start)"], ["-F", "$x"], ["-ve", "kstrtab"], ["zzz"])]
+
+
+def gnu_grep(args, text):
+    return subprocess.run(["grep"] + args, input=text.encode("latin-1"), stdout=subprocess.PIPE).stdout.decode("latin-1")
+
+
 def b64(s):
     return base64.b64decode(s)
 
@@ -153,7 +186,7 @@ def check_errors(bname, res, sed_want, problems):
         "asmBad": "x.o: clang exited with 1", "asmMissing": "no such file", "stepFails": "exited with 1",
         "noModule": "no module kallsyms", "badModule": "HTTP 404", "notInKit": "b.c is not a file of the kit",
         "badCompile": "compile is false", "noFile": "nothing.txt: no such file",
-        "down": "always-503.gz: HTTP 503",
+        "down": "always-503.gz: HTTP 503", "postBad": "x.o: llvm-objcopy exited with 1",
     }
     for k, w in want.items():
         if w not in str(res.get(k)):
@@ -173,6 +206,15 @@ def check_errors(bname, res, sed_want, problems):
     g = res["glue"]
     if g["products"][0][1] != g["products"][0][3] or g["steps"][1][0][1] != g["steps"][1][0][2]:
         problems.append(f"{bname}: sed/cat/cat-size kit: {g}")
+    bad = [(c[0], got) for c, got in zip(GREP_CASES, res["grepCases"]) if got != gnu_grep(*c)]
+    if bad:
+        problems.append(f"{bname}: kitGrep differs from GNU grep: {bad}")
+    if "unsupported option -c" not in res["grepBad"] or "no pattern" not in res["grepNone"]:
+        problems.append(f"{bname}: kitGrep must refuse -c and a missing pattern: {res['grepBad']!r}, {res['grepNone']!r}")
+    if res["grep"] != ["c1 T _text\nc4 T start\n", "c1 T _text\nc4 T start\n"]:
+        problems.append(f"{bname}: grep steps (a file, the previous step's output): {res['grep']}")
+    if not res["post"]["size"] > res["post"]["plain"]:
+        problems.append(f"{bname}: an object's post step did not rewrite it: {res['post']}")
     if not res["asm"]["size"] or res["asm"]["tmp"]:
         problems.append(f"{bname}: a .S compile: {res['asm']} (an object, no temporary file left)")
     print(f"  errors and synthetic kits: {len(want)} refusals, {len(res['sed'])} sed scripts, .S object "
@@ -324,7 +366,7 @@ def main():
             t0 = time.monotonic()
             results[bname] = {}
             try:
-                errs = page.evaluate(ERRORS_JS, {"sed": cases, "sedErrors": sed["errors"], "tampered": tampered, "raw": raw, "flaky": flaky})
+                errs = page.evaluate(ERRORS_JS, {"sed": cases, "sedErrors": sed["errors"], "tampered": tampered, "raw": raw, "flaky": flaky, "grep": GREP_CASES})
                 print(f"{bname}: {page.evaluate('navigator.userAgent')}", flush=True)
                 check_errors(bname, errs, sed_want, problems)
                 results[bname]["errors"] = errs

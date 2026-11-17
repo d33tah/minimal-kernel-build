@@ -7,6 +7,7 @@
 import * as util from "./util.js";
 import * as clock from "./clock.js";
 import * as jumps from "./jumps.js";
+import * as jumpview from "./jumpview.js";
 import * as stepper from "./stepper.js";
 import * as v86patch from "./v86patch.js";
 import * as frames from "./frames.js";
@@ -82,13 +83,13 @@ import * as kernel from "./kernel.js";
 import * as page from "./page.js";
 
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
-const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
-	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, dwexpr, asmnames,
-	dbginfo, dbgimport, source, srctext, srclinks, srcswitch, srcedit, edpatch, coverage, symimport, livedis,
-	fastforward, cpustate, memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars,
-	varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse,
-	bookmarks, bminit, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav,
-	symview, run, runto, boot, tips, kernel, page ];
+const MODULES = [util, clock, jumps, jumpview, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout,
+	calltree, graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, dwexpr,
+	asmnames, dbginfo, dbgimport, source, srctext, srclinks, srcswitch, srcedit, edpatch, coverage, symimport,
+	livedis, fastforward, cpustate, memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist,
+	quests, vars, varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay,
+	reverse, bookmarks, bminit, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs,
+	nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

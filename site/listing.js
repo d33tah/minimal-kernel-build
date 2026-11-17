@@ -8,8 +8,9 @@ import { realNow } from "./clock.js";
 import { PAGE, $, escHtml, esc, asciiOf, hex, V86_KERNEL_ADDR } from "./util.js";
 import { emulator, disasm, stepper, symbols, api, image, emuRam, selectedPage, emuReady, setSelectedPage,
 	runState, provide, state, tab } from "./page.js";
-import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAttrs, jumpBadgesHtml,
-	jumpsJitNote, jumpsDrawn, jumpHitScroll, setJumpHitScroll, drawJumpArcs } from "./jumps.js";
+import { jumpsFor, jumpHit, jumpPaths, jumpBadgesHtml, jumpsJitNote, jumpHitScroll,
+	setJumpHitScroll } from "./jumps.js";
+import { jumpInlineMax, jumpInlineHtml, jumpStubAttrs, jumpsDrawn, drawJumpArcs } from "./jumpview.js";
 import { srcLineHtml } from "./source.js";
 import { liveDecode, liveInsnsForPage, icedError, loadIced, iced } from "./livedis.js";
 import { ffBreaks } from "./fastforward.js";

@@ -8313,7 +8313,7 @@ JUMP_INLINE_JS = """([box, pa]) => { const b = document.querySelector(box);
     wraps: s ? s.getClientRects().length : 0, fits: b.scrollWidth <= b.clientWidth + 1 }; }"""
 
 # Sources shown inline before "+n more": at least this many when a
-# listing is this wide (jumps.js jumpInlineMax).
+# listing is this wide (jumpview.js jumpInlineMax).
 JUMP_INLINE_SHOWN = {1280: 3, 390: 2}
 
 

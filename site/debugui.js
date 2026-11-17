@@ -8,8 +8,8 @@ import { $, V86_KERNEL_ADDR, escHtml, h8, hex, h4, num, withV } from "./util.js"
 import { runTo, entryPhase, stepper, tab, runState, api, disasm, image, symbols, emuRam, emulator, prevRegs,
 	setPrevRegs, refSaved, countMs, countSteps, counting, countNote, wasmPatchError, setRefSaved, emuReady,
 	setEntryPhase, jitLoopId, setCounting, state, vmHasKeys, publishMachine, provide } from "./page.js";
-import { jumpsDrawn, renderEipJumps, jumpsFor, jumpInlineMax, jumpPaths, jumpInlineHtml, jumpStubAttrs,
-	jumpBadgesHtml } from "./jumps.js";
+import { jumpsFor, jumpPaths, jumpBadgesHtml } from "./jumps.js";
+import { jumpsDrawn, renderEipJumps, jumpInlineMax, jumpInlineHtml, jumpStubAttrs } from "./jumpview.js";
 import { G } from "./graphdata.js";
 import { dbgHas, dbgFrames } from "./dbginfo.js";
 import { srcFocusKeep, srcLinkEl } from "./srclinks.js";

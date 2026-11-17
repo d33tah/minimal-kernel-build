@@ -12,7 +12,7 @@ import * as app from "./app.js";
 import { PAGE, $, kib, withV } from "./util.js";
 import { setStartPaused, setPrefSpeed, kernels, tab, selectedPage, setDisasm, setKernels } from "./page.js";
 import { exposeMKB } from "./debug.js";
-import { initJumps } from "./jumps.js";
+import { initJumps } from "./jumpview.js";
 import { renderGraphInfo } from "./graph.js";
 import { initGraph } from "./graphinit.js";
 import { dbgOnChange, dbgFresh } from "./dbginfo.js";

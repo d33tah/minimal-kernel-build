@@ -205,6 +205,7 @@ kgen.js	50	0a435f61	an ELF that is not 32-bit little-endian: the import refuses 
 kgen.js	127	78821eac	an allocated section outside every PT_LOAD segment: not in the imported kernels
 kgen.js	138	aa70a5e5	llvm-nm lines without a size: llvm-nm -nS prints sizes for the imported kernels' symbols
 kgen.js	212-214	b0e4074e	llvm-objdump continuing a long encoding on its own line: only with raw bytes shown; the generators ask for --no-show-raw-insn in the page
+kgen.js	419	5fceaba1	a vmlinux without CFI: the imported test kernels have .debug_frame, and since e5c5bb9a6 an unchanged rebuild of the editable Debian (the one ELF without DWARF) uses the shipped data files
 kgen.js	533-534	2306e7d5	the function table without instruction starts (objdump failed): see genworker.js 120
 kgen.js	553	c8b20a61	a type or partial unit: the imported kernels have only compile units
 kgen.js	628	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the callers check first

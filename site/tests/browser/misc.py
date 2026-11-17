@@ -143,7 +143,7 @@ def fetch_fail_case(browser, base, shots):
         if "kernels/hello/bzImage: HTTP 404" not in r["kernel 404"]:
             problems.append(f"hello's bzImage answered 404: status {r['kernel 404']!r}")
         page.screenshot(path=str(shots / "fetch-fail-1280-light.png"))
-        initrds = [n for n, e in kernel_entries().items() if "initrd" in e]
+        initrds = [n for n, e in kernel_entries().items() if "initrd" in e and not e.get("editable")]
         if initrds:
             ctx.route("**/" + kernel_entries()[initrds[0]]["initrd"] + "*", lambda route: route.fulfill(status=404, body="no"))
             page.goto(f"{base}/index.html?kernel={initrds[0]}")

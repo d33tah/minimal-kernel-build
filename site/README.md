@@ -2920,13 +2920,16 @@ a kit of a built kbuild tree (the debian-clang job prints Debian's).
 
 ### The editable Debian (plan E6)
 
-The kernel list has "Debian 6.1 686 rebuilt from its source with clang"
+The kernel list has "Debian 6.1 686 from source, clang (editable)"
 (`debian-6.1-686-clang`): Debian's source package 6.1.176-1 and the
 config of `linux-image-6.1.0-50-686`, built by the debian-clang job with
 the native clang/lld 22.1.0 that clang.wasm is made from
 (`gen-debian-clang.sh`, `LLVM=1`, bzImage only), booted with Debian's
 initramfs and `break` to the `(initramfs)` prompt. The shipped Debian
-sample stays Debian's own GCC-built binary. What differs from Debian's
+sample stays Debian's own GCC-built binary. Its kernels.json entry has
+`"editable": true`: the suites that pick "a Debian with an initramfs"
+(replay, exactstop, guestin, jitsnap, initramfs, misc) mean Debian's own
+kernel and skip it. What differs from Debian's
 config (`config.diff` in the job's artifact): what olddefconfig drops for
 clang (DRM_AMD_DC, FORTIFY_SOURCE, mcount by the compiler -> recordmcount,
 ...), the empty certificate lists (Debian's certificates are not in the

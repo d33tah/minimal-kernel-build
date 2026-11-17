@@ -137,6 +137,6 @@ def exactstop_case(browser, base, shots, entries, debian, initrd, modes):
 
 
 def suite_exactstop(ctx):
-    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n]]
+    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n] and not ctx.entries[n].get("editable")]
     modes = [m for m in os.environ.get("MKB_EXACTSTOP_MODES", "jit,stepped").split(",") if m]
     return report("exactstop", *exactstop_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx), initrd, modes))

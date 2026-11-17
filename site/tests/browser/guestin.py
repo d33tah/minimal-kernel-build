@@ -395,5 +395,5 @@ def guestin_case(browser, base, shots, entries, debian, initrd):
 
 
 def suite_guestin(ctx):
-    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n]]
+    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n] and not ctx.entries[n].get("editable")]
     return report("guestin", *guestin_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, debian_names(ctx), initrd))

@@ -93,6 +93,6 @@ def initramfs_case(browser, base, shots, name):
 
 def suite_initramfs(ctx):
     failed = False
-    for name in [n for n in ctx.entries if "initrd" in ctx.entries[n]]:
+    for name in [n for n in ctx.entries if "initrd" in ctx.entries[n] and not ctx.entries[n].get("editable")]:
         failed |= report("initramfs", *initramfs_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
     return failed

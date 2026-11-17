@@ -598,5 +598,5 @@ def replay_case(browser, base, shots, entries, initrd):
 
 
 def suite_replay(ctx):
-    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n]]
+    initrd = [n for n in ctx.entries if n.startswith("debian") and "initrd" in ctx.entries[n] and not ctx.entries[n].get("editable")]
     return report("replay", *replay_case(ctx.browser, ctx.base, ctx.shots, ctx.entries, initrd))

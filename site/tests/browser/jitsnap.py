@@ -282,10 +282,10 @@ def jitsnap_case(browser, base, shots, entries):
     guard(jitsnap_wasm, browser, base, problems, r)
     only = os.environ.get("MKB_JITSNAP_ONLY")
     for prefix, with_initrd, a, b in JITSNAP_WINDOWS:
-        names = [n for n in entries if n.startswith(prefix) and ("initrd" in entries[n]) == with_initrd]
+        names = [n for n in entries if n.startswith(prefix) and ("initrd" in entries[n]) == with_initrd and not entries[n].get("editable")]
         if names and (not only or names[0] in only.split(",")):
             guard(jitsnap_window, browser, base, shots, names[0], a, b, problems, r)
-    initrd = [n for n in entries if n.startswith("debian") and "initrd" in entries[n]]
+    initrd = [n for n in entries if n.startswith("debian") and "initrd" in entries[n] and not entries[n].get("editable")]
     if initrd and (not only or "ui" in only.split(",")):
         guard(jitsnap_ui, browser, base, shots, initrd[0], "dark", True, problems, r)
     return problems, r

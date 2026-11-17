@@ -581,7 +581,7 @@ jobs:
         site/gen-src.js "$d/dwarf" "$t" "$d/src" \
           --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz), built with clang 22.1.0 (site/gen-debian-clang.sh)"
         cp debian-initrd/initrd.img "$d/initrd.img"
-        printf '%s\n' '{"label": "Debian 6.1 686 rebuilt from its source with clang (editable; initramfs shell)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728}' > "$d/meta.json"
+        printf '%s\n' '{"label": "Debian 6.1 686 from source, clang (editable)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728, "editable": true}' > "$d/meta.json"
         du -sh "$d" "$d"/*
         echo "data files: $(( $(date +%s) - start )) s"
 
@@ -823,6 +823,9 @@ jobs:
         cp -n kit-debian/blobs/* site/kits/blobs/
         cp kit-debian/debian-6.1-686-clang.json kit-debian/LICENSE.zlib site/kits/
         python3 site/gen-kit.py --index site/kits
+        # Its kernels.json members; "editable": the suites that pick "a
+        # Debian with an initramfs" for Debian's own kernel skip it.
+        printf '%s\n' '{"label": "Debian 6.1 686 from source, clang (editable)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728, "editable": true}' > site/kernels/debian-6.1-686-clang/meta.json
         # GitHub Pages: at most 100 MB per file, 1 GB per site.
         find site -type f -size +95M | sed 's/^/too large for GitHub Pages: /' | { ! /usr/bin/grep .; }
         du -sh site site/kits

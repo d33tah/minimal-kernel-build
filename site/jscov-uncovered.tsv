@@ -180,7 +180,6 @@ genimport.js	94	62f83410	E1 track: restoring kept files while an import's Worker
 genimport.js	155-156	6eb409f2	E1 track: indexing the picked C source failing in the Worker; no test tree makes it fail
 genimport.js	162	7c65e5eb	E1 track: an index result for a pick or import already replaced (race)
 genworker.js	86	53d4ff50	E1 track: a WASI tool (llvm-nm, llvm-objdump) exiting non-zero: only for a file they cannot read, which the import refuses earlier
-genworker.js	95	566a07df	E1 track: an import with more than 20,000 symbols and trim auto: only Debian-sized kernels, not imported in the coverage jobs
 genworker.js	113	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
 genworker.js	121-123	5fb84bcb	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
 genworker.js	154	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
@@ -206,7 +205,6 @@ kgen.js	50	0a435f61	an ELF that is not 32-bit little-endian: the import refuses 
 kgen.js	127	78821eac	an allocated section outside every PT_LOAD segment: not in the imported kernels
 kgen.js	138	aa70a5e5	llvm-nm lines without a size: llvm-nm -nS prints sizes for the imported kernels' symbols
 kgen.js	212-214	b0e4074e	llvm-objdump continuing a long encoding on its own line: only with raw bytes shown; the generators ask for --no-show-raw-insn in the page
-kgen.js	419	5fceaba1	a vmlinux without CFI: the imported test kernels have .debug_frame
 kgen.js	533-534	2306e7d5	the function table without instruction starts (objdump failed): see genworker.js 120
 kgen.js	553	c8b20a61	a type or partial unit: the imported kernels have only compile units
 kgen.js	628	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the callers check first
@@ -246,6 +244,7 @@ memmaplist.js	195	7dd65a6c	a key on the map before the segments exist: the map g
 quests.jsx	138	b4091e2d	the loader quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.jsx	141-142	f7488a69	sometimes: no loader parts at instruction 0 in the log when the quests look the first time: a step back or a restore to instruction 0 empties the log before the quests' half-second tick saw the parts (ran in a coverage job of run 43628096699, not in the quests suite, which always sees them after the boot)
 quests.jsx	172	3444ec90	sometimes: no 0x55 0xAA at 0xC0000 when the quests look: v86 copies its VGA BIOS there before the first instruction, so only a look while memory is empty (a reset or a restore under way) gets here (ran in run 43649993796, not in 43637144717)
+quests.jsx	216	2ece24a2	sometimes: the E820 quest answered right: ran in every run up to 44094339542, not in 44099591689 (its quests jobs passed; no quest code changed)
 quests.jsx	242	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.jsx	461	f86b4bd8	localStorage.setItem throwing (storage blocked or full) when the Quests panel is opened or closed: the quests suite's no-storage case does not open or close it; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 quests.jsx	481-482	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
@@ -328,14 +327,14 @@ source.js	549	616da6f3	an outline option without a line ("@address", opens its c
 srcedit.js	130	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
 edpatch.js	78-80	5f7242f3	unreachable: edDiff takes the common head off before edMiddle, so the middle's first lines differ and the backtrace never ends inside a snake at d = 0
 edpatch.js	113	8b2e458e	edFilePatch of equal texts: in the page its callers pass only stored edits, and edPut drops an edit equal to its base; site/test_srcedit.mjs (Node) calls it with equal texts
-srcedit.js	247	4f0af11e	edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
+srcedit.js	247	4f0af11e	sometimes: ran in run 44099591689 (kit job: rebuild_debian opens files while the rebuilt Debian's data files arrive): edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
 srcedit.js	288	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
 srcedit.js	345	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 srcedit.js	354	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
 srcedit.js	371	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
 srcedit.js	540	d861a51e	Download with no edits: the button is disabled while there are none
 srcedit.js	553	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	619	5601638c	the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+srcedit.js	619	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 v86patch.js	61	63341348	v86.wasm with no or several functions matching a step export's pattern: the shipped v86.wasm is pinned and built by the workflow, so each pattern matches once
 v86patch.js	66	25f3f9cf	v86.wasm without an export section: as line 74
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it

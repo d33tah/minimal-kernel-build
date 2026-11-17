@@ -85,7 +85,7 @@ cpustate.js	503	7902552f	a restored state without one of last_result, fpu_status
 cpustate.js	560	bab040fb	a v86.wasm without the gen-v86.sh export: the site ships only the patched build (gen-v86.sh --check in CI)
 cpustate.js	572	11100745	sometimes: a Restore while the stepper has JIT blocks pending: snapshots are restored while paused, after jitFlush ran at the pause, unless a Restore comes while the JIT's last slice is still being flushed (a timing race); ran in run 43602952211 only (of 43588908776, 43600287802, 43602952211, 43605289270)
 dbginfo.js	58-60	56014946	a kernels.json entry without dwarf: test_kernel_data.py requires every shipped kernel to have its DWARF data
-dbginfo.js	99	0104effd	a shard fetch that fails after another kernel was chosen (mine !== DBG): a race of a slow 404 with a kernel switch
+dbginfo.js	104	0104effd	a shard fetch that fails after another kernel was chosen (mine !== DBG): a race of a slow 404 with a kernel switch
 dbginfo.js	153	0104effd	a message from a Worker of an import that was replaced (mine !== DBG): the old Worker is terminated first, so only a message already queued can arrive; a race
 dbginfo.js	194	0104effd	a Worker error of an import that was replaced: same race as line 135
 dbginfo.js	224	0104effd	dbgRestore overtaken by another kernel or import while reading IndexedDB: a race

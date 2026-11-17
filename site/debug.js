@@ -57,6 +57,7 @@ import * as snapdiff from "./snapdiff.js";
 import * as replay from "./replay.js";
 import * as reverse from "./reverse.js";
 import * as bookmarks from "./bookmarks.js";
+import * as bminit from "./bminit.js";
 import * as clang from "./clang.js";
 import * as kit from "./kit.js";
 import * as genimport from "./genimport.js";
@@ -82,8 +83,8 @@ const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph,
 	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, asmnames,
 	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
 	memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist, quests, vars, varseval, vartasks,
-	varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse, bookmarks, clang, kit,
-	genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips,
+	varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay, reverse, bookmarks, bminit, clang,
+	kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips,
 	kernel, page ];
 
 function exposeMKB(app) {

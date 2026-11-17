@@ -29,7 +29,7 @@ import { setupVars } from "./vars.js";
 import { initSnapshots } from "./snapshots.js";
 import { initReplay } from "./replay.js";
 import { initReverse } from "./reverse.js";
-import { initBookmarks } from "./bookmarks.js";
+import { initBookmarks } from "./bminit.js";
 import { initRebuild } from "./rebuild.jsx";
 import { showHeader, setStatus } from "./header.js";
 import { setAutoscan, scan } from "./scan.js";

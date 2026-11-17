@@ -608,13 +608,15 @@ jobs:
         ls -l "$t/vmlinux" "$g/vmlinux"
         start=$(date +%s)
         python3 site/gen-kit.py --name debian-6.1-686-clang --tree "$t" --out kits-debian --kbuild --touch-objects \
+          --no-touch arch/x86/entry/vdso/vdso32 --no-touch arch/x86/realmode/rm \
           --sources-list "$RUNNER_TEMP/srclist.txt" --path-tool grep --path-tool kgzip --module kgzip="$k/kgzip.wasm" \
           --tool scripts/kallsyms="$m/kallsyms.wasm" --tool scripts/sorttable="$m/sorttable.wasm" --tool-input scripts/sorttable=System.map \
           --tool arch/x86/tools/relocs="$m/relocs.wasm" --tool arch/x86/boot/tools/build="$m/build.wasm" \
           --tool arch/x86/boot/compressed/mkpiggy="$m/mkpiggy.wasm" \
           --module scripts/recordmcount="$m/recordmcount.wasm" "--recordmcount=-pg -mfentry" --unstripped "$g/unstripped.json" \
           --product vmlinux --product arch/x86/boot/bzImage --shipped arch/x86/boot/bzImage="$t/arch/x86/boot/bzImage" \
-          -- "$PWD/site/gen-debian-clang.sh" --make "$t" | cut -c1-400
+          -- "$PWD/site/gen-debian-clang.sh" --make "$t" > "$g/kit.log" 2>&1 || { tail -40 "$g/kit.log"; exit 1; }
+        cut -c1-400 "$g/kit.log" | head -80
         echo "kit capture: $(( $(date +%s) - start )) s"
         cp "$t/arch/x86/boot/bzImage" out-kernel/debian-6.1-686-clang/bzImage
         cp "$k/LICENSE.zlib" kits-debian/

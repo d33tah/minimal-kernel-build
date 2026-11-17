@@ -69,6 +69,8 @@ Options:
   --path-tool NAME          one more PATH tool to wrap: grep (run by the
                             page, as sed), or a host tool with --module
                             NAME=WASM (kgzip)
+  --no-touch DIR            --touch-objects leaves the objects under DIR (an
+                            image another object embeds: the vDSO, realmode)
   --tool-input PATH=FILE    the --tool PATH also reads FILE (sorttable reads
                             System.map through its popen of grep)
   --recordmcount FLAGS      kbuild's cmd_record_mcount: a C object whose
@@ -280,10 +282,16 @@ def capture(a, tree, make):
             # Not a host program's objects (kbuild: compiled without
             # -D__KERNEL__): make would link the program again over its
             # wrapper (Debian's arch/x86/tools/relocs).
+            # Not under --no-touch: objects linked into an image another
+            # object embeds (the vDSO's: vdso-image-32.c; realmode.bin):
+            # touched, kbuild compiles that object of vmlinux.a again (with
+            # its debug sections, after --strip) and the products change
+            # (CI run 44087378995).
             cmds = kbuild_objects(tree) if a.kbuild else {}
             for o in tree.rglob("*.o"):
-                c = cmds.get(str(o.relative_to(tree)))
-                if c is None or "-D__KERNEL__" in c[0]:
+                r = str(o.relative_to(tree))
+                c = cmds.get(r)
+                if (c is None or "-D__KERNEL__" in c[0]) and not any(r.startswith(d.rstrip("/") + "/") for d in a.no_touch):
                     os.utime(o, (now, now))
             time.sleep(1.1)
         for f in a.clean:
@@ -735,6 +743,7 @@ def main():
     ap.add_argument("--path-tool", action="append", default=[])
     ap.add_argument("--recordmcount")
     ap.add_argument("--tool-input", action="append", default=[])
+    ap.add_argument("--no-touch", action="append", default=[])
     ap.add_argument("--unstripped")
     ap.add_argument("--log", help="keep the wrappers' records (JSON lines) here")
     ap.add_argument("make", nargs=argparse.REMAINDER)

@@ -25,7 +25,7 @@ the files the page loads for:
                   functions, together as many as index.json says
                   (fnfacts.js)
   task names      current_task and struct task_struct with comm and pid
-                  in types.json (vars.js varsTaskLayout); a kernel
+                  in types.json (vartasks.js varsTaskLayout); a kernel
                   listed in NO_TASKS must have neither, so the page's
                   "not known" is the truth there
 Fails on any missing or empty file, listing all of them.

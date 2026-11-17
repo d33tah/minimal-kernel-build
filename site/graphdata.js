@@ -7,7 +7,7 @@ import { runState } from "./page.js";
 import { frStartAt, frEndAt, frSmallAt } from "./frames.js";
 import { STEP_CONST } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes } from "./dbginfo.js";
-import { varsTasks } from "./vars.js";
+import { varsTasks } from "./vartasks.js";
 
 // Private consts (the layout loops read them per frame; see stepper.js).
 const { FR_SIZE, FR_IRQ, FR_CONT } = STEP_CONST;
@@ -164,7 +164,7 @@ function buildTree(st) {
 
 
 // Per task { name, how, comm?, pid?, va? }: "comm (pid N)" from its
-// task_struct where vars.js varsTasks can read it, else a guess (taskGuesses).
+// task_struct where vartasks.js varsTasks can read it, else a guess (taskGuesses).
 function taskInfo(st) {
 	const types = dbgHas() ? dbgTypes().state : "none";
 	const key = st.fr.n + ":" + st.steps + ":" + st.taskCount + ":" + types + ":" + runState;

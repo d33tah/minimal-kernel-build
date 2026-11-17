@@ -13,7 +13,8 @@ import { jumpsFor, jumpInlineMax, jumpHit, jumpPaths, jumpInlineHtml, jumpStubAt
 import { srcLineHtml } from "./source.js";
 import { liveDecode, liveInsnsForPage, icedError, loadIced, iced } from "./livedis.js";
 import { ffBreaks } from "./fastforward.js";
-import { opEnv, varTypeOf, insnHtml } from "./vars.js";
+import { opEnv, insnHtml } from "./varops.js";
+import { varTypeOf } from "./vars.js";
 import { fnLabelOf } from "./fnfacts.js";
 import { pageSnapView, pageSnapBanner } from "./snapshots.js";
 import { bmCodeStar, bmFnStar } from "./bookmarks.js";

@@ -3,7 +3,7 @@
 // Names for the memory operands of x86 instructions, from the DWARF.
 //
 // One file for the page (every listing: the Page tab's merged hex + asm,
-// the Debugger; vars.js opNamesHtml) and for site/gen-dwarf.js --operands
+// the Debugger; varops.js opNamesHtml) and for site/gen-dwarf.js --operands
 // (test_dwarf.py --operands checks it against gdb and llvm-dwarfdump), like
 // dwarf.js and unwind.js.
 //

@@ -15,7 +15,7 @@ import { graphReset } from "./graph.js";
 import { initrdNote } from "./symimport.js";
 import { setFfActive, ffEnabled, ffTarget, jitDetInstall, fastForward, ffAbort, ffInfo } from "./fastforward.js";
 import { MEV } from "./memevents.js";
-import { varsTaskNow } from "./vars.js";
+import { varsTaskNow } from "./vartasks.js";
 import { setPageSnapView, setSnapDiff, renderSnapDiff, renderSnapshots } from "./snapshots.js";
 import { inputBoot, replayActive } from "./replay.js";
 import { ram, checkImage, setStatus, kernelEnd } from "./header.js";

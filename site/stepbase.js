@@ -118,7 +118,7 @@ class StepperBase {
 		this.taskCount = 1;
 		this.taskRegion = [-1]; // task -> the stack region it switched away on (or started on)
 		// task -> what onTaskLeave(task, step, dead) said as it last switched
-		// away (the page sets it: vars.js varsTaskNow reads the leaving task's
+		// away (the page sets it: vartasks.js varsTaskNow reads the leaving task's
 		// task_struct, its name and pid, through current_task).
 		this.taskSeen = [];
 		this.contFrames = 0;

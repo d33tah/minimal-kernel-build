@@ -40,6 +40,10 @@ import * as memevents from "./memevents.js";
 import * as memmap from "./memmap.js";
 import * as quests from "./quests.jsx";
 import * as vars from "./vars.js";
+import * as varseval from "./varseval.js";
+import * as vartasks from "./vartasks.js";
+import * as varlocals from "./varlocals.js";
+import * as varops from "./varops.js";
 import * as fnfacts from "./fnfacts.js";
 import * as settings from "./settings.jsx";
 import * as snapshots from "./snapshots.js";
@@ -70,8 +74,9 @@ import * as page from "./page.js";
 const MODULES = [util, clock, jumps, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout, calltree,
 	graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, asmnames,
 	dbginfo, source, srctext, srclinks, srcswitch, srcedit, coverage, symimport, livedis, fastforward, cpustate,
-	memevents, memmap, quests, vars, fnfacts, settings, snapshots, replay, reverse, bookmarks, clang, kit, genimport,
-	rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav, symview, run, runto, boot, tips, kernel, page ];
+	memevents, memmap, quests, vars, varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, replay,
+	reverse, bookmarks, clang, kit, genimport, rebuild, pwa, header, scan, memview, listing, debugui, tabs, nav,
+	symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {
 	const mkb = {};

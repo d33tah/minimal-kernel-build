@@ -4885,7 +4885,7 @@ def opnames_vs_gdb(elf, dump, lines, problems, r, tag):
 
 def operands_case(browser, base, shots, name, fn, off, want):
     """Memory operands in the listings are named from the DWARF by one
-    helper (asmnames.js through vars.js opNamesHtml) in the Debugger and
+    helper (asmnames.js through varops.js opNamesHtml) in the Debugger and
     the Page tab's merged hex + asm listing: at a pause on an instruction
     that uses a stack slot, that operand names the parameter or local
     (at its address in this pause), absolute addresses name the variable

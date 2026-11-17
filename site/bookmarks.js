@@ -24,7 +24,7 @@
 import { realNow } from "./clock.js";
 import { hex, PAGE, num, $, escHtml } from "./util.js";
 import { image, symbols, pageClass, stepper, emulator, runState, tab, selectedPage, grid, kernels, emuReady,
-	emuRam, vmHasKeys, api, provide } from "./page.js";
+	emuRam, vmHasKeys, api, state, provide } from "./page.js";
 import { jumpHit, setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { graphNodeAt, selectedNode, download, G, graphTick } from "./graph.js";
 import { asmTargetName } from "./asmnames.js";
@@ -916,6 +916,11 @@ function initBookmarks() {
 	});
 	window.addEventListener("resize", bmMenuFit);
 	setInterval(bmPendingTick, 300);
+	// The groups (this kernel's, another's) follow the loaded kernel: drawn
+	// again when it changes, and once more when its identity (bmKey, a
+	// SHA-256) is known. The Memory grid's stars asked for that identity
+	// too, but the grid is drawn only when its tab is shown.
+	state.subscribe(bmRender, ["image"]);
 	bmRender();
 }
 

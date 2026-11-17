@@ -2,7 +2,7 @@
 """Fail when a colour or mark of the page is missing from the About tab's legend.
 
 Operator 2026-11-09: "why is Code at EIP sometimes yellow? a legend in the
-About tab would help". The legend (about.jsx, inside id="about_legend")
+About tab would help". The legend (markup/about.jsx, inside id="about_legend")
 shows a sample of every colour and mark, drawn with the classes the
 listings, the Debugger, the Source panel, the Coverage tab and the warnings
 use. This check keeps it complete: every class that style.css gives a
@@ -155,9 +155,9 @@ class Legend(html.parser.HTMLParser):
 
 
 def legend_markup():
-    """The About tab's markup as HTML: about.jsx (R3) with className as
+    """The About tab's markup as HTML: markup/about.jsx (R3) with className as
     class and its style objects left out (they carry no class)."""
-    jsx = (site / "about.jsx").read_text()
+    jsx = (site / "markup" / "about.jsx").read_text()
     jsx = re.sub(r"\s[\w-]+=\{\{[^{}]*\}\}", "", jsx)
     return jsx.replace("className=", "class=")
 
@@ -170,7 +170,7 @@ def main():
     lg = Legend()
     lg.feed(html_text)
     if not lg.found:
-        sys.exit('check-legend: about.jsx has no element with id="about_legend" (the About tab\'s legend)')
+        sys.exit('check-legend: markup/about.jsx has no element with id="about_legend" (the About tab\'s legend)')
     cls = colour_classes(css)
     for c in sorted(cls):
         if c in CHROME or c in lg.classes:

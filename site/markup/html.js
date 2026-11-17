@@ -1,14 +1,14 @@
 // A JSX runtime that writes HTML (R3): the tabs' static markup is written
-// in JSX (pagepanel.jsx, about.jsx, ...: a file with the pragmas
-// `@jsxRuntime classic`, `@jsx h`, `@jsxFrag Fragment`), and h() turns it
-// into an HTML string that shell.jsx puts into its element at once
-// (innerHTML: the browser's parser, as when the markup was in index.html).
-// React would build the same elements one by one at every page load, about
-// 20 ms for the tabs' markup, on the way to the boot; React stays for the
-// views that change (tabs.jsx, settings.jsx, quests.jsx, events.jsx,
-// rebuild.jsx). The props are React's names (className, htmlFor,
-// defaultValue, style objects), so a static file can become a React
-// component unchanged.
+// in JSX (markup/pagepanel.jsx, markup/about.jsx, ...: a file with the
+// pragmas `@jsxRuntime classic`, `@jsx h`, `@jsxFrag Fragment`), and h()
+// turns it into an HTML string. build.mjs runs it at build time and writes
+// the strings into index.html (from index.src.html, markup/static.js
+// names the elements), so the browser parses and lays out the tabs while
+// the bundle downloads, as before R3; the page does not load these files.
+// React stays for the views that change (tabs.jsx, settings.jsx,
+// quests.jsx, events.jsx, rebuild.jsx). The props are React's names
+// (className, htmlFor, defaultValue, style objects), so a static file can
+// become a React component unchanged.
 
 const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
 const NAMES = { className: "class", htmlFor: "for", tabIndex: "tabindex", readOnly: "readonly", maxLength: "maxlength",
@@ -61,9 +61,4 @@ function h(tag, props, ...children) {
 	return { html: open + inner + "</" + tag + ">" };
 }
 
-// Put a static component's HTML into an element (shell.jsx).
-function mountHtml(el, node) {
-	el.innerHTML = node.html;
-}
-
-export { h, Fragment, mountHtml };
+export { h, Fragment };

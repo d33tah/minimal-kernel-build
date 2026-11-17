@@ -12,6 +12,8 @@
 /test-screenshots/
 __pycache__/
 node_modules/
-# build.mjs: the page's bundle and its source map
+# build.mjs: the page's bundle, its source map and the page (index.src.html
+# with the tabs' markup)
 /app.bundle.js
 /app.bundle.js.map
+/index.html

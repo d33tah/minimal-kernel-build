@@ -4,9 +4,9 @@
 # line not listed, a listed line that ran, a row whose code moved or changed,
 # a TODO row. After editing a site script: node site/jscov/relist.js.
 # How to keep it true: site/README.md, "The list of lines the tests do not run".
-memview.js	226	83bf5403	drawGrid's guard for a grid drawn while the RAM size and the page classes disagree: drawMaps and boot recompute the classes before they draw; only a draw from a timer in the moment between Boot with another RAM size and its recompute could hit it (a race that cannot be forced)
-memview.js	399	f5d25b04	the ESP tag when ESP is not mapped (paging on, ESP in an unmapped page): no shipped kernel runs with an unmapped stack
-memview.js	475	faf6d6d0	pageAt's guard for a column or row outside the grid: mouse events inside the canvas always give a column and row in range (the canvas is exactly cols x cell wide); it guards the border pixel only
+memview.js	238	83bf5403	drawGrid's guard for a grid drawn while the RAM size and the page classes disagree: drawMaps and boot recompute the classes before they draw; only a draw from a timer in the moment between Boot with another RAM size and its recompute could hit it (a race that cannot be forced)
+memview.js	411	f5d25b04	the ESP tag when ESP is not mapped (paging on, ESP in an unmapped page): no shipped kernel runs with an unmapped stack
+memview.js	490	faf6d6d0	pageAt's guard for a column or row outside the grid: mouse events inside the canvas always give a column and row in range (the canvas is exactly cols x cell wide); it guards the border pixel only
 listing.js	70	2d431e36	needs a listing with instructions of a page below the kernel, or before the kernel entry, after a fast-forward; disasm.json has no instructions below the kernel and the fast-forward always runs to the entry before code is listed
 listing.js	405	32eddd6f	stubShift without disasm.json or with an empty one: it is only called for yellow lines, which only exist when disasm.json has instructions
 listing.js	440	3cb18174	diffTip's sameAt for an address past RAM: the shifted address is at most a page above a listed instruction, inside RAM for every shipped kernel and RAM size

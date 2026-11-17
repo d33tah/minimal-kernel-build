@@ -12,11 +12,13 @@ from pathlib import Path
 
 site = Path(__file__).resolve().parent
 # every page script that looks up elements, and the React components (R3),
-# whose markup (id="...") is part of the page like index.html's
-jsx = sorted(site.glob("*.jsx"))
+# whose markup (id="...") is part of the page like index.html's; the page is
+# index.src.html with the static markup of markup/*.jsx (build.mjs writes
+# index.html from them)
+jsx = sorted(site.glob("*.jsx")) + sorted(site.glob("markup/*.jsx"))
 js = "\n".join([(site / f).read_text() for f in ("app.js", "header.js", "scan.js", "memview.js", "listing.js", "debugui.js", "tabs.js", "nav.js", "symview.js", "run.js", "runto.js", "boot.js", "tips.js", "kernel.js", "graph.js", "source.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "vars.js", "dbginfo.js", "jumps.js", "pwa.js", "settings.js", "snapshots.js", "replay.js", "bookmarks.js", "srcedit.js", "memmap.js", "quests.js") if (site / f).exists()]
                 + [f.read_text() for f in jsx])
-html = (site / "index.html").read_text() + "\n".join(f.read_text() for f in jsx)
+html = (site / "index.src.html").read_text() + "\n".join(f.read_text() for f in jsx)
 ids = set(re.findall(r'\bid="([^"]+)"', html))
 # an id must be unique: $() finds the first one only, so a second element
 # with the same id never gets its content (the Coverage tab's notes once went

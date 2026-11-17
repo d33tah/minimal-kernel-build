@@ -107,7 +107,19 @@ function drawBar(el, regions, start, end) {
 	}
 }
 
+// The Memory tab's bars, legend and grid are drawn when the tab is shown
+// (the store's tabShows); while it is hidden only the page classes are
+// kept up to date (the scan and the listings read them). Drawing them at
+// load cost the boot ~20 ms (the first number formatting loads ICU).
+let mapsStale = false;
+
 function drawMaps() {
+	if (tab !== "memory") {
+		computePageClasses();
+		mapsStale = true;
+		return;
+	}
+	mapsStale = false;
 	const r = ram();
 	$("ram_label").textContent = kib(r);
 	const low = [];
@@ -458,9 +470,12 @@ function initLegend() {
 		}));
 	// The EIP's page in the map and the grid, drawn with the Debugger.
 	state.subscribe(renderMemEip, ["machine"]);
-	// The grid is drawn when the Memory tab is shown (showTab).
+	// The grid (and the bars, when they changed while the tab was hidden)
+	// is drawn when the Memory tab is shown (showTab).
 	state.subscribe(() => {
-		if (tab === "memory")
+		if (tab === "memory" && mapsStale)
+			drawMaps();
+		else if (tab === "memory")
 			drawGrid();
 	}, ["tabShows"]);
 }

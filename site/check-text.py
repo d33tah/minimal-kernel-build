@@ -24,10 +24,11 @@ STALE = [
 ]
 
 site = Path(__file__).resolve().parent
-# The page's own sources (the React components *.jsx too), not the bundle
-# build.mjs makes of them and React.
+# The page's own sources (the React components *.jsx and the static markup
+# of markup/ too), not the bundle and index.html build.mjs makes of them.
 files = (sorted(f for f in site.glob("*.js") if f.name != "app.bundle.js") + sorted(site.glob("*.jsx"))
-         + sorted(site.glob("*.html")) + sorted(site.glob("*.css")) + [site / "README.md"])
+         + sorted(site.glob("markup/*.js")) + sorted(site.glob("markup/*.jsx"))
+         + [site / "index.src.html"] + sorted(site.glob("*.css")) + [site / "README.md"])
 bad = []
 for f in files:
     for n, line in enumerate(f.read_text().splitlines(), 1):

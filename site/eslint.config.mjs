@@ -47,6 +47,19 @@ export default [
 		rules,
 	},
 	{
+		// The tabs' static markup (JSX through markup/html.js), which
+		// build.mjs runs at build time to write index.html.
+		files: ["markup/*.js", "markup/*.jsx"],
+		languageOptions: {
+			sourceType: "module",
+			ecmaVersion: 2024,
+			parserOptions: { ecmaFeatures: { jsx: true } },
+		},
+		plugins: { import: importPlugin },
+		settings: { "import/resolver": { node: { extensions: [".js", ".jsx", ".mjs"] } } },
+		rules,
+	},
+	{
 		// React's rules of hooks and the React Compiler's checks of
 		// components (pure render, refs, effects), on the files that hold
 		// components and hooks (kernel.js's useImage is no hook).

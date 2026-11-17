@@ -15,16 +15,23 @@ and `app.bundle.js`: `app.js` with every module it imports (but
 `clock.js`, which the bundle imports by its URL: one module, run once),
 the React components (`*.jsx`) and React, bundled by `build.mjs`.
 
-    cd site && npm ci && node build.mjs   # app.bundle.js and app.bundle.js.map
+    cd site && npm ci && node build.mjs   # app.bundle.js, app.bundle.js.map, index.html
 
 `build.mjs` runs esbuild (version pinned in `package-lock.json`, like
-React) with nothing minified, renamed or lowered: the bundle is the
-modules' own code in import order, with a source map naming the file and
-line of every piece. (Minifying its whitespace saved ~30 ms of the boot
-but moved MCR's branch counts: 86 -> 83%, more branches found through the
-map; tried and reverted in R3.) The same sources give the same bytes; the site job
+React) with the page's own code not minified, renamed or lowered: the
+bundle is the modules' own code in import order, with a source map naming
+the file and line of every piece. (Minifying its whitespace saved ~30 ms
+of the boot but moved MCR's branch counts: 86 -> 83%, more branches found
+through the map; tried and reverted in R3.) React's files are minified
+before they go in (`minifyDeps`): React 19 ships its production code
+unminified (react-dom-client 542 kB), and V8 parses that module function
+on the main thread when the bundle first requires it, ~30 ms of every
+load; jscov leaves React's files out, so its numbers do not move.
+`build.mjs` also writes `index.html`: `index.src.html` (the page's
+skeleton, edited by hand) with the tabs' static markup (`markup/`, below)
+put into its empty elements. The same sources give the same bytes; the site job
 checks that (`node build.mjs --check` builds again in memory and compares)
-before it stamps and deploys the bundle. The coverage report (jscov)
+before it stamps and deploys the bundle and the page. The coverage report (jscov)
 follows the source map, so its lines and the list of lines the tests do
 not run are those of the source files, not of the bundle. The Workers load
 their modules themselves, unbundled. A module imports only from
@@ -35,8 +42,7 @@ modules below it, in this order, so there is no import cycle:
     symimport livedis vars srcedit fnfacts genimport graph rebuild
     memmap quests events replay reverse snapshots bookmarks coverage pwa | header
     scan memview listing debugui tabs settings nav symview run runto boot
-    tips kernel | html about snapshotspanel pagepanel memorypanel debuggerpanel
-    sourcepanel sourceaside callspanel machinepanel runbadge | debug shell app
+    tips kernel | debug shell app
 
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
@@ -53,7 +59,11 @@ modules below it, in this order, so there is no import cycle:
   Debugger's controls), `boot.js`, `tips.js` (popovers), `kernel.js`
   (loading a kernel and its symbols.json and disasm.json). `app.js` is
   the entry: `init()` wires the page's controls and loads the first
-  kernel. A call to a module above the caller goes through the page API
+  kernel. (It sets itself up before it waits for kernels.json: the page's
+  load event comes after the controls exist, which the tests rely on. R3
+  tried waiting for kernels.json first and fetching the kernel during
+  the setup: ~20 ms earlier to the BIOS on d-claude, but the controls came
+  after the load event.) A call to a module above the caller goes through the page API
   (`api.show.jumpTo`); state that a module below its owner reads or
   changes (the count, Run to, the scan's pages) is in `page.js`'s store.
 - `debug.js`: `window.MKB`, the page's one global of its own. The tests
@@ -156,40 +166,50 @@ entries throw, and that every entry is provided after a boot;
 The views move to React components (R3), one at a time; a component file
 is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `shell.jsx` says which component takes over which element of
-`index.html` (the element stays there, empty: `#tabrow`, `#panel_settings`);
-`app.js` mounts it first thing in `init()`, synchronously (`flushSync`),
-so the controls exist before the modules that are not components yet look
-them up. Mounted so far: the tab bar (`TabBar`, tabs.jsx), the Settings
-tab (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
-quests.jsx), the Events tab (`EventsPanel`, events.jsx) and the Source
-tab's Rebuild and boot box with its build log (`RebuildPanel`,
-rebuild.jsx, in `#rb_box`; the build log's `<pre>` is written line by
-line as the build runs, from a ref, not drawn by React per line), and
-the About tab (`AboutPanel`, about.jsx; `check-legend.py` reads the
-legend's samples there).
+`index.html` (the element is there, empty: `#tabrow`, `#panel_settings`);
+`app.js` mounts it in `init()`, synchronously (`flushSync`), so the
+controls exist before the modules that are not components yet look them
+up. Mounted: the tab bar (`TabBar`, tabs.jsx) and the Source tab's Rebuild
+and boot box with its build log (`RebuildPanel`, rebuild.jsx, in
+`#rb_box`; the build log's `<pre>` is written line by line as the build
+runs, from a ref, not drawn by React per line) at once; the Settings tab
+(`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
+quests.jsx) and the Events tab (`EventsPanel`, events.jsx) when the
+store's `tab` first names them (`mountOnTab`): hidden at load, their first
+render is work the boot does not need (their controllers, `QUESTS` and
+`MEV`, run from the start; the panel shows their state when it mounts).
 
 A tab whose views draw themselves into elements by id (tables, listings,
-canvases) is a component of its markup, written in JSX: Machine
-(machinepanel.jsx), Memory (memorypanel.jsx), Page (pagepanel.jsx),
-Debugger (debuggerpanel.jsx), Calls (callspanel.jsx), Source
-(sourcepanel.jsx), Snapshots (snapshotspanel.jsx), About (about.jsx), the
+canvases) is a component of its markup, written in JSX, in `markup/`:
+Machine (machinepanel.jsx), Memory (memorypanel.jsx), Page
+(pagepanel.jsx), Debugger (debuggerpanel.jsx), Calls (callspanel.jsx),
+Source (sourcepanel.jsx), Snapshots (snapshotspanel.jsx), About
+(about.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first
-lines (`@jsxRuntime classic`, `@jsx h`): `html.js`, whose `h()` makes
-HTML, and `shell.jsx` puts each into its element with innerHTML, before
-the React components mount. The modules draw into those elements as
-before; nothing renders them again. React built the same elements one by
-one at every load, about 20 ms of the way to the boot (measured, R3);
-the props are React's (className, htmlFor, defaultValue, style objects),
-so such a file becomes a React component by dropping its pragmas. The
-interactive parts inside them are React: the Source tab's Rebuild and
-boot box (`#rb_box`) and the Source panel's Rebuild button
-(`RebuildPanelButton`, in `#rb_go_slot`, a `display: contents` span).
+lines (`@jsxRuntime classic`, `@jsx h`): `markup/html.js`, whose `h()`
+makes HTML. `build.mjs` runs them at build time (`markup/static.js` maps
+element ids to components) and writes their HTML into `index.html`, so
+the browser parses and lays out the tabs while the bundle downloads, as
+before R3; the page does not load these files, and jscov does not report
+them. The modules draw into those elements as before; nothing renders
+them again. (React built the same elements one by one at every load,
+about 20 ms of the way to the boot; put in with innerHTML by the bundle
+they still cost their layout after the bundle ran, measured in R3.) The
+props are React's (className, htmlFor, defaultValue, style objects), so
+such a file becomes a React component by dropping its pragmas and moving
+it out of `markup/`. The interactive parts inside them are React: the
+Source tab's Rebuild and boot box (`#rb_box`) and the Source panel's
+Rebuild button (`RebuildPanelButton`, in `#rb_go_slot`, a `display:
+contents` span).
 
 A view that draws when its tab is shown subscribes to the store's
 `tabShows` (`markTabShown()`, which `showTab` calls each time, also for
 the tab already shown: the Page tab draws again for another page):
-listing.js's listing, memview.js's grid, memmap.js's place of the live
+listing.js's listing, memview.js's grid (and its bars and legend:
+`drawMaps` keeps only the page classes up to date while the Memory tab is
+hidden, R3; its first number formatting alone cost the boot ~15 ms),
+memmap.js's place of the live
 map (the Quests tab or the Memory tab), debugui.js's Code at EIP,
 graph.js's drawing (started and stopped), coverage.js's tree. Quests and
 Events follow `tab`. `showTab` only sets state (and shows the panel, the

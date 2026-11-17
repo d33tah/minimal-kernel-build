@@ -14510,10 +14510,13 @@ def tabs_case(browser, base, shots, linux=False):
     for i in TABS_RUN_IDS:
         if where.get(i) != "panel_machine":
             problems.append(f"#{i} is in {where.get(i)}, want the Machine tab")
+    # The Settings tab is mounted when first shown (shell.jsx).
+    show_tab(page, "settings")
     for i in TABS_SETTINGS_IDS:
         w = tabs_where(page, [i])[i]
         if w != "panel_settings":
             problems.append(f"#{i} is in {w}, want the Settings tab")
+    show_tab(page, "machine")
     heads = page.evaluate("[...document.querySelectorAll('#panel_machine h2, #panel_machine h3, #panel_machine legend')]"
                           ".map((e) => e.textContent.trim())")
     if any("Settings" in h for h in heads) or page.locator("#panel_machine input[type=checkbox]:not(#count)").count():
@@ -14660,7 +14663,8 @@ def tabs_case(browser, base, shots, linux=False):
         look = tabs_look(page)
         rows = len({t["top"] for t in look})
         r[f"rows_390_{scheme}"] = rows
-        compact = page.locator("#compact_tabs").count() and page.is_checked("#compact_tabs")
+        # The store's value: the Settings tab (its checkbox) is mounted when first shown.
+        compact = page.evaluate("MKB.compactTabs") is True
         if not compact or rows != 1:
             problems.append(f"390 px {scheme}: compact {compact}, tab bar rows {rows} (want compact by default, one row)")
         page.screenshot(path=str(shots / f"tabs-390-{scheme}.png"))
@@ -14676,6 +14680,8 @@ def tabs_case(browser, base, shots, linux=False):
                     page.screenshot(path=str(shots / f"tabs-390-{scheme}-{t}.png"), full_page=True)
         if page.locator("#compact_tabs").count():
             page.tap("#tab_settings" if page.locator("#tab_settings").count() else "#tab_machine")
+            if not page.is_checked("#compact_tabs"):
+                problems.append(f"390 px {scheme}: the Settings tab's Compact tabs is not ticked")
             page.uncheck("#compact_tabs")
             time.sleep(0.3)
             r[f"rows_390_words_{scheme}"] = len({t["top"] for t in tabs_look(page)})
@@ -23332,16 +23338,19 @@ def suite_quests(ctx):
 # with a contrast of 4.5 or more (WCAG AA) in light and dark; quest cards
 # say their state in words, at full opacity. At 390 px the eleven emoji
 # share one row, the table's rows become cards, no horizontal scroll.
+# The Events and Quests tabs are mounted when first shown (shell.jsx): their
+# text is null until then.
 MT_LOOK_JS = """() => { const shown = document.querySelector('.tabbar [role=tab][aria-selected=true]');
   const rows = [...document.querySelectorAll('#mev_rows tr')];
+  const text = (id) => { const e = document.getElementById(id); return e ? e.textContent : null; };
   return { tab: shown && shown.dataset.tab, hash: location.hash, on: MKB.MEV.on, n: MKB.MEV.n, gen: MKB.MEV.gen, quests: MKB.QUESTS.open,
-    status: document.getElementById('mev_status').textContent, record: document.getElementById('mev_on').checked,
+    status: text('mev_status'), record: document.getElementById('mev_on') ? document.getElementById('mev_on').checked : null,
     heads: [...document.querySelectorAll('#mev_table thead th')].map((t) => t.textContent.trim()),
     rows: rows.map((tr) => ({ n: Number(tr.dataset.n || 0), cells: Object.fromEntries([...tr.cells].map((td) => [td.dataset.col, td.textContent.trim()])) })),
     regions: document.querySelectorAll('#mev_regions tr').length, facts: document.querySelectorAll('#mev_facts li').length,
     regionOptions: [...document.querySelectorAll('#mev_regionf button')].map((o) => o.textContent),
     mapIn: (document.getElementById('mm').closest('[role=tabpanel]') || {}).id,
-    progress: document.getElementById('qs_progress').textContent, badge: document.getElementById('qs_badge').textContent,
+    progress: text('qs_progress'), badge: text('qs_badge'),
     hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }"""
 # Font size and contrast (WCAG 2 relative luminance) of each element with
 # text of its own under sel, against the first opaque background above it;

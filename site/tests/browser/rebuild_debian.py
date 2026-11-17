@@ -29,9 +29,9 @@ from tests.browser.rebuild_linux import rbl_compiled, rbl_open, rbl_users
 #      files of the rebuilt kernel are made in this browser and run_init_process's
 #      DWARF lines are the edited file's (its DWARF covers the compiled units
 #      only, so the Source tab then lists their files: recorded);
-#   2. Back to the shipped kernel, a header edit: the objects that include
+#   2. Back to the shipped kernel, Pause, a header edit: the objects that include
 #      it and init/main.o (still edited) are compiled, no other;
-#   3. Back again, everything reverted, Rebuild and boot: no object
+#   3. Back again, Pause, everything reverted, Rebuild and boot: no object
 #      compiled, the bzImage and vmlinux are CI's bytes and the bzImage is
 #      the page's.
 # Screenshots (light and dark) after the boot of the edit and of the source.
@@ -63,7 +63,7 @@ def build(page, sel, msg, timeout=900):
     st = rb_state(page)
     s_end = round(time.monotonic() - t0, 1)
     if st["state"] == "done" and msg:
-        wait_for(lambda: page.evaluate("rbScr.at") is not None, 600, 0.2)
+        wait_for(lambda: page.evaluate("rbScr.at") is not None, 1200, 0.2)
     at = page.evaluate("clearInterval(rbScrTimer), rbScr.at")
     return st, s_end, at and round(at, 1)
 
@@ -90,7 +90,7 @@ def run(browser, base, shots, tmp, problems, r):
     t0 = time.monotonic()
     page.goto(f"{base}/index.html?kernel={NAME}&speed=full")
     srcedit_ready(page, NAME)
-    if not wait_for(lambda: PROMPT in screen(page), 900, 1):
+    if not wait_for(lambda: PROMPT in screen(page), 1500, 1):
         problems.append(f"the shipped {NAME} did not reach {PROMPT}: {screen(page)[-400:]!r}")
     r["shipped boot s"] = round(time.monotonic() - t0, 1)
     if not wait_for(lambda: rb_state(page)["go"], 120):
@@ -118,7 +118,7 @@ def run(browser, base, shots, tmp, problems, r):
             problems.append(f"the status after the rebuild lacks {w!r}: {st['status']!r}")
     if compiled != sorted(users[FILE]):
         problems.append(f"compiled {compiled}, the kit's users of {FILE} are {users[FILE]}")
-    if s_screen is None or not wait_for(lambda: (lambda t: SHOWN in t and PROMPT in t[t.find(SHOWN):])(screen(page)), 600, 1):
+    if s_screen is None or not wait_for(lambda: (lambda t: SHOWN in t and PROMPT in t[t.find(SHOWN):])(screen(page)), 1200, 1):
         problems.append(f"the rebuilt kernel's screen: {screen(page)[-600:]!r}")
     rb_shots(page, shots, "rebuild-debian-1280-machine", problems, "Machine tab")
     page.emulate_media(color_scheme="light")
@@ -160,28 +160,26 @@ def run(browser, base, shots, tmp, problems, r):
         f'#cov_tree .covrow[data-kind="file"][data-path="{header}"]').count() > 0, 10)}
     page.fill("#cov_filter", "")
 
-    # 2. Back to the shipped kernel (its file list), a header edit: its
+    # 2. Back to the shipped kernel (its file list), paused as a user would
+    # before a build (the VM at full speed in the same tab made the builds
+    # 10x slower on CI's 2 cores: run 44094339542), a header edit: its
     # users and init/main.c's (still edited) are compiled, no other.
-    show_tab(page, "source")
-    rb_press(page, "#rb_back", False)
-    wait_for(lambda: rb_state(page)["kernel"] == NAME, 60)
+    back_paused(page, r, "back 1")
     if not rbl_open(page, header, False):
         problems.append(f"Edit did not open {header}")
     else:
         page.locator("#ed_text").fill(horig + HEADER_ADD)
         wait_for(lambda: "saved" in srcedit_state(page)["state"], 10)
-        st, s_end, s_screen = build(page, "#rb_go_panel", SHOWN)
+        st, s_end, _ = build(page, "#rb_go_panel", "")
         compiled = rbl_compiled(st["seen"])
         want_objs = sorted(set(users[header]) | set(users[FILE]))
-        r["header"] = {"status": st["status"], "compiled": compiled, "kit users": want_objs, "s to the line on the screen": s_screen,
-                       "s to the build's end": s_end}
+        r["header"] = {"status": st["status"], "compiled": compiled, "kit users": want_objs, "s to the build's end": s_end}
         if st["state"] != "done" or sorted(compiled) != want_objs or f"{len(want_objs)} objects compiled" not in st["status"]:
             problems.append(f"the header edit: {st['state']} {st['status']!r}, compiled {compiled}, the kit's users {want_objs}")
 
-    # 3. Back to the shipped kernel, Revert all, Rebuild and boot: CI's bytes.
-    show_tab(page, "source")
-    rb_press(page, "#rb_back", False)
-    wait_for(lambda: rb_state(page)["kernel"] == NAME, 60)
+    # 3. Back to the shipped kernel, paused, Revert all, Rebuild and boot:
+    # CI's bytes (the shipped kernel's boot to the prompt is step 0's).
+    back_paused(page, r, "back 2")
     show_tab(page, "source")
     rb_press(page, "#ed_revert_all", False)
     rb_press(page, "#ed_revert_all", False)
@@ -198,13 +196,23 @@ def run(browser, base, shots, tmp, problems, r):
                             "the page's bzImage": img == rb_shipped_image(base, entry)}
     if not all(r["unchanged bytes"].values()):
         problems.append(f"the unchanged rebuild is not CI's: {r['unchanged bytes']}")
-    if not wait_for(lambda: PROMPT in screen(page) and SHOWN not in screen(page), 600, 1):
-        problems.append(f"the unchanged rebuild's screen: {screen(page)[-400:]!r}")
     rb_shots(page, shots, "rebuild-debian-1280-source", problems, "Source tab")
     if errors:
         problems.append(f"page errors: {errors[:3]}")
     ctx.close()
     return
+
+
+def back_paused(page, r, key):
+    """Back to the shipped kernel, then Pause (Debugger tab) once it runs."""
+    show_tab(page, "source")
+    rb_press(page, "#rb_back", False)
+    wait_for(lambda: rb_state(page)["kernel"] == NAME, 60)
+    show_tab(page, "debugger")
+    wait_for(lambda: page.is_enabled("#dbg_pause"), 120, 0.2)
+    if page.is_enabled("#dbg_pause"):
+        page.click("#dbg_pause")
+    r[key] = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30, 0.2)
 
 
 def suite_rebuild_debian(ctx):

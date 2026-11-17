@@ -204,11 +204,11 @@ def run(browser, base, shots, tmp, problems, r):
 
 
 def back_paused(page, r, key):
-    """Back to the shipped kernel, then Pause (Debugger tab) once it runs."""
+    """Back to the shipped kernel, then Pause (Machine tab) once it runs."""
     show_tab(page, "source")
     rb_press(page, "#rb_back", False)
     wait_for(lambda: rb_state(page)["kernel"] == NAME, 60)
-    show_tab(page, "debugger")
+    show_tab(page, "machine")
     wait_for(lambda: page.is_enabled("#dbg_pause"), 120, 0.2)
     if page.is_enabled("#dbg_pause"):
         page.click("#dbg_pause")

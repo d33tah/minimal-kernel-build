@@ -22792,8 +22792,38 @@ def mm_speed_case(browser, base, shots, debian, problems, r):
             problems.append(f"speed: with the map shown: {b}")
 
 
+def mm_first_frame_late_case(browser, base, problems, r):
+    """The map open (?memmap=1) but its tab not shown until the run ended:
+    no map frame drew while the machine ran. The CPU's RAM writes since the
+    machine started are still sampled (one sample, the whole run), as on a
+    runner whose frames starve while the JIT runs (runs 43893874205 and
+    43975055292: "no CPU RAM write sampled")."""
+    ctx, page, errs = mev_page(browser, "light", False)
+    try:
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=full&count=0&mips=10&memmap=1", timeout=180000)
+        if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 600, 0.5):
+            problems.append("late map: no end")
+            return
+        frames0 = page.evaluate("MKB.MMAP.frames")
+        show_tab(page, "memory")
+        mm_frames(page)
+        got = page.evaluate("({ samples: MKB.MMAP.samples.length, pages: MKB.MMAP.samples.reduce((a, s) => a + s.pages.length, 0), "
+                            "from: MKB.MMAP.samples.length ? MKB.MMAP.samples[0].from : -1, frames: MKB.MMAP.frames })")
+        r["late map"] = {"frames before": frames0, **got}
+        if frames0:
+            problems.append(f"late map: {frames0} map frames while the tab was hidden (the case needs none)")
+        if not got["samples"] or not got["pages"]:
+            problems.append(f"late map: no CPU RAM write sampled when the map is first drawn after the run: {got}")
+        if errs:
+            problems.append(f"late map: page errors {errs}")
+    finally:
+        ctx.close()
+
+
 def suite_memmap(ctx):
     problems, r = [], {}
+    if "minified-linux" in ctx.entries:
+        mm_first_frame_late_case(ctx.browser, ctx.base, problems, r)
     for name in ("minified-linux", *debian_names(ctx)[:1]):
         if name in ctx.entries:
             mm_story_case(ctx.browser, ctx.base, ctx.shots, name, problems, r)

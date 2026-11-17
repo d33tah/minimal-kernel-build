@@ -142,6 +142,12 @@ const MEV = {
 		if (every > 0)
 			this.checkStart(every);
 		this.setOn(this.needs.size > 0 || every > 0);
+		// The open live map samples the CPU's RAM writes from here, not from
+		// its first frame: none may come before the run ends (a hidden tab, or
+		// frames starved while the JIT runs).
+		const map = api.memory.MMAP;
+		if (map && map.open)
+			map.attach();
 	},
 
 	// The Events tab records, the memory map (memmap.js) is open, quests are watched.

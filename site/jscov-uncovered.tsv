@@ -16,7 +16,7 @@ listing.js	538-540	e57c5977	inspect of a page past the grid: needs a picked page
 listing.js	577	34977f3b	the live checkbox's timer while the machine runs with a page picked: Live is off by default and no suite turns it on while running
 scan.js	32	7f4f045e	scan without a running machine: the Scan button and the autoscan timer are disabled or stopped while there is none
 boot.js	133-136	6156dc01	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
-boot.js	140	809d7cec	the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
+boot.js	140	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
 boot.js	211	78e4297b	a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 boot.js	225-226	e5830e96	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
 run.js	66	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot

@@ -577,10 +577,7 @@ def tasks_case(browser, base, shots, name):
     problems = []
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
-    # Debian to its panic with the Calls tab open and V8 coverage on: past
-    # 900 s on slow runners in 3 of 6 runs on 2026-11-17 (the same case
-    # without coverage: 180 s).
-    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 1800, 2):
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 900, 2):
         return ["no end of the run"], {}
     time.sleep(2)
     show_canvas(page)

@@ -8592,7 +8592,15 @@ def jumps_live_case(browser, base, shots):
     for name, imp in cases:
         where = name + (" + imported " + imp.name if imp else "")
         errors = []
-        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+        if imp:
+            # Where clang.wasm is served (the live site, a local site with
+            # the clang-wasm artifact; CI's site artifact has none) the
+            # import makes the vmlinux's disasm.json in the page (E1,
+            # genimport) and it arrives during the case; this case is about
+            # the paths without one. On the context: a Worker's requests.
+            ctx.route("**/clang/clang.wasm", lambda route: route.fulfill(status=404, body="no"))
+        page = ctx.new_page()
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
@@ -8602,7 +8610,7 @@ def jumps_live_case(browser, base, shots):
             wait_for(lambda: page.get_attribute("#sym_status", "data-state") in ("imported", "error"), 60)
             if page.get_attribute("#sym_status", "data-state") != "imported":
                 problems.append(f"{where}: import failed: {page.inner_text('#sym_status')[:200]!r}")
-                page.close()
+                ctx.close()
                 continue
             wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         wait_for(lambda: page.evaluate("typeof window.MKB?.symbols !== 'undefined' && !!MKB.symbols && MKB.symbols.symbols.length > 0"), 120)
@@ -8612,7 +8620,7 @@ def jumps_live_case(browser, base, shots):
         ok, at, status = run_to_wait(page, {sk["paddr"]}, 400)
         if not ok:
             problems.append(f"{where}: Run to start_kernel did not stop there: {status!r}")
-            page.close()
+            ctx.close()
             continue
         if page.evaluate("!!MKB.disasm"):
             problems.append(f"{where}: has disasm.json, the case needs a live decode")
@@ -8659,7 +8667,7 @@ def jumps_live_case(browser, base, shots):
             problems += text_page_without_symbol(page, name, where, r)
         if errors:
             problems.append(f"{where}: page errors: {errors[:3]}")
-        page.close()
+        ctx.close()
     # With disasm.json the claim is about the whole disassembly.
     if "hello" in kernel_entries():
         page = browser.new_page(viewport={"width": 1280, "height": 1000})

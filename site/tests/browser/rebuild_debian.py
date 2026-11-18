@@ -57,6 +57,22 @@ WATCH_JS = """(msg) => { clearInterval(window.rbScrTimer); const s = window.rbSc
     if (!has) s.cleared = true; else if (s.cleared && s.at === null) s.at = (Date.now() - s.t0) / 1000; }, 50); }"""
 
 
+SHRUNK_JS = """async () => {
+  let t = MKB.dbgTypes();
+  for (let i = 0; i < 1200 && t.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); t = MKB.dbgTypes(); }
+  if (t.state !== 'ok') return { why: t.why };
+  const T = t.T, out = {};
+  const sh = T.vars.find((v) => v[0] === 'tracing_disabled' && v[5] & 8);
+  if (sh) {
+    const e = MKB.varsEval(T, 'tracing_disabled'), b = MKB.varsRead(e.pa, sh[3]);
+    const [, k, c] = (T.shrunk || []).find((x) => x[0] === sh[1]) || [];
+    out.shrunk = { pa: sh[1], k, c, byte: b ? b[0] : null, text: MKB.varsScalar(T, e.type, e.pa, e.bits).text, notes: e.notes };
+  }
+  out.pieces = T.vars.filter((v) => v[0] === '__futex_data').map((v) => [v[5] & 16, v[3], (MKB.dwWhere(T, v[1]) || {}).path || null]);
+  out.pieceEval = MKB.varsEval(T, '__futex_data').error || 'no error';
+  return out; }"""
+
+
 def screen(page):
     return page.inner_text("#screen_container")
 
@@ -174,6 +190,17 @@ def run(browser, base, shots, tmp, problems, r):
     # its lines, locals and CFI; the Source tab lists every file.
     rb_debug_check(dbg_before, rb_debug(page, [UNTOUCHED, "kernel_init", "e6_moved"]), [UNTOUCHED], ["kernel_init", "e6_moved"], problems, r, NAME,
                    moved_by_edit=True)
+    # Globals clang shrank or split (types.json flags 8 and 16), moved too:
+    # tracing_disabled's value is 1 - its byte; __futex_data's pieces are
+    # named with their member paths and a watch of it says why it is refused.
+    g = page.evaluate(SHRUNK_JS)
+    r["clang globals"] = g
+    sh = g.get("shrunk") or {}
+    if not sh or sh.get("byte") is None or sh["text"] != str(sh["byte"] * sh["k"] + sh["c"]) or not any("clang keeps it" in n for n in sh["notes"]):
+        problems.append(f"tracing_disabled (a global clang shrank) after the rebuild: {g}")
+    paths = [p for _, _, p in g.get("pieces", [])]
+    if len(paths) < 2 or not all(f for f, _, _ in g["pieces"]) or len(set(paths)) != len(paths) or "split by clang" not in g.get("pieceEval", ""):
+        problems.append(f"__futex_data (a global clang split) after the rebuild: {g}")
     show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 120)
     page.fill("#cov_filter", header.split("/")[-1])

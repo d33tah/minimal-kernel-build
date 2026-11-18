@@ -5,7 +5,8 @@
 
 import { $ } from "./util.js";
 import { api } from "./page.js";
-import { dbgChanged, dbgGunzip, dbgHas } from "./dbginfo.js";
+import { dbgChanged, dbgHas } from "./dbginfo.js";
+import { dbgGunzip } from "./dbgmerge.js";
 
 let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
 

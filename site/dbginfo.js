@@ -22,7 +22,7 @@ import { dwarfFrames, dwarfFunction, dwarfRow, dwarfResolvePath,
 import { dwFuncBase, dwFuncShard } from "./dwarffuncs.js";
 import { dwarfLocalFrames, dwarfScopesAt } from "./dwarflocals.js";
 import { cfiFrameInfo, cfiRow, unwind } from "./unwind.js";
-import { dbgGunzip, mgRead, DbgMerge } from "./dbgmerge.js";
+import { mgRead, DbgMerge } from "./dbgmerge.js";
 
 const DBG_DB = "mkb-dwarf";
 let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
@@ -747,7 +747,7 @@ function dbgTitle(pa, sym) {
 
 provide({ dbgHas, dbgFrames });
 
-export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgTypes, dbgGunzip,
+export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgTypes,
 	dbgLocals, dbgLocalGroups, dbgFnFacts, dbgFnHolds, dbgFnFactsFor, dbgFnFactsAt, dbgCfiFrame, dbgFiles, dbgFuncAt,
 	dbgCfiRow, dbgSetCfi, dbgCfiInfo, dbgUnwind, dbgTableAt, dbgFrames, dbgFunction, dbgFileCode, dbgLineCode,
 	dbgLineCodeWait, dbgWhere, dbgChainText, dbgTitle };

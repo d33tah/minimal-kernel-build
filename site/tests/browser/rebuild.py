@@ -118,6 +118,11 @@ RB_DEBUG_JS = """async (name) => {
     if (last && last[1] === a && last[2] === t) last[1] = b; else rows.push([a, b, t]);
   }
   const out = { paddr: s.paddr, lo: f.lo - s.paddr, hi: f.hi - s.paddr, rows: rows.map(([a, b, t]) => [a - s.paddr, b - s.paddr, t]), locals: {}, cfi: {} };
+  // Its facts (DW_TAG_subprogram): where declared, its C prototype, its code
+  // ranges from the symbol.
+  const ff = await wait(() => MKB.dbgFnFactsFor(name, s.paddr));
+  out.facts = ff.state !== 'ok' ? ff.state + ': ' + ff.why : !ff.f ? 'none' :
+    [ff.f.file + ':' + ff.f.e[2], MKB.dwFuncProto(ff.T, ff.f.e), ff.f.e[7].map((r) => r.map((x, i) => i % 2 ? x : x - s.paddr))];
   for (const [a] of rows) {
     const L = await wait(() => MKB.dbgLocals(a));
     out.locals[a - s.paddr] = L.state !== 'ok' ? L.state + ': ' + L.why : L.frames.map((q) => q.func + '(' +
@@ -154,7 +159,11 @@ def rb_debug_check(before, after, untouched, edited, problems, r, tag, shift=lam
                 func, _, path = head.partition("@")
                 out.append(f"{func}@{path}:{shift(path, int(line)) if line.isdigit() and path else line}")
             return " < ".join(out)
-        return {**d, "rows": [[a, b, fix(t)] for a, b, t in d["rows"]]}
+        facts = d.get("facts")
+        if isinstance(facts, list):
+            path, _, line = facts[0].rpartition(":")
+            facts = [f"{path}:{shift(path, int(line)) if line.isdigit() else line}"] + facts[1:]
+        return {**d, "rows": [[a, b, fix(t)] for a, b, t in d["rows"]], "facts": facts}
     r["debug after the rebuild"] = {fn: {"rows": len((after["fns"][fn] or {}).get("rows", [])), "why": (after["fns"][fn] or {}).get("why"),
                                          "locals at the start": next(iter((after["fns"][fn] or {}).get("locals", {}).values()), None)}
                                     for fn in untouched + edited}
@@ -172,7 +181,9 @@ def rb_debug_check(before, after, untouched, edited, problems, r, tag, shift=lam
         if moved_by_edit and a["paddr"] == b["paddr"]:
             problems.append(f"{tag}: {fn} is at the same address after the edit ({a['paddr']:#x}): the test needs an edit that moves it")
         want = moved(b)
-        for k in ("lo", "hi", "rows", "locals", "cfi"):
+        if not isinstance(b.get("facts"), list):
+            problems.append(f"{tag}: the shipped kernel has no function facts of {fn}: {b.get('facts')}")
+        for k in ("lo", "hi", "rows", "locals", "cfi", "facts"):
             if a[k] != want[k]:
                 diff = [(x, y) for x, y in zip(a[k], want[k]) if x != y][:3] if isinstance(a[k], list) else \
                     [(x, a[k].get(x), want[k].get(x)) for x in sorted(set(a[k]) | set(want[k]), key=int) if a[k].get(x) != want[k].get(x)][:3] \
@@ -180,8 +191,10 @@ def rb_debug_check(before, after, untouched, edited, problems, r, tag, shift=lam
                 problems.append(f"{tag}: after the rebuild {fn}'s {k} differ from the shipped kernel's (untouched unit): {diff}")
     for fn in edited:
         a = after["fns"][fn]
-        if not a or a.get("why") or not a["rows"] or not any(not v.startswith(("none", "loading")) and "(" in v for v in a["locals"].values()):
-            problems.append(f"{tag}: after the rebuild the edited {fn} has no lines or locals: {a and {k: a.get(k) for k in ('why', 'rows', 'locals')}}")
+        if not a or a.get("why") or not a["rows"] or not any(not v.startswith(("none", "loading")) and "(" in v for v in a["locals"].values()) \
+                or not isinstance(a.get("facts"), list):
+            problems.append(f"{tag}: after the rebuild the edited {fn} has no lines, locals or facts: "
+                            f"{a and {k: a.get(k) for k in ('why', 'rows', 'locals', 'facts')}}")
     lost = sorted(set(before["files"]) - set(after["files"]))
     r["file list"] = {"shipped": len(before["files"]), "rebuilt": len(after["files"]), "lost": lost[:10]}
     if len(before["files"]) < 1 or lost:

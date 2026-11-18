@@ -3322,7 +3322,21 @@ blocks; that happens only where a test stops it or restarts the browser
 Block coverage slows the page's own JavaScript: stepping a Debian boot
 again for a Step back took 679 ms instead of 199 ms (3.4x; binary block
 coverage, callCount off, 719 ms), so the wall-clock bounds of reverse,
-snapdiff, exactstop and tasks fail under it. CI therefore runs every
+snapdiff, exactstop and tasks fail under it. A whole counted Debian run
+is about 20 times slower (d-claude, plan E6: 35-50 thousand instructions
+stepped per second against 0.5-1 million; the same with callCount off;
+without the Debugger domain it still had no end in 900 s), so the tasks
+case on Debian never reached its end in the coverage job (900 or 1,800 s)
+and vartasks.js's per-file floor held only when another job happened to
+run its Debian code. Under coverage the case now opens that page under
+`jscov.hold()`, on the Machine tab, and calls `jscov.release()` at the end
+of the run, then opens the Calls tab: the page and its Workers run
+without coverage until then, and the checks after it (the call tree, the
+task names from task_struct) are measured with blocks; what was compiled
+before has no block counters and is left out (it would count every line
+of a function as run). On d-claude the case then took 105 s and its
+coverage alone gives vartasks.js 107 of 115 lines (93%). The self-test
+opens a page the same way. CI therefore runs every
 browser-test group twice: plain, with every assertion, and with coverage,
 where a failing test step does not fail the job. The coverage jobs and
 pwa-install upload their raw coverage;

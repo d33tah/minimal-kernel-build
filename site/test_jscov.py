@@ -7,7 +7,9 @@ one and an if whose else never runs; a Worker that runs a function in its
 top-level code, posts the result and is terminated by the page at once; a
 service worker whose fetch handler runs; a second page reached by goto,
 which then leaves for a third page on another site by itself (location.href:
-its last function runs just before the old renderer process goes away).
+its last function runs just before the old renderer process goes away); a
+fourth page opened while jscov.hold() (its coverage starts at
+jscov.release(): what ran before is left out, what runs after has blocks).
 The collector handles the service worker's attach a second late, as a busy
 CI runner may: Playwright runs a new service worker at once, and its
 coverage must still start before the worker's first line (block detail in
@@ -139,12 +141,33 @@ window.other = otherRan();
     "third.js": """// third page, on another site (localhost)
 window.third = 9;
 """,
+    "held.html": """<!doctype html><meta charset="utf-8"><title>jscov fixture 4</title>
+<script src="held.js"></script>""",
+    "held.js": """// a page opened while jscov.hold(): its coverage starts at jscov.release()
+function heldBefore() {
+\treturn 1;
+}
+
+function heldAfter(x) {
+\tif (x)
+\t\treturn "after";
+\treturn "no";
+}
+
+function heldNever() {
+\treturn 2;
+}
+
+window.before = heldBefore();
+""",
 }
 
 WANT_COVERED = {"cov.js": ["ran", "branchy"], "wk.js": ["workerRan"], "sw.js": ["swFetch"],
-                "other.js": ["otherRan", "otherLeave", "afterReload"]}
+                "other.js": ["otherRan", "otherLeave", "afterReload"], "held.js": ["heldAfter"]}
+# heldBefore ran before release(): compiled without block counters, it is
+# left out, so it reads as not run.
 WANT_UNCOVERED = {"cov.js": ["never", "outerNever", "innerNever"], "wk.js": ["workerNever"], "sw.js": ["swNever"],
-                  "other.js": ["otherNever"]}
+                  "other.js": ["otherNever"], "held.js": ["heldBefore", "heldNever"]}
 
 
 def where(page):
@@ -292,10 +315,10 @@ def main():
         jscov.configure(fix)
         attached = jscov.Collector._attached
 
-        def late(self, sid, info, waiting):
+        def late(self, sid, info, waiting, parent=None):
             if info.get("type") == "service_worker":
                 time.sleep(1.0)
-            return attached(self, sid, info, waiting)
+            return attached(self, sid, info, waiting, parent)
         jscov.Collector._attached = late
         jscov.install("selftest")
         httpd = serve(fix)
@@ -323,6 +346,17 @@ def main():
                 page.evaluate(f"setTimeout(() => otherLeave({json.dumps(third)}), 0)")
                 if not wait_for(lambda: where(page) == [third, 9], 10):
                     problems.append(f"fixture: the page did not reach {third} itself ({where(page)})")
+                # A page opened while held: what it runs before release() is
+                # not recorded, what it runs after is, with its blocks.
+                jscov.hold()
+                try:
+                    held = ctx.new_page()
+                    held.goto(base + "/held.html")
+                    wait_for(lambda: held.evaluate("window.before === 1"), 10)
+                finally:
+                    jscov.release()
+                if held.evaluate("heldAfter(true)") != "after":
+                    problems.append("fixture: heldAfter did not run")
                 ctx.close()
                 browser.close()
         finally:
@@ -366,6 +400,14 @@ def main():
             if taken in unc or not_taken not in unc:
                 problems.append(f"other.js after a reload: uncovered lines {sorted(unc)}, want {not_taken} (the return "
                                 f"not taken) among them and not {taken}")
+            # held.js: heldAfter's taken return covered, its other return not.
+            src = FILES["held.js"].split("\n")
+            unc = set()
+            for a, _, b in (x.partition("-") for x in s["files"].get("held.js", {}).get("uncoveredLines", "").split(",") if x):
+                unc.update(range(int(a), int(b or a) + 1))
+            taken, not_taken = src.index('\t\treturn "after";') + 1, src.index('\treturn "no";') + 1
+            if taken in unc or not_taken not in unc:
+                problems.append(f"held.js: uncovered lines {sorted(unc)}, want {not_taken} among them and not {taken} (block detail after release)")
             # sw.js with block detail: in swFetch the return the page's fetch
             # takes is covered, the other return (requests without
             # "through-sw") too, and swNever's body not.

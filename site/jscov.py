@@ -327,6 +327,11 @@ class Collector:
         # function counts as run, its untaken branches are not seen), by
         # target type: how much the measurement lost.
         self.blockless = {}
+        # hold()/release(): pages (and their Workers) attached while held run
+        # without coverage until release() starts it (late); what they
+        # compiled before has no block counters and is not recorded (started_late).
+        self.holding = False
+        self.late, self.started_late = set(), set()
         self.flush_s = self.flush_max = 0.0
         url = None
         end = time.monotonic() + 30
@@ -435,10 +440,11 @@ class Collector:
         if method == "Target.attachedToTarget":
             self.trace("attach", p["sessionId"], kind=p["targetInfo"].get("type"), url=p["targetInfo"].get("url", "")[-60:],
                        waiting=p.get("waitingForDebugger"), parent=sid)
-            self._attached(p["sessionId"], p["targetInfo"], p.get("waitingForDebugger"))
+            self._attached(p["sessionId"], p["targetInfo"], p.get("waitingForDebugger"), sid)
         elif method == "Target.detachedFromTarget":
             self.trace("detach", p.get("sessionId"))
             self.sessions.pop(p.get("sessionId"), None)
+            self.late.discard(p.get("sessionId"))
             for i, o in list(self.outstanding.items()):
                 if o == p.get("sessionId"):
                     self.outstanding.pop(i, None)
@@ -451,7 +457,7 @@ class Collector:
             threading.Thread(target=self._terminate_flush, args=(sid, p.get("executionContextId"), p.get("payload")),
                              daemon=True).start()
 
-    def _attached(self, sid, info, waiting):
+    def _attached(self, sid, info, waiting, parent=None):
         kind = info.get("type")
         if os.environ.get("MKB_JSCOV_DEBUG"):
             log(f"attached {kind} {info.get('url', '')[:80]} waiting={waiting}")
@@ -462,9 +468,13 @@ class Collector:
             return
         self.sessions[sid] = kind
         # Sent in order on the target's session, so coverage starts before
-        # this session lets the target run.
+        # this session lets the target run (not while held: release()).
         self.post("Profiler.enable", session=sid)
-        self.post("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True}, session=sid)
+        if kind != "service_worker" and (self.holding or parent in self.late):
+            self.late.add(sid)
+            self.trace("held", sid)
+        else:
+            self.post("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True}, session=sid)
         if kind == "service_worker":
             # Answered once the browser has read the start above (one
             # connection's messages in order); then Playwright may run it.
@@ -511,6 +521,10 @@ class Collector:
     def _take(self, sid, then=None):
         """Ask one target for its coverage without waiting (the reader
         records the answer, then sends then: (method, params, session))."""
+        if sid in self.late:
+            if then:
+                self.post(*then)
+            return
         with self.id_lock:
             self.next_id += 1
             i = self.next_id
@@ -537,6 +551,8 @@ class Collector:
             t0 = time.monotonic()
             evs = []
             for sid in list(self.sessions):
+                if sid in self.late:
+                    continue  # held: no coverage yet
                 if sid in self.outstanding.values():
                     self.trace("skip", sid)
                     continue
@@ -580,13 +596,17 @@ class Collector:
             end = max(f["ranges"][0]["endOffset"] for f in s["functions"]) if s["functions"] else 0
             ran = []
             kind = self.sessions.get(sid) or "gone"
-            nb = sum(1 for f in s["functions"] if not f["isBlockCoverage"] and f["ranges"][0]["count"])
+            nb = 0 if sid in self.started_late else sum(1 for f in s["functions"] if not f["isBlockCoverage"] and f["ranges"][0]["count"])
             if nb:
                 self.blockless[kind] = self.blockless.get(kind, 0) + nb
             nran = sum(1 for f in s["functions"] if f["ranges"][0]["count"])
             if nran:
                 self.trace("script", sid, file=name, ran=nran, blockless=nb)
             for f in s["functions"]:
+                if sid in self.started_late and not f["isBlockCoverage"]:
+                    # Compiled before release() (no block counters): it would
+                    # count every line of the function as run.
+                    continue
                 ranges = [{"startOffset": r["startOffset"], "endOffset": r["endOffset"], "count": 1 if r["count"] else 0}
                           for r in f["ranges"]]
                 sig = (name, n or -1, f["functionName"], tuple((r["startOffset"], r["endOffset"], r["count"]) for r in ranges))
@@ -628,6 +648,31 @@ def flush_all():
     for c in COLLECTORS:
         if not c.closed:
             c.flush()
+
+
+def hold():
+    """Pages opened from now on (and their Workers) run without coverage until
+    release(): a long run whose JavaScript block counters would make it 20
+    times slower (the Debian tasks case: no end of its run in 1,800 s) is
+    measured from release() on. No-op without MKB_JSCOV."""
+    for c in COLLECTORS:
+        c.holding = True
+
+
+def release():
+    """Start the coverage of the held pages and Workers now; what they run
+    from here on is recorded (functions compiled before have no block
+    counters and are left out)."""
+    for c in COLLECTORS:
+        c.holding = False
+        for sid in list(c.late):
+            c.post("Profiler.startPreciseCoverage", {"callCount": True, "detailed": True}, session=sid)
+            c.started_late.add(sid)
+            c.trace("released", sid)
+        # Started (answered in order on each session) before the next take.
+        for sid in list(c.late):
+            c.call("Runtime.evaluate", {"expression": "0"}, session=sid)
+        c.late.clear()
 
 
 def install(label):

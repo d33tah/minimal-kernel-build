@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import time
 
+import jscov
 from tests.browser.common import (
     bm_dialog_save, debian_names, debug_elf, graph_box_xy, hover_byte, kernel_entries, nav_at, nav_settle, open_page,
     report, show_canvas, show_tab, shown_tab, SITE, wait_for,
@@ -575,10 +576,29 @@ def tasks_case(browser, base, shots, name):
     root per task, and the roots never overlap; tasks are named from their
     task_struct (task_names_check)."""
     problems = []
-    page = browser.new_page(viewport={"width": 1100, "height": 1000})
-    page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
-    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 900, 2):
+    # Under coverage (site/jscov.py) a Debian run never ended (its stepping
+    # with V8's block counters is about 20 times slower: no end in 1,800 s):
+    # the page's coverage starts at the end of the run, so the checks below
+    # (task naming, vartasks.js) are measured on every run. The page then
+    # runs on the Machine tab until the end: code the Calls tab would run
+    # (and compile) while the machine runs is compiled after the coverage
+    # starts, with its block counters. The minified Linux's run is short
+    # enough to be measured whole.
+    held = name != "minified-linux"
+    tab = "" if held and jscov.COLLECTORS else "#calls"
+    if held:
+        jscov.hold()
+    try:
+        page = browser.new_page(viewport={"width": 1100, "height": 1000})
+        page.goto(f"{base}/index.html?kernel={name}&speed=full{tab}")
+        ended = wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 900, 2)
+    finally:
+        if held:
+            jscov.release()
+    if not ended:
         return ["no end of the run"], {}
+    if tab != "#calls":
+        show_tab(page, "calls")
     time.sleep(2)
     show_canvas(page)
     time.sleep(1)

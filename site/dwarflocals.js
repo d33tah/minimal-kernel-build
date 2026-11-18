@@ -307,7 +307,12 @@ function dwWhere(T, pa) {
 	}
 	if (!best)
 		return null;
-	const r = dwPathIn(T, best[2], pa - best[1], best[0]);
+	// A piece of a variable clang split (flag 16): its bytes are the
+	// variable's from the piece's offset on (types.json "pieces").
+	if (best[5] & 16 && !T.pieceAt)
+		T.pieceAt = new Map(T.pieces || []);
+	const off = best[5] & 16 ? T.pieceAt.get(best[1]) || 0 : 0;
+	const r = dwPathIn(T, best[2], pa - best[1] + off, best[0]);
 	return { var: best, ...r, leafAddr: pa - r.offset };
 }
 

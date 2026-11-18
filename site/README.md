@@ -836,6 +836,27 @@ as a colour emoji (also checked once in Firefox and WebKit):
   inlined, several statics of one name) are checked by the ELF symbol at
   their address instead (local runs: minified 3,000/3,000, Debian
   8,263/8,263 plus 1,737 by ELF symbol).
+  clang (the editable Debian, plan E6) adds three things GCC does not:
+  a static local's ELF symbol is `function.name`, the next ones of that
+  name in the function (one per inner block: WARN_ONCE's `__msg`,
+  `_rs`) `function.name.N`, which gdb prints as `function..msg` and
+  whose `Function::name` finds the first; a global that only ever holds
+  two values is kept in one byte (LLVM GlobalOpt), its location
+  `DW_OP_addrx, DW_OP_deref_size 1, DW_OP_lit0, DW_OP_not, DW_OP_mul,
+  DW_OP_lit1, DW_OP_plus, DW_OP_stack_value` (the value: 1 - the byte):
+  `types.json` keeps it with flag 8, its size the bytes kept, and
+  `shrunk` [address, k, c], and the Variables panel shows byte * k + c;
+  a struct split into members at addresses of their own
+  (`__futex_data.0`, `.1`: `DW_OP_addrx, DW_OP_piece 4, ...`) is one
+  entry per piece (flag 16, `pieces` [address, offset]), named with the
+  member path, not watched (it says why). Before, `types.json` lacked
+  them (940 shrunk globals, 72 pieces) and memory operands at them had
+  no name. The checks read
+  `DW_OP_addrx` through the unit's `.debug_addr` and accept a name the
+  ELF symbol at the address confirms; on the clang Debian (d-claude, the
+  -g vmlinux built as CI does): `--types 4000` 3,768/3,768 plus 232 by
+  ELF symbol (105 in shrunk globals), `--operands 4000` 4,000/4,000,
+  `--vars 2000` 0 problems; in the debian-clang job with 2,000 each.
 - **Parameters and locals.** At a pause, every frame the call stack
   unwound gets the parameters and local variables the DWARF has at its
   address (EIP, or a caller's call instruction), in the Debugger's

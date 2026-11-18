@@ -101,6 +101,9 @@ function varsNote(T, v) {
 		out.push("in " + sec + ": freed once the kernel has booted (free_initmem), then the memory is reused");
 	if (v[5] & 2)
 		out.push("per-CPU variable");
+	if (v[5] & 8)
+		out.push("clang keeps it in " + v[3] + " byte" + (v[3] === 1 ? "" : "s") + " (a global it shrank: its location is DW_OP_deref_size " + v[3] +
+			" ... DW_OP_stack_value): the value shown is computed from them");
 	return out;
 }
 
@@ -143,8 +146,20 @@ function varsEval(T, expr) {
 	if (pick.why)
 		return { error: pick.why };
 	const v = pick.v;
+	if (v[5] & 16)
+		return { error: v[0] + " is split by clang into pieces at addresses of their own (DW_OP_piece, " +
+			pick.list.filter((x) => x[5] & 16).length + " pieces): the Variables panel reads a variable from one address" };
 	const notes = varsNote(T, v);
-	let pa = v[1], type = v[2], bits = null;
+	let pa = v[1], type = v[2];
+	// A global clang shrank (types.json "shrunk"): its value is its v[3]
+	// bytes times k plus c, as [bits, offset, k, c] for varsScalar.
+	let bits = null;
+	if (v[5] & 8) {
+		if (!T.shrunkAt)
+			T.shrunkAt = new Map((T.shrunk || []).map(([a, k, c]) => [a, [k, c]]));
+		const [k, c] = T.shrunkAt.get(v[1]) || [1, 0];
+		bits = [8 * v[3], 0, k, c];
+	}
 	if (v[5] & 2) {
 		const c = varsPerCpu(T, pa);
 		pa = c.pa;
@@ -312,7 +327,12 @@ function varsScalar(T, type, pa, bits) {
 	if (!b)
 		return { text: varsMissing(pa) };
 	let raw = bits ? (le(b, b.length) >> BigInt(bits[1])) & ((1n << BigInt(bits[0])) - 1n) : le(b, size);
-	const width = bits ? bits[0] : size * 8;
+	let width = bits ? bits[0] : size * 8;
+	// A global clang shrank (varsEval): the C value is the stored bytes * k + c.
+	if (bits && bits.length > 2) {
+		width = size * 8;
+		raw = BigInt.asUintN(width, raw * BigInt(bits[2]) + BigInt(bits[3]));
+	}
 	const signed = t[0] === DWT.base && (t[3] === 5 || t[3] === 6) || (t[0] === DWT.enum && t[4] >= 0 &&
 		[5, 6].includes((T.types[dwStrip(T, t[4])] || [])[3]));
 	const sval = signed && raw >> BigInt(width - 1) ? raw - (1n << BigInt(width)) : raw;
@@ -395,10 +415,14 @@ function varsRow(T, label, type, pa, bits, key, depth) {
 	val.className = "wval";
 	const ty = document.createElement("span");
 	ty.className = "wtype";
-	ty.textContent = dwTypeName(T, type) + (bits ? " : " + bits[0] : "");
+	// bits [width, offset]: a bit field; [width, offset, k, c]: a global
+	// clang shrank (varsEval), stored in width / 8 bytes as (value - c) / k.
+	const field = bits && bits.length < 3;
+	ty.textContent = dwTypeName(T, type) + (field ? " : " + bits[0] : "");
 	const at = pa + varsOffset(), cell = varsCellAt(pa);
-	ty.title = (cell ? cell.how + (cell.why ? "; " + cell.why : "") : "at " + hex(at) + (bits ? " bits " + bits[1] + "–" + (bits[1] + bits[0] - 1) : "") +
-		", physical " + hex(pa)) + ", " + dwTypeSize(T, type) + " bytes";
+	ty.title = (cell ? cell.how + (cell.why ? "; " + cell.why : "") : "at " + hex(at) + (field ? " bits " + bits[1] + "–" + (bits[1] + bits[0] - 1) : "") +
+		", physical " + hex(pa)) + ", " + dwTypeSize(T, type) + " bytes" +
+		(bits && !field ? "; clang keeps " + bits[0] / 8 + " of them: the value is that * " + bits[2] + " + " + bits[3] : "");
 	head.append(name, " = ", val, " ", ty);
 	const sc = varsScalar(T, type, pa, bits);
 	if (sc) {

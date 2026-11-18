@@ -145,7 +145,7 @@ function asmGlobal(va, env) {
 	if (w) {
 		const v = w.var;
 		const name = w.path + (w.offset ? "+" + w.offset : "");
-		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1], scope: v[5] & 4 && v[6] ? v[6] : undefined,
+		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1], varSize: v[3], scope: v[5] & 4 && v[6] ? v[6] : undefined,
 			detail: name + (w.note ? " (" + w.note + ")" : "") + ": " + dwTypeName(env.T, w.type) + ", in " + v[0] + " (" +
 				dwTypeName(env.T, v[2]) + ", " + v[3] + " bytes" + (env.T.sections && env.T.sections[v[4]] ? ", " + env.T.sections[v[4]] : "") + ")" +
 				(v[5] & 4 ? ", a static local" + (v[6] ? " of " + v[6] + "()" : "") : "") + (v[5] & 2 ? ", per-CPU" : "") +

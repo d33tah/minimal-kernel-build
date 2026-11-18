@@ -570,14 +570,12 @@ jobs:
         start=$(date +%s)
         site/gen-symbols.py --trim "$t/vmlinux" "$d/symbols.json" debian-6.1-686-clang
         site/gen-dwarf.js "$t/vmlinux" "$d/dwarf"
-        # Lines, inlines, CFI, locals and functions against gdb and LLVM's
-        # tools. Not yet --types, --operands, --vars: on this clang build
-        # they disagree on clang's names of function-static variables
-        # (tc_modify_qdisc..msg: 948/967 bytes, 774/1000 variables) and on
-        # absolute operands llvm-objdump prints negative (985/1000); an open
-        # item of E6 (PROGRESS).
+        # Lines, inlines, CFI, locals, functions, variables and their
+        # types, and the names of memory operands against gdb and LLVM's
+        # tools (clang's own: static locals named function.name.N, globals
+        # it shrinks or splits, DW_OP_addrx; tests/dwarf/).
         site/test_dwarf.py "$t/vmlinux" "$d/dwarf" --samples 3000 --cfi 3000 --locals 1000 --lines 1000 --funcs 1000 \
-          --strip "$(realpath "$t")/"
+          --types 2000 --operands 2000 --vars 2000 --strip "$(realpath "$t")/"
         site/gen-src.js "$d/dwarf" "$t" "$d/src" \
           --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz), built with clang 22.1.0 (site/gen-debian-clang.sh)"
         cp debian-initrd/initrd.img "$d/initrd.img"

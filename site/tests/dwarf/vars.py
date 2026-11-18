@@ -59,6 +59,17 @@ for name, fn, addr, qual, *deep in src:
             r["qual"] = int(gdb.parse_and_eval("&'%s'::%s" % (qual, name)))
         except Exception as x:
             r["qual"] = "error: " + str(x)
+            try:
+                # Not an lvalue (a global clang shrank or split: gdb computes
+                # its value): 'file'::name resolves; where that file's
+                # symbol of the name is declared.
+                gdb.parse_and_eval("'%s'::%s" % (qual, name))
+                s = [y for y in list(gdb.lookup_static_symbols(name)) + [gdb.lookup_global_symbol(name)]
+                     if y is not None and y.symtab and y.symtab.filename == qual]
+                if s:
+                    r["qual"] = {"file": s[0].symtab.filename, "line": s[0].line}
+            except Exception:
+                pass
     dst.append(r)
 json.dump(dst, open(DST, "w"))
 """
@@ -133,6 +144,15 @@ def check_vars(elf, shards, n, rnd, lds, strip):
             quals += [qual + "::" + v[0], short + "::" + v[0]]
     qpage = {r["expr"]: r for r in page_vars(shards, quals)} if quals else {}
     got = gdb_vars(elf, [p for *_, p in probes])
+    # gdb's 'file'::name in a long session can give another file's static
+    # of that name (kernel/reboot.c::poweroff_work gave
+    # kernel/power/poweroff.c's on the clang Debian, a fresh gdb gives
+    # reboot.c's): a disagreement is asked again in a gdb of its own.
+    retried = 0
+    for k, (v, _, qual, p) in enumerate(probes):
+        if qual and isinstance(got[k]["qual"], int) and got[k]["qual"] != virt(v[1]):
+            got[k]["qual"] = gdb_vars(elf, [p])[0]["qual"]
+            retried += 1
     # What gdb does not find by name (a static local in an inner block or in
     # a function that only exists inlined): llvm-dwarfdump --name, the DIE
     # whose DW_OP_addr location is the variable's address, each attribute
@@ -140,8 +160,9 @@ def check_vars(elf, shards, n, rnd, lds, strip):
     dd = dwarfdump_named(elf, sorted({v[0] for (v, *_), g in zip(probes, got) if g["why"]}), strip)
     by_addr = {}
     for off, x in dd.items():
-        if "addr" in x and x["tag"] == "DW_TAG_variable":
-            by_addr.setdefault(x["addr"], []).append(off)
+        if x["tag"] == "DW_TAG_variable":
+            for a in ([x["addr"]] if "addr" in x else []) + x.get("pieces", []):
+                by_addr.setdefault(a, []).append(off)
 
     def decl(off):
         file = line = name = None
@@ -180,7 +201,14 @@ def check_vars(elf, shards, n, rnd, lds, strip):
                 pr = qpage.get(q)
                 if not pr or not pr.get("pick") or pr["pick"]["pa"] != v[1]:
                     bad.append(f"{q}: page picks {pr and (pr.get('pick') or pr.get('why'))}, want {v[1]:#x}")
-            if not isinstance(g["qual"], int) or g["qual"] != virt(v[1]):
+            if isinstance(g["qual"], dict) and v[5] & 24:
+                # A global clang shrank or split has no address in gdb: its
+                # 'file'::name symbol must be declared where the page's is.
+                if (norm(g["qual"]["file"], strip), g["qual"]["line"]) != (d["file"], d["line"]):
+                    bad.append(f"{qual}::{v[0]}: gdb's 'file'::name is declared at {g['qual']}, the page's at {d['file']}:{d['line']}")
+                else:
+                    qok += 1
+            elif not isinstance(g["qual"], int) or g["qual"] != virt(v[1]):
                 bad.append(f"{qual}::{v[0]}: gdb &'file'::name is {g['qual']}, the page's variable is at {virt(v[1]):#x}")
             else:
                 qok += 1
@@ -205,6 +233,7 @@ def check_vars(elf, shards, n, rnd, lds, strip):
         print("VARS " + b)
     print(f"{elf}: vars: {len(named)} variables ({len(shared)} share a name), {len(pick)} sampled: {agree} defined-at = gdb, "
           f"{by_dd} = llvm-dwarfdump --name (gdb does not find them by name: static locals in inner blocks or inlined-only functions), "
-          f"{unknown} neither confirms (clang's DW_OP_addrx, which llvm-dwarfdump prints as an index), {nalso} with more than one definition at their address, "
-          f"{qok} file::name picks = gdb &'file'::name (+ {len(quals) // 2} shortest suffixes), {len(neg)} refusals; {len(bad)} problems")
+          f"{unknown} neither confirms (DW_OP_addrx read through the unit's .debug_addr), {nalso} with more than one definition at their address, "
+          f"{qok} file::name picks = gdb &'file'::name (+ {len(quals) // 2} shortest suffixes; {retried} asked again in a fresh gdb), "
+          f"{len(neg)} refusals; {len(bad)} problems")
     return bad

@@ -431,10 +431,17 @@ class DwarfReaderFuncs extends DwarfReaderBase {
 				if (a[AT.declaration])
 					declared.set(dieOff, { name: name(a), type: tref(a), external: !!a[AT.external], file, line });
 				const loc = a[AT.location];
-				const va = loc && loc.length === 3 ? this.fixedAddr(c, loc[1], loc[2]) : null;
-				if (va !== null)
-					out.vars.push({ name: name(a), type: tref(a), va, spec: a[AT.specification] ? ref(a[AT.specification]) : -1,
-						origin: a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1, external: !!a[AT.external], fn: parent.fn, file, line });
+				let va = loc && loc.length === 3 ? this.fixedAddr(c, loc[1], loc[2]) : null;
+				// clang's shrunk global: its value is the `stored` bytes there.
+				const shrunk = va === null && loc && loc.length === 3 ? this.storedAddr(c, loc[1], loc[2]) : null;
+				if (shrunk)
+					va = shrunk.va;
+				// clang's global split into pieces: one entry per piece in memory.
+				const pieces = va === null && loc && loc.length === 3 ? this.pieceAddrs(c, loc[1], loc[2]) : null;
+				for (const [pva, size, off] of pieces || (va !== null ? [[va, 0, -1]] : []))
+					out.vars.push({ name: name(a), type: tref(a), va: pva, spec: a[AT.specification] ? ref(a[AT.specification]) : -1,
+						origin: a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1, external: !!a[AT.external], fn: parent.fn, file, line,
+						stored: shrunk ? [shrunk.n, shrunk.k, shrunk.c] : null, piece: off >= 0 ? [size, off] : null });
 			} else
 				this.skipDie(c, ab);
 			if (ab.children)

@@ -85,13 +85,21 @@ def check_types(elf, shards, n, rnd, lds):
         exprs += [[v[0], fn, v[0], virt(v[1])], [w.get("var", v[0]), fn if w.get("var") == v[0] else "", w.get("path", v[0]), virt(v[1])]]
     got = gdb_eval(elf, exprs)
     sp = lambda t: re.sub(r"\s+", "", t or "")
-    # name -> addresses of the ELF symbols (clang names a static local function.name).
-    nm_at = {}
-    for f in (line.split() for line in subprocess.run(["llvm-nm", "--defined-only", elf], capture_output=True, text=True,
+    # name -> {address: size} of the ELF symbols. clang names a static local
+    # function.name, and the next ones of that name in the same function
+    # (one per inner block: WARN_ONCE's __msg, ratelimit's _rs)
+    # function.name.N: those are under function.name too.
+    nm_at, names_at = {}, {}
+    for f in (line.split() for line in subprocess.run(["llvm-nm", "-S", "--defined-only", elf], capture_output=True, text=True,
                                                        check=True).stdout.splitlines()):
         if len(f) >= 3:
-            nm_at.setdefault(f[-1], set()).add(int(f[0], 16))
-    bad, bits, padding, unions, hidden, moved = [], 0, 0, 0, 0, 0
+            size = int(f[1], 16) if len(f) == 4 else None
+            nm_at.setdefault(f[-1], {})[int(f[0], 16)] = size
+            names_at.setdefault(int(f[0], 16), {})[f[-1]] = size
+            m = re.fullmatch(r"([^.]+\.[^.]+)\.\d+", f[-1])
+            if m:
+                nm_at.setdefault(m.group(1), {})[int(f[0], 16)] = size
+    bad, bits, padding, unions, hidden, moved, shrunk, pieces = [], 0, 0, 0, 0, 0, 0, 0
     for k, (v, pa, w) in enumerate(zip(pick, pas, where)):
         gv, gp = got[2 * k], got[2 * k + 1]
         va = virt(pa)
@@ -104,22 +112,44 @@ def check_types(elf, shards, n, rnd, lds):
         decl = gv[0] != "error" and "[]" in gv[2] and sp(re.sub(r"\[\d+\]", "[]", w["varType"], count=1)) == sp(gv[2])
         other = gv[0] == "error" or gv[3] and not decl and sp(gv[2]) != sp(w["varType"])
         fn = v[6] if len(v) > 6 else ""
-        if other and (re.fullmatch(re.escape(v[0]) + r"(\.\d+)?", gv[-1]) or
-                      fn and virt(v[1]) in nm_at.get(fn + "." + v[0], ())):
+        static = nm_at.get(fn + "." + v[0], {}) if fn else {}
+        if other and (re.fullmatch(re.escape(v[0]) + r"(\.\d+)?", gv[-1]) or virt(v[1]) in static):
             # gdb finds no variable of this name, or another one: Function::name
             # does not look into inner blocks (statement-expression macros:
             # WARN_ONCE, ...) nor into a function that only exists inlined,
-            # and several statics may share a name. The ELF symbol at the
-            # address (name, or name.N for a static local; clang 22 names a
-            # static local function.name, which gdb prints oddly: llvm-nm)
-            # confirms the variable and its address.
+            # and several statics may share a name (gdb takes the first). The
+            # ELF symbol at the address (name, or name.N for a static local;
+            # clang 22 names a static local function.name or function.name.N,
+            # which gdb prints oddly, "neigh_valid_get_req..msg": llvm-nm)
+            # confirms the variable and its address, and clang's symbol its size.
+            if virt(v[1]) in static and static[virt(v[1])] is not None and w["varSize"] and static[virt(v[1])] != w["varSize"]:
+                bad.append((hex(pa), "size", v[0], fn, w["varSize"], "ELF symbol", static[virt(v[1])]))
+                continue
             hidden += 1
+            continue
+        if v[5] & 16 and w.get("var") == v[0]:
+            # A piece of a variable clang split (DW_OP_piece; LLVM's SRA of a
+            # global): gdb reads the variable from its pieces and gives it no
+            # address. The type is gdb's; clang's ELF symbol name.N of the
+            # piece's size is at the piece's address.
+            sym = [s for s, size in names_at.get(virt(v[1]), {}).items() if re.fullmatch(re.escape(v[0]) + r"\.\d+", s) and size == v[3]]
+            if gv[0] == "error" or sp(gv[2]) != sp(w["varType"]) or not sym:
+                bad.append((hex(pa), "piece", v[0], w["varType"], v[3], gv, sorted(names_at.get(virt(v[1]), {}))))
+            else:
+                pieces += 1
             continue
         if gv[0] == "error" or gp[0] == "error":
             bad.append((hex(pa), w, gv, gp))
             continue
         moved += gv[3]
-        if w["var"] == v[0] and not decl and (sp(gv[2]) != sp(w["varType"]) or (w["varSize"] and gv[1] != w["varSize"])):
+        # A global clang shrank (flag 8): gdb's sizeof is its C type's, the
+        # page's size the bytes clang keeps (DW_OP_deref_size), no more than that.
+        want_size = w["size"] if v[5] & 8 and w["path"] == v[0] else w["varSize"]
+        if v[5] & 8:
+            shrunk += 1
+            if not 0 < v[3] <= gv[1]:
+                bad.append((hex(pa), "shrunk", v[0], v[3], gv))
+        if w["var"] == v[0] and not decl and (sp(gv[2]) != sp(w["varType"]) or (want_size and gv[1] != want_size)):
             bad.append((hex(pa), "variable", v[0], w["varType"], w["varSize"], gv))
         if sp(gp[2]) != sp(w["type"]) or (w["size"] and gp[1] != w["size"]):
             bad.append((hex(pa), "leaf", w["path"], w["type"], w["size"], gp))
@@ -133,6 +163,7 @@ def check_types(elf, shards, n, rnd, lds):
         print("MISMATCH", b)
     print(f"{elf}: types.json {len(T['vars'])} variables, {len(T['types'])} types; {n - hidden - len(bad)}/{n - hidden} "
           f"random bytes agree with gdb (variable, member path, type, size; {bits} in bit fields, {padding} padding, "
-          f"{unions} in unions, {moved} where gdb's variable of that name is another one; {hidden} more in variables "
-          f"gdb cannot find by name, checked by ELF symbol)")
+          f"{unions} in unions, {moved} where gdb's variable of that name is another one, {shrunk} in globals clang shrank, "
+          f"{pieces} in pieces of globals clang split (checked by ELF symbol); "
+          f"{hidden} more in variables gdb cannot find by name, checked by ELF symbol)")
     return bad

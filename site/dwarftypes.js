@@ -30,10 +30,18 @@ import { dwarfScopeGroups, dwTypeSize } from "./dwarflocals.js";
 //              [DWT.void, name]
 //   vars       [name, physical address, type, size, section index, flags, function]
 //              sorted by address; flags 1: external, 2: per-CPU (the
-//              template copy in .data..percpu), 4: a static local; function:
+//              template copy in .data..percpu), 4: a static local, 8: a
+//              global clang shrank (size: the bytes it keeps at the address,
+//              fewer than its type has; dwarf.js storedAddr); function:
 //              the one a static local is in (none when DWARF does not name it:
 //              clang puts the statics of an only-inlined function in an
 //              empty DW_TAG_subprogram)
+//              16: a piece of a global clang split into pieces at their
+//              own addresses (size: the piece's; dwarf.js pieceAddrs)
+//   shrunk     [[physical address, k, c], ...] of the flag-8 variables:
+//              the C value is the stored bytes * k + c (only when any)
+//   pieces     [[physical address, offset in the variable], ...] of the
+//              flag-16 entries (only when any)
 
 // GCC's names of C's integer types, as C programmers (and gdb) write them.
 const DW_BASE_NAMES = { "long int": "long", "long unsigned int": "unsigned long", "short int": "short",
@@ -49,6 +57,8 @@ class DwarfTypes {
 		this.files = []; // where variables are defined (vars[k][7])
 		this.fileIx = new Map();
 		this.seen = new Map(); // name@address -> variable
+		this.shrunk = []; // [address, k, c] of each global clang shrank (flag 8)
+		this.pieces = []; // [address, offset in the variable] of each piece of a global clang split (flag 16)
 		this.other = new Map(); // unit index -> its decodeData types
 		this.funcs = new DwarfFuncs(dw);
 	}
@@ -153,8 +163,12 @@ class DwarfTypes {
 				continue;
 			}
 			const sec = secOf(x.va);
-			const v = [x.name, pa, id(x.type), 0, sec[0], (x.external ? 1 : 0) | (sec[1] ? 2 : 0) | (x.fn >= 0 ? 4 : 0), x.scope || "",
-				x.file ? this.fileId(x.file) : -1, x.line || 0];
+			const v = [x.name, pa, id(x.type), x.stored ? x.stored[0] : x.piece ? x.piece[0] : 0, sec[0], (x.external ? 1 : 0) | (sec[1] ? 2 : 0) |
+				(x.fn >= 0 ? 4 : 0) | (x.stored ? 8 : 0) | (x.piece ? 16 : 0), x.scope || "", x.file ? this.fileId(x.file) : -1, x.line || 0];
+			if (x.stored)
+				this.shrunk.push([pa, x.stored[1], x.stored[2]]);
+			if (x.piece)
+				this.pieces.push([pa, x.piece[1]]);
 			this.seen.set(k, v);
 			this.vars.push(v);
 		}
@@ -211,7 +225,9 @@ class DwarfTypes {
 	// { format, types, vars, sections, files }: declarations point to the
 	// definition of the same name, vars get their sizes and are sorted.
 	// A variable: [name, physical address, type id, size, section index,
-	// flags (1 external, 2 per-CPU, 4 static local), function of a static
+	// flags (1 external, 2 per-CPU, 4 static local, 8 shrunk by clang: the
+	// value is the `size` bytes there, fewer than its type's, 16 a piece of
+	// a variable clang split), function of a static
 	// local, index in files of DW_AT_decl_file, DW_AT_decl_line, and only
 	// when other units define a variable of that name at that address
 	// too: [[file index, line], ...] of those]; the trailing fields are
@@ -226,8 +242,13 @@ class DwarfTypes {
 			if ((t[0] === DWT.struct || t[0] === DWT.union || t[0] === DWT.enum) && !t[3] && defs.has(t[0] + t[1]))
 				t[t[0] === DWT.enum ? 6 : 5] = defs.get(t[0] + t[1]);
 		const out = { format: 2, types: this.types, vars: this.vars, sections, files: this.files, funcs: this.funcs.finish() };
+		if (this.shrunk.length)
+			out.shrunk = this.shrunk.sort((x, y) => x[0] - y[0]);
+		if (this.pieces.length)
+			out.pieces = this.pieces.sort((x, y) => x[0] - y[0]);
 		for (const v of this.vars) {
-			v[3] = dwTypeSize(out, v[2]);
+			if (!(v[5] & 24))
+				v[3] = dwTypeSize(out, v[2]);
 			if (v[7] < 0)
 				v.length = v[6] ? 7 : 6;
 		}

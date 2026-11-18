@@ -1,5 +1,6 @@
 """test_dwarf.py --funcs: function facts against gdb, llvm-dwarfdump and llvm-symbolizer."""
 
+import bisect
 import gzip
 import json
 import os
@@ -103,18 +104,57 @@ def dwarfdump_inline_counts(elf, strip):
     return counts
 
 
+def addrx_resolver(elf):
+    """(DIE offset, index) -> the address DW_OP_addrx index names in that
+    DIE's unit (clang's DWARF 5: the unit's DW_AT_addr_base into
+    .debug_addr), or None; llvm-dwarfdump prints only the index."""
+    units, cur = [], None
+    out = subprocess.run(["llvm-dwarfdump", "--debug-info", "--recurse-depth=0", elf], capture_output=True, text=True, check=True).stdout
+    for line in out.splitlines():
+        m = re.match(r"^0x([0-9a-f]+): \w+ Unit: .*\(next unit at 0x([0-9a-f]+)\)", line)
+        if m:
+            cur = [int(m.group(1), 16), int(m.group(2), 16), None]
+            units.append(cur)
+            continue
+        m = re.match(r"^\s+DW_AT_addr_base\s+\(0x([0-9a-f]+)\)", line)
+        if m and cur:
+            cur[2] = int(m.group(1), 16)
+    # Each table: a header of 8 bytes (DWARF32), then the addresses; a
+    # unit's addr_base is the offset of its first address.
+    tables, off, addrs = {}, 0, None
+    for line in subprocess.run(["llvm-dwarfdump", "--debug-addr", elf], capture_output=True, text=True, check=True).stdout.splitlines():
+        m = re.match(r"^Address table header: length = 0x([0-9a-f]+), format = DWARF32", line)
+        if m:
+            addrs = tables[off + 8] = []
+            off += 4 + int(m.group(1), 16)
+            continue
+        m = re.fullmatch(r"0x([0-9a-f]+)", line.strip())
+        if m and addrs is not None:
+            addrs.append(int(m.group(1), 16))
+    starts = [u[0] for u in units]
+
+    def resolve(die, idx):
+        k = bisect.bisect_right(starts, die) - 1
+        if k < 0 or die >= units[k][1] or units[k][2] is None:
+            return None
+        t = tables.get(units[k][2])
+        return t[idx] if t is not None and idx < len(t) else None
+    return resolve
+
+
 def dwarfdump_named(elf, names, strip):
     """llvm-dwarfdump -c --name for each name (one pass over .debug_info):
     the DIEs named so directly or through DW_AT_abstract_origin, and all
     their children, by offset: {offset: {tag, name, file, line, origin,
     code, type, params: [{name, type}], varargs}} (params of a
     subprogram: its formal_parameter children; addr: a fixed location,
-    DW_OP_addr [+ DW_OP_plus_uconst]); type texts as llvm-dwarfdump
-    prints them, None for no DW_AT_type."""
+    DW_OP_addr or DW_OP_addrx [+ DW_OP_plus_uconst], or the address of a
+    global clang shrank); type texts as
+    llvm-dwarfdump prints them, None for no DW_AT_type."""
     cmd = ["llvm-dwarfdump", "-c"] + ["--name=" + n for n in names] + [elf]
-    dies, stack = {}, []
+    dies, stack, addrx = {}, [], []
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, bufsize=1 << 20)
-    cur, in_ranges = None, False
+    cur, in_ranges, off = None, False, 0
     for line in p.stdout:
         m = re.match(r"^0x([0-9a-f]+):( *)(DW_TAG_\w+|NULL)", line)
         if m:
@@ -123,7 +163,8 @@ def dwarfdump_named(elf, names, strip):
             if m.group(3) == "NULL":
                 cur = None
                 continue
-            cur = dies.setdefault(int(m.group(1), 16), {"tag": m.group(3), "type": None, "params": [], "varargs": False, "code": False})
+            off = int(m.group(1), 16)
+            cur = dies.setdefault(off, {"tag": m.group(3), "type": None, "params": [], "varargs": False, "code": False})
             parent = stack[-1] if stack else None
             if parent is not None and parent["tag"] == "DW_TAG_subprogram" and cur is not parent:
                 if m.group(3) == "DW_TAG_formal_parameter" and cur not in parent["params"]:
@@ -158,10 +199,34 @@ def dwarfdump_named(elf, names, strip):
             cur[k] = int(v.split()[0], 16)
             cur["code"] = cur["code"] or cur.get("high_pc", 0) > cur.get("low_pc", 1 << 40)
         elif k == "location":
-            a = re.fullmatch(r"DW_OP_addr 0x([0-9a-f]+)(?:, DW_OP_plus_uconst 0x([0-9a-f]+))?", v)
-            if a:
-                cur["addr"] = int(a.group(1), 16) + int(a.group(2) or "0", 16)
+            # Also a global clang shrank: its value is the bytes there
+            # (DW_OP_deref_size n [* 1] [+ 0], DW_OP_stack_value).
+            a = re.fullmatch(r"DW_OP_addr(x?) 0x([0-9a-f]+)(?:, DW_OP_plus_uconst 0x([0-9a-f]+)|, DW_OP_deref_size 0x[0-9a-f]+"
+                             r"(?:, DW_OP_(?:lit1|constu 0x1), DW_OP_mul)?(?:, DW_OP_(?:lit0|constu 0x0), DW_OP_plus)?, DW_OP_stack_value)?", v)
+            if a and a.group(1):
+                addrx.append((off, int(a.group(2), 16), int(a.group(3) or "0", 16), "addr"))
+            elif a:
+                cur["addr"] = int(a.group(2), 16) + int(a.group(3) or "0", 16)
+            # A global clang split into pieces at their own addresses: each piece's address.
+            piece = r"(?:DW_OP_addr(x?) 0x([0-9a-f]+)(?:, DW_OP_plus_uconst 0x([0-9a-f]+))?, )?DW_OP_piece 0x[0-9a-f]+"
+            if not a and re.fullmatch(piece + r"(?:, " + piece + r")+", v):
+                cur["pieces"] = []
+                for x, n, plus in re.findall(piece, v):
+                    if not n:
+                        continue
+                    if x:
+                        addrx.append((off, int(n, 16), int(plus or "0", 16), "pieces"))
+                    else:
+                        cur["pieces"].append(int(n, 16) + int(plus or "0", 16))
     p.wait()
+    if addrx:
+        resolve = addrx_resolver(elf)
+        for off, idx, plus, key in addrx:
+            base = resolve(off, idx)
+            if base is not None and key == "addr":
+                dies[off]["addr"] = base + plus
+            elif base is not None:
+                dies[off]["pieces"].append(base + plus)
     return dies
 
 # GCC's base type names as the page (and gdb) spell them.

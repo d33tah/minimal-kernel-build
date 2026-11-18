@@ -481,7 +481,11 @@ class DbgMerge {
 			}
 		}
 		vars.sort((a, b) => a[1] - b[1]);
-		return { ...T, vars };
+		const out = { ...T, vars };
+		for (const key of ["shrunk", "pieces"])
+			if (T[key])
+				out[key] = T[key].map(([pa, ...rest]) => [this.moved(pa), ...rest]).filter((x) => x[0] !== null).sort((a, b) => a[0] - b[0]);
+		return out;
 	}
 
 	// files.json: CI's functions that moved whole and the owned ones of the

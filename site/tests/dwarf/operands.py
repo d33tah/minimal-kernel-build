@@ -158,17 +158,27 @@ def check_operands(elf, shards, n, rnd, lds):
     bad, named, nstack, nabs, gdbonly, failed, errors, nearest = [], {"stack": 0, "abs": 0}, 0, 0, 0, 0, [], 0
     nm = subprocess.run(["llvm-nm", "-S", "--defined-only", elf], capture_output=True, text=True, check=True).stdout
     sized = {f[3] for f in (line.split() for line in nm.splitlines()) if len(f) == 4 and int(f[1], 16) > 0}
-    # name -> addresses, and the marks without a size (linker symbols) per address.
-    nm_at, marks = {}, {}
+    # name -> addresses, address -> {name: size}, and the marks without a
+    # size (linker symbols) per address.
+    nm_at, names_at, marks = {}, {}, {}
     for f in (line.split() for line in nm.splitlines()):
         if len(f) >= 3:
             nm_at.setdefault(f[-1], set()).add(int(f[0], 16))
+            names_at.setdefault(int(f[0], 16), {})[f[-1]] = int(f[1], 16) if len(f) == 4 else 0
             if len(f) == 3 or int(f[1], 16) == 0:
                 marks.setdefault(int(f[0], 16), set()).add(f[-1])
+
+    def static_sym(at, var, scope):
+        """clang's ELF symbol of a static local var at `at`: function.var, or
+        function.var.N for the next ones of that name in the function (one
+        per inner block: WARN_ONCE's __already_done); scope: the function
+        when the page knows it (not for a function that exists only inlined)."""
+        return any(re.fullmatch(re.escape(scope or "") + (r"" if scope else r"[^.]+") + r"\." + re.escape(var) + r"(\.\d+)?", s)
+                   for s in names_at.get(at, {}))
     secs = [(int(m.group(1), 16), int(m.group(2), 16)) for m in re.finditer(
         r"^\s*\[\s*\d+\]\s+\S+\s+\S+\s+([0-9a-f]{8})\s+[0-9a-f]+\s+([0-9a-f]+)\s+\S+\s+\S*A", subprocess.run(
             ["llvm-readelf", "-SW", elf], capture_output=True, text=True, check=True).stdout, re.M)]
-    aliased = static = nosec = 0
+    aliased = static = nosec = private = alias_obj = 0
     ia = istack = 0
     for kind, va, text, ea, mine in which:
         if kind == "abs":
@@ -190,6 +200,12 @@ def check_operands(elf, shards, n, rnd, lds):
             if not mine:
                 if m.group(1) not in sized:
                     nearest += 1  # a symbol without a size (a linker mark; trimmed from a distro's symbols.json), or gdb's nearest one before
+                elif m.group(1).startswith(".L") and m.group(1) in names_at.get(ea - int(m.group(2) or 0), {}):
+                    # clang's private constant (.L__const.function.name: a
+                    # local aggregate's initializer copied from .rodata): an
+                    # assembler-local symbol gdb names from the symtab, no C
+                    # variable and no DWARF, so the page has no name for it.
+                    private += 1
                 else:
                     bad.append((hex(va), text, "page names nothing", "gdb", s))
                 continue
@@ -201,13 +217,20 @@ def check_operands(elf, shards, n, rnd, lds):
                 # gdb picks one.
                 aliased += 1
                 continue
-            if mine["varOff"] == off and mine.get("scope") and m.group(1).startswith(mine["scope"]) and \
-                    (ea - off) in nm_at.get(mine["scope"] + "." + mine["var"], ()):
-                # A static local: clang's ELF symbol is function.name, which
-                # gdb prints demangled in odd ways (pt_regs_nr..dummy for
-                # pt_regs_nr.__dummy, sanitize_boot_params[scratch]); the
-                # page names the C variable.
+            if mine["varOff"] == off and (not mine.get("scope") or m.group(1).startswith(mine["scope"])) and \
+                    static_sym(ea - off, mine["var"], mine.get("scope")):
+                # A static local: clang's ELF symbol is function.name (or
+                # function.name.N), which gdb prints demangled in odd ways
+                # (pt_regs_nr..dummy for pt_regs_nr.__dummy,
+                # sanitize_boot_params[scratch]); the page names the C variable.
                 static += 1
+                continue
+            if mine["varOff"] == off and mine["kind"] == "var" and m.group(1) != mine["var"] and \
+                    names_at.get(ea - off, {}).get(m.group(1)) == mine.get("varSize"):
+                # One object, two names: the page's DWARF variable and another
+                # ELF symbol of the same address and size (lib/crypto/aes.c:
+                # crypto_aes_sbox is __alias(aes_sbox), which has no symbol of its own).
+                alias_obj += 1
                 continue
             if not (mine["var"] == m.group(1) or re.fullmatch(re.escape(mine["var"]) + r"\.\d+", m.group(1))) or mine["varOff"] != off:
                 bad.append((hex(va), text, "page", mine["name"], mine["var"], mine["varOff"], "gdb", s))
@@ -242,5 +265,6 @@ def check_operands(elf, shards, n, rnd, lds):
           f"{named['abs']} named, {nearest} named by gdb from a symbol without a size; {nstack} on the stack, {named['stack']} named as a parameter or local; "
           f"{gdbonly} gdb names and the page does not; gdb failed on {failed} cores; {aliased} linker marks sharing an address that the page "
           f"names all of and gdb one of, {static} static locals gdb names by clang's function.name ELF symbol, {nosec} linker marks between "
-          f"sections where gdb has no symbol, each checked with llvm-nm)")
+          f"sections where gdb has no symbol, {alias_obj} variables gdb names by another symbol of the same address and size (an alias), "
+          f"{private} clang private constants (.L__const) gdb names and no DWARF does, each checked with llvm-nm)")
     return bad

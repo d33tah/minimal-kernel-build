@@ -310,15 +310,15 @@ snapdiff.js	278	f8bff038	same race as 947 for the Page tab buttons
 snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
 snapworker.js	312	ddb69209	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
-srctext.js	19-21	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
-srctext.js	31	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
-srctext.js	38	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
-srctext.js	59	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
-srctext.js	66	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
-srctext.js	73	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
-srctext.js	152	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
-srctext.js	189	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
-srctext.js	256	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
+srctext.js	20-22	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
+srctext.js	32	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
+srctext.js	39	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
+srctext.js	60	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
+srctext.js	67	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
+srctext.js	74	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
+srctext.js	153	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
+srctext.js	190	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
+srctext.js	257	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
 source.js	75	f9555e97	a frame's line past the end of its source file: the shipped kernels' sources hold every line their DWARF names; only an imported vmlinux with other sources; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 source.js	132	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
 source.js	135	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line

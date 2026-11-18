@@ -201,8 +201,9 @@ def dwarfdump_named(elf, names, strip):
         elif k == "location":
             # Also a global clang shrank: its value is the bytes there
             # (DW_OP_deref_size n [* 1] [+ 0], DW_OP_stack_value).
+            k = r"DW_OP_(?:lit\d+|constu 0x[0-9a-f]+)(?:, DW_OP_not)?"
             a = re.fullmatch(r"DW_OP_addr(x?) 0x([0-9a-f]+)(?:, DW_OP_plus_uconst 0x([0-9a-f]+)|, DW_OP_deref_size 0x[0-9a-f]+"
-                             r"(?:, DW_OP_(?:lit1|constu 0x1), DW_OP_mul)?(?:, DW_OP_(?:lit0|constu 0x0), DW_OP_plus)?, DW_OP_stack_value)?", v)
+                             r"(?:, " + k + r", DW_OP_mul)?(?:, " + k + r", DW_OP_plus)?, DW_OP_stack_value)?", v)
             if a and a.group(1):
                 addrx.append((off, int(a.group(2), 16), int(a.group(3) or "0", 16), "addr"))
             elif a:

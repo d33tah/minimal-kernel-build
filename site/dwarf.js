@@ -356,8 +356,8 @@ class DwarfReader extends DwarfReaderFuncs {
 
 	// clang's global split into pieces at addresses of their own (LLVM
 	// GlobalOpt's SRA: struct members kept as separate globals, __futex_data.0
-	// and __futex_data.1): DW_OP_addr / DW_OP_addrx [DW_OP_plus_uconst]
-	// DW_OP_piece size, ..., a piece with no operation is not in memory.
+	// and __futex_data.1): DW_OP_addr (4 bytes) / DW_OP_addrx, DW_OP_piece
+	// size, ..., a piece with no operation is not in memory.
 	// [[va, size, offset in the variable], ...] of the pieces in memory, or
 	// null (any other expression, or a single piece).
 	pieceAddrs(c, p, len) {
@@ -365,19 +365,12 @@ class DwarfReader extends DwarfReaderFuncs {
 		let off = 0;
 		while (q.p < end) {
 			let va = null;
-			const at = q.p;
-			if (b[q.p] === 0x03) {
-				va = c.u.addrSize === 4 ? u32le(b, q.p + 1) : null;
-				q.p += 1 + c.u.addrSize;
+			if (b[q.p] === 0x03 && c.u.addrSize === 4) {
+				va = u32le(b, q.p + 1);
+				q.p += 5;
 			} else if (b[q.p] === 0xa1 || b[q.p] === 0xfb) {
 				q.p++;
 				va = this.addr(c, 0x1b, this.uleb(q));
-				if (va === null)
-					return null;
-			}
-			if (q.p > at && b[q.p] === 0x23) {
-				q.p++;
-				va += this.uleb(q);
 			}
 			if (b[q.p] !== 0x93) // DW_OP_piece
 				return null;
@@ -394,11 +387,11 @@ class DwarfReader extends DwarfReaderFuncs {
 	// that only ever holds its initial value or one other is kept as a flag):
 	// DW_OP_addr / DW_OP_addrx, DW_OP_deref_size n, then optionally a
 	// constant k and DW_OP_mul, a constant c and DW_OP_plus (a constant:
-	// DW_OP_litN, DW_OP_constu/consts/const1u.../const4s, then optionally
-	// DW_OP_not or DW_OP_neg), DW_OP_stack_value: the variable's value is
-	// the n bytes at that address times k plus c ("DW_OP_lit0, DW_OP_not,
-	// DW_OP_mul, DW_OP_lit1, DW_OP_plus": 1 - the byte). { va, n, k, c }
-	// or null (any other expression).
+	// DW_OP_litN or DW_OP_constu N, then optionally DW_OP_not: what clang
+	// writes), DW_OP_stack_value: the variable's value is the n bytes at
+	// that address times k plus c ("DW_OP_lit0, DW_OP_not, DW_OP_mul,
+	// DW_OP_lit1, DW_OP_plus": 1 - the byte). { va, n, k, c } or null (any
+	// other expression).
 	storedAddr(c, p, len) {
 		const b = c.b, end = p + len;
 		const q = { b, p: p + 1 };
@@ -418,40 +411,14 @@ class DwarfReader extends DwarfReaderFuncs {
 		// (q.p back where it was).
 		const term = (op) => {
 			const at = q.p, o = b[q.p++];
-			let v = null;
-			if (o >= 0x30 && o <= 0x4f)
-				v = o - 0x30;
-			else if (o === 0x10)
-				v = this.uleb(q);
-			else if (o === 0x11) {
-				let s = 0, x;
-				v = 0;
-				do { x = b[q.p++]; v += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80);
-				if (x & 0x40)
-					v -= 2 ** s;
-			}
-			else if (o >= 0x08 && o <= 0x0d) {
-				const w = [1, 1, 2, 2, 4, 4][o - 0x08], signed = o % 2 === 1;
-				v = 0;
-				for (let i = w - 1; i >= 0; i--)
-					v = v * 256 + b[q.p + i];
-				if (signed && v >= 2 ** (8 * w - 1))
-					v -= 2 ** (8 * w);
-				q.p += w;
-			}
+			let v = o >= 0x30 && o <= 0x4f ? o - 0x30 : o === 0x10 ? this.uleb(q) : null;
 			if (v !== null && b[q.p] === 0x20) { // DW_OP_not
 				v = ~v;
 				q.p++;
-			} else if (v !== null && b[q.p] === 0x1f) { // DW_OP_neg
-				v = -v;
-				q.p++;
 			}
-			if (v === null || b[q.p] !== op) {
-				q.p = at;
-				return null;
-			}
-			q.p++;
-			return v;
+			const ok = v !== null && b[q.p] === op;
+			q.p = ok ? q.p + 1 : at;
+			return ok ? v : null;
 		};
 		const k = term(0x1e) ?? 1, add = term(0x22) ?? 0;
 		return b[q.p] === 0x9f && q.p + 1 === end && n > 0 ? { va, n, k, c: add } : null;

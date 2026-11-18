@@ -47,9 +47,16 @@ PROMPT = "(initramfs)"
 HEADER_ADD = "/* E6: a header edit recompiles the objects that include it. */\n"
 UNTOUCHED = "do_sys_open"
 # A function added at the end of init/main.c: the code after init/main.o
-# (do_sys_open's too) moves.
+# (do_sys_open's too) moves. And globals clang shrinks to a byte (e6_flag:
+# its value is the byte, e6_on: 1 - the byte) and splits into pieces
+# (e6_pair), whose DWARF the page reads from the compiled object.
 ADD = "\n/* E6: a function added, so the code after this unit moves. */\n__attribute__((used)) int e6_moved(int x);\n" \
-    "__attribute__((used)) int e6_moved(int x)\n{\n\treturn x * 3 + 1;\n}\n"
+    "__attribute__((used)) int e6_moved(int x)\n{\n\treturn x * 3 + 1;\n}\n" \
+    "\n/* E6: globals clang shrinks to a byte or splits into pieces. */\n" \
+    "static int e6_flag;\nstatic int e6_on = 1;\nstatic struct { int a; int b; } e6_pair;\n" \
+    "__attribute__((used)) void e6_globals_set(int x);\n__attribute__((used)) int e6_globals_get(void);\n" \
+    "__attribute__((used)) void e6_globals_set(int x)\n{\n\te6_flag = 1;\n\te6_on = 0;\n\te6_pair.a = x;\n\te6_pair.b = x + 1;\n}\n" \
+    "__attribute__((used)) int e6_globals_get(void)\n{\n\treturn e6_flag + e6_on + e6_pair.a + e6_pair.b;\n}\n"
 
 # The edited line on the screen, counted once the screen was without it.
 WATCH_JS = """(msg) => { clearInterval(window.rbScrTimer); const s = window.rbScr = { t0: Date.now(), cleared: false, at: null };
@@ -70,6 +77,10 @@ SHRUNK_JS = """async () => {
   }
   out.pieces = T.vars.filter((v) => v[0] === '__futex_data').map((v) => [v[5] & 16, v[3], (MKB.dwWhere(T, v[1]) || {}).path || null]);
   out.pieceEval = MKB.varsEval(T, '__futex_data').error || 'no error';
+  // The edited unit's own globals, from the DWARF made in the page (its type table).
+  const O = MKB.DBG.merge && MKB.DBG.merge.ownT;
+  out.own = O ? O.vars.filter((v) => v[0].startsWith('e6_')).map((v) => [v[0], v[5] & 24, v[3], (MKB.dwWhere(O, v[1]) || {}).path || null,
+    ((O.shrunk || []).find((x) => x[0] === v[1]) || []).slice(1)]) : null;
   return out; }"""
 
 
@@ -201,6 +212,11 @@ def run(browser, base, shots, tmp, problems, r):
     paths = [p for _, _, p in g.get("pieces", [])]
     if len(paths) < 2 or not all(f for f, _, _ in g["pieces"]) or len(set(paths)) != len(paths) or "split by clang" not in g.get("pieceEval", ""):
         problems.append(f"__futex_data (a global clang split) after the rebuild: {g}")
+    own = sorted(map(tuple, (tuple(x[:4]) + (tuple(x[4]),) for x in g.get("own") or [])))
+    want = [("e6_flag", 8, 1, "e6_flag", (1, 0)), ("e6_on", 8, 1, "e6_on", (-1, 1)),
+            ("e6_pair", 16, 4, "e6_pair.a", ()), ("e6_pair", 16, 4, "e6_pair.b", ())]
+    if own != want:
+        problems.append(f"the edited unit's globals clang shrank or split, in the DWARF made here: {own}, want {want}")
     show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 120)
     page.fill("#cov_filter", header.split("/")[-1])

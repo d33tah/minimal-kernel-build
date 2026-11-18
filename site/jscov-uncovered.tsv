@@ -102,10 +102,10 @@ dbginfo.js	639	432789e1	dbgFunction over a function that spans two shards with t
 dbginfo.js	643	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
 dbginfo.js	681	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
 dbginfo.js	275	f753a4ac	E6: code compiled in the page whose data files have no types.json: kgen.js kgenDwarf always writes types.json with the line shards
-dbgmerge.js	201	1acb157f	E6: a line shard of format 1 (no is_stmt data) under a rebuild: CI and the page write format 2 since the is_stmt step; only an old shard
-dbgmerge.js	272	70207f09	E6: the page's and CI's shards of different sizes: both come from kgen.js's SHARD_BITS; only inconsistent data
-dbgmerge.js	372	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask for (its dbgGet asks only index, line, cfi, locals, ownLocals, funcs, types, files)
-dbgmerge.js	449	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
+dbgmerge.js	202	1acb157f	E6: a line shard of format 1 (no is_stmt data) under a rebuild: CI and the page write format 2 since the is_stmt step; only an old shard
+dbgmerge.js	337	70207f09	E6: the page's and CI's shards of different sizes: both come from kgen.js's SHARD_BITS; only inconsistent data
+dbgmerge.js	437	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask for (its dbgGet asks only index, line, cfi, locals, ownLocals, funcs, types, files)
+dbgmerge.js	514	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
 debug.js	101	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarfread.js	36	d99af19c	the size of DW_FORM_strx3/addrx3 (3-byte indexes): needs a unit with 65,536 or more string or address indexes; the kernels the suites read have none (clang writes strx1/strx2/addrx); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 dwarfread.js	52	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings

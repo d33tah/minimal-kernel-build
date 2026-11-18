@@ -27,6 +27,7 @@
 import { dwarfDecode, dwarfPack, dwarfRow } from "./dwarftables.js";
 import { cfiDecode, cfiPack } from "./unwind.js";
 import { dwOpEnd } from "./dwexpr.js";
+import { DWT } from "./dwarfread.js";
 
 // Bytes of a .gz file as fetched: gunzipped, unless the server already
 // decoded it (Content-Encoding: gzip).
@@ -231,6 +232,70 @@ function mgCfi(parts) {
 	}
 	fdes.sort((x, y) => x[0] - y[0]);
 	return cfiPack(cies, fdes, src, bias === undefined ? null : bias);
+}
+
+// Adds to the types.json data out (CI's, moved; its arrays are copied
+// before they change) the variables of O (the files made here) that out
+// lacks at their address: their types (and the types those reach) are
+// appended to out.types with new ids, their sections and files named in
+// out's lists.
+function mgAddVars(out, O) {
+	const have = new Set(out.vars.map((v) => v[0] + "@" + v[1]));
+	const add = O.vars.filter((v) => !have.has(v[0] + "@" + v[1]));
+	out.types = out.types.slice();
+	out.sections = (out.sections || []).slice();
+	out.files = (out.files || []).slice();
+	const ids = new Map();
+	const id = (k) => {
+		if (k < 0 || k === null || k === undefined || !O.types[k])
+			return k;
+		let n = ids.get(k);
+		if (n !== undefined)
+			return n;
+		n = out.types.length;
+		ids.set(k, n);
+		const t = O.types[k], c = t.slice();
+		out.types.push(c);
+		switch (t[0]) {
+		case DWT.ptr: case DWT.const: case DWT.volatile: case DWT.restrict: case DWT.atomic: case DWT.array:
+			c[1] = id(t[1]);
+			break;
+		case DWT.typedef:
+			c[2] = id(t[2]);
+			break;
+		case DWT.func:
+			c[1] = id(t[1]);
+			c[2] = t[2].map(id);
+			break;
+		case DWT.struct: case DWT.union:
+			// [5]: a declaration's definition (dwarftypes.js finish).
+			c[3] = t[3] && t[3].map((m) => { const e = m.slice(); e[2] = id(m[2]); return e; });
+			c[5] = id(t[5]);
+			break;
+		case DWT.enum:
+			c[4] = id(t[4]);
+			c[6] = id(t[6]);
+			break;
+		}
+		c.length = t.length;
+		return n;
+	};
+	// Index of name in list, added when new.
+	const index = (list, name) => (list.includes(name) ? list.indexOf(name) : list.push(name) - 1);
+	const file = (f) => (f >= 0 && O.files && O.files[f] !== undefined ? index(out.files, O.files[f]) : -1);
+	const sec = (s) => (O.sections && O.sections[s] !== undefined ? index(out.sections, O.sections[s]) : s);
+	// [2] type, [4] section, [7] file, [9] other definitions' [file, line].
+	const field = [null, null, id, null, sec, null, null, file, null, (d) => d.map(([f, line]) => [file(f), line])];
+	for (const v of add) {
+		const x = v.map((f, i) => (field[i] ? field[i](f) : f));
+		out.vars.push(x);
+		for (const key of ["shrunk", "pieces"]) {
+			const e = O[key] && O[key].find((s) => s[0] === v[1]);
+			if (e && (v[5] & (key === "shrunk" ? 8 : 16)))
+				out[key] = (out[key] || []).concat([e.slice()]);
+		}
+	}
+	return add.length;
 }
 
 class DbgMerge {
@@ -469,7 +534,9 @@ class DbgMerge {
 	}
 
 	// CI's variables at their new addresses (one that did not move is not
-	// in the rebuilt kernel where CI's DWARF says).
+	// in the rebuilt kernel where CI's DWARF says), and the variables of the
+	// units compiled here that CI's list lacks there (a global the edit
+	// added, or one whose size changed), their types copied into CI's table.
 	types(T) {
 		const vars = [];
 		for (const v of T.vars) {
@@ -480,11 +547,16 @@ class DbgMerge {
 				vars.push(x);
 			}
 		}
-		vars.sort((a, b) => a[1] - b[1]);
 		const out = { ...T, vars };
 		for (const key of ["shrunk", "pieces"])
 			if (T[key])
-				out[key] = T[key].map(([pa, ...rest]) => [this.moved(pa), ...rest]).filter((x) => x[0] !== null).sort((a, b) => a[0] - b[0]);
+				out[key] = T[key].map(([pa, ...rest]) => [this.moved(pa), ...rest]).filter((x) => x[0] !== null);
+		if (this.ownT)
+			mgAddVars(out, this.ownT);
+		vars.sort((a, b) => a[1] - b[1] || b[3] - a[3]);
+		for (const key of ["shrunk", "pieces"])
+			if (out[key])
+				out[key].sort((a, b) => a[0] - b[0]);
 		return out;
 	}
 

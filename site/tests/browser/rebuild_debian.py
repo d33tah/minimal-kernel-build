@@ -16,6 +16,7 @@ from tests.browser.rebuild import (
     rb_state, RB_WATCH_JS,
 )
 from tests.browser.rebuild_linux import rbl_compiled, rbl_open, rbl_users
+from tests.browser.types import watch
 
 
 # ---- rebuild of the editable Debian (E6) -------------------------------------
@@ -56,7 +57,16 @@ ADD = "\n/* E6: a function added, so the code after this unit moves. */\n__attri
     "static int e6_flag;\nstatic int e6_on = 1;\nstatic struct { int a; int b; } e6_pair;\n" \
     "__attribute__((used)) void e6_globals_set(int x);\n__attribute__((used)) int e6_globals_get(void);\n" \
     "__attribute__((used)) void e6_globals_set(int x)\n{\n\te6_flag = 1;\n\te6_on = 0;\n\te6_pair.a = x;\n\te6_pair.b = x + 1;\n}\n" \
-    "__attribute__((used)) int e6_globals_get(void)\n{\n\treturn e6_flag + e6_on + e6_pair.a + e6_pair.b;\n}\n"
+    "__attribute__((used)) int e6_globals_get(void)\n{\n\treturn e6_flag + e6_on + e6_pair.a + e6_pair.b;\n}\n" \
+    "\n/* E6a: new globals the Variables panel reads after the rebuild. */\n" \
+    "typedef unsigned int e6a_u32;\nenum e6a_mode { E6A_OFF, E6A_ON };\n" \
+    "int e6a_read(void);\n" \
+    "int e6a_count = 42;\n" \
+    "struct e6a_rec { int id; char tag[8]; e6a_u32 n; enum e6a_mode mode; const char *name; void *p; int (*fn)(void); };\n" \
+    "struct e6a_rec e6a_rec = { 7, \"e6a\", 3, E6A_ON, \"rec\", 0, e6a_read };\n" \
+    "__attribute__((used)) int e6a_read(void)\n{\n\treturn e6a_count + e6a_rec.id + e6a_rec.tag[0] + e6a_rec.n + e6a_rec.mode;\n}\n"
+# Watches of the new globals (plan E6a) and what their rows must show.
+E6A_WATCHES = {"e6a_count": "42", "e6a_rec.id": "7", "e6a_rec.tag": '"e6a"', "e6a_rec.n": "3", "e6a_rec.mode": "E6A_ON"}
 
 # The edited line on the screen, counted once the screen was without it.
 WATCH_JS = """(msg) => { clearInterval(window.rbScrTimer); const s = window.rbScr = { t0: Date.now(), cleared: false, at: null };
@@ -81,6 +91,8 @@ SHRUNK_JS = """async () => {
   const O = MKB.DBG.merge && MKB.DBG.merge.ownT;
   out.own = O ? O.vars.filter((v) => v[0].startsWith('e6_')).map((v) => [v[0], v[5] & 24, v[3], (MKB.dwWhere(O, v[1]) || {}).path || null,
     ((O.shrunk || []).find((x) => x[0] === v[1]) || []).slice(1)]) : null;
+  // The edit's globals in the merged list (E6a).
+  out.merged = T.vars.filter((v) => v[0].startsWith('e6')).map((v) => v[0]);
   return out; }"""
 
 
@@ -217,6 +229,18 @@ def run(browser, base, shots, tmp, problems, r):
             ("e6_pair", 16, 4, "e6_pair.a", ()), ("e6_pair", 16, 4, "e6_pair.b", ())]
     if own != want:
         problems.append(f"the edited unit's globals clang shrank or split, in the DWARF made here: {own}, want {want}")
+    # Globals the edit added are in the merged Variables list (CI's table
+    # plus the compiled unit's, plan E6a), with their types: watched in
+    # the Debugger tab, read from the rebuilt kernel's memory.
+    merged = sorted(set(g.get("merged") or []))
+    if merged != ["e6_flag", "e6_on", "e6_pair", "e6a_count", "e6a_rec"]:
+        problems.append(f"the edit's new globals in the merged Variables list: {merged}")
+    show_tab(page, "debugger")
+    rows = {e: watch(page, e) for e in E6A_WATCHES}
+    r["new globals watched"] = rows
+    for e, w in E6A_WATCHES.items():
+        if w not in rows[e] or "not" in rows[e]:
+            problems.append(f"the watch of {e} (a global the edit added) shows {rows[e]!r}, want {w!r} in it")
     show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 120)
     page.fill("#cov_filter", header.split("/")[-1])

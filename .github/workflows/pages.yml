@@ -865,6 +865,8 @@ jobs:
         node site/test_frames.mjs
         # The page's state store (store.js) against useSyncExternalStore's contract.
         node site/test_store.mjs
+        # A rebuilt kernel's merged variables keep the globals the edit added.
+        node site/test_dbgmerge.mjs
         # site/jscov-uncovered.tsv still on the code it explains (rows that
         # moved with lines added above them: `node site/jscov/relist.js`).
         node site/jscov/relist.js --check

@@ -68,7 +68,7 @@ edit (the site job runs it with `--check`).
 
 Tests: `test_browser.py` (Playwright, suites per feature, screenshots at
 1280 and 390 px in light and dark), Node tests in the site job
-(`test_frames.mjs`, `test_store.mjs`, `test_srcedit.mjs`,
+(`test_frames.mjs`, `test_store.mjs`, `test_srcedit.mjs`, `test_dbgmerge.mjs`,
 `jscov/test_lines.js`) and in their jobs (`test_kit.mjs`), the Python
 checks of the generated data (`test_dwarf.py`, `test_jumps.py`,
 `test_kernel_data.py`), `test_pwa_install.py`, and the static checks:
@@ -3011,8 +3011,15 @@ information, parameters and locals (with their location lists and
 DW_OP_addr), the function facts, the variables and files.json of a 64 KiB
 shard of the new addresses are made from CI's shards of the old ones,
 shifted, plus the compiled units' own rows. The code of the compiled units
-comes from their own DWARF only. The Source panel reads the build's tree
-(the kit's files with your edits), so the file list keeps every file.
+comes from their own DWARF only. The Variables list is CI's, moved, plus
+every variable of the compiled units that CI's list lacks at its address
+(a global the edit added, or one whose size changed): its type and the
+types that type reaches are copied from the compiled units' type table
+into CI's with new ids (the two tables number their types differently),
+its section and file are named in CI's lists (`test_dbgmerge.mjs`, and
+the watches of the new globals in suite `rebuild_debian`). The Source
+panel reads the build's tree (the kit's files with your edits), so the
+file list keeps every file.
 
 What can differ from a -g build of the edited tree: a symbol whose name
 appears a different number of times in the two kernels, or whose size

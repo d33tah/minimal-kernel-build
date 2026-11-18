@@ -488,6 +488,34 @@ function kitUsers(kit) {
 	return users;
 }
 
+// Object o of the kit compiled with argv (its own command changed, e.g.
+// hotpatch's) and edits ({ path: text } over the kit's files): { code,
+// stderr, bytes } (bytes: the output file argv names after -o). The
+// object's dependencies are fetched once per cc (cc.kitHave).
+async function kitCompile(cc, kit, src, o, argv, edits) {
+	const abs = (p) => p.startsWith("/") ? p : kit.dir + "/" + p;
+	const have = cc.kitHave || (cc.kitHave = new Set());
+	// Its dependencies, and the generated headers: kbuild's deps leave out
+	// include/generated/autoconf.h (fixdep lists the config options instead).
+	const files = o.deps.map((d) => kit.files[d]).concat(kit.files.filter((f) => f[3] === 1 && f[0].endsWith(".h")));
+	const need = [...new Map(files.map((f) => [f[0], f])).values()].filter((f) => !(f[0] in edits) && !have.has(abs(f[0])));
+	for (let i = 0; i < need.length; i += 32) {
+		const part = need.slice(i, i + 32);
+		const data = await Promise.all(part.map((f) => src.get(f[1])));
+		await cc.write(part.map((f, k) => [abs(f[0]), data[k]]));
+		for (const f of part)
+			have.add(abs(f[0]));
+	}
+	await cc.write(Object.entries(edits).map(([p, t]) => [abs(p), typeof t === "string" ? new TextEncoder().encode(t) : t]));
+	for (const p of Object.keys(edits))
+		have.delete(abs(p)); // the kit's text is not there now
+	const out = abs(argv[argv.indexOf("-o") + 1]);
+	const env = { TMPDIR: kit.dir + "/.kit-tmp" };
+	await cc.mkdir([env.TMPDIR, out.replace(/\/[^/]*$/, "")]);
+	const r = await kitClang(cc, argv, { cwd: kit.dir, env, module: "clang", outputs: [out] });
+	return { code: r.code, stderr: r.stderr || "", bytes: r.code === 0 && r.files[0] ? r.files[0][1] : null, ms: r.ms };
+}
+
 async function kitBuild(cc, kit, src, opts = {}) {
 	const t0 = kitNow();
 	const dir = kit.dir;
@@ -675,4 +703,4 @@ async function kitBuild(cc, kit, src, opts = {}) {
 }
 
 export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitGrepArgs, kitGrep,
-	kitUsers, kitBuild };
+	kitUsers, kitCompile, kitBuild };

@@ -348,6 +348,12 @@ jobs:
     - name: Build kits of the kernels the page rebuilds
       run: site/gen-kits.sh "$RUNNER_TEMP/g" "$RUNNER_TEMP/hello-os" "$RUNNER_TEMP/o0" "$RUNNER_TEMP/hostwasm" kits
 
+    # Hot patching (plan E7, hpelf.js): an edit compiled twice as the page
+    # does gives a patch of the edited function against the kernel's
+    # symbols, and the edits a patch cannot apply are refused.
+    - name: Hot patch plans of edits (test_hotpatch.mjs)
+      run: node site/test_hotpatch.mjs site/clang/clang.wasm kits out hello minified-linux
+
     - uses: actions/upload-artifact@v4
       with:
         name: kernels

@@ -97,6 +97,97 @@ RB_LINES_JS = """async (name) => {
   return { paddr: s.paddr, vaddr: s.vaddr, lines }; }"""
 
 
+# What the Debugger knows about function `name`, at offsets from its symbol
+# (so a rebuild that moves it compares equal): its line rows (each row's
+# frames: function@file:line, innermost first), the parameters and locals of
+# every frame at each row's start (name:type:L, L when it has a location
+# there), the call frame information's row there.
+RB_DEBUG_JS = """async (name) => {
+  const s = MKB.symbols.symbols.find((x) => x.name === name);
+  if (!s) return { why: 'no symbol ' + name };
+  const wait = async (f) => { let v = f(); for (let i = 0; i < 1200 && (v === 'loading' || (v && v.state === 'loading')); i++) {
+    await new Promise((ok) => setTimeout(ok, 100)); v = f(); } return v; };
+  const f = await wait(() => MKB.dbgFunction(s.paddr));
+  if (f.state !== 'ok') return { why: 'lines: ' + f.state + ' ' + (f.why || '') };
+  const fr = (x) => x.map((q) => (q.func || '') + '@' + (q.file || '') + ':' + q.line).join(' < ');
+  // A row split where a 64 KiB shard ends is one row (the shards' edges
+  // fall elsewhere in another build).
+  const rows = [];
+  for (const [a, b, x] of f.rows) {
+    const t = fr(x), last = rows[rows.length - 1];
+    if (last && last[1] === a && last[2] === t) last[1] = b; else rows.push([a, b, t]);
+  }
+  const out = { paddr: s.paddr, lo: f.lo - s.paddr, hi: f.hi - s.paddr, rows: rows.map(([a, b, t]) => [a - s.paddr, b - s.paddr, t]), locals: {}, cfi: {} };
+  for (const [a] of rows) {
+    const L = await wait(() => MKB.dbgLocals(a));
+    out.locals[a - s.paddr] = L.state !== 'ok' ? L.state + ': ' + L.why : L.frames.map((q) => q.func + '(' +
+      [...q.params, ...q.locals].map((v) => v[0] + ':' + MKB.dwTypeName(L.T, v[1]) + ':' + (MKB.dwLocAt(v[3], a).why ? '-' : 'L')).join(', ') + ')').join(' < ');
+    const c = await wait(() => MKB.dbgCfiRow(a));
+    out.cfi[a - s.paddr] = c === null ? 'none' : c.why ? 'why: ' + c.why : MKB.cfiRowText(c);
+  }
+  return out; }"""
+
+# The Source tab's file list (files.json's files) once it loaded.
+RB_FILES_JS = """async () => {
+  let f = MKB.dbgFiles();
+  for (let i = 0; i < 1200 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = MKB.dbgFiles(); }
+  return f.state === 'ok' ? f.F.files.map((x) => x[0]) : [f.state + ': ' + f.why]; }"""
+
+
+def rb_debug(page, fns):
+    """RB_DEBUG_JS of each function and the file list (RB_FILES_JS)."""
+    return {"fns": {fn: page.evaluate(RB_DEBUG_JS, fn) for fn in fns}, "files": page.evaluate(RB_FILES_JS)}
+
+
+def rb_debug_check(before, after, untouched, edited, problems, r, tag, shift=lambda path, line: line, moved_by_edit=False):
+    """After a rebuild of an edited kernel the Debugger keeps everything it
+    knew: each untouched function has the shipped kernel's line rows (lines
+    of the edited file moved by shift), locals and CFI at the same offsets,
+    with something in each (moved_by_edit: at another address than in the
+    shipped kernel); each edited function has lines and locals; the file
+    list has every file the shipped kernel's has."""
+    def moved(d):
+        def fix(text):
+            out = []
+            for fr in text.split(" < "):
+                head, _, line = fr.rpartition(":")
+                func, _, path = head.partition("@")
+                out.append(f"{func}@{path}:{shift(path, int(line)) if line.isdigit() and path else line}")
+            return " < ".join(out)
+        return {**d, "rows": [[a, b, fix(t)] for a, b, t in d["rows"]]}
+    r["debug after the rebuild"] = {fn: {"rows": len((after["fns"][fn] or {}).get("rows", [])), "why": (after["fns"][fn] or {}).get("why"),
+                                         "locals at the start": next(iter((after["fns"][fn] or {}).get("locals", {}).values()), None)}
+                                    for fn in untouched + edited}
+    for fn in untouched:
+        b, a = before["fns"][fn], after["fns"][fn]
+        if not b or b.get("why") or not b["rows"]:
+            problems.append(f"{tag}: the shipped kernel's Debugger knows nothing of {fn}: {b}")
+            continue
+        if not any("(" in v and not v.endswith("()") for v in b["locals"].values()) or "none" in b["cfi"].values():
+            problems.append(f"{tag}: the shipped kernel's {fn} has no locals or no CFI to compare: {b['locals']} {b['cfi']}")
+        if not a or a.get("why"):
+            problems.append(f"{tag}: after the rebuild the Debugger knows nothing of {fn} (untouched): {a}")
+            continue
+        r.setdefault("moved by the edit", {})[fn] = a["paddr"] - b["paddr"]
+        if moved_by_edit and a["paddr"] == b["paddr"]:
+            problems.append(f"{tag}: {fn} is at the same address after the edit ({a['paddr']:#x}): the test needs an edit that moves it")
+        want = moved(b)
+        for k in ("lo", "hi", "rows", "locals", "cfi"):
+            if a[k] != want[k]:
+                diff = [(x, y) for x, y in zip(a[k], want[k]) if x != y][:3] if isinstance(a[k], list) else \
+                    [(x, a[k].get(x), want[k].get(x)) for x in sorted(set(a[k]) | set(want[k]), key=int) if a[k].get(x) != want[k].get(x)][:3] \
+                    if isinstance(a[k], dict) else (a[k], want[k])
+                problems.append(f"{tag}: after the rebuild {fn}'s {k} differ from the shipped kernel's (untouched unit): {diff}")
+    for fn in edited:
+        a = after["fns"][fn]
+        if not a or a.get("why") or not a["rows"] or not any(not v.startswith(("none", "loading")) and "(" in v for v in a["locals"].values()):
+            problems.append(f"{tag}: after the rebuild the edited {fn} has no lines or locals: {a and {k: a.get(k) for k in ('why', 'rows', 'locals')}}")
+    lost = sorted(set(before["files"]) - set(after["files"]))
+    r["file list"] = {"shipped": len(before["files"]), "rebuilt": len(after["files"]), "lost": lost[:10]}
+    if len(before["files"]) < 1 or lost:
+        problems.append(f"{tag}: after the rebuild the Source tab's file list lacks {len(lost)} of the shipped kernel's {len(before['files'])} files: {lost[:10]}")
+
+
 def rb_state(page):
     return page.evaluate(RB_STATE_JS)
 
@@ -253,6 +344,9 @@ def rebuild_run(browser, base, shots, tmp):
     r["idle"] = st["status"]
     if "with no edit: CI's bytes" not in st["status"] or not st["go"]:
         problems.append(f"before an edit the box says {st['status']!r}")
+    # The Debugger's view of the shipped kernel, to compare after the rebuild
+    # (hello has one C unit: put_line is its untouched function).
+    dbg_before = rb_debug(page, ["put_line"])
 
     # 1. Edit boot/hello.c as a user, press Rebuild and boot in the editor bar.
     if not rb_open_file(page, False):
@@ -326,6 +420,11 @@ def rebuild_run(browser, base, shots, tmp):
     for fn, s in (("e4_marker", "return 4;"), ("hello_main", RB_TO), ("hello_main", "int row = BDA_CURSOR_ROW")):
         if not lines.get(fn) or at(s) not in lines[fn]["lines"]:
             problems.append(f"{fn}'s DWARF lines {lines.get(fn) and lines[fn]['lines']} lack {at(s)} ({s!r} in the edited file)")
+    # Lines, locals, CFI and the file list after the edit: put_line's lines
+    # moved down by the inserted ones.
+    first = orig[:orig.index(RB_AFTER) + len(RB_AFTER)].count("\n")
+    rb_debug_check(dbg_before, rb_debug(page, ["put_line", "hello_main"]), ["put_line"], ["hello_main"], problems, r, "hello",
+                   lambda p, n: n + RB_INSERT.count("\n") if p == RB_FILE and n > first else n)
     wait_for(lambda: page.evaluate("MKB.srcFile('boot/hello.c').state") == "ok", 30)
     if page.evaluate("MKB.srcFile('boot/hello.c').lines") != wl:
         problems.append("the source the listings read is not the edited text")

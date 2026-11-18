@@ -17,11 +17,12 @@
 
 import { withV } from "./util.js";
 import { api, provide } from "./page.js";
-import { dwarfDecode, dwarfFrames, dwarfFunction, dwarfRow, dwarfResolvePath,
+import { dwarfFrames, dwarfFunction, dwarfRow, dwarfResolvePath,
 	dwarfFileCode } from "./dwarftables.js";
 import { dwFuncBase, dwFuncShard } from "./dwarffuncs.js";
 import { dwarfLocalFrames, dwarfScopesAt } from "./dwarflocals.js";
-import { cfiFrameInfo, cfiRow, cfiDecode, unwind } from "./unwind.js";
+import { cfiFrameInfo, cfiRow, unwind } from "./unwind.js";
+import { dbgGunzip, mgRead, DbgMerge } from "./dbgmerge.js";
 
 const DBG_DB = "mkb-dwarf";
 let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
@@ -54,7 +55,15 @@ function dbgOnChange(fn) {
 // Whether the current kernel has DWARF at all (shipped or imported).
 const dbgHas = () => DBG.mode === "shards" || DBG.mode === "import" || DBG.mode === "cached";
 
+// A debug info file of the shards' directory, decoded (dbgmerge.js mgRead:
+// kind index, line, cfi, locals, funcs, types, files); for a kernel rebuilt
+// from a kit without debug sections, made from both sources (DbgMerge).
+const dbgGet = (kind, key = 0) => DBG.merge ? DBG.merge.get(kind, key) : mgRead(api.source.kfetch, DBG.base, DBG.index, kind, key);
+
 // A shipped kernel: kernels.json "dwarf" (a directory with index.json).
+// entry.under (genimport.js, a rebuild from a kit without debug sections):
+// the shipped kernel's entry, whose DWARF covers the units not compiled
+// here, moved to the rebuilt kernel's symbols entry.syms (dbgmerge.js).
 function dbgUseShards(entry) {
 	if (!entry || !entry.dwarf) {
 		dbgFresh(null, "no debug info for this kernel");
@@ -62,13 +71,15 @@ function dbgUseShards(entry) {
 	}
 	dbgFresh("shards", "");
 	DBG.base = entry.dwarf.replace(/\/?$/, "/");
+	if (entry.under)
+		DBG.merge = new DbgMerge(api.source.kfetch, DBG.base, entry.under, entry.syms);
 	// Where the files come from: CI, or genimport.js for an imported vmlinux.
 	DBG.made = entry.made || "precomputed in CI";
 	// The index of this DBG only: when it arrives after another DWARF took
 	// over (an import restored after a reload, dbgRestore), it is dropped;
 	// it once became the restored import's index and info.
 	const mine = DBG;
-	DBG.indexLoad = api.source.kfetch(DBG.base + "index.json").then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+	DBG.indexLoad = dbgGet("index")
 		.then((ix) => {
 			if (mine !== DBG)
 				return;
@@ -95,11 +106,11 @@ function dbgLoadShard(s) {
 		return;
 	DBG.pending.add(s);
 	const mine = DBG;
-	api.source.kfetch(DBG.base + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
-		.then((buf) => {
+	dbgGet("line", s)
+		.then((t) => {
 			if (mine !== DBG)
 				return;
-			DBG.tables.set(s, dwarfDecode(new Uint8Array(buf)));
+			DBG.tables.set(s, t);
 			dbgChanged();
 		}).catch((e) => {
 			if (mine !== DBG)
@@ -194,7 +205,7 @@ function dbgTypes() {
 			return { state: "none", why: "this kernel's debug info has no variables (types.json)" };
 		if (!DBG.typesLoad) {
 			const mine = DBG;
-			DBG.typesLoad = api.source.kfetch(DBG.base + DBG.index.types).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+			DBG.typesLoad = dbgGet("types")
 				.then((T) => { if (mine === DBG) { DBG.types = T; dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.types = { failed: e.message }; dbgChanged(); } });
 		}
@@ -211,15 +222,6 @@ function dbgTypes() {
 }
 
 // ---- parameters and locals ----------------------------------------------------
-
-// Bytes of a .gz file as fetched: gunzipped, unless the server already
-// decoded it (Content-Encoding: gzip).
-async function dbgGunzip(buf) {
-	const b = new Uint8Array(buf);
-	if (b.length > 2 && b[0] === 0x1f && b[1] === 0x8b)
-		return new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
-	return b;
-}
 
 function dbgSetLocals(i, groups, base, added) {
 	// The Worker's table got types the one here lacks (only when the types
@@ -260,23 +262,29 @@ function dbgLocalGroups(pa) {
 	const ty = dbgTypes();
 	if (ty.state !== "ok")
 		return ty;
-	let key;
+	let key, T = ty.T;
 	if (DBG.mode === "shards") {
 		const L = DBG.index.locals;
 		if (!L)
 			return { state: "none", why: "this kernel's debug info has no parameters and locals (locals-*.json.gz)" };
 		const s = Math.floor(pa / 2 ** DBG.index.shardBits);
+		// Code compiled in this page (a rebuild, dbgmerge.js): the files made
+		// here, with their own type table.
+		const own = DBG.merge && DBG.merge.isOwned(pa);
+		if (own && !DBG.merge.ownT)
+			return { state: "none", why: "the debug info made here has no variables" };
+		if (own)
+			T = DBG.merge.ownT;
 		if (!DBG.localSet)
 			DBG.localSet = new Set(L.shards);
-		if (!DBG.localSet.has(s))
-			return { state: "ok", G: [], T: ty.T };
-		key = "s" + s;
+		if (!(own ? DBG.merge.ownLocals : DBG.localSet).has(s))
+			return { state: "ok", G: [], T };
+		key = (own ? "o" : "s") + s;
 		if (!DBG.localTables.has(key) && !DBG.localTables.has("pending" + key)) {
 			DBG.localTables.set("pending" + key, true);
 			const mine = DBG;
-			api.source.kfetch(DBG.base + "locals-" + s.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
-				.then(dbgGunzip)
-				.then((b) => { if (mine === DBG) { DBG.localTables.set(key, JSON.parse(new TextDecoder().decode(b)).fns); dbgChanged(); } })
+			dbgGet(own ? "ownLocals" : "locals", s)
+				.then((x) => { if (mine === DBG) { DBG.localTables.set(key, x.fns); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.localTables.set(key, { failed: e.message }); dbgChanged(); } });
 		}
 	} else {
@@ -298,7 +306,7 @@ function dbgLocalGroups(pa) {
 		return { state: "loading", why: "reading the parameters and locals here…" };
 	if (g.failed)
 		return { state: "none", why: "the parameters and locals did not load: " + g.failed };
-	return { state: "ok", G: g, T: ty.T };
+	return { state: "ok", G: g, T };
 }
 
 // ---- function facts ---------------------------------------------------------------
@@ -317,6 +325,11 @@ function dbgFnFacts(name) {
 		return ty;
 	const base = dwFuncBase(name || "");
 	let F;
+	// A function compiled in this page (a rebuild, dbgmerge.js): its facts
+	// from the files made here, with their type table.
+	const own = DBG.merge && DBG.merge.ownT && DBG.merge.ownFactsOf(base);
+	if (own)
+		return { state: "ok", fns: own, T: DBG.merge.ownT };
 	if (DBG.mode === "shards") {
 		const f = DBG.index.funcs;
 		if (!f)
@@ -326,9 +339,8 @@ function dbgFnFacts(name) {
 		if (!F) {
 			DBG.funcTables.set(k, "pending");
 			const mine = DBG;
-			api.source.kfetch(DBG.base + "funcs-" + k.toString(16) + ".json.gz").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
-				.then(dbgGunzip)
-				.then((b) => { if (mine === DBG) { DBG.funcTables.set(k, JSON.parse(new TextDecoder().decode(b))); dbgChanged(); } })
+			dbgGet("funcs", k)
+				.then((x) => { if (mine === DBG) { DBG.funcTables.set(k, x); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.funcTables.set(k, { failed: e.message }); dbgChanged(); } });
 		}
 		if (F === undefined || F === "pending")
@@ -436,7 +448,7 @@ function dbgFiles() {
 		return DBG.files.failed ? { state: "none", why: "the file list did not load: " + DBG.files.failed } : { state: "ok", F: DBG.files };
 	if (!DBG.filesLoad) {
 		const mine = DBG;
-		DBG.filesLoad = api.source.kfetch(DBG.base + DBG.index.files).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+		DBG.filesLoad = dbgGet("files")
 			.then((F) => {
 				F.fileIx = new Map(F.files.map((f, k) => [f[0], k]));
 				F.fnAt = [];
@@ -499,8 +511,8 @@ function dbgCfiRow(pa) {
 		if (!DBG.cfiPending.has(s)) {
 			DBG.cfiPending.add(s);
 			const mine = DBG;
-			api.source.kfetch(DBG.base + "cfi-" + s.toString(16) + ".bin").then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
-				.then((buf) => { if (mine === DBG) { DBG.cfiTables.set(s, cfiDecode(new Uint8Array(buf))); dbgChanged(); } })
+			dbgGet("cfi", s)
+				.then((t) => { if (mine === DBG) { DBG.cfiTables.set(s, t); dbgChanged(); } })
 				.catch((e) => { if (mine === DBG) { DBG.cfiTables.set(s, { failed: e.message }); dbgChanged(); } });
 		}
 		return "loading";

@@ -353,10 +353,13 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const elfName = elfPath.replace(/^.*\//, "");
 	RB.last = { from, bytes, elf, elfName, same };
 	const mem = $("memory").value;
-	// CI's bytes from a kit whose objects have no debug sections (Debian):
-	// the ELF has no DWARF, and the shipped kernel's data files are this
-	// kernel's (same bytes), so they are used as they are.
-	const entry = same && kit.objects.some((o) => o.gsha256) ? kernels.find((x) => x.name === from) : null;
+	// A kit whose objects have no debug sections (Debian): with no edit the
+	// ELF has no DWARF and is CI's bytes, so the shipped kernel's data files
+	// are this kernel's and are used as they are; with edits the ELF has the
+	// DWARF of the compiled units only, and the shipped kernel's DWARF covers
+	// the others, moved to their new addresses (genimport.js, dbgmerge.js).
+	const shipped = kit.objects.some((o) => o.gsha256) ? kernels.find((x) => x.name === from) : null;
+	const entry = same ? shipped : null;
 	const [disasm, syms] = entry ? await Promise.all([loadDisasm(entry), loadSymbols(entry)]) : [null, undefined];
 	setDisasm(disasm);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
@@ -377,7 +380,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 		SRC.info = from + "'s tree with your " + nEdits + " edit" + (nEdits === 1 ? "" : "s") + " (" + r.tree.size + " files)";
 		srcChanged();
 		dbgImport(elfFile, map.offset, null);
-		gen = genImport(elfFile, null);
+		gen = genImport(elfFile, null, shipped && shipped.dwarf && shipped.symbols ? shipped : null);
 	}
 	rbSync();
 	const sha = (h) => h.slice(0, 12);

@@ -107,12 +107,12 @@ follows the source map, so its lines and the list of lines the tests do
 not run are those of the source files, not of the bundle. The Workers load
 their modules themselves, unbundled. A module imports only from
 modules below it, so there is no import cycle (ESLint's import/no-cycle
-checks it). The bundle's 83 modules by depth (1 + the deepest module a
+checks it). The bundle's 84 modules by depth (1 + the deepest module a
 module imports; R4, scratchpad tool layers.mjs):
 
     0  clock dwarfread dwexpr edpatch frames mevregions store util v86patch
     1  clang dwarffuncs dwarftables kit page stepbase tips unwind
-    2  dwarf dwarflocals header pwa scan
+    2  dbgmerge dwarf dwarflocals header pwa scan
     3  asmnames dbginfo dwarftypes
     4  dbgimport jumps livedis mevview srclinks srctext
     5  fnfacts jumpview memevents srcswitch stepper symimport ui varseval
@@ -2977,13 +2977,28 @@ when the build fails, and the built kernel boots anyway. An unchanged
 rebuild of this kit (CI's bytes, the page's bzImage) takes the shipped
 kernel's data files as they are: its ELF has no DWARF of its own.
 
-What the rebuilt kernel's debugger shows: its symbols, disassembly and
-the DWARF of the objects compiled in the page (an object compiled here
-keeps its debug sections), made in this browser; the other units have no
-DWARF in the rebuilt ELF, so their lines, locals and the Source tab's file
-list are missing until "Back to the shipped kernel" (which has CI's DWARF
-of every unit). Mapping CI's DWARF to the rebuilt kernel's addresses is
-the open part of E6 (PROGRESS).
+What the rebuilt kernel's debugger shows: its symbols and disassembly,
+made in this browser, and the DWARF of every unit from two sources
+(`dbgmerge.js`). The objects compiled in the page keep their debug
+sections, so the rebuilt ELF has their DWARF, made into data files here;
+the other units have none in the rebuilt ELF, and CI's DWARF of the
+shipped kernel (the -g build of the same code) is used for them, moved to
+the new addresses. Each symbol of the shipped kernel is paired with the
+rebuilt kernel's symbol of the same name and size, runs of pairs moved by
+the same amount become intervals, and the line rows, ranges, call frame
+information, parameters and locals (with their location lists and
+DW_OP_addr), the function facts, the variables and files.json of a 64 KiB
+shard of the new addresses are made from CI's shards of the old ones,
+shifted, plus the compiled units' own rows. The code of the compiled units
+comes from their own DWARF only. The Source panel reads the build's tree
+(the kit's files with your edits), so the file list keeps every file.
+
+What can differ from a -g build of the edited tree: a symbol whose name
+appears a different number of times in the two kernels, or whose size
+changed in an object that was not compiled here, is not paired (its code
+has no DWARF in the rebuilt kernel); the lines-with-code count of a file
+that both sources list (a header the edited unit includes) is the larger
+of the two.
 
 Tests: test_kit.mjs (debian-clang job, Node): link only gives CI's
 vmlinux and bzImage, an edit compiles one object, init/main.c compiled
@@ -3126,12 +3141,20 @@ data files.
 Suite `rebuild_debian` (plan E6, job `kit`) does it on the editable
 Debian at 1280 px: boots it with `speed=full` to `(initramfs)`, edits
 `init/main.c` (`Run %s as init process` -> `Run %s as init (edited in
-the page)`), Rebuild and boot: exactly `init/main.o` compiled
+the page)`, and a function `e6_moved` added at its end, which moves the
+code after `init/main.o`), Rebuild and boot: exactly `init/main.o` compiled
 (recordmcount after it), 273 link steps, the screen shows `Run /init as
 init (edited in the page)` and then `(initramfs)`, the data files are made
 here and the edited line is in the DWARF lines of `run_init_process` and
-`kernel_init`; it records that the rebuilt kernel's file list lacks the
-headers of units not compiled (above). Back to the shipped kernel, a
+`kernel_init`. `do_sys_open` (fs/open.c, not compiled, 16 bytes further
+on) has, at the same offsets, the shipped kernel's line rows (each row's
+inline chain), parameters and locals (name, type, whether it has a
+location there) and CFI rows; `kernel_init` and `e6_moved` have lines and
+locals; the Source tab lists every one of the shipped kernel's 3,180 files
+(on eafff2367, before CI's DWARF was moved: no DWARF for `do_sys_open`, 37
+files). `rebuild` (hello's untouched `put_line`, its lines moved down by
+the inserted ones) and `rebuild_linux` (`filp_open` in fs/open.c) check
+the same, though their kits keep the objects' DWARF. Back to the shipped kernel, a
 header that few objects include (`include/linux/assoc_array_priv.h`):
 exactly its users and `init/main.o` are compiled. Back again, Revert all,
 Rebuild and boot: 0 objects compiled, vmlinux and bzImage are the kit's

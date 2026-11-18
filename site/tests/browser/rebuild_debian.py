@@ -12,7 +12,8 @@ from tests.browser.common import (
     kernel_entries, report, show_tab, SITE, srcedit_overlay, srcedit_ready, srcedit_state, wait_for,
 )
 from tests.browser.rebuild import (
-    elf32_symbols, rb_download, rb_kit, RB_LINES_JS, rb_press, rb_shipped_image, rb_shots, rb_state, RB_WATCH_JS,
+    elf32_symbols, rb_debug, rb_debug_check, rb_download, rb_kit, RB_LINES_JS, rb_press, rb_shipped_image, rb_shots,
+    rb_state, RB_WATCH_JS,
 )
 from tests.browser.rebuild_linux import rbl_compiled, rbl_open, rbl_users
 
@@ -22,13 +23,16 @@ from tests.browser.rebuild_linux import rbl_compiled, rbl_open, rbl_users
 # source with clang, gen-debian-clang.sh) booted to Debian's initramfs
 # prompt, then in the Source tab:
 #   1. init/main.c edited ("Run %s as init process" -> "Run %s as init
-#      (edited in the page)"), Rebuild and boot: exactly init/main.o is
+#      (edited in the page)", and a function added at its end, e6_moved,
+#      which moves the code after init/main.o), Rebuild and boot: exactly init/main.o is
 #      compiled (the kit's users of the file; recordmcount after it), the
 #      kit's link steps run, the kernel boots to the edited line and the
 #      (initramfs) prompt; the edit-to-screen time is measured; the data
 #      files of the rebuilt kernel are made in this browser and run_init_process's
-#      DWARF lines are the edited file's (its DWARF covers the compiled units
-#      only, so the Source tab then lists their files: recorded);
+#      DWARF lines are the edited file's; do_sys_open (fs/open.c, not
+#      compiled, moved by the edit) has the shipped kernel's lines, locals
+#      and CFI at the same offsets (CI's DWARF mapped to the new addresses),
+#      and the Source tab lists every file it listed before;
 #   2. Back to the shipped kernel, Pause, a header edit: the objects that include
 #      it and init/main.o (still edited) are compiled, no other;
 #   3. Back again, Pause, everything reverted, Rebuild and boot: no object
@@ -41,6 +45,11 @@ FROM, TO = "Run %s as init process", "Run %s as init (edited in the page)"
 SHOWN = TO.replace("%s", "/init")
 PROMPT = "(initramfs)"
 HEADER_ADD = "/* E6: a header edit recompiles the objects that include it. */\n"
+UNTOUCHED = "do_sys_open"
+# A function added at the end of init/main.c: the code after init/main.o
+# (do_sys_open's too) moves.
+ADD = "\n/* E6: a function added, so the code after this unit moves. */\n__attribute__((used)) int e6_moved(int x);\n" \
+    "__attribute__((used)) int e6_moved(int x)\n{\n\treturn x * 3 + 1;\n}\n"
 
 # The edited line on the screen, counted once the screen was without it.
 WATCH_JS = """(msg) => { clearInterval(window.rbScrTimer); const s = window.rbScr = { t0: Date.now(), cleared: false, at: null };
@@ -102,13 +111,16 @@ def run(browser, base, shots, tmp, problems, r):
         problems.append(f"no Rebuild and boot to press: {rb_state(page)['status']!r}")
         ctx.close()
         return
+    # The Debugger's view of a function of an untouched unit (fs/open.c), to
+    # compare after the rebuild.
+    dbg_before = rb_debug(page, [UNTOUCHED])
 
     # 1. init/main.c edited, Rebuild and boot in the editor bar.
     if not rbl_open(page, FILE, False):
         problems.append(f"Edit did not open {FILE}: {srcedit_state(page)['state']!r}")
         ctx.close()
         return
-    want = orig.replace(FROM, TO, 1)
+    want = orig.replace(FROM, TO, 1) + ADD
     page.locator("#ed_text").fill(want)
     wait_for(lambda: "saved" in srcedit_state(page)["state"], 10)
     st, s_end, s_screen = build(page, "#rb_go_panel", SHOWN)
@@ -156,14 +168,22 @@ def run(browser, base, shots, tmp, problems, r):
     if line not in every:
         problems.append(f"the DWARF lines of run_init_process and kernel_init lack {line} (the edited line): {sorted(every)[:20]}")
 
-    # The rebuilt kernel's DWARF has the compiled units only (the kit's
-    # objects have no debug sections): the Source tab lists their files.
+    # The rebuilt ELF has DWARF of the compiled unit only (the kit's objects
+    # have no debug sections): the page maps CI's DWARF of every other unit
+    # to the new addresses. do_sys_open (fs/open.c, moved by the edit) keeps
+    # its lines, locals and CFI; the Source tab lists every file.
+    rb_debug_check(dbg_before, rb_debug(page, [UNTOUCHED, "kernel_init", "e6_moved"]), [UNTOUCHED], ["kernel_init", "e6_moved"], problems, r, NAME,
+                   moved_by_edit=True)
     show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 120)
     page.fill("#cov_filter", header.split("/")[-1])
-    r["after the rebuild the file list has"] = {header: wait_for(lambda: page.locator(
-        f'#cov_tree .covrow[data-kind="file"][data-path="{header}"]').count() > 0, 10)}
+    listed_edit = wait_for(lambda: page.locator(f'#cov_tree .covrow[data-kind="file"][data-path="{header}"]').count() > 0, 30)
+    r["after the rebuild the file list has"] = {header: listed_edit}
+    if not listed_edit:
+        problems.append(f"after the rebuild the Source tab's file list has no {header}")
     page.fill("#cov_filter", "")
+    rb_shots(page, shots, "rebuild-debian-1280-edited-source", problems, "Source tab of the edited kernel")
+    page.emulate_media(color_scheme="light")
 
     # 2. Back to the shipped kernel (its file list), running: the page
     # pauses it for the build itself (a VM at full speed in the same tab

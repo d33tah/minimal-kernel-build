@@ -12,8 +12,8 @@ from tests.browser.common import (
     srcedit_state, wait_for,
 )
 from tests.browser.rebuild import (
-    elf32_symbols, rb_buildlog, rb_buildlog_open, rb_download, rb_kit, RB_LINES_JS, rb_press, rb_shipped_image,
-    rb_shots, rb_state, rb_wait, RB_WATCH_JS,
+    elf32_symbols, rb_buildlog, rb_buildlog_open, rb_debug, rb_debug_check, rb_download, rb_kit, RB_LINES_JS, rb_press,
+    rb_shipped_image, rb_shots, rb_state, rb_wait, RB_WATCH_JS,
 )
 
 
@@ -39,6 +39,9 @@ RBL_AFTER = "\tinit_dup(file);\n\tinit_dup(file);\n\tinit_dup(file);\n"
 RBL_INSERT = "\tkernel_write(file, e5_msg, sizeof(e5_msg) - 1, NULL);\n"
 RBL_HEADER = "include/linux/tty_driver.h"
 RBL_HEADER_ADD = "/* E5: a header edit recompiles the objects that include it. */\n"
+# A function of a unit the edit does not touch (E6: its lines, locals and
+# CFI stay after the rebuild).
+RBL_UNTOUCHED = "filp_open"
 
 
 def rbl_users(kit):
@@ -154,6 +157,9 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
         return [f"{tag}: no Rebuild and boot to press: {rb_state(page)['status']!r}"], r
     if not wait_for(lambda: gate_on_screen(page), 120):
         problems.append(f"{tag}: the shipped kernel's screen: {page.inner_text('#screen_container')[:300]!r}")
+    # The Debugger's view of a function of an untouched unit (fs/open.c), to
+    # compare after the rebuild (plan E6).
+    dbg_before = rb_debug(page, [RBL_UNTOUCHED])
 
     # 1. init/main.c edited as a user, Rebuild and boot in the editor bar.
     if not rbl_open(page, RBL_FILE, phone):
@@ -246,6 +252,7 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     old_panic = f"{RBL_FILE}:{next(i for i, l in enumerate(orig.split(chr(10)), 1) if 'cannot execute /init' in l)}"
     if old_panic in lines.get("kernel_init", []):
         problems.append(f"{tag}: kernel_init's DWARF lines still have the shipped file's {old_panic}")
+    rb_debug_check(dbg_before, rb_debug(page, [RBL_UNTOUCHED, "kernel_init"]), [RBL_UNTOUCHED], ["kernel_init"], problems, r, tag)
     wait_for(lambda: page.evaluate(f"MKB.srcFile('{RBL_FILE}').state") == "ok", 30)
     if page.evaluate(f"MKB.srcFile('{RBL_FILE}').lines") != wl:
         problems.append(f"{tag}: the source the listings read is not the edited text")

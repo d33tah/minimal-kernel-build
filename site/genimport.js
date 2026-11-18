@@ -37,14 +37,17 @@ function genStatus(text) {
 }
 
 // key: symimport.js imageKey() of the bzImage (null without storage).
+// under: for a rebuild from a kit without debug sections (rebuild.jsx), the
+// shipped kernel's entry: its DWARF covers the units not compiled here
+// (dbgmerge.js), and the source stays the build's tree.
 // Each step is a function of its own, called when the one before it ends
 // (no await inside: e2e coverage, site/jscov.py, splits a function's run
 // at the takes it awaits across).
-function genImport(file, key) {
+function genImport(file, key, under = null) {
 	if (GEN.worker)
 		GEN.worker.terminate();
 	const sha = key ? key.slice(MAP_KEY.length, MAP_KEY.length + 16) : String(Date.now());
-	const mine = GEN = { files: new Map(), state: "running", note: "", name: file.name, key, image, base: "gen/" + sha + "/" };
+	const mine = GEN = { files: new Map(), state: "running", note: "", name: file.name, key, image, base: "gen/" + sha + "/", under };
 	const w = GEN.worker = new ClangWorker(withV("genworker.js"));
 	w.onprogress = (m) => { if (mine === GEN) genStatus("Making the kernel's data files in this browser: " + m.progress + "…"); };
 	genStatus("Making the kernel's data files in this browser…");
@@ -116,9 +119,10 @@ function genApply() {
 	symbols.imported.generated = true;
 	setDisasm(genGet("disasm.json") ? genJson("disasm.json") : null);
 	const made = "made in this browser from " + GEN.name + (GEN.restored ? " (kept for this bzImage)" : " in " + GEN.secs.toFixed(1) + " s");
+	const under = GEN.under;
 	if (genGet("dwarf/index.json"))
-		dbgUseShards({ dwarf: GEN.base + "dwarf/", made });
-	if (genGet("src/index.json"))
+		dbgUseShards(under ? { dwarf: GEN.base + "dwarf/", made, under, syms: S.symbols } : { dwarf: GEN.base + "dwarf/", made });
+	if (genGet("src/index.json") && !under)
 		srcUseShipped({ src: GEN.base + "src/" });
 	GEN.state = "done";
 	const n = (p) => [...GEN.files.keys()].filter((k) => k.startsWith(GEN.base + p)).length;
@@ -136,7 +140,9 @@ function genApply() {
 	api.memory.drawGrid();
 	dbgChanged();
 	// rebuild.js waits for it (GEN.srcDone) before it says the kernel is ready.
-	if (SRC.mode === "picked" && SRC.entries)
+	// A rebuild with CI's DWARF (under) keeps the build's tree as its source:
+	// an index made from the DWARF of the compiled units would list theirs only.
+	if (SRC.mode === "picked" && SRC.entries && !under)
 		GEN.srcDone = genSrcPicked();
 }
 

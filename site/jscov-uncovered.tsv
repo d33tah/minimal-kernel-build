@@ -368,7 +368,7 @@ stepbase.js	289	16d2bb25	sometimes: branch() dropping task switches recorded aft
 stepper.js	542-544	ec4eac36	wasm memory grown during record() (typed arrays detached): v86 allocates the guest RAM up front and its memory does not grow while stepping the shipped kernels
 stepper.js	549-551	0266b7f0	sometimes: the initramfs prompt reached while stepping (not the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211, 43605289270, not in 43588908776 nor 43611610762
 stepper.js	589-591	21db661f	sometimes: the wasm memory replaced between two steps (typed arrays detached; as 934-936, after the fetch): the quests suite's Step after go there with the live memory map open ran it on d-claude (the map's write tracking allocates in v86.wasm); other runs do not grow the memory while stepping
-stepper.js	594	c540c46d	an instruction fetch fault with no pending jump record: not reached while the shipped kernels are stepped
+stepper.js	594	c540c46d	sometimes: an instruction fetch fault with no pending jump record: ran in run 44240343033 in the kit job only (raw coverage per job; rebuild_debian, where the page pauses and resumes the running Debian around each build and its userspace faults on fetches), not in 44213960662 nor 44228803147 (the same suite); no other suite steps where a fetch faults
 stepper.js	621-623	21db661f	as 927-929, after mkb_run
 stepper.js	660-663	30ec7764	an instruction above the seen bitmap (beyond RAM): the shipped kernels and the BIOS run nothing there while stepped
 stepper.js	680	1b095765	as 927-929, at the end of record()

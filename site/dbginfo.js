@@ -608,7 +608,46 @@ function dbgTableAt(pa, peek) {
 	}
 	if (t.failed)
 		return { state: "none", why: "debug info did not load: " + t.failed };
-	return { state: "ok", t, end };
+	return { state: "ok", t: DBG.remap ? dbgRemapped(t) : t, end };
+}
+
+// Line numbers moved to the text the machine runs (E8): DBG.remap = { key,
+// files: Map(path -> Int32Array new line of each old line, 0: changed) },
+// set by hotpatch.jsx while a patched file is shown with its patched text
+// (srctext.js SRC_OVER). Each table is copied once per remap with the line
+// rows and call lines of those files moved; a line the patch changed or
+// removed gets line 0 (its old code no longer runs: the old entry jumps to
+// the copy).
+function dbgSetRemap(files) {
+	const key = files ? [...files].map(([p, m]) => p + ":" + m.length + ":" + m.join(",")).join(";") : "";
+	if ((DBG.remap ? DBG.remap.key : "") === key)
+		return;
+	DBG.remap = files && files.size ? { key, files, copies: new WeakMap() } : null;
+	DBG.lineCode = new Map();
+	dbgChanged();
+}
+
+function dbgRemapped(t) {
+	const R = DBG.remap;
+	const had = R.copies.get(t);
+	if (had)
+		return had;
+	const ids = new Map();
+	t.strings.forEach((s, k) => { if (R.files.has(s)) ids.set(k, R.files.get(s)); });
+	let out = t;
+	if (ids.size) {
+		const move = (m, l) => (l > 0 && l < m.length ? m[l] : l);
+		const ll = t.ll.slice(), rl = t.rl.slice();
+		for (let k = 0; k < ll.length; k++)
+			if (ids.has(t.lf[k]))
+				ll[k] = move(ids.get(t.lf[k]), ll[k]);
+		for (let q = 0; q < rl.length; q++)
+			if (ids.has(t.rf[q]))
+				rl[q] = move(ids.get(t.rf[q]), rl[q]);
+		out = { ...t, ll, rl };
+	}
+	R.copies.set(t, out);
+	return out;
 }
 
 // { state: "ok", frames } (dwarftables.js dwarfFrames: innermost first),
@@ -685,8 +724,14 @@ function dbgFileCode(q) {
 		const wait = tables.filter((x) => x[2].state !== "ok").length;
 		if (wait)
 			return { state: "loading", why: "reading the line tables of " + p.path + " (" + wait + " of " + shards.length + " shards to go)…" };
-		const res = { state: "ok", path: p.path, code: dwarfFileCode(tables.map(([lo, hi, r]) => [lo, hi, r.t]), p.path),
-			how: "the line table shards that hold code of " + p.path + " (" + shards.length + ")" };
+		const list = tables.map(([lo, hi, r]) => [lo, hi, r.t]);
+		// Hot patches' copies of its functions (E8): Run to a line of the
+		// patched text stops in the copy that runs it.
+		const patched = DBG.patch && DBG.patch.t.strings.includes(p.path);
+		if (patched)
+			list.push([DBG.patch.lo, DBG.patch.hi, DBG.patch.t]);
+		const res = { state: "ok", path: p.path, code: dwarfFileCode(list, p.path),
+			how: "the line table shards that hold code of " + p.path + " (" + shards.length + ")" + (patched ? " and the hot patches' code" : "") };
 		DBG.lineCode.set(q, res);
 		return res;
 	}
@@ -753,4 +798,4 @@ provide({ dbgHas, dbgFrames });
 export { DBG, dbgFresh, dbgChanged, dbgOnChange, dbgHas, dbgUseShards, dbgIdbOp, setDbgIdbOp, dbgTypes,
 	dbgLocals, dbgLocalGroups, dbgFnFacts, dbgFnHolds, dbgFnFactsFor, dbgFnFactsAt, dbgCfiFrame, dbgFiles, dbgFuncAt,
 	dbgCfiRow, dbgSetCfi, dbgCfiInfo, dbgUnwind, dbgTableAt, dbgFrames, dbgFunction, dbgFileCode, dbgLineCode,
-	dbgLineCodeWait, dbgWhere, dbgChainText, dbgTitle };
+	dbgLineCodeWait, dbgWhere, dbgChainText, dbgTitle, dbgSetRemap };

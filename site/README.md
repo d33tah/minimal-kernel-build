@@ -3300,6 +3300,60 @@ patched; `run_init_process` refused for its `pr_debug` static keys).
 Suite `hotpatch` (job `kit`): the cases in the comment of
 `tests/browser/hotpatch.py`, with the edit-to-effect times.
 
+### Places across builds (buildmap.js, plan E8)
+
+A rebuild moves code and lines: an edit adds lines, the functions after
+it get other addresses. What the user marked keeps its meaning by what
+stays across builds, with the edit's line shifts:
+
+- Builds. Each Rebuild and boot of a kernel is a numbered build of it
+  (`image.build`: its number, time, and a hash of the text of each edited
+  file and of the kit's own text of the same files). Its label ("build 2
+  of hello (made here at 14:05:09 from your boot/hello.c)") is what the
+  bookmarks, snapshots and runs made on it say they belong to. The
+  shipped kernel and every build of it are one family (`image.from`).
+- Lines. A line counted on one text of a file moves to another through
+  the diff of the two texts (`lineMap`, edpatch.js's Myers diff): above
+  the edit it keeps its number, below it moves by what the edit added or
+  removed, a line the edit changed or removed says so. The page keeps the
+  texts it saw in this session by hash; without the old text (a bookmark
+  from before a reload whose build is gone) the line's own text is looked
+  for near its old number.
+- Bookmarks keep, with the address, the function and the offset into it,
+  the C line with the hash of its file's text and the line's text.
+  Another build's bookmarks are listed under "Other builds of hello" and
+  placed in this one: a function by its name, an instruction at the same
+  offset in its function when the function kept its size, else at the
+  first breakpoint address of its moved C line inside it, a line through
+  the diff; the ★ marks, going there and a link from another build use
+  that place, and the row says how it was placed or why it is not in this
+  build.
+- The Debugger's Run to target (its breakpoint): a `file:line` of an
+  edited file moves with the edit when the build boots, an address moves
+  with its function; the Debugger's status says so.
+- Coverage. Before a build boots (and before "Back to the shipped
+  kernel") the page keeps what ran in the kernel shown (`covKeep`). The
+  Coverage tab's "compare with" picks one of those earlier builds: every
+  file and function shows the lines that ran there and + (only here) and
+  − (only there), the old lines moved to this text; the Source panel
+  marks ◌ a line that ran there and not here.
+- Snapshots and runs record their build. A snapshot of another build of
+  the kernel shown says which one and offers no Restore (the bytes
+  differ); rebuilding with the same edits gives the same bzImage, and then
+  it restores. A replay of another build's run is refused with the same
+  reason.
+- After a hot patch the Source panel shows the text the machine runs: the
+  last patch's text of that file (`srctext.js` `SRC_OVER`, with a note
+  naming the patch and its functions), and the kernel's own line rows of
+  that file are moved to it (`dbginfo.js` `DBG.remap`: each line table
+  copied with those lines moved; lines the patch replaced get none), as
+  are the rows of earlier patches of the file. Frames, the panel, the
+  coverage, Run to `file:line` (which now includes the copies' code) and
+  the line bookmarks all count lines of the one text shown.
+
+Suite `rebuildmap` (job `kit`): the cases in the comment of
+`tests/browser/rebuildmap.py`.
+
 ## Testing
 
     site/fetch-v86.sh

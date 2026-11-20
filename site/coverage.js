@@ -16,11 +16,16 @@ import { stepper, image, api, provide, state, tab } from "./page.js";
 import { download } from "./graph.js";
 import { dwarfEachLine } from "./dwarftables.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
-import { openSourceFile } from "./source.js";
+import { openSourceFile, srcPanel, renderSourcePanel } from "./source.js";
 import { fnDetailEl } from "./fnfacts.js";
 import { BM, bmMarks, bmStarEl, bmAddButton, bmDraftFn, bmDraftLine } from "./bookmarks.js";
+import { srcFile, SRC_OVER } from "./srctext.js";
+import { textHash, textKeep, textOf, lineMap, imageLabel, buildFamily } from "./buildmap.js";
 
-const COV = { open: new Set(), sort: "path", q: "", run: null, tree: null, key: "", exporting: false };
+// prev: what ran in earlier builds of the kernels shown (E8, covKeep), the
+// newest last; cmp: the id of the one the tree is compared with ("": none).
+const COV = { open: new Set(), sort: "path", q: "", run: null, tree: null, key: "", exporting: false, prev: [], cmp: "", cmpState: null };
+const COV_PREV_MAX = 8;
 const COV_MAX_ROWS = 1500;
 
 // The directory tree of files.json, built once per kernel: nodes { name,
@@ -106,19 +111,159 @@ function covRun(F) {
 	return r;
 }
 
+// ---- earlier builds (E8) ------------------------------------------------------
+
+const covSleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
+
+// What ran in the kernel shown now, kept to compare the next build of its
+// family with (rebuild.jsx calls it before it boots a build, and before
+// Back to the shipped kernel): per file the lines that ran, per function
+// (name@file) its own lines that ran, and the text each edited or hot
+// patched file was counted on. Waits up to ms for the line tables; null
+// when nothing was recorded (no stepping) or they did not come.
+async function covKeep(ms) {
+	const t0 = Date.now();
+	const img = image;
+	let fl = dbgFiles(), run = null;
+	for (;;) {
+		if (image !== img || fl.state === "none")
+			return null;
+		if (fl.state === "ok") {
+			run = covRun(fl.F);
+			if (!run.tint || run.failed.length)
+				return null;
+			if (run.linesKnown)
+				break;
+		}
+		if (Date.now() - t0 > ms)
+			return null;
+		await covSleep(100);
+		fl = dbgFiles();
+	}
+	const F = fl.F, b = img.build || null;
+	const shown = new Map();
+	for (const p of new Set([...Object.keys(b ? b.files : {}), ...SRC_OVER.keys()])) {
+		let f = srcFile(p);
+		while (f.state === "loading" && Date.now() - t0 < ms + 20000) {
+			await covSleep(100);
+			f = srcFile(p);
+		}
+		if (f.state === "ok")
+			shown.set(p, textKeep(f.lines.join("\n")));
+	}
+	const files = new Map(), fns = new Map();
+	F.files.forEach(([p], k) => { if (run.fileRun[k].size) files.set(p, new Set(run.fileRun[k])); });
+	F.funcs.forEach((fn, i) => { if (run.fnRun[i] && fn[1] >= 0) fns.set(fn[0] + "@" + F.files[fn[1]][0], new Set(run.fnRun[i])); });
+	const rec = { id: "c" + Date.now().toString(36) + COV.prev.length, label: imageLabel(img), fam: buildFamily(img), at: Date.now(),
+		files, fns, shown, base: b ? b.base || {} : {}, partial: run.partial, lines: [...files.values()].reduce((n, s) => n + s.size, 0) };
+	COV.prev.push(rec);
+	if (COV.prev.length > COV_PREV_MAX)
+		COV.prev.shift();
+	return rec;
+}
+
+// The comparison with COV.cmp's record, the earlier build's lines moved to
+// the text shown now: { rec, files: Map(path -> Set), fns: Map(name@path ->
+// Set), moved: [paths], waiting } (a line the edit changed becomes -line,
+// which no line here matches), or null.
+function covCmpState() {
+	const rec = COV.cmp ? COV.prev.find((x) => x.id === COV.cmp) : null;
+	if (!rec || rec.fam !== buildFamily()) {
+		COV.cmpState = null;
+		return null;
+	}
+	const key = rec.id + "|" + DBG.version + "|" + COV.prev.length;
+	if (COV.cmpState && COV.cmpState.key === key && COV.cmpState.img === image)
+		return COV.cmpState;
+	const cur = image && image.build;
+	const paths = new Set([...rec.shown.keys(), ...Object.keys(cur ? cur.files : {}), ...SRC_OVER.keys()]);
+	const maps = new Map();
+	let waiting = 0;
+	for (const p of paths) {
+		const oldH = rec.shown.get(p) || (cur && cur.base && cur.base[p]) || rec.base[p];
+		const f = srcFile(p);
+		if (f.state === "loading") {
+			waiting++;
+			continue;
+		}
+		// No text to diff with (it went, or the file is not shown): the same numbers.
+		if (f.state !== "ok" || !oldH || textOf(oldH) === undefined)
+			continue;
+		const now = f.lines.join("\n");
+		if (textHash(now) !== oldH)
+			maps.set(p, lineMap(textOf(oldH), now));
+	}
+	const move = (p, set) => {
+		const m = maps.get(p);
+		return m ? new Set([...set].map((l) => (l < m.length && m[l] ? m[l] : -l))) : set;
+	};
+	const files = new Map(), fns = new Map();
+	for (const [p, s] of rec.files)
+		files.set(p, move(p, s));
+	for (const [k, s] of rec.fns)
+		fns.set(k, move(k.slice(k.indexOf("@") + 1), s));
+	COV.cmpState = { key, img: image, rec, files, fns, moved: [...maps.keys()], waiting };
+	return COV.cmpState;
+}
+
+// Lines of path that ran in the compared build, moved to this text (the
+// Source panel's ◌), or null.
+function covWas(path) {
+	const c = covCmpState();
+	return c ? c.files.get(path) || new Set() : null;
+}
+
+// Lines that ran there (was), only here (plus), only there (minus).
+function covDelta(prev, now) {
+	let plus = 0, minus = 0;
+	for (const l of now)
+		if (!prev.has(l))
+			plus++;
+	for (const l of prev)
+		if (!now.has(l))
+			minus++;
+	return { was: prev.size, plus, minus };
+}
+
+// The "compare with" picker: the earlier builds of this family recorded.
+function covCmpRender() {
+	const fam = buildFamily();
+	const recs = COV.prev.filter((x) => x.fam === fam);
+	const box = $("cov_cmp_box"), sel = $("cov_cmp");
+	box.hidden = !recs.length;
+	if (COV.cmp && !recs.some((x) => x.id === COV.cmp))
+		COV.cmp = "";
+	const want = [["", "nothing"], ...recs.map((x) => [x.id, x.label + ", " + x.lines.toLocaleString("en") + " lines ran" + (x.partial ? " (incomplete)" : "")])];
+	if ([...sel.options].map((o) => o.value + "\t" + o.textContent).join("\n") !== want.map((w) => w.join("\t")).join("\n")) {
+		sel.textContent = "";
+		for (const [v, t] of want)
+			sel.add(new Option(t, v));
+	}
+	sel.value = COV.cmp;
+	const c = covCmpState();
+	$("cov_cmp_status").textContent = !c ? "" : c.waiting ? "Reading the text of " + c.waiting + " edited file" + (c.waiting === 1 ? "" : "s") + "…" :
+		"Lines that ran in " + c.rec.label + " next to this build's: there, + only here, − only there" +
+		(c.moved.length ? "; lines of " + c.moved.join(", ") + " moved to this build's text through the diff of the two texts" : "") + ".";
+}
+
 // Totals of a node: { lines, linesRun, ins, insRun } (linesRun null while
-// the line rows are being read; *Run null without a record).
-function covSum(T, run, node) {
+// the line rows are being read; *Run null without a record); with a
+// comparison (E8) also cmp: { was, plus, minus } of the lines that ran.
+function covSum(T, run, node, cs = COV.cmpState) {
 	const F = T.F, s = { lines: 0, linesRun: 0, ins: 0, insRun: 0, files: 0 };
 	const add = (x) => {
 		s.lines += x.lines; s.ins += x.ins; s.files += x.files || 0;
 		s.linesRun = s.linesRun === null || x.linesRun === null ? null : s.linesRun + x.linesRun;
 		s.insRun = s.insRun === null || x.insRun === null ? null : s.insRun + x.insRun;
+		if (x.cmp)
+			s.cmp = s.cmp ? { was: s.cmp.was + x.cmp.was, plus: s.cmp.plus + x.cmp.plus, minus: s.cmp.minus + x.cmp.minus } : { ...x.cmp };
 	};
+	const known = cs && run.tint && run.linesKnown;
 	if (node.kind === "func") {
 		const fn = F.funcs[node.i];
+		const own = known && fn[1] >= 0 ? covDelta(cs.fns.get(fn[0] + "@" + F.files[fn[1]][0]) || new Set(), run.fnRun[node.i] || new Set()) : null;
 		return { lines: fn[2], ins: fn[3] || 0, linesRun: !run.tint ? null : !run.linesKnown && run.fnIns[node.i] ? null : run.fnRun[node.i] ? run.fnRun[node.i].size : 0,
-			insRun: run.tint ? Math.min(fn[3] || 0, run.fnIns[node.i]) : null };
+			insRun: run.tint ? Math.min(fn[3] || 0, run.fnIns[node.i]) : null, cmp: own };
 	}
 	if (node.kind === "file") {
 		if (!node.sum) {
@@ -126,6 +271,8 @@ function covSum(T, run, node) {
 			s.files = 1;
 			s.linesRun = run.tint && run.linesKnown ? run.fileRun[node.i].size : null;
 			s.insRun = run.tint ? 0 : null;
+			if (known)
+				s.cmp = covDelta(cs.files.get(F.files[node.i][0]) || new Set(), run.fileRun[node.i]);
 			for (const fi of T.fileFns[node.i]) {
 				const x = covSum(T, run, { kind: "func", i: fi });
 				s.ins += x.ins;
@@ -164,7 +311,7 @@ function covClearSums(node) {
 
 const covPct = (run, total) => run === null || !total ? null : run / total;
 
-function covCell(run, total, what) {
+function covCell(run, total, what, cmp) {
 	const cell = document.createElement("span");
 	cell.className = "covcell";
 	const bar = document.createElement("span");
@@ -180,6 +327,13 @@ function covCell(run, total, what) {
 	cell.title = !total ? "no " + what : run === null ? total.toLocaleString("en") + " " + what + "; what ran is not known (see below)" :
 		run.toLocaleString("en") + " of " + total.toLocaleString("en") + " " + what + " have executed";
 	cell.append(bar, text);
+	if (cmp) {
+		const was = document.createElement("span");
+		was.className = "mono covwas";
+		was.textContent = "there " + cmp.was.toLocaleString("en") + " +" + cmp.plus + " −" + cmp.minus;
+		cell.title += "; in " + COV.cmpState.rec.label + " " + cmp.was + " ran, " + cmp.plus + " ran only here, " + cmp.minus + " only there";
+		cell.append(was);
+	}
 	return cell;
 }
 
@@ -205,6 +359,7 @@ function covRender() {
 		return;
 	}
 	const F = fl.F, T = covTree(F), run = covRun(F);
+	covCmpRender();
 	covClearSums(T.root);
 	for (const n of covFileNodes.values())
 		n.sum = null;
@@ -231,7 +386,8 @@ function covRender() {
 		rows++;
 		const r = document.createElement("div");
 		r.className = "trow covrow";
-		Object.assign(r.dataset, { kind, path, depth, lines: s.lines, linesRun: s.linesRun ?? "", ins: s.ins, insRun: s.insRun ?? "" });
+		Object.assign(r.dataset, { kind, path, depth, lines: s.lines, linesRun: s.linesRun ?? "", ins: s.ins, insRun: s.insRun ?? "" },
+			s.cmp ? { was: s.cmp.was, plus: s.cmp.plus, minus: s.cmp.minus } : {});
 		const tog = document.createElement("button");
 		tog.type = "button";
 		tog.className = "ttog";
@@ -251,7 +407,7 @@ function covRender() {
 		name.textContent = label;
 		name.title = title;
 		name.addEventListener("click", onName || toggle);
-		r.append(tog, name, covCell(s.linesRun, s.lines, "lines with code"), covCell(s.insRun, s.ins, "instructions"));
+		r.append(tog, name, covCell(s.linesRun, s.lines, "lines with code", s.cmp), covCell(s.insRun, s.ins, "instructions"));
 		// A file or function: ★ once bookmarked, and its ☆ (K1).
 		const bmc = document.createElement("span");
 		bmc.className = "covbm";
@@ -376,6 +532,12 @@ function covExport() {
 function initCoverage() {
 	$("cov_filter").addEventListener("input", () => { COV.q = $("cov_filter").value.trim(); covRender(); });
 	$("cov_sort").addEventListener("change", () => { COV.sort = $("cov_sort").value; covRender(); });
+	$("cov_cmp").addEventListener("change", () => {
+		COV.cmp = $("cov_cmp").value;
+		covRender();
+		if (srcPanel && !$("src_panel").hidden)
+			renderSourcePanel();
+	});
 	$("cov_export").addEventListener("click", covExport);
 	// The tree is drawn when the Source tab is shown (showTab).
 	state.subscribe(() => {
@@ -401,5 +563,5 @@ function initCoverage() {
 	}, 1000);
 }
 
-provide({ covRun, covRender });
-export { COV, covTree, covRender, initCoverage };
+provide({ covRun, covRender, covWas });
+export { COV, covTree, covRender, covKeep, covWas, initCoverage };

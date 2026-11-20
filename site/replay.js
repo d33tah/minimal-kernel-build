@@ -39,6 +39,7 @@ import { setCmdlineFromUrl } from "./symimport.js";
 import { ffEnabled } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
 import { showHeader } from "./header.js";
+import { imageLabel, RB_SUFFIX } from "./buildmap.js";
 
 const RUN_FORMAT = "mkb-run";
 // 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
@@ -347,6 +348,8 @@ function runNow() {
 	return {
 		format: RUN_FORMAT, version: RUN_VERSION, build: VERSION || "", ...INPUT.settings,
 		kernelKey: api.machine.snapKernelKey(),
+		// A kernel rebuilt in the page (E8): which build of it.
+		...(image && image.build ? { kernelBuild: imageLabel() } : {}),
 		log: INPUT.log.map((e) => ({ ...e })), taint: INPUT.taint, end: runEnd(stepper),
 	};
 }
@@ -385,6 +388,14 @@ async function replayRun(run) {
 	}
 	const entry = kernels.find((k) => k.name === run.kernel);
 	const same = image && image.name === run.kernel && (!run.initrd || (initrd && initrd.name === run.initrd));
+	// A kernel rebuilt here (E8): every build has the same name, not the same bytes.
+	const key = api.machine.snapKernelKey();
+	const built = run.kernel.endsWith(RB_SUFFIX);
+	if (built && !(same && (!run.kernelKey || !key || run.kernelKey === key))) {
+		runStatus("Cannot replay: this run is of " + (run.kernelBuild || "a build of " + run.kernel.slice(0, -RB_SUFFIX.length) + " made in the page") +
+			", and the machine has " + (image ? imageLabel() : "no kernel") + ". Rebuild and boot with that build's edits first: the same edits give the same bytes.", "error");
+		return;
+	}
 	if (!entry && !same) {
 		runStatus("Cannot replay: “" + run.kernel + "” is not one of the listed kernels; load that bzImage from disk (Machine tab) first.", "error");
 		return;

@@ -250,4 +250,4 @@ function edApplyHunks(path, base, hunks) {
 	return out.join("");
 }
 
-export { ED_DIFF_MAX, edLines, edFilePatch, edParse, edApplyHunks };
+export { ED_DIFF_MAX, edLines, edDiff, edFilePatch, edParse, edApplyHunks };

@@ -365,6 +365,11 @@ function AboutLegend() {
 							{"  962 ○ "}
 							<span className="srctext">page_address_init();</span>
 						</span>
+						{"\n"}
+						<span className="code was">
+							{"  963 ◌ "}
+							<span className="srctext">feature_init();</span>
+						</span>
 					</span>
 					{" "}
 					<span>
@@ -373,7 +378,9 @@ function AboutLegend() {
 						<b>Blue box</b>
 						{": the line at EIP or the line opened. "}
 						<b>Brown bar</b>
-						{" on the left: the picked line, whose addresses are listed above the text. Recorded while stepping. Where: Source panel."}
+						{" on the left: the picked line, whose addresses are listed above the text. "}
+						<b>Orange</b>
+						{" (◌): a line that ran in the earlier build the Coverage tab compares with, not (yet) in this one. Recorded while stepping. Where: Source panel."}
 					</span>
 				</li>
 				<li>

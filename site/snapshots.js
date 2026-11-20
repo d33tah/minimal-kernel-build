@@ -16,7 +16,10 @@
 // settings, the input log, where it ends). The diff reads RAM and the registers from the
 // state itself (snapworker.js documents the layout) and uses meta for the
 // rest. kernelKey: SHA-256 of the bzImage (and of the initrd, if any), so a
-// snapshot is offered only for the kernel it was taken with.
+// snapshot is offered only for the kernel it was taken with. build (E8,
+// buildmap.js): for a kernel rebuilt in the page, which build; a snapshot
+// of another build of the kernel shown says so (the same edits rebuilt
+// give the same bytes and key again).
 //
 // Delta snapshots (R1): the page keeps two 32-bit hashes per 4 KiB page of
 // the last snapshot saved or restored (snapBase, from the Worker). The next
@@ -44,6 +47,7 @@ import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snap
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
 	SNAP_EXT, snapCodec, setSnapshots, snapButton, snapHow } from "./snaprecord.js";
 import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff, snapRunDiff, setPageSnapView } from "./snapdiff.js";
+import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
 let snapDbWhy = "";       // why not
@@ -242,6 +246,8 @@ async function saveSnapshot() {
 		const s = {
 			id: "s" + time.toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36),
 			seq, name: snapDefaultName(meta, time), time, kernel: snapKernelName(), kernelKey: key, ram: emuRam,
+			// The build it belongs to (E8): for one built here, its label.
+			...(image.build ? { build: imageLabel() } : {}),
 			raw: codec === "raw" ? data.byteLength : packedLen, full: codec === "raw" ? data.byteLength : rawLen, delta,
 			size: data.byteLength, codec, level: codec === "lz4" ? SNAP_LZ4_LEVEL : 0, data: new Blob([data]),
 			saveMs: Math.round(t1 - t0), packMs, packWallMs: Math.round(t2 - t1), meta, where: "memory",
@@ -488,12 +494,18 @@ function snapSwitch(s) {
 
 // ---- the table ------------------------------------------------------------
 
+// "match": of this kernel; "build": of another build of it (E8; one made
+// in this page has no entry in the kernel list to switch to); "other".
 function snapMatch(s) {
 	const key = snapKernelKey();
 	if (!key)
 		return "";
-	return s.kernelKey === key ? "match" : "other";
+	return s.kernelKey === key ? "match" : recFamily(s) === buildFamily() && !kernels.some((k) => k.name === s.kernel) ? "build" : "other";
 }
+
+// What a row says of a snapshot of another build of this kernel.
+const snapOfBuild = (s) => "of " + (s.build || "an earlier build of " + recFamily(s)) + ", not the build running (" + imageLabel() +
+	"): Rebuild and boot with the same edits makes the same bytes, and then it can be restored";
 
 function snapEditName(s, td) {
 	snapEditing = true;
@@ -537,7 +549,7 @@ function renderSnapshots() {
 		const match = snapMatch(s);
 		Object.assign(tr.dataset, { id: s.id, raw: s.raw, full: s.full || s.raw, stored: s.size, kernel: match, where: s.where,
 			codec: snapCodec(s), base: s.delta ? s.delta.base : "", depth: snapDepth(s), pages: s.delta ? s.delta.pages : -1 });
-		if (match === "other")
+		if (match === "other" || match === "build")
 			tr.className = "snapother";
 		const name = tr.insertCell();
 		name.className = "snapcell-name";
@@ -549,7 +561,9 @@ function renderSnapshots() {
 			"#" + s.seq + ", " + (day.toDateString() === new Date().toDateString() ? day.toLocaleTimeString("en-GB") :
 				day.toLocaleString("en-GB")),
 			s.meta ? "instruction " + snapCount(s.meta).toLocaleString("en") + ", " + (s.meta.sym || "EIP " + hex(s.meta.eip)) : "",
-			(match === "other" ? "for another kernel: " : "") + s.kernel + ", " + kib(s.ram),
+			match === "build" ? s.kernel + ", " + kib(s.ram) + ", " + snapOfBuild(s) :
+				(match === "other" ? (recFamily(s) === buildFamily() ? "for the shipped build: " : "for another kernel: ") : "") +
+				(s.build && match === "match" ? s.build : s.kernel) + ", " + kib(s.ram),
 			snapFmtSize(s.size) + (s.where === "stored" ? ", stored" : ", in memory only") + (s.delta ? "; delta of #" +
 				((snapById(s.delta.base) || {}).seq || "?") + ": " + snapPagesText(s.delta.pages) : ""),
 			s.raw.toLocaleString("en") + (s.delta && s.full ? " (full state " + s.full.toLocaleString("en") + ")" : ""),

@@ -1354,6 +1354,15 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites hotpatch --shots rebuild-screenshots'
 
+    # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
+    # target, the coverage comparison and snapshots across three rebuilds
+    # of hello; the Source panel after a hot patch shows the patched text.
+    - name: Places across rebuilds and hot patches (test_browser.py rebuildmap)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuildmap --shots rebuild-screenshots'
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:

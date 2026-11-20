@@ -98,6 +98,7 @@ from tests.browser.rebuild import suite_rebuild
 from tests.browser.rebuild_linux import suite_rebuild_linux
 from tests.browser.rebuild_debian import suite_rebuild_debian
 from tests.browser.hotpatch import suite_hotpatch
+from tests.browser.rebuildmap import suite_rebuildmap
 
 
 def default_cases():
@@ -188,6 +189,7 @@ SUITES = {
     "rebuild_linux": (suite_rebuild_linux, True),
     "rebuild_debian": (suite_rebuild_debian, False),
     "hotpatch": (suite_hotpatch, False),
+    "rebuildmap": (suite_rebuildmap, False),
 }
 
 

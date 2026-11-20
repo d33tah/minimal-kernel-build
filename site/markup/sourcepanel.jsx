@@ -69,6 +69,18 @@ function SourceTabPanel() {
 			{" "}
 			<p id="cov_status" className="note" />
 			{" "}
+			<div id="cov_cmp_box" className="scan" hidden>
+				<label>
+					{"compare with "}
+					<select id="cov_cmp" />
+				</label>
+				<span className="tip" tabIndex="0" role="button" title="What ran in an earlier build of this kernel (one rebuilt in this page, or the shipped one), next to what runs in this one: each file and function shows how many of its lines ran there, + the lines that ran only here, − those that ran only there. The earlier build's lines are moved to this build's text through the diff of each edited file (lines below an edit move with it); a line the edit changed counts as not the same line. The Source panel marks ◌ the lines that ran there and not (yet) here. Kept until the page is reloaded.">
+					?
+				</span>
+				{" "}
+				<span id="cov_cmp_status" className="note" />
+			</div>
+			{" "}
 			<div id="cov_tree" className="ctree covtree" />
 			{" "}
 			<p id="covtree_info" className="note" />

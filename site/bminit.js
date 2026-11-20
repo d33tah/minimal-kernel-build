@@ -7,6 +7,7 @@ import { realNow } from "./clock.js";
 import { $ } from "./util.js";
 import { vmHasKeys, state } from "./page.js";
 import { srcPanel } from "./source.js";
+import { dbgOnChange } from "./dbginfo.js";
 import { bmLoad, bmExport, bmDialogSave, bmDialogClose, bmMenuFit, bmPendingTick, bmRender, bmAsk, bmDraftHere,
 	bmDraftPos, bmListOpen, BM, bmImport, bmDraftAt, bmPressTarget, BM_LONG_MS, BM_KEY,
 	bmChanged } from "./bookmarks.js";
@@ -147,12 +148,26 @@ function initBookmarks() {
 		}
 	});
 	window.addEventListener("resize", bmMenuFit);
+	// The menu opened: its list as of now.
+	$("runbadge_toggle").addEventListener("click", () => queueMicrotask(() => {
+		if (!$("runbadge_menu").hidden && !$("bm_box").hidden)
+			bmRender();
+	}));
 	setInterval(bmPendingTick, 300);
 	// The groups (this kernel's, another's) follow the loaded kernel: drawn
 	// again when it changes, and once more when its identity (bmKey, a
 	// SHA-256) is known. The Memory grid's stars asked for that identity
 	// too, but the grid is drawn only when its tab is shown.
 	state.subscribe(bmRender, ["image"]);
+	// Another build's bookmarks are placed by its symbols, DWARF and source
+	// text (E8), which come after the kernel: the open list follows them
+	// (not while a name is being edited in it).
+	const again = () => {
+		if (!$("bm_box").hidden && !(document.activeElement && document.activeElement.classList.contains("bmedit")))
+			bmRender();
+	};
+	state.subscribe(again, ["symbols"]);
+	dbgOnChange(again);
 	bmRender();
 }
 

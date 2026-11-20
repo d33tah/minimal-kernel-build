@@ -20,6 +20,16 @@
 // bookmark is this kernel's when it matches, else another kernel's (listed
 // apart with a switch). They are kept in localStorage (small JSON); without
 // storage they last until the page is reloaded, and the list says so.
+//
+// Across builds (E8): build is the label of the build it was made on
+// (buildmap.js; its kernel name less " (rebuilt here)" is the kernel the
+// build was made from); a bookmark of another build of the
+// same kernel (one rebuilt in the page, a hot patch, or the shipped one
+// seen from a rebuild) is placed in this one by what stays: code and pos
+// keep fn and off (the function holding the address and the offset into
+// it) and src { path, line, fh, txt } (its C line, the version of that
+// file's text and the line's text); line keeps fh and txt. Lines move
+// through the diff of the two texts (bmPlace).
 
 import { realNow } from "./clock.js";
 import { hex, PAGE, num, $, escHtml } from "./util.js";
@@ -37,6 +47,9 @@ import { snapKernelKey, saveSnapshot, restoreSnapshot } from "./snapshots.js";
 import { runNow, replayRun, runStatus } from "./replay.js";
 import { setStatus } from "./header.js";
 import { hideTip } from "./tips.js";
+import { DBG, dbgFrames, dbgLineCode } from "./dbginfo.js";
+import { srcFile } from "./srctext.js";
+import { textKeep, buildFamily, recFamily, imageLabel, mapLine } from "./buildmap.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
@@ -96,13 +109,113 @@ function bmKey() {
 	return k;
 }
 
-// "this": a bookmark of the loaded kernel; "other": of another one. While
-// the identity is computed, the kernel's name decides.
+// "this": a bookmark of the loaded kernel; "build": of another build of
+// it (E8: placed here by bmPlace); "other": of another kernel. While the
+// identity is computed, the kernel's name decides.
 function bmGroup(b) {
 	const k = bmKey();
-	if (k)
-		return b.kernelKey === k ? "this" : "other";
-	return image && b.kernel === snapKernelName() ? "this" : "other";
+	if (k ? b.kernelKey === k : image && b.kernel === snapKernelName())
+		return "this";
+	return image && recFamily(b) === buildFamily() ? "build" : "other";
+}
+
+// ---- across builds (E8) ---------------------------------------------------------
+
+// The function holding pa and the offset into it (the kernel's own
+// symbols, not a hot patch's copies), and pa's C line with the version of
+// its file's text: what a bookmark of code keeps for another build.
+function bmAnchor(pa) {
+	const out = {};
+	const s = symbols && pa >= 0 ? api.symbols.symbolAt(symbols.symbols.filter((x) => !x.patch), pa) : null;
+	if (s && pa - s.paddr < Math.max(1, s.size))
+		Object.assign(out, { fn: s.name, off: pa - s.paddr, fsize: s.size });
+	const r = pa >= 0 ? dbgFrames(pa, true) : null;
+	const f = r && r.state === "ok" ? r.frames[0] : null;
+	if (f && f.file && f.line)
+		out.src = { path: f.file, line: f.line, ...bmLineAnchor(f.file, f.line) };
+	return out;
+}
+
+// The version of path's text shown (its hash) and line's text, when loaded.
+function bmLineAnchor(path, line) {
+	const f = srcFile(path);
+	return f.state === "ok" ? { fh: textKeep(f.lines.join("\n")), txt: f.lines[line - 1] || "" } : {};
+}
+
+// The kernel's own symbol named name.
+const bmSym = (name) => (symbols ? symbols.symbols.find((x) => x.name === name && !x.patch) : null);
+
+// Line `line` of path as counted on the text fh (txt its text), in the text
+// shown now: { line, how } (buildmap.js mapLine), or null while the text loads.
+function bmMapLine(path, line, fh, txt) {
+	const f = srcFile(path);
+	if (f.state === "loading")
+		return null;
+	return f.state === "ok" ? mapLine(line, fh, txt, f.lines.join("\n")) : { line, how: "kept" };
+}
+
+const BM_HOW = { same: "the same line", moved: "moved by the edit", changed: "the edit changed that line: the next line it kept",
+	text: "found by its text", kept: "the same number (its file's old text is not known here)" };
+
+// Where bookmark b is in the kernel shown: { t, how, gone } with t of b's
+// kind; for a bookmark of another build of it, placed by function name and
+// offset and by file:line through the edit (how says by what, gone why
+// not at all). Kept until the bookmarks, the DWARF or the kernel change.
+function bmPlace(b) {
+	// This build's: its addresses hold; a line moves when the panel shows
+	// another text of its file (a hot patch's).
+	const g = bmGroup(b);
+	if (g === "other" || (g === "this" && (b.kind !== "line" || !b.t.fh)))
+		return { t: b.t, how: "" };
+	const key = BM.version + "|" + DBG.version + "|" + bmKey();
+	const had = BM.placed && BM.placed.get(b);
+	if (had && had.key === key)
+		return had.p;
+	const p = bmPlaceNow(b);
+	if (!p.wait) {
+		if (!BM.placed)
+			BM.placed = new WeakMap();
+		BM.placed.set(b, { key, p });
+	}
+	return p;
+}
+
+function bmPlaceNow(b) {
+	const t = b.t;
+	if (b.kind === "line") {
+		const m = bmMapLine(t.path, t.line, t.fh, t.txt);
+		return m ? { t: { ...t, line: m.line }, how: m.how === "same" ? "" : "at line " + m.line + " (line " + t.line + " there, " + BM_HOW[m.how] + ")" } :
+			{ t, how: "reading " + t.path + "…", wait: true };
+	}
+	if (b.kind === "fn") {
+		const s = bmSym(t.name);
+		return s ? { t: { ...t, pa: s.paddr }, how: "by its name" + (s.paddr !== t.pa ? ", moved from " + hex(t.pa) : "") } :
+			{ t, how: "", gone: "no " + t.name + "() in this build" };
+	}
+	if (b.kind === "code" || b.kind === "pos") {
+		// Before E8 a position kept only "name+0xoff".
+		const m = !t.fn && typeof t.sym === "string" ? /^([^+\s]+)(?:\+0x([0-9a-f]+))?$/.exec(t.sym) : null;
+		const fn = t.fn || (m && m[1]), off = t.fn ? t.off : m ? parseInt(m[2] || "0", 16) : 0;
+		const s = fn ? bmSym(fn) : null;
+		if (!s)
+			return { t, how: "", gone: fn ? "no " + fn + "() in this build" : "made before builds were tracked: no function to place it by" };
+		// The function changed: its C line through the edit, the first
+		// breakpoint address of that line inside it.
+		if (t.src && t.fsize !== undefined && t.fsize !== s.size) {
+			const ml = bmMapLine(t.src.path, t.src.line, t.src.fh, t.src.txt);
+			const lc = ml ? dbgLineCode(t.src.path, ml.line) : null;
+			const bp = lc && lc.state === "ok" ? lc.bps.find((a) => a >= s.paddr && a < s.paddr + s.size) : undefined;
+			if (bp !== undefined)
+				return { t: { ...t, pa: bp, sym: fn + (bp > s.paddr ? "+" + hex(bp - s.paddr) : "") },
+					how: "by its line " + t.src.path + ":" + ml.line + " in " + fn + "() (" + BM_HOW[ml.how] + ")" };
+			if (!ml || (lc && lc.state === "loading"))
+				return { t: { ...t, pa: s.paddr + Math.min(off, s.size - 1) }, how: "reading the line table…", wait: true };
+		}
+		if (off >= Math.max(1, s.size))
+			return { t, how: "", gone: fn + "() is shorter in this build than the offset " + hex(off) };
+		return { t: { ...t, pa: s.paddr + off }, how: "by " + fn + "+" + hex(off) + (t.fsize !== undefined && t.fsize !== s.size ? " (" + fn + "() changed size)" : "") };
+	}
+	return { t, how: "" };
 }
 
 // ---- what a bookmark points at -----------------------------------------------
@@ -133,7 +246,7 @@ function bmTargetText(b) {
 
 function bmDraftCode(pa) {
 	const s = bmSymName(pa);
-	return { kind: "code", t: { pa, sym: s }, name: s || hex(pa) };
+	return { kind: "code", t: { pa, sym: s, ...bmAnchor(pa) }, name: s || hex(pa) };
 }
 
 function bmDraftPage(p) {
@@ -146,7 +259,8 @@ function bmDraftFn(pa, name) {
 }
 
 function bmDraftLine(path, line) {
-	return line ? { kind: "line", t: { path, line }, name: path.replace(/^.*\//, "") + ":" + line } : { kind: "file", t: { path }, name: path };
+	return line ? { kind: "line", t: { path, line, ...bmLineAnchor(path, line) }, name: path.replace(/^.*\//, "") + ":" + line } :
+		{ kind: "file", t: { path }, name: path };
 }
 
 // The machine's position: EIP and the stepper's count, the one the Machine
@@ -165,7 +279,7 @@ function bmDraftPos() {
 	// The run up to here (J4): Replay boots again and replays it to here.
 	const run = runNow();
 	const steps = stepper.steps;
-	return { kind: "pos", t: { pa, eip, steps, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}) },
+	return { kind: "pos", t: { pa, eip, steps, icount, sym, snap: snap ? snap.id : null, snapName: snap ? snap.name : "", ...(run ? { run } : {}), ...bmAnchor(pa) },
 		name: snapKernelName() + " @" + steps.toLocaleString("en") + (sym ? " " + sym : " " + hex(eip)) };
 }
 
@@ -253,14 +367,21 @@ function bmDraftHere(where) {
 // This kernel's bookmarks by target: code and pos by address, fn by its
 // start, page by number, line by "path:line", file by path.
 function bmMarks() {
-	if (BM.marks && BM.marks.key === bmKey() + "|" + BM.list.length + "|" + BM.version)
+	// Another build's bookmarks are placed through the DWARF and the texts
+	// (dbgChanged also follows a text loaded).
+	const key = bmKey() + "|" + BM.list.length + "|" + BM.version + "|" + DBG.version + "|" + buildFamily();
+	if (BM.marks && BM.marks.key === key)
 		return BM.marks;
-	const m = { key: bmKey() + "|" + BM.list.length + "|" + BM.version, code: new Map(), fn: new Map(), page: new Map(), line: new Map(), file: new Map() };
+	const m = { key, code: new Map(), fn: new Map(), page: new Map(), line: new Map(), file: new Map() };
 	const add = (map, k, b) => map.set(k, (map.get(k) || []).concat(b.name));
 	for (const b of BM.list) {
-		if (bmGroup(b) !== "this")
+		if (bmGroup(b) === "other")
 			continue;
-		const t = b.t;
+		// Another build's: where bmPlace puts it here (E8).
+		const p = bmPlace(b);
+		if (p.gone)
+			continue;
+		const t = p.t;
 		if (b.kind === "code" || b.kind === "pos")
 			add(m.code, t.pa, b);
 		else if (b.kind === "fn")
@@ -373,7 +494,7 @@ async function bmDialogSave() {
 	const withSnap = d.kind === "pos" && !$("bm_snap_l").hidden && $("bm_snap").checked;
 	bmDialogClose();
 	const b = { id: "b" + Date.now().toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36), name, kind: d.kind, t: { ...d.t },
-		kernel: snapKernelName(), kernelKey: bmKey(), created: Date.now() };
+		kernel: snapKernelName(), kernelKey: bmKey(), build: imageLabel(), created: Date.now() };
 	BM.list.push(b);
 	bmSave();
 	bmNote("Added “" + name + "”.");
@@ -398,12 +519,18 @@ async function bmDialogSave() {
 // Go to b's place: one history entry (Back returns). Another kernel's
 // bookmark loads that kernel first and goes there when it runs.
 function bmGo(b) {
-	if (bmGroup(b) !== "this") {
+	if (bmGroup(b) === "other") {
 		bmSwitch(b);
 		return;
 	}
+	// Another build's bookmark: where it is in this build (E8).
+	const p = bmPlace(b);
+	if (p.gone) {
+		bmNote("“" + b.name + "” (" + bmTargetText(b) + ") is not in this build: " + p.gone + ".");
+		return;
+	}
 	api.show.runBadgeOpen(false);
-	const t = b.t;
+	const t = p.t;
 	switch (b.kind) {
 	case "code":
 	case "pos":
@@ -426,7 +553,8 @@ function bmGo(b) {
 		api.show.openFunction(t.pa, t.name, true);
 		break;
 	}
-	bmNote("At “" + b.name + "” (" + bmTargetText(b) + ").");
+	bmNote("At “" + b.name + "” (" + bmTargetText({ ...b, t }) + ")" + (p.how ? ", made on " + (b.build || "another build of " + recFamily(b)) +
+		": placed " + p.how : "") + ".");
 }
 
 // Load the kernel b is for, then go to b.
@@ -459,27 +587,19 @@ function bmPendingTick() {
 	if (!emulator || !emuReady || !emuRam || !image || !stepper || runState === "off")
 		return;
 	const key = bmKey();
-	if (!key || (p.b.kernelKey !== key && p.b.kernel !== snapKernelName()))
+	if (!key || (p.b.kernelKey !== key && recFamily(p.b) !== buildFamily()))
 		return;
 	BM.pending = null;
 	const b = BM.list.find((x) => x.id === p.b.id) || p.b;
 	if (b.kernelKey !== key) {
-		// The link's kernel by name, another build of it: go there anyway, say so.
-		bmGoThere(b);
-		bmNote("“" + b.name + "” was made with another build of " + b.kernel + ": the place may differ.");
+		// Another build of the link's kernel: placed by name and line (E8), said so.
+		bmGo(b);
+		const pl = bmPlace(b);
+		bmNote("“" + b.name + "” was made with another build of " + recFamily(b) + ": " +
+			(pl.gone ? "it is not in this one (" + pl.gone + ")." : "placed " + (pl.how || "at the same place") + " (" + bmTargetText({ ...b, t: pl.t }) + ")."));
 		return;
 	}
 	bmGo(b);
-}
-
-function bmGoThere(b) {
-	const was = b.kernelKey;
-	b.kernelKey = bmKey();
-	try {
-		bmGo(b);
-	} finally {
-		b.kernelKey = was;
-	}
 }
 
 // ---- links --------------------------------------------------------------------
@@ -488,7 +608,7 @@ const bmB64 = (s) => btoa(String.fromCharCode(...new TextEncoder().encode(s))).r
 const bmUnB64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0)));
 
 function bmLink(b) {
-	const data = { n: b.name, k: b.kind, t: b.t, kn: b.kernel, kk: b.kernelKey };
+	const data = { n: b.name, k: b.kind, t: b.t, kn: b.kernel, kk: b.kernelKey, bd: b.build };
 	return location.origin + location.pathname + "?kernel=" + encodeURIComponent(b.kernel.split(" + ")[0]) + "#bm=" + bmB64(JSON.stringify(data));
 }
 
@@ -501,7 +621,8 @@ function bmFromHash() {
 	try {
 		const d = JSON.parse(bmUnB64(location.hash.slice(4)));
 		b = { id: "b" + Date.now().toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36), name: String(d.n), kind: d.k, t: d.t,
-			kernel: String(d.kn || ""), kernelKey: d.kk || null, created: Date.now(), from: "link" };
+			kernel: String(d.kn || ""), kernelKey: d.kk || null, ...(d.bd ? { build: String(d.bd) } : {}),
+			created: Date.now(), from: "link" };
 	} catch (e) {
 		b = null;
 	}
@@ -631,11 +752,18 @@ function bmRowEl(b, group) {
 	go.type = "button";
 	go.className = "bmgo";
 	go.textContent = b.name;
-	go.title = group === "this" ? "Go to " + bmTargetText(b) : "Switch to " + b.kernel + " and go to " + bmTargetText(b);
+	// Another build's: where it is here, and on which build it was made (E8).
+	const pl = group === "build" ? bmPlace(b) : null;
+	const here = pl && !pl.gone ? bmTargetText({ ...b, t: pl.t }) : bmTargetText(b);
+	go.title = group === "other" ? "Switch to " + b.kernel + " and go to " + bmTargetText(b) : "Go to " + here;
 	go.addEventListener("click", () => bmGo(b));
 	const what = document.createElement("span");
 	what.className = "bmwhat";
-	what.textContent = BM_KINDS[b.kind] + " · " + bmTargetText(b) + (group === "other" ? " · " + b.kernel : "") + (b.from === "link" ? " · from a link" : "");
+	what.textContent = BM_KINDS[b.kind] + " · " + here + (group === "other" ? " · " + b.kernel : "") +
+		(pl ? " · made on " + (b.build || "another build of " + recFamily(b)) + (pl.gone ? ", not in this build: " + pl.gone : pl.how ? ", placed " + pl.how : "") : "") +
+		(b.from === "link" ? " · from a link" : "");
+	if (pl)
+		li.dataset.placed = pl.gone ? "gone" : bmTargetText({ ...b, t: pl.t });
 	const acts = document.createElement("span");
 	acts.className = "bmacts";
 	if (group === "other") {
@@ -709,16 +837,17 @@ function bmRender() {
 		return;
 	const q = BM.q.toLowerCase();
 	ul.textContent = "";
-	const groups = { this: [], other: [] };
+	const groups = { this: [], build: [], other: [] };
 	for (const b of BM.list)
 		groups[bmGroup(b)].push(b);
 	let shown = 0;
-	for (const g of ["this", "other"]) {
+	for (const g of ["this", "build", "other"]) {
 		if (!groups[g].length)
 			continue;
 		const h = document.createElement("li");
 		h.className = "bmghead";
-		h.textContent = g === "this" ? "This kernel (" + (snapKernelName() || "none") + ")" : "For another kernel";
+		h.textContent = g === "this" ? "This kernel (" + (snapKernelName() || "none") + ")" :
+			g === "build" ? "Other builds of " + buildFamily() + " (placed in this one by function and line)" : "For another kernel";
 		ul.append(h);
 		let n = 0;
 		for (const b of groups[g]) {
@@ -739,7 +868,7 @@ function bmRender() {
 		ul.append(e);
 	}
 	ul.dataset.count = BM.list.length;
-	const mine = groups.this.length;
+	const mine = groups.this.length + groups.build.length;
 	$("bm_count").textContent = mine ? "(" + mine + (groups.other.length ? " + " + groups.other.length : "") + ")" : groups.other.length ? "(0 + " + groups.other.length + ")" : "";
 	$("bm_store").textContent = BM.stored ? "" : "Not kept after a reload: " + BM.why + ".";
 	$("bm_store").hidden = BM.stored;
@@ -783,6 +912,6 @@ function bmListOpen(open) {
 
 provide({ bmLineStar, bmFnNames, bmTip });
 
-export { BM_KEY, BM_LONG_MS, BM, bmLoad, bmDraftFn, bmDraftLine, bmDraftPos, bmDraftAt, bmPressTarget, bmDraftHere,
+export { BM_KEY, BM_LONG_MS, BM, bmLoad, bmDraftFn, bmDraftLine, bmDraftPos, bmDraftAt, bmPressTarget, bmDraftHere, bmPlace, bmGroup,
 	bmMarks, bmStarEl, bmCodeStar, bmFnStar, bmFnNames, bmAddButton, bmRenderPages, bmAsk, bmDialogClose,
 	bmDialogSave, bmPendingTick, bmFromHash, bmExport, bmImport, bmRender, bmChanged, bmMenuFit, bmListOpen };

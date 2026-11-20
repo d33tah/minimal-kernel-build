@@ -16,8 +16,8 @@
 // are edpatch.js's.
 //
 // The listings, the Debugger and the panel's own view keep showing the
-// text the kernel was built from: their line numbers and coverage belong to
-// that build. srcOverlay is the API for the in-browser build (E3, E4):
+// text the machine runs: the one the kernel was built from, or a hot
+// patch's (hotpatch.jsx, E8); their line numbers and coverage belong to it. srcOverlay is the API for the in-browser build (E3, E4):
 // paths() the changed files of the shown kernel, read(path) a file's text
 // with the overlay applied, original(path) the text it was built from.
 
@@ -121,7 +121,7 @@ function edShipped(path) {
 	return new Promise((resolve, reject) => {
 		const t0 = Date.now();
 		const poll = () => {
-			const f = srcFile(path);
+			const f = srcFile(path, true);
 			if (f.state === "ok")
 				resolve(f.lines.join("\n"));
 			else if (f.state === "none")
@@ -231,8 +231,12 @@ function edSync() {
 		const s = edStats(srcPanel.path);
 		// A kernel rebuilt in the page (rebuild.js) was built from the edits.
 		const built = image && image.edits && image.edits[srcPanel.path] === e.text;
+		// Hot patched with this text (E8): the panel shows it (srctext.js SRC_OVER).
+		const over = srcFile(srcPanel.path);
+		const patched = over.over && over.lines.join("\n") === e.text;
 		$("ed_state").textContent = built ? "This kernel was rebuilt here from your text of this file (+" + s.add + " -" + s.del + "), shown here." :
-			"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the kernel was built from; Edit shows yours.";
+			patched ? "The machine runs your text of this file (+" + s.add + " -" + s.del + "), hot patched in: shown here." :
+				"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the " + (over.over ? "machine runs" : "kernel was built from") + "; Edit shows yours.";
 	} else if (ED.on && ED.cur)
 		edState();
 	if (ED.diffShown && srcPanel)

@@ -9,6 +9,11 @@ import { dbgChanged, dbgHas } from "./dbginfo.js";
 import { dbgGunzip } from "./dbgmerge.js";
 
 let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
+// Texts shown over the build's (E8): a file the machine runs another text
+// of, hot patched (hotpatch.jsx): path -> { state: "ok", lines, over }, over
+// what the panel says about it. The line numbers of the build's DWARF are
+// moved to this text (dbginfo.js DBG.remap).
+const SRC_OVER = new Map();
 
 function srcFresh(mode, why) {
 	SRC = { mode, why, files: new Map(), missing: {}, notes: {} };
@@ -53,11 +58,22 @@ async function srcDecode(buf) {
 	return new TextDecoder().decode(await dbgGunzip(buf)).split("\n");
 }
 
+// The text the machine runs instead of the build's (null: the build's again).
+function srcOverride(path, text, over) {
+	if (text === null)
+		SRC_OVER.delete(path);
+	else
+		SRC_OVER.set(path, { state: "ok", lines: text.split("\n"), over });
+}
+
 // { state: "ok", lines } (lines[0] is line 1), { state: "loading" } or
-// { state: "none", why }.
-function srcFile(path) {
+// { state: "none", why }. built: the text the kernel was built from, not
+// the one a hot patch put in (SRC_OVER).
+function srcFile(path, built = false) {
 	if (!path)
 		return { state: "none", why: "no line information" };
+	if (!built && SRC_OVER.has(path))
+		return SRC_OVER.get(path);
 	const got = SRC.files.get(path);
 	if (got)
 		return got;
@@ -371,5 +387,5 @@ function srcStatementView(file, first, last, code, run) {
 	return { first: lo, last: hi, cont };
 }
 
-export { SRC, srcFresh, srcUseShipped, srcChanged, srcFile, srcText, srcPickFolder, srcPickTar, srcStatus,
+export { SRC, SRC_OVER, srcOverride, srcFresh, srcUseShipped, srcChanged, srcFile, srcText, srcPickFolder, srcPickTar, srcStatus,
 	srcStatements, srcStatementView };

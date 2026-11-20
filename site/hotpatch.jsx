@@ -30,11 +30,13 @@
 
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { hex } from "./util.js";
+import { hex, $ } from "./util.js";
 import { image, emulator, stepper, runState, symbols, setSymbols, state, provide, api } from "./page.js";
-import { DBG, dbgChanged, dbgTypes, dbgFnFacts } from "./dbginfo.js";
+import { DBG, dbgChanged, dbgTypes, dbgFnFacts, dbgSetRemap } from "./dbginfo.js";
 import { dwarfPack } from "./dwarftables.js";
 import { srcOverlay } from "./srcedit.js";
+import { SRC_OVER, srcOverride, srcChanged } from "./srctext.js";
+import { lineMap, moveRunTo } from "./buildmap.js";
 import { ClangWorker } from "./clang.js";
 import { kitSource, kitCompile, kitNow } from "./kit.js";
 import { RB } from "./rebuild.jsx";
@@ -60,6 +62,7 @@ const HP = {
 	kit: null,       // [name, kit JSON]
 	objs: new Map(), // "kernel:path:text" -> object bytes
 	last: null,      // the last patch made here: { n, ms, ... } for the status
+	viewImg: null,   // the kernel hpView showed the patched texts of
 	rev: 0,
 	subs: new Set(),
 	subscribe(fn) {
@@ -91,9 +94,7 @@ async function hpRunning(path) {
 	const ps = hpPatches().filter((p) => p.path === path);
 	if (ps.length)
 		return ps[ps.length - 1].text;
-	if (image && image.edits && image.edits[path] !== undefined)
-		return image.edits[path];
-	return srcOverlay.original(path);
+	return hpBuilt(path);
 }
 
 async function hpKit() {
@@ -158,9 +159,13 @@ function hpDebug() {
 		}
 		return six.get(s);
 	};
+	// A file patched again: the earlier patches' copies that still run name
+	// lines of their own text, moved to the last one's (the text shown, E8).
+	const last = new Map(ps.map((p) => [p.path, p]));
 	for (const p of ps) {
+		const m = last.get(p.path) !== p ? lineMap(p.text, last.get(p.path).text) : null;
 		for (const [va, f, line] of p.lines ? p.lines.rows : [])
-			rows.push([va - koff, f < 0 ? -1 : sid(p.lines.files[f]), line]);
+			rows.push([va - koff, f < 0 ? -1 : sid(p.lines.files[f]), m && f >= 0 && p.lines.files[f] === p.path && line < m.length ? m[line] : line]);
 		for (const f of p.funcs)
 			rg.push([f.va - koff, f.va - koff + f.size, 0, sid(f.name), -1, 0]);
 	}
@@ -168,7 +173,69 @@ function hpDebug() {
 	rg.sort((a, b) => a[0] - b[0]);
 	const t = dwarfPack(strings, rows.map((r) => r[0]), rows.map((r) => r[1]), rows.map((r) => r[2]), rg, rows.map(() => 1), []);
 	DBG.patch = { lo: HP_PA, hi: HP_PA + HP_SIZE, t, key };
+	DBG.lineCode = new Map(); // Run to file:line includes the copies (dbgFileCode)
 	dbgChanged();
+}
+
+// The Source panel shows the text the machine runs (E8): each patched
+// file's last patch's text (srctext.js SRC_OVER), the kernel's own line
+// numbers of that file moved to it (dbginfo.js DBG.remap), so a line
+// tapped in the panel, the frames of the copies and of the old code, Run
+// to file:line and the line bookmarks all count lines of one text.
+let hpViewGen = 0;
+async function hpView() {
+	const gen = ++hpViewGen;
+	// Another kernel: its machine's patches only (the old run's log goes at
+	// its boot), and its Run to target was moved by the build already.
+	const same = HP.viewImg === image;
+	HP.viewImg = image;
+	const ps = same ? hpPatches() : [];
+	const last = new Map(ps.map((p) => [p.path, p]));
+	let changed = false;
+	const was = new Map(); // path -> the text shown before (null: the build's)
+	for (const path of [...SRC_OVER.keys()])
+		if (!last.has(path)) {
+			was.set(path, SRC_OVER.get(path).lines.join("\n"));
+			srcOverride(path, null);
+			changed = true;
+		}
+	for (const [path, p] of last) {
+		const names = [...new Set(ps.filter((x) => x.path === path).flatMap((x) => x.funcs.map((f) => f.name)))];
+		const over = "the text the machine runs since patch " + p.n + " (" + names.join(", ") + " run" + (names.length === 1 ? "s" : "") +
+			" from the patch's copy; the kernel's other code of this file is counted on this text's lines)";
+		const had = SRC_OVER.get(path);
+		if (!had || had.over !== over || had.lines.join("\n") !== p.text) {
+			was.set(path, had ? had.lines.join("\n") : null);
+			srcOverride(path, p.text, over);
+			changed = true;
+		}
+	}
+	if (changed)
+		srcChanged();
+	const files = new Map(), texts = new Map();
+	for (const path of new Set([...last.keys(), ...was.keys()])) {
+		const base = await hpBuilt(path);
+		if (gen !== hpViewGen)
+			return;
+		if (base === null)
+			continue;
+		if (last.has(path))
+			files.set(path, lineMap(base, last.get(path).text));
+		if (was.has(path))
+			texts.set(path, [was.get(path) === null ? base : was.get(path), last.has(path) ? last.get(path).text : base]);
+	}
+	dbgSetRemap(files);
+	// The Run to target (the Debugger's breakpoint) counts on the text shown.
+	const moved = same ? moveRunTo(texts) : "";
+	if (moved)
+		$("dbg_status").textContent = moved;
+}
+
+// The text path was built from (no patch): the rebuilt kernel's edit, else the kit's.
+async function hpBuilt(path) {
+	if (image && image.edits && image.edits[path] !== undefined)
+		return image.edits[path];
+	return srcOverlay.original(path);
 }
 
 // The state changed (an edit, a pause, a patch, a restore, a kernel):
@@ -176,6 +243,7 @@ function hpDebug() {
 function hpSync() {
 	hpSymbols();
 	hpDebug();
+	hpView().catch((e) => console.warn("hot patch view:", e));
 	clearTimeout(HP.timer);
 	HP.gen++;
 	if (HP.busy)
@@ -335,6 +403,7 @@ async function hpRun() {
 		HP.last = { n, ms: kitNow() - t0, at: stepper.steps };
 		hpSymbols();
 		hpDebug();
+		hpView().catch((e) => console.warn("hot patch view:", e));
 		HP.gen++;
 		HP.plan = null;
 		const text = "Patch " + n + " is in: " + p.changed.map((c) => c + " (" + hex(p.funcs.find((f) => f.name === c).old) + ")").join(", ") +

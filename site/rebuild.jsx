@@ -21,12 +21,14 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { withV, httpWhy, $, kib } from "./util.js";
-import { image, setDisasm, kernels, api, provide, runState } from "./page.js";
+import { withV, httpWhy, $, kib, hex } from "./util.js";
+import { image, symbols, setDisasm, kernels, api, provide, runState } from "./page.js";
 import { download } from "./graph.js";
 import { dbgFresh, dbgOnChange } from "./dbginfo.js";
 import { dbgImport } from "./dbgimport.js";
-import { srcFresh, SRC, srcChanged } from "./srctext.js";
+import { srcFresh, SRC, srcChanged, srcFile, SRC_OVER } from "./srctext.js";
+import { RB_SUFFIX, buildNew, textKeep, moveRunTo } from "./buildmap.js";
+import { covKeep } from "./coverage.js";
 import { srcPanel, closeSource } from "./source.js";
 import { srcOverlay, edFlush, ED, edState } from "./srcedit.js";
 import { parseSymbolFile, applySymbols } from "./symimport.js";
@@ -73,8 +75,6 @@ const RB = {
 		});
 	},
 };
-
-const RB_SUFFIX = " (rebuilt here)";
 
 const rbFrom = () => (image ? image.from || image.name : "");
 
@@ -247,6 +247,70 @@ async function rbTree(kit, src, edits) {
 	return out;
 }
 
+// --- places across builds (E8) ---
+// The files whose text may differ between the kernel shown and the new
+// build: the edits of both, and the file of a Run to file:line target.
+function rbPaths(kit, edits) {
+	const have = kit.files.filter((f) => f[3] !== 2).map((f) => f[0]);
+	const paths = new Set([...Object.keys(edits), ...Object.keys(image && image.build ? image.build.files : {}), ...SRC_OVER.keys()]);
+	const m = /^(.*\D.*):(\d+)$/.exec($("dbg_addr").value.trim());
+	if (m) {
+		const q = m[1].replace(/^\.?\//, "");
+		const p = have.find((x) => x === q) || have.find((x) => x.endsWith("/" + q));
+		if (p)
+			paths.add(p);
+	}
+	return [...paths].filter((p) => have.includes(p));
+}
+
+// The kit's own text (the shipped tree) of each path: { path: text }.
+async function rbShipped(kit, src, paths) {
+	const out = {};
+	for (const p of paths) {
+		const f = kit.files.find((x) => x[0] === p && x[3] !== 2);
+		out[p] = new TextDecoder().decode(await src.get(f[1]));
+	}
+	return out;
+}
+
+// The text of path the panel shows for the kernel shown (its build, or a
+// hot patch's), once loaded; null without one.
+async function rbShown(path) {
+	const t0 = Date.now();
+	let f = srcFile(path);
+	while (f.state === "loading" && Date.now() - t0 < 20000) {
+		await new Promise((ok) => setTimeout(ok, 50));
+		f = srcFile(path);
+	}
+	return f.state === "ok" ? f.lines.join("\n") : null;
+}
+
+// A Run to address (hex) of the kernel shown, kept as the function holding
+// it and the offset: a function for the new kernel's symbols that gives
+// the new address and what to say, or null.
+function rbRunToAddr() {
+	const v = $("dbg_addr").value.trim();
+	if (!/^(0x)?[0-9a-f]+$/i.test(v) || !symbols || symbols.symbols.some((s) => s.name === v))
+		return null;
+	const n = parseInt(v.replace(/^0x/i, ""), 16);
+	const koff = symbols.symbols.length ? symbols.symbols[0].vaddr - symbols.symbols[0].paddr : 0;
+	const pa = koff > 0 && n >= koff ? n - koff : n;
+	const s = api.symbols.symbolAt(symbols.symbols.filter((x) => !x.patch), pa);
+	if (!s || pa - s.paddr >= Math.max(1, s.size))
+		return null;
+	const off = pa - s.paddr;
+	return () => {
+		const t = symbols && symbols.symbols.find((x) => x.name === s.name && !x.patch);
+		if (!t || off >= Math.max(1, t.size))
+			return "Run to " + v + " (" + s.name + "+" + hex(off) + ") has no place in this build: " + (t ? s.name + " is shorter now" : "no " + s.name + " here") + ".";
+		if (t.paddr === s.paddr)
+			return "";
+		$("dbg_addr").value = "0x" + (n + t.paddr - s.paddr).toString(16);
+		return "Run to " + v + " is " + $("dbg_addr").value + " now: " + s.name + "+" + hex(off) + " moved with the build" +
+			(t.size !== s.size ? " (" + s.name + " changed size: the offset may be another instruction)" : "") + ".";
+	};
+}
+
 // The buttons are disabled while rbCan() says no (a build running included).
 async function rbRun() {
 	edFlush(); // what was typed last
@@ -301,6 +365,7 @@ async function rbRun() {
 			},
 		});
 		r.tree = await rbTree(kit, src, edits);
+		r.shipped = await rbShipped(kit, src, rbPaths(kit, edits));
 		rbLogNote("Done in " + ((kitNow() - t0) / 1000).toFixed(2) + " s: fetching " + (r.fetchMs / 1000).toFixed(2) + " s, compiling " +
 			(r.compileMs / 1000).toFixed(2) + " s (" + r.objects.length + " object" + (r.objects.length === 1 ? "" : "s") + "), linking " + (r.linkMs / 1000).toFixed(2) + " s (" +
 			r.steps.length + " steps). Products: " + r.products.map((p) => p[0] + " " + p[2] + " bytes, SHA-256 " + p[1]).join("; ") + ".");
@@ -360,12 +425,27 @@ async function rbBoot(from, kit, edits, r, ms) {
 	// the others, moved to their new addresses (genimport.js, dbgmerge.js).
 	const shipped = kit.objects.some((o) => o.gsha256) ? kernels.find((x) => x.name === from) : null;
 	const entry = same ? shipped : null;
+	// What the kernel shown leaves to the next one (E8): what ran in it (the
+	// Coverage tab compares), the texts its places were counted on (the Run
+	// to target moves with the edit) and its Run to address.
+	await covKeep(10000);
+	const moveAddr = rbRunToAddr();
+	const texts = new Map();
+	for (const [p, t] of Object.entries(r.shipped)) {
+		const was = await rbShown(p);
+		if (was !== null)
+			texts.set(p, [was, edits[p] !== undefined ? edits[p] : t]);
+	}
 	const [disasm, syms] = entry ? await Promise.all([loadDisasm(entry), loadSymbols(entry)]) : [null, undefined];
 	setDisasm(disasm);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
 	api.machine.useImage(from + RB_SUFFIX, bytes.slice().buffer, mem, syms);
 	image.from = from;
 	image.edits = edits;
+	image.build = buildNew(from, edits);
+	image.build.base = Object.fromEntries(Object.entries(r.shipped).map(([p, t]) => [p, textKeep(t)]));
+	for (const [a, b] of texts.values())
+		textKeep(a), textKeep(b);
 	RB.shownFor = image; // the build log and the status stay with it
 	let gen = null;
 	if (entry) {
@@ -382,6 +462,10 @@ async function rbBoot(from, kit, edits, r, ms) {
 		dbgImport(elfFile, map.offset, null);
 		gen = genImport(elfFile, null, shipped && shipped.dwarf && shipped.symbols ? shipped : null);
 	}
+	// The Run to target (the Debugger's breakpoint) in this build's terms.
+	const moved = [moveRunTo(texts), moveAddr ? moveAddr() : ""].filter(Boolean).join(" ");
+	if (moved)
+		$("dbg_status").textContent = moved;
 	rbSync();
 	const sha = (h) => h.slice(0, 12);
 	const s = (x) => (x / 1000).toFixed(1) + " s";
@@ -392,7 +476,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 			kit.shipped.differs.reduce((n, d) => n + d[1], 0) + "-byte build-id" : "") :
 		"built from your " + nEdits + " changed file" + (nEdits === 1 ? "" : "s") + ": bzImage " + sha(r.products.find((p) => p[0] === imgPath)[1]) +
 		", CI's is " + sha(kit.shipped.sha256);
-	RB.last.text = "Booted " + image.name + ": " + kib(bytes.length) + " bzImage " + which + "; " + how + ".";
+	RB.last.text = "Booted " + image.name + ": " + kib(bytes.length) + " bzImage " + which + "; " + how + "." + (moved ? " " + moved : "");
 	rbShow(RB.last.text + (entry ? " Its data files are the shipped kernel's (the same bytes)." :
 		" Making its data files (symbols, disassembly, DWARF, source)…"), entry ? "done" : "booted", entry ? undefined : 0.97);
 	RB.files = true;
@@ -426,7 +510,8 @@ function initRebuild() {
 	RB.indexLoad = rbLoadIndex();
 }
 
-const rbBack = () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e)));
+// Back to the shipped kernel: what ran in this build is kept to compare (E8).
+const rbBack = () => covKeep(10000).then(() => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom()))).catch((e) => setStatus(String(e)));
 
 // The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
 function RebuildPanel() {

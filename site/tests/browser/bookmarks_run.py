@@ -324,7 +324,8 @@ def bookmarks_run(browser, base, shots, name, scheme, phone, other=None, problem
                 b = bm_dialog_save(page, problems, tag, "line", want_default=file.rsplit("/", 1)[-1] + ":" + str(ln))
                 if b:
                     added["src"] = b
-                    if b["t"] != {"path": file, "line": ln}:
+                    # E8: also the version of the file's text and the line's text, to place it in another build.
+                    if {k: b["t"].get(k) for k in ("path", "line")} != {"path": file, "line": ln} or not b["t"].get("fh") or "txt" not in b["t"]:
                         problems.append(f"{tag}: the Source panel bookmark holds {b['t']}, want {file}:{ln}")
                     bm_star_tip(page, f'#src_body [data-line="{ln}"] .bmstar', b["name"], phone, problems, f"{tag} Source panel")
             bm_shots(page, shots, f"bookmarks-{name}-{width}-srcpanel", scheme)

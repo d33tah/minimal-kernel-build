@@ -437,23 +437,23 @@ wasi.js	453	1bc1f6b3	E0c track (wasi.js, another agent's file): an error return 
 wasi.js	465	d74bcc73	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	513	51b191a5	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	543	4d723cd3	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
-hotpatch.jsx	94	fca23807	the running text of a kernel rebuilt in the page with edits (image.edits): no suite hot patches a rebuilt kernel (suite hotpatch patches the shipped hello, minified Linux and editable Debian)
-hotpatch.jsx	179	11d965ea	sometimes: hpSync while a patch is being written (HP.busy): only when the store or the editor changes in the few milliseconds between the press and the write; not forced by any suite
-hotpatch.jsx	185	dec148e2	sometimes: the patch box before kits/index.json arrived or on a site without kits: the browser-test jobs have no kits, the kit job has them; which job's coverage records it depends on whether srcedit's first edChanged comes before the index fetch
-hotpatch.jsx	187	f99d7387	sometimes: a kernel without a build kit (the shipped GCC Debian, an import) while the kits list is loaded: hpSync runs on every edit and pause, so it runs in the jobs whose suites pause such a kernel with kits present; the hotpatch suite never does
-hotpatch.jsx	210	4220a41f	the object cache's eviction after 8 different texts: the hotpatch suite checks at most 5 texts of one file per page
-hotpatch.jsx	226-227	7d87f429	two files differing from the running code at once: the suite edits one file at a time (the refusal text is plain; a two-file case would need two editors' saves before one check)
-hotpatch.jsx	237	6d6ccd47	a check overtaken by a newer one while kitHash/kit fetches ran (gen changed): timing-dependent, the suite waits for each check to end before the next edit
-hotpatch.jsx	243	6d6ccd47	the same, after the two compiles: a newer edit or pause arrived while clang ran
-hotpatch.jsx	257-259	6a3ba1af	hpLines throwing on a line table it cannot read (a DW_FORM outside the list): clang 22's DWARF 5 tables of the three kernels use only the forms handled
-hotpatch.jsx	266	ae6ac23f	the result of a check that a newer check replaced (gen changed after hpMake returned): timing-dependent, as above
-hotpatch.jsx	285	0e4a4a41	the CPU stopped inside the first 5 bytes of a function to replace: the suite pauses at a function's first byte (Run to) or at the prompt, never mid-prologue; needs a Step into a prologue
-hotpatch.jsx	290	8502e045	reserved memory not mapped by the kernel's page tables: every shipped Linux maps the first megabyte at PAGE_OFFSET once paging is on, and hello runs without paging
-hotpatch.jsx	300	34ba3fc6	function facts not loaded or absent (dbgFnFacts state none): the three kernels ship funcs-*.json.gz shards
-hotpatch.jsx	303-306	9d4e3448	a replaced function with inlined copies in the running kernel: hello and the minified Linux are -O0 (nothing inlined), Debian's version_proc_show is not inlined anywhere
-hotpatch.jsx	318-321	4028c213	the press with no current background plan (the check result was overtaken): the button is enabled only when the check made a plan, so this needs a state change between the check and the press
-hotpatch.jsx	324	79d1a66e	a machine check refusing at the press (hpMachineWhy): its three refusals are listed above as not reachable by the suite
-hotpatch.jsx	342-347	f8b3eda9	the press failing: only after the refusals above or a write error, which the suite cannot produce
+hotpatch.jsx	95	fca23807	the running text of a kernel rebuilt in the page with edits (image.edits): no suite hot patches a rebuilt kernel (suite hotpatch patches the shipped hello, minified Linux and editable Debian)
+hotpatch.jsx	182	11d965ea	sometimes: hpSync while a patch is being written (HP.busy): only when the store or the editor changes in the few milliseconds between the press and the write; not forced by any suite
+hotpatch.jsx	188	dec148e2	sometimes: the patch box before kits/index.json arrived or on a site without kits: the browser-test jobs have no kits, the kit job has them; which job's coverage records it depends on whether srcedit's first edChanged comes before the index fetch
+hotpatch.jsx	190	f99d7387	sometimes: a kernel without a build kit (the shipped GCC Debian, an import) while the kits list is loaded: hpSync runs on every edit and pause, so it runs in the jobs whose suites pause such a kernel with kits present; the hotpatch suite never does
+hotpatch.jsx	213	4220a41f	the object cache's eviction after 8 different texts: the hotpatch suite checks at most 5 texts of one file per page
+hotpatch.jsx	229-230	7d87f429	two files differing from the running code at once: the suite edits one file at a time (the refusal text is plain; a two-file case would need two editors' saves before one check)
+hotpatch.jsx	240	6d6ccd47	a check overtaken by a newer one while kitHash/kit fetches ran (gen changed): timing-dependent, the suite waits for each check to end before the next edit
+hotpatch.jsx	246	6d6ccd47	the same, after the two compiles: a newer edit or pause arrived while clang ran
+hotpatch.jsx	260-262	6a3ba1af	hpLines throwing on a line table it cannot read (a DW_FORM outside the list): clang 22's DWARF 5 tables of the three kernels use only the forms handled
+hotpatch.jsx	269	ae6ac23f	the result of a check that a newer check replaced (gen changed after hpMake returned): timing-dependent, as above
+hotpatch.jsx	288	0e4a4a41	the CPU stopped inside the first 5 bytes of a function to replace: the suite pauses at a function's first byte (Run to) or at the prompt, never mid-prologue; needs a Step into a prologue
+hotpatch.jsx	293	8502e045	reserved memory not mapped by the kernel's page tables: every shipped Linux maps the first megabyte at PAGE_OFFSET once paging is on, and hello runs without paging
+hotpatch.jsx	303	34ba3fc6	function facts not loaded or absent (dbgFnFacts state none): the three kernels ship funcs-*.json.gz shards
+hotpatch.jsx	306-309	9d4e3448	a replaced function with inlined copies in the running kernel: hello and the minified Linux are -O0 (nothing inlined), Debian's version_proc_show is not inlined anywhere
+hotpatch.jsx	321-324	4028c213	the press with no current background plan (the check result was overtaken): the button is enabled only when the check made a plan, so this needs a state change between the check and the press
+hotpatch.jsx	327	79d1a66e	a machine check refusing at the press (hpMachineWhy): its three refusals are listed above as not reachable by the suite
+hotpatch.jsx	345-350	f8b3eda9	the press failing: only after the refusals above or a write error, which the suite cannot produce
 hpelf.js	60	26274640	an LLVM bitcode or non-ELF object: hpArgv removes -flto, so the page always compiles machine code (test_hotpatch.mjs and the minified Linux's LTO kit show it)
 hpelf.js	64	b023159b	an ELF that is not a 32-bit x86 relocatable object: the kits compile -m32 objects only
 hpelf.js	96	dd17bb51	RELA relocations: i386 objects use REL; a defensive refusal

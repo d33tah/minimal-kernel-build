@@ -1096,7 +1096,7 @@ jobs:
   # counts for jscov.
   clang-worker:
     needs: [site, clang-wasm, debian-clang]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Playwright's WebKit needs 24.04's libicu74 (ubuntu-latest is 26.04 since 2026-11)
     steps:
     - uses: actions/checkout@v4
 
@@ -1175,7 +1175,7 @@ jobs:
   # genimport). Chromium's runs count for jscov.
   gen-worker:
     needs: [site, clang-wasm]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # WebKit, as clang-worker
     steps:
     - uses: actions/checkout@v4
 
@@ -1264,7 +1264,7 @@ jobs:
   # for jscov.
   kit:
     needs: [site, clang-wasm]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # WebKit, as clang-worker
     steps:
     - uses: actions/checkout@v4
 

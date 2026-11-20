@@ -30,13 +30,14 @@
 
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { withV, httpWhy, hex } from "./util.js";
+import { hex } from "./util.js";
 import { image, emulator, stepper, runState, symbols, setSymbols, state, provide, api } from "./page.js";
 import { DBG, dbgChanged, dbgTypes, dbgFnFacts } from "./dbginfo.js";
 import { dwarfPack } from "./dwarftables.js";
 import { srcOverlay } from "./srcedit.js";
 import { ClangWorker } from "./clang.js";
-import { kitFetch, kitSource, kitCompile, kitNow } from "./kit.js";
+import { kitSource, kitCompile, kitNow } from "./kit.js";
+import { RB } from "./rebuild.jsx";
 import { hpPlan, hpLines, hpLookup, hpArgv } from "./hpelf.js";
 import { pageWalk } from "./cpustate.js";
 import { INPUT, inputPatch } from "./replay.js";
@@ -102,11 +103,13 @@ async function hpKit() {
 	return HP.kit[1];
 }
 
+// The kits list is rebuild.jsx's (one fetch of kits/index.json).
 function hpLoadIndex() {
-	return kitFetch(withV("kits/index.json"))
-		.then((r) => r.ok ? r.json() : Promise.reject(new Error("kits/index.json: " + httpWhy(r))))
-		.then((ix) => { HP.kits = ix.kits; }, (e) => { HP.why = e.message; })
-		.then(hpSync);
+	return Promise.resolve(RB.indexLoad).then(() => {
+		HP.kits = RB.kits;
+		HP.why = RB.why;
+		hpSync();
+	});
 }
 
 function hpShow(can, status, st) {

@@ -422,7 +422,8 @@ function rbDownload(what) {
 
 function initRebuild() {
 	dbgOnChange(rbSync);
-	rbLoadIndex();
+	// hotpatch.jsx waits for the same list (one fetch of kits/index.json).
+	RB.indexLoad = rbLoadIndex();
 }
 
 const rbBack = () => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e)));
@@ -466,4 +467,4 @@ function RebuildPanelButton() {
 }
 
 provide({ rbSync });
-export { initRebuild, RebuildPanel, RebuildPanelButton };
+export { RB, initRebuild, RebuildPanel, RebuildPanelButton };

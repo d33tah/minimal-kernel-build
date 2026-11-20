@@ -188,6 +188,22 @@ def hp_hello(browser, base, shots, problems, r):
         if [p["funcs"][0][0] for p in st["patches"]] != ["put_line"] or not st["list"] or "put_line" not in st["list"][0]:
             problems.append(f"{tag}: the patch list: {st['patches']} {st['list']}")
         code = hp_mem(page, HP_PA, 16)
+        # Step back past the patch's count: the memory without it; Step
+        # again: the patch made again at its count (replay.js inputRedo).
+        pl = page.evaluate(SYM_JS, "put_line")
+        show_tab(page, "machine")
+        at = page.evaluate("MKB.stepper.steps")
+        page.click("#dbg_back")
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") == at - 1 and page.evaluate("MKB.runState") == "paused", 60)
+        back = [hp_mem(page, pl[1], 1)[0], len(hp_state(page)["patches"])]
+        # Two Steps: the patch goes in before the instruction at its count runs.
+        for k in (at, at + 1):
+            page.click("#dbg_step")
+            wait_for(lambda: page.evaluate("MKB.stepper.steps") == k and page.evaluate("MKB.runState") == "paused", 60)
+        fwd = [hp_mem(page, pl[1], 1)[0], len(hp_state(page)["patches"])]
+        r["step back / step over the patch"] = [back, fwd]
+        if back != [0x55, 0] or fwd != [0xE9, 1]:
+            problems.append(f"{tag}: put_line's first byte and patches after Step back {back}, after Step {fwd}: want [0x55, 0], [0xe9, 1]")
         # The copy's debug info: frames at its addresses name put_line and
         # the edited file's line of the changed statement.
         frames = page.evaluate(FRAMES_JS, [HP_PA, 83])

@@ -305,6 +305,16 @@ def rebuildmap_run(browser, base, shots):
             if not fr or fr["minus"] == "0" or fr["plus"] == "0" or not row or "was" not in row["cls"] or row["mark"] != "◌":
                 problems.append(f"build 2 compared with build 1: file {fr}, line {line2} {row}")
         rb_shots(page, shots, "rebuildmap-1280-build2-source", problems, "build 2")
+        # The same at 390 px: the comparison in the tree, the menu's list.
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.evaluate("MKB.closeSource && MKB.closeSource()")
+        show_tab(page, "source")
+        page.locator("#cov_cmp_box").scroll_into_view_if_needed()
+        rb_shots(page, shots, "rebuildmap-390-build2-source", problems, "build 2 at 390 px")
+        bm_open_list(page, False)
+        rb_shots(page, shots, "rebuildmap-390-bookmarks", problems, "build 2 at 390 px")
+        bm_close_menu(page)
+        page.set_viewport_size({"width": 1280, "height": 1000})
         page.emulate_media(color_scheme="light")
         show_tab(page, "snapshots")
         wait_for(lambda: snap_rows(page)["rows"][1]["kernel"] == "build", 15)

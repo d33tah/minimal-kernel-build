@@ -32,7 +32,12 @@ from tests.browser.hotpatch import FRAMES_JS, HP_PA, hp_apply, hp_continue, hp_e
 #     file's row; build 1's snapshot says it is build 1's, offers no
 #     Restore, and its Replay is refused with the reason.
 #   build 3: build 1's text again: the same bzImage, so build 1's snapshot
-#     is restorable again.
+#     is restorable again; a Run to file:line of a file no build edits stays.
+#   build 4: no edit (CI's bytes): a Run to address in e8_extra has no place
+#     in it (the status says so); build 5: build 1's text again, a Run to
+#     address in put_line moves with put_line.
+# Lines through a diff without the old text (found by their own text, or
+# kept), past the old text, and changed at the end of a file.
 # Hot patch (shipped hello, paused at hello_main): put_line gets a comment
 # line and the case swap; after the patch the Source panel shows the
 # patched text (its note says so), every frame of the copy and of
@@ -204,6 +209,9 @@ def rebuildmap_run(browser, base, shots):
         page.click(f'#cov_tree .covrow[data-kind="func"][data-path="{RBM_FILE}:put_line"] .covname', button="right")
         b = bm_dialog_save(page, problems, "shipped", "fn", name="e8 fn")
         ids["fn"] = b and b["id"]
+        page.click(f'#cov_tree .covrow[data-kind="file"][data-path="{RBM_FILE}"] .covname', button="right")
+        b = bm_dialog_save(page, problems, "shipped", "file", name="e8 file")
+        ids["file"] = b and b["id"]
         show_tab(page, "page")
         page.evaluate("(p) => MKB.selectPage(Math.floor(p / 4096))", code_pa)
         wait_for(lambda: page.locator(f'#listing .ins[data-addr="{code_pa}"]').count() > 0, 30)
@@ -239,7 +247,7 @@ def rebuildmap_run(browser, base, shots):
             problems.append(f"build 1: Run to {RBM_FILE}:{line1} targets {tg}, want the call's code in hello_main {want_bps}")
         off = code_pa - hm0[1]
         check_bookmarks(page, ids, {"line": ("build", f"{RBM_FILE}:{line1}"), "fn": ("build", f"put_line() at {hex(pl1[1])}"),
-                                    "code": ("build", None)}, problems, "build 1", r)
+                                    "code": ("build", None), "file": ("build", f"{RBM_FILE} (whole file)")}, problems, "build 1", r)
         # The marks: the line's ★ at its new line, the instruction's at hello_main + off.
         open_file(page, line1)
         wait_for(lambda: (src_row(page, line1) or {}).get("star"), 15)
@@ -341,10 +349,22 @@ def rebuildmap_run(browser, base, shots):
         r["lines without the old text"] = got
         if got != [{"line": line1, "how": "text"}, {"line": 5, "how": "kept"}]:
             problems.append(f"lines placed without their old text: {got}")
+        # Edge lines through a diff: past the old text (kept), a changed
+        # last line (the line after the last one kept), nothing kept (line 1).
+        got = page.evaluate("""([a]) => [MKB.mapLine(500, MKB.textKeep(a), '', a + 'x'), MKB.mapLine(3, MKB.textKeep('x\\ny\\nz'), 'z', 'x'),
+          MKB.mapLine(1, MKB.textKeep('y'), 'y', 'q')]""", [orig])
+        r["edge lines"] = got
+        if got != [{"line": 500, "how": "kept"}, {"line": 2, "how": "changed"}, {"line": 1, "how": "changed"}]:
+            problems.append(f"edge lines through a diff: {got}")
 
-        # Build 3: build 1's text again, the same bytes: its snapshot restores.
+        # Build 3: build 1's text again, the same bytes: its snapshot
+        # restores. A Run to file:line of a file no build edits stays.
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", "nosuch.c:5")
         if not edit_text(page, t1, problems, "build 3") or not rebuild(page, 3, problems, "build 3", r):
             return problems, r
+        if page.input_value("#dbg_addr") != "nosuch.c:5":
+            problems.append(f"build 3: the Run to field of another file became {page.input_value('#dbg_addr')!r}")
         show_tab(page, "snapshots")
         wait_for(lambda: snap_rows(page)["rows"][1]["restore"], 30)
         rows = snap_rows(page)["rows"]
@@ -356,17 +376,27 @@ def rebuildmap_run(browser, base, shots):
             if not wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == rows[1]["id"], 30):
                 problems.append(f"build 3: build 1's snapshot did not restore: {page.inner_text('#snap_status')!r}")
 
-        # Build 4: no edit (CI's bytes): put_line back at the shipped
-        # address; a Run to address of build 3 (put_line + 4) moves with it.
-        pl3 = sym(page, "put_line")
+        # Build 4: no edit (CI's bytes). A Run to address in e8_extra
+        # (build 3's) has no place in it: the field stays, the status says why.
+        ex3 = sym(page, "e8_extra")
         show_tab(page, "debugger")
-        page.fill("#dbg_addr", hex(pl3[0] + 4))
+        page.fill("#dbg_addr", hex(ex3[0] + 2))
         if not edit_text(page, orig, problems, "build 4") or not rebuild(page, 4, problems, "build 4", r):
             return problems, r
         pl4 = sym(page, "put_line")
-        r["run to address in build 4"] = [hex(pl3[0] + 4), page.input_value("#dbg_addr"), pl4, page.inner_text("#rb_status")[-240:]]
-        if pl4 != pl0 or page.input_value("#dbg_addr") != hex(pl4[0] + 4) or "put_line+0x4 moved with the build" not in page.inner_text("#rb_status"):
-            problems.append(f"build 4 (no edit): the Run to address {r['run to address in build 4']}, put_line shipped {pl0}")
+        r["run to e8_extra in build 4"] = [hex(ex3[0] + 2), page.input_value("#dbg_addr"), page.inner_text("#rb_status")[-240:]]
+        if page.input_value("#dbg_addr") != hex(ex3[0] + 2) or "(e8_extra+0x2) has no place in this build: no e8_extra here" not in page.inner_text("#rb_status"):
+            problems.append(f"build 4 (no edit): the Run to address in e8_extra {r['run to e8_extra in build 4']}")
+        # Build 5: build 1's text again: put_line moves; a Run to address of
+        # build 4 (put_line + 4) moves with it.
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", hex(pl4[0] + 4))
+        if not edit_text(page, t1, problems, "build 5") or not rebuild(page, 5, problems, "build 5", r):
+            return problems, r
+        pl5 = sym(page, "put_line")
+        r["run to address in build 5"] = [hex(pl4[0] + 4), page.input_value("#dbg_addr"), pl4, pl5, page.inner_text("#rb_status")[-240:]]
+        if pl4 != pl0 or pl5 != pl1 or page.input_value("#dbg_addr") != hex(pl5[0] + 4) or "put_line+0x4 moved with the build" not in page.inner_text("#rb_status"):
+            problems.append(f"build 5: the Run to address {r['run to address in build 5']}, put_line shipped {pl0}, build 1 {pl1}")
     finally:
         if errors:
             problems.append(f"page errors {errors[:3]}")

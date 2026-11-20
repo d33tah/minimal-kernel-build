@@ -3333,7 +3333,7 @@ stays across builds, with the edit's line shifts:
   with its function; the Debugger's status says so.
 - Coverage. Before a build boots (and before "Back to the shipped
   kernel") the page keeps what ran in the kernel shown (`covKeep`). The
-  Coverage tab's "compare with" picks one of those earlier builds: every
+  Source tab's coverage tree has "compare with" to pick one of those earlier builds: every
   file and function shows the lines that ran there and + (only here) and
   − (only there), the old lines moved to this text; the Source panel
   marks ◌ a line that ran there and not here.

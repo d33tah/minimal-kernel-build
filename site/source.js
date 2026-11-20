@@ -291,7 +291,7 @@ function renderSourcePanel() {
 	const { code, run } = lineCoverage(pl);
 	const sv = srcStatementView(file, pl.first, pl.last, code, run);
 	srcTitle(":" + sv.first + "-" + sv.last);
-	// The Coverage tab compares with an earlier build (E8): ◌ a line that
+	// The coverage tree compares with an earlier build (E8): ◌ a line that
 	// ran there (moved to this text) and not here.
 	const was = api.source.covWas(path);
 	let wasN = 0;
@@ -305,7 +305,7 @@ function renderSourcePanel() {
 		const mark = c ? "┆" : run.has(l) ? "●" : gone ? "◌" : code.has(l) ? "○" : " ";
 		const title = c ? ' title="' + escHtml("Line " + l + " is part of the statement at lines " + c.start + "–" + c.end + ", which " +
 			(c.ran ? "ran" : "has not run") + ". Not counted: only lines with code of their own in the line table are counted, here, in the Coverage tab and in the lcov export.") + '"' :
-			gone ? ' title="' + escHtml("Line " + l + " ran in the build the Coverage tab compares with, and not (yet) in this one.") + '"' : "";
+			gone ? ' title="' + escHtml("Line " + l + " ran in the build the coverage tree (Source tab) compares with, and not (yet) in this one.") + '"' : "";
 		out.push('<span class="' + cls + (l === line ? " here" : "") + (l === srcPanel.pick ? " pick" : "") + '" data-line="' + l + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
 			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span>" + api.show.bmLineStar(path, l) + "</span>");
 	}
@@ -340,7 +340,7 @@ function renderSourcePanel() {
 		run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
 		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
 		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + "." +
-		(was ? " ◌ ran in the build the Coverage tab compares with, not here: " + wasN + " shown." : "") + " Source: " + (SRC.info || SRC.mode) + "." + note;
+		(was ? " ◌ ran in the build the coverage tree (Source tab) compares with, not here: " + wasN + " shown." : "") + " Source: " + (SRC.info || SRC.mode) + "." + note;
 }
 
 // ---- another file: breadcrumb, outline, file switcher ------------------------

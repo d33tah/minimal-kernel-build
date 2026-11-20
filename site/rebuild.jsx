@@ -426,7 +426,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const shipped = kit.objects.some((o) => o.gsha256) ? kernels.find((x) => x.name === from) : null;
 	const entry = same ? shipped : null;
 	// What the kernel shown leaves to the next one (E8): what ran in it (the
-	// Coverage tab compares), the texts its places were counted on (the Run
+	// coverage tree compares), the texts its places were counted on (the Run
 	// to target moves with the edit) and its Run to address.
 	await covKeep(10000);
 	const moveAddr = rbRunToAddr();

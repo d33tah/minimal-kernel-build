@@ -380,7 +380,7 @@ function AboutLegend() {
 						<b>Brown bar</b>
 						{" on the left: the picked line, whose addresses are listed above the text. "}
 						<b>Orange</b>
-						{" (◌): a line that ran in the earlier build the Coverage tab compares with, not (yet) in this one. Recorded while stepping. Where: Source panel."}
+						{" (◌): a line that ran in the earlier build the Source tab's coverage tree compares with, not (yet) in this one. Recorded while stepping. Where: Source panel."}
 					</span>
 				</li>
 				<li>

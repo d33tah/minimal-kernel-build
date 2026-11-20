@@ -22,7 +22,7 @@ from tests.browser.hotpatch import FRAMES_JS, HP_PA, hp_apply, hp_continue, hp_e
 #     (hello.c:32) is placed at line 39, its ★ in the Source panel there;
 #     the function bookmark at put_line's new address; the instruction
 #     bookmark (hello_main + its offset) at the new hello_main + the same
-#     offset; the Run to field says boot/hello.c:39. The Coverage tab
+#     offset; the Run to field says boot/hello.c:39. The coverage tree
 #     compares with the shipped build: every line that ran there ran here
 #     (+0 -0 on hello_main). The shipped snapshot is the shipped build's.
 #   build 2: a condition put before the "Still alive" call (one line more,
@@ -146,10 +146,10 @@ def check_bookmarks(page, ids, want, problems, tag, r):
 
 
 def cmp_with(page, label_part, problems, tag):
-    """The Coverage tab compares with the earlier build whose label has label_part."""
+    """The coverage tree (Source tab) compares with the earlier build whose label has label_part."""
     show_tab(page, "source")
     if not wait_for(lambda: page.is_visible("#cov_cmp"), 30):
-        problems.append(f"{tag}: no compare picker in the Coverage tab")
+        problems.append(f"{tag}: no compare picker in the coverage tree")
         return False
     opts = page.eval_on_selector_all("#cov_cmp option", "os => os.map((o) => [o.value, o.textContent])")
     pick = next((v for v, t in opts if label_part in t), None)

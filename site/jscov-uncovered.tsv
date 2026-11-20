@@ -33,15 +33,14 @@ buildmap.js	51	e158c7c3	more than 400 file texts kept in one page: the suites se
 buildmap.js	111	b8d99835	more than 64 line maps in one page: the suites map a few texts
 calltree.js	23	01ef5f12	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
 calltree.js	162-164	621631a0	drawTop without a stepper: as line 326
-coverage.js	63	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
-coverage.js	130	f19d0e2d	the kernel changed while covKeep waited, or a kernel without files.json (an imported vmlinux has no Rebuild and boot): the suites rebuild shipped kernels and wait for each build
-coverage.js	134	395bd183	a rebuild of a kernel that recorded nothing, or whose line tables did not load: every rebuild in the suites follows a boot that ran (stepped or with the JIT, which still records the entry)
-coverage.js	138-142	33bd758c	sometimes: covKeep waits only when the line tables of the code that ran are not read yet; in the suites' rebuilds they were read already (no wait in run 44749449524: rebuildmap reads them in the Source tab first)
-coverage.js	161	4dfa9305	more than 8 builds recorded in one page: rebuildmap makes 5
-coverage.js	186-188	484a715e	sometimes: the comparison drawn while an edited file's text is still loading; in rebuildmap the build's text was read before the comparison was picked (run 44749449524)
-coverage.js	191	a13a92b3	an edited file without a text to diff (its text did not load, or the earlier build's text was dropped from the 400 kept): the suites compare builds whose texts are kept
-coverage.js	235	4c0dd8e2	the compared build belongs to another kernel only after switching kernels with a comparison picked: rebuildmap stays on hello
-coverage.js	500	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
+coverage.js	64	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
+coverage.js	130	9c0c91df	a kernel whose file list is not read (yet), or has none (an imported vmlinux has no Rebuild and boot): the suites rebuild shipped kernels after their Source tab read files.json
+coverage.js	133	442705c3	a rebuild of a kernel that recorded nothing: every rebuild in the suites follows a boot that ran (stepped, or with the JIT, which still records the entry)
+coverage.js	149	4dfa9305	more than 8 builds recorded in one page: rebuildmap makes 5
+coverage.js	174-176	484a715e	sometimes: the comparison drawn while an edited file's text is still loading; in rebuildmap the build's text was read before the comparison was picked (run 44749449524)
+coverage.js	179	a13a92b3	an edited file without a text to diff (its text did not load, or the earlier build's text was dropped from the 400 kept): the suites compare builds whose texts are kept
+coverage.js	223	4c0dd8e2	the compared build belongs to another kernel only after switching kernels with a comparison picked: rebuildmap stays on hello
+coverage.js	490	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
 cpustate.js	454-456	da4d8a32	a machine-state section whose reader throws: each reads fixed fields of v86's CPU object (pinned v86 0.5.471); a throw would need a v86 build without one of them
 cpustate.js	492-494	a95db99c	the restored views' set trap: after a restore neither v86's JS (cpu.js writes fpu_status_word[0] only in its constructor, before the page replaces the view) nor the page writes last_result, fpu_status_word or mxcsr; the get trap is what runs (snapdiff checks the views)
 cpustate.js	503	7902552f	a restored state without one of last_result, fpu_status_word, mxcsr: every state v86 0.5.471 saves has state[86..88], so set_state replaces all three; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"

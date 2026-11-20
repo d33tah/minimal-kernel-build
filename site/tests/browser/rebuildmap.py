@@ -120,9 +120,12 @@ def edit_text(page, text, problems, tag):
     return True
 
 
-def rebuild(page, n, problems, tag, r):
-    """Rebuild and boot, the n-th build of hello: booted, its data files made."""
+def rebuild(page, n, problems, tag, r, before=None):
+    """Rebuild and boot, the n-th build of hello: booted, its data files made
+    (before: done right before the press)."""
     t0 = time.monotonic()
+    if before:
+        before()
     rb_press(page, "#rb_go_panel", False)
     if not wait_for(lambda: page.evaluate("(n) => !!(MKB.image && MKB.image.build && MKB.image.build.n === n)", n), 300, 0.1):
         st = rb_wait(page, ("done", "failed"), 5)
@@ -361,10 +364,17 @@ def rebuildmap_run(browser, base, shots):
         # restores. A Run to file:line of a file no build edits stays.
         show_tab(page, "debugger")
         page.fill("#dbg_addr", "nosuch.c:5")
-        if not edit_text(page, t1, problems, "build 3") or not rebuild(page, 3, problems, "build 3", r):
+        # As for a big kernel whose coverage tree was not shown: build 2's
+        # line tables not read when it is left (the record says what it lacks).
+        if not edit_text(page, t1, problems, "build 3") or \
+                not rebuild(page, 3, problems, "build 3", r, before=lambda: page.evaluate("MKB.DBG.tables.clear()")):
             return problems, r
         if page.input_value("#dbg_addr") != "nosuch.c:5":
             problems.append(f"build 3: the Run to field of another file became {page.input_value('#dbg_addr')!r}")
+        if cmp_with(page, "build 2 of hello", problems, "build 3"):
+            r["build 3 vs build 2"] = page.inner_text("#cov_cmp_status")
+            if "Incomplete: the line tables of 1 of its 64 KiB pieces of code that ran were not read" not in r["build 3 vs build 2"]:
+                problems.append(f"build 3 compared with build 2 (its tables unread): {r['build 3 vs build 2']!r}")
         show_tab(page, "snapshots")
         wait_for(lambda: snap_rows(page)["rows"][1]["restore"], 30)
         rows = snap_rows(page)["rows"]

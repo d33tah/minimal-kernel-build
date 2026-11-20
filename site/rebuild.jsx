@@ -428,7 +428,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	// What the kernel shown leaves to the next one (E8): what ran in it (the
 	// coverage tree compares), the texts its places were counted on (the Run
 	// to target moves with the edit) and its Run to address.
-	await covKeep(10000);
+	covKeep();
 	const moveAddr = rbRunToAddr();
 	const texts = new Map();
 	for (const [p, t] of Object.entries(r.shipped)) {
@@ -511,7 +511,10 @@ function initRebuild() {
 }
 
 // Back to the shipped kernel: what ran in this build is kept to compare (E8).
-const rbBack = () => covKeep(10000).then(() => api.machine.loadKernel(kernels.find((x) => x.name === rbFrom()))).catch((e) => setStatus(String(e)));
+const rbBack = () => {
+	covKeep();
+	api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e)));
+};
 
 // The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
 function RebuildPanel() {

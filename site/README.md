@@ -3330,13 +3330,16 @@ stays across builds, with the edit's line shifts:
   build.
 - The Debugger's Run to target (its breakpoint): a `file:line` of an
   edited file moves with the edit when the build boots, an address moves
-  with its function; the Debugger's status says so.
+  with its function; the status under Rebuild and boot says so.
 - Coverage. Before a build boots (and before "Back to the shipped
-  kernel") the page keeps what ran in the kernel shown (`covKeep`). The
-  Source tab's coverage tree has "compare with" to pick one of those earlier builds: every
-  file and function shows the lines that ran there and + (only here) and
-  − (only there), the old lines moved to this text; the Source panel
-  marks ◌ a line that ran there and not here.
+  kernel") the page keeps what ran in the kernel shown (`covKeep`), from
+  the line tables it has read (the coverage tree reads those of the code
+  that ran; fetching them at the switch would hold it and redraw a big
+  tree once per table, so a record says how many it lacks). The Source
+  tab's coverage tree has "compare with" to pick one of those earlier
+  builds: every file and function shows the lines that ran there and +
+  (only here) and − (only there), the old lines moved to this text; the
+  Source panel marks ◌ a line that ran there and not here.
 - Snapshots and runs record their build. A snapshot of another build of
   the kernel shown says which one and offers no Restore (the bytes
   differ); rebuilding with the same edits gives the same bzImage, and then

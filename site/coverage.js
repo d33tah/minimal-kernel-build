@@ -57,7 +57,8 @@ function covTree(F) {
 // What has run: per file and per function the lines that ran, per function
 // the instruction starts recorded. Kept until the stepper records a new
 // address or more debug info arrives.
-function covRun(F) {
+// peek (covKeep): only the line tables already read, none fetched, not kept.
+function covRun(F, peek = false) {
 	const st = stepper;
 	if (!st)
 		return { tint: false, why: "boot a kernel to record what runs" };
@@ -65,7 +66,7 @@ function covRun(F) {
 	if (!cov.tint)
 		return cov;
 	const c = COV.run;
-	if (c && c.F === F && c.st === st && c.unique === st.unique && c.ver === DBG.version)
+	if (!peek && c && c.F === F && c.st === st && c.unique === st.unique && c.ver === DBG.version)
 		return c;
 	const size = 2 ** F.shardBits;
 	const r = { F, st, unique: st.unique, ver: DBG.version, tint: true, partial: cov.partial, fnIns: new Float64Array(F.funcs.length),
@@ -82,7 +83,7 @@ function covRun(F) {
 			continue;
 		r.inShards += n;
 		r.need++;
-		const t = dbgTableAt(s * size);
+		const t = dbgTableAt(s * size, peek);
 		if (t.state !== "ok") {
 			if (t.state === "loading")
 				r.waiting++;
@@ -107,47 +108,33 @@ function covRun(F) {
 		});
 	}
 	r.linesKnown = !r.waiting && !r.failed.length;
-	COV.run = r;
+	if (!peek)
+		COV.run = r;
 	return r;
 }
 
 // ---- earlier builds (E8) ------------------------------------------------------
 
-const covSleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
-
 // What ran in the kernel shown now, kept to compare the next build of its
 // family with (rebuild.jsx calls it before it boots a build, and before
 // Back to the shipped kernel): per file the lines that ran, per function
 // (name@file) its own lines that ran, and the text each edited or hot
-// patched file was counted on. Waits up to ms for the line tables; null
-// when nothing was recorded (no stepping) or they did not come.
-async function covKeep(ms) {
-	const t0 = Date.now();
-	const img = image;
-	let fl = dbgFiles(), run = null;
-	for (;;) {
-		if (image !== img || fl.state === "none")
-			return null;
-		if (fl.state === "ok") {
-			run = covRun(fl.F);
-			if (!run.tint || run.failed.length)
-				return null;
-			if (run.linesKnown)
-				break;
-		}
-		if (Date.now() - t0 > ms)
-			return null;
-		await covSleep(100);
-		fl = dbgFiles();
-	}
+// patched file was counted on. From the line tables and texts already
+// read (the Source tab reads those of the code that ran): fetching them
+// here would hold the switch, and redraw a big kernel's tree for each one
+// (Debian: thousands of files). unread: the shards with code that ran
+// whose lines are not in the record. null when nothing was recorded.
+function covKeep() {
+	const img = image, fl = dbgFiles();
+	if (fl.state !== "ok")
+		return null;
+	const run = covRun(fl.F, true);
+	if (!run.tint)
+		return null;
 	const F = fl.F, b = img.build || null;
 	const shown = new Map();
 	for (const p of new Set([...Object.keys(b ? b.files : {}), ...SRC_OVER.keys()])) {
-		let f = srcFile(p);
-		while (f.state === "loading" && Date.now() - t0 < ms + 20000) {
-			await covSleep(100);
-			f = srcFile(p);
-		}
+		const f = srcFile(p);
 		if (f.state === "ok")
 			shown.set(p, textKeep(f.lines.join("\n")));
 	}
@@ -155,7 +142,8 @@ async function covKeep(ms) {
 	F.files.forEach(([p], k) => { if (run.fileRun[k].size) files.set(p, new Set(run.fileRun[k])); });
 	F.funcs.forEach((fn, i) => { if (run.fnRun[i] && fn[1] >= 0) fns.set(fn[0] + "@" + F.files[fn[1]][0], new Set(run.fnRun[i])); });
 	const rec = { id: "c" + Date.now().toString(36) + COV.prev.length, label: imageLabel(img), fam: buildFamily(img), at: Date.now(),
-		files, fns, shown, base: b ? b.base || {} : {}, partial: run.partial, lines: [...files.values()].reduce((n, s) => n + s.size, 0) };
+		files, fns, shown, base: b ? b.base || {} : {}, partial: run.partial, unread: run.waiting + run.failed.length,
+		lines: [...files.values()].reduce((n, s) => n + s.size, 0) };
 	COV.prev.push(rec);
 	if (COV.prev.length > COV_PREV_MAX)
 		COV.prev.shift();
@@ -243,7 +231,9 @@ function covCmpRender() {
 	const c = covCmpState();
 	$("cov_cmp_status").textContent = !c ? "" : c.waiting ? "Reading the text of " + c.waiting + " edited file" + (c.waiting === 1 ? "" : "s") + "…" :
 		"Lines that ran in " + c.rec.label + " next to this build's: there, + only here, − only there" +
-		(c.moved.length ? "; lines of " + c.moved.join(", ") + " moved to this build's text through the diff of the two texts" : "") + ".";
+		(c.moved.length ? "; lines of " + c.moved.join(", ") + " moved to this build's text through the diff of the two texts" : "") + "." +
+		(c.rec.unread ? " Incomplete: the line tables of " + c.rec.unread + " of its 64 KiB pieces of code that ran were not read before the switch " +
+			"(the coverage tree reads them when shown), so their lines count as not run there." : "");
 }
 
 // Totals of a node: { lines, linesRun, ins, insRun } (linesRun null while

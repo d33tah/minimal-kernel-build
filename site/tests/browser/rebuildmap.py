@@ -194,6 +194,9 @@ def rebuildmap_run(browser, base, shots):
         srcedit_ready(page, "hello")
         if not wait_end(page) or not cov_known(page):
             return problems + [f"the shipped hello did not run to its end with coverage: {page.inner_text('#cov_status')!r}"], r
+        # No earlier build yet: no compare picker.
+        if page.is_visible("#cov_cmp"):
+            problems.append("the coverage tree shows a compare picker before any build was made")
         hm0, pl0 = sym(page, "hello_main"), sym(page, "put_line")
         bps = page.evaluate(LINE_CODE_JS, [RBM_FILE, RBM_LINE])
         if not bps or not isinstance(bps[0], int):

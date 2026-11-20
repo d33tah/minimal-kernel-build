@@ -15,7 +15,7 @@ import zlib from 'node:zlib';
 
 import { MemFS, wasiRun } from './wasi.js';
 import { kitCompile, kitHash } from './kit.js';
-import { hpPlan, hpLookup, hpArgv, hpProto, hpElf, hpIndex, hpDesc } from './hpelf.js';
+import { hpPlan, hpLookup, hpArgv, hpProto, hpElf, hpIndex, hpDesc, hpLines } from './hpelf.js';
 
 const enc = new TextEncoder(), dec = new TextDecoder();
 let failures = 0;
@@ -52,7 +52,7 @@ function dirSource(kits) {
 const CASES = {
   hello: [
     ['put_line swaps the case', 'boot/hello.c', (t) => t.replace('(unsigned char)*s++;', '(unsigned char)(*s++ ^ 0x20);'),
-      { changed: ['put_line'] }],
+      { changed: ['put_line'], line: ['boot/hello.c', 17] }],
     ['hello_main prints another string', 'boot/hello.c', (t) => t.replace('"Hello, World!"', '"Hello, Patch!"'),
       { changed: ['hello_main'], string: 'Hello, Patch!', calls: ['put_line'] }],
     ['a variable added', 'boot/hello.c', (t) => t.replace('static void put_line', 'static int hp_count;\n\nstatic void put_line')
@@ -66,6 +66,9 @@ const CASES = {
   'minified-linux': [
     ['console_on_rootfs writes a line', 'init/main.c', (t) => t.replace(/(void __init console_on_rootfs\(void\)\n\{[\s\S]*?init_dup\(file\);\n\tinit_dup\(file\);\n\tinit_dup\(file\);\n)/,
       '$1\tkernel_write(file, "Hot patched!\\n", 13, NULL);\n'), { changed: ['console_on_rootfs'], shared: true, string: 'Hot patched!\n', calls: ['kernel_write'] }],
+    // The kernel is linked with LTO (the page passes lto): a new call is refused.
+    ['the same with LTO', 'init/main.c', (t) => t.replace(/(void __init console_on_rootfs\(void\)\n\{[\s\S]*?init_dup\(file\);\n\tinit_dup\(file\);\n\tinit_dup\(file\);\n)/,
+      '$1\tkernel_write(file, "Hot patched!\\n", 13, NULL);\n'), { why: /calls \S+, which the replaced code did not: the kernel was linked with LTO/, lto: true }],
   ],
   'debian-6.1-686-clang': [
     ['/proc/version says it was patched', 'fs/proc/version.c', (t) => t.replace('\tseq_printf(m, linux_proc_banner,', '\tseq_puts(m, "Hot patched /proc/version\\n");\n\tseq_printf(m, linux_proc_banner,'),
@@ -94,7 +97,7 @@ async function kernel(cc, kits, kernels, name) {
       objs.push(r.bytes);
     }
     if (objs.length < 2) continue;
-    const plan = hpPlan(objs[0], objs[1], { base, room: want.room || 0x20000, lookup: hpLookup(S.symbols, null, file), src: [shipped, edited] });
+    const plan = hpPlan(objs[0], objs[1], { base, room: want.room || 0x20000, lookup: hpLookup(S.symbols, null, file), src: [shipped, edited], lto: !!want.lto });
     const ms = Date.now() - t0;
     if (want.why) {
       if (plan.ok || !want.why.test(plan.why)) fail(`${name} ${what}: want a refusal ${want.why}, got ${plan.ok ? 'a plan of ' + plan.changed : plan.why}`);
@@ -124,6 +127,13 @@ async function kernel(cc, kits, kernels, name) {
     for (const c of want.calls || [])
       if (!targets.has(sym(c).vaddr)) fail(`${name} ${what}: the copy does not call ${c} at ${sym(c).vaddr.toString(16)}`);
     if (want.string && !dec.decode(code).includes(want.string)) fail(`${name} ${what}: the copy has no string ${JSON.stringify(want.string)}`);
+    // The copy's line rows: inside the copied functions, the edited file's lines.
+    const L = hpLines(objs[1], plan.at, kit.dir + '/');
+    const inCopy = (va) => plan.funcs.some((f) => va >= f.va && va < f.va + f.size);
+    if (!L || !L.rows.length || L.rows.some(([va, f]) => f >= 0 && !inCopy(va) && !plan.sections.some((s) => va >= s.va && va < s.va + s.size)))
+      fail(`${name} ${what}: line rows ${L && JSON.stringify(L.rows.slice(0, 6))} not in the copy`);
+    else if (want.line && !L.rows.some(([va, f, l]) => inCopy(va) && L.files[f] === want.line[0] && l === want.line[1]))
+      fail(`${name} ${what}: no row ${want.line} in ${JSON.stringify(L.rows.map(([va, f, l]) => [va.toString(16), L.files[f], l]).slice(0, 12))}`);
     console.log(`ok ${name} ${what}: ${plan.changed} -> ${plan.funcs.map((f) => f.name + '@' + f.va.toString(16)).join(' ')}, ${code.length} bytes, ` +
       `${plan.sections.length} sections${plan.notes.length ? '; ' + plan.notes.join('; ') : ''} (${ms} ms)`);
   }

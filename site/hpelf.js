@@ -343,6 +343,24 @@ function hpPlan(before, after, opts) {
 			code.set(s.data, secVa.get(s.index) - opts.base);
 	const cv = new DataView(code.buffer);
 	const kfunc = new Map();
+	// LTO: the kernel functions the replaced ones called before (their
+	// calls checked by hpVerify); a call of another may need LLVM's fastcc.
+	const calledBefore = new Set();
+	for (const name of changed) {
+		const a = A.funcs.get(name);
+		for (const r of a ? a.sec.rels : [])
+			if (r.off >= a.value && r.off < a.value + a.size && hpPc(r)) {
+				const x = hpTarget(A, a.sec, r);
+				const g = x.und !== undefined ? { name: x.und } : x.sec !== undefined && hpExec(A.sections[x.sec]) ? hpSymAt(A, x.sec, x.off + 4, true) : null;
+				if (g)
+					calledBefore.add(g.name);
+			}
+	}
+	const ltoCall = (name) => {
+		if (opts.lto && !calledBefore.has(name))
+			throw new Error("the new code calls " + name + ", which the replaced code did not: the kernel was linked with LTO, " +
+				"which may pass that function's arguments in other registers (LLVM's fastcc)");
+	};
 	const kernel = (name, sym) => {
 		if (!kfunc.has(name))
 			kfunc.set(name, opts.lookup(name, sym));
@@ -364,6 +382,8 @@ function hpPlan(before, after, opts) {
 						code.set([0x0f, 0x1f, 0x44, 0x00, 0x00], P0 - opts.base - 1);
 						continue;
 					}
+					if (pc)
+						ltoCall(x.und);
 					T = kernel(x.und, null) + x.add;
 				} else if (x.abs !== undefined) {
 					T = x.abs;
@@ -376,8 +396,11 @@ function hpPlan(before, after, opts) {
 						// placed whole (the assembler's own calls go to the copy).
 						if (isPlaced.has(x.sec) && (!f || P.has(f.name)))
 							T = secVa.get(x.sec) + x.off;
-						else if (f)
+						else if (f) {
+							if (pc)
+								ltoCall(f.name);
 							T = kernel(f.name, f) + (off - f.value) - bias;
+						}
 						else
 							throw new Error("a reference into " + t.name + " at " + off + ", outside any function");
 					} else if (isPlaced.has(x.sec)) {
@@ -405,13 +428,202 @@ function hpPlan(before, after, opts) {
 			if (k.size < 5)
 				return no(name + " is " + k.size + " bytes in the running kernel: too short for the 5-byte jump");
 			old = k.va;
+			const why = hpVerify(A, A.funcs.get(name), k, opts);
+			if (why)
+				return no(why);
 			const rel = (va - (old + 5)) >>> 0;
 			jumps.push({ name, va: old, bytes: Uint8Array.of(0xe9, rel & 255, rel >>> 8 & 255, rel >>> 16 & 255, rel >>> 24) });
 		}
 		funcs.push({ name, va, size: f.size, old, sec: f.sec.name });
 	}
 	return { ok: true, changed, added, code, funcs, jumps, notes,
-		sections: placed.map((s) => ({ name: s.name, va: secVa.get(s.index), size: s.size })) };
+		sections: placed.map((s) => ({ name: s.name, va: secVa.get(s.index), size: s.size })),
+		// The new address of offset off of the after object's section k (placed code), or null.
+		at: (k, off) => (secVa.has(k) && hpExec(B.sections[k]) ? secVa.get(k) + off : null) };
+}
+
+// Whether the running kernel's code of function f (k: its { va, size })
+// is what the before object has: the same bytes but at the relocated
+// places and the sites the kernel patches at boot (mcount calls, jump
+// labels, alternatives, lock prefixes: what HP_KEEP and HP_REFUSE
+// sections point at) and the first 5 bytes when an earlier patch put its
+// jump there (opts.jumped). A link-time optimisation (the minified
+// Linux's LTO) gives other code: LLVM calls internal functions with its
+// fastcc convention (arguments in ECX and EDX), so a function compiled
+// here would pass and take its arguments elsewhere. null, or why not.
+function hpVerify(A, f, k, opts) {
+	const kb = opts.read ? opts.read(k.va, k.size) : null;
+	if (!kb)
+		return null;
+	const lo = f.value, hi = f.value + f.size;
+	const ob = f.sec.data.slice(lo, hi);
+	const blank = (a, n) => { for (let i = Math.max(a, 0); i < Math.min(a + n, ob.length); i++) ob[i] = kb[i] = 0; };
+	for (const r of f.sec.rels)
+		if (r.off >= lo && r.off < hi) {
+			const x = hpTarget(A, f.sec, r);
+			blank(r.off - lo - (x.und === "mcount" || x.und === "__fentry__" ? 1 : 0), 5);
+		}
+	for (const s of A.sections)
+		if (hpMeta(s.name) && !/^\.(debug|rel)/.test(s.name))
+			for (const r of s.rels) {
+				const x = hpTarget(A, s, r);
+				if (x.sec === f.sec.index && x.off >= lo && x.off < hi)
+					blank(x.off - lo, 6);
+			}
+	if (opts.jumped && opts.jumped.has(k.va))
+		blank(0, 5);
+	if (k.size !== f.size || ob.some((b, i) => b !== kb[i]))
+		return "the running kernel's code of " + f.name + " is not what its source compiles to here (" + (k.size !== f.size ? k.size + " bytes, here " + f.size :
+			"bytes differ") + (opts.lto ? ": the kernel was linked with LTO, which can change how its functions pass arguments" : "") + "); rebuild and boot";
+	return null;
+}
+
+// The line rows of the placed code from the object's .debug_line (DWARF 4
+// or 5, as clang writes it): { files: [path], rows: [[va, file index or
+// -1 (an end), line]] } sorted, or null without a line table. at(k, off):
+// the new address of offset off in section k, or null (code not placed:
+// its rows are dropped). Paths relative to strip (the build directory).
+function hpLines(bytes, at, strip) {
+	const o = hpElf(bytes);
+	const sec = o.sections.find((s) => s.name === ".debug_line");
+	if (!sec || !sec.data)
+		return null;
+	const named = (n) => (o.sections.find((s) => s.name === n) || {}).data || new Uint8Array(0);
+	const lineStr = named(".debug_line_str"), str = named(".debug_str");
+	const d = sec.data, dv = new DataView(d.buffer, d.byteOffset, d.byteLength);
+	const rel = new Map(sec.rels.map((r) => [r.off, r]));
+	const cstr = (b, p) => { let e = p; while (e < b.length && b[e]) e++; return new TextDecoder().decode(b.subarray(p, e)); };
+	let p = 0;
+	const u8 = () => d[p++], u16 = () => (p += 2, dv.getUint16(p - 2, true)), u32 = () => (p += 4, dv.getUint32(p - 4, true));
+	const leb = (signed) => {
+		let v = 0, shift = 0, b;
+		do { b = d[p++]; v += (b & 0x7f) * 2 ** shift; shift += 7; } while (b & 0x80);
+		return signed && b & 0x40 ? v - 2 ** shift : v;
+	};
+	const form = (f) => {
+		switch (f) {
+		case 0x08: { const s = cstr(d, p); p += new TextEncoder().encode(s).length + 1; return s; }
+		case 0x1f: return cstr(lineStr, u32());
+		case 0x0e: return cstr(str, u32());
+		case 0x0f: return leb(false);
+		case 0x0b: return u8();
+		case 0x05: return u16();
+		case 0x06: return u32();
+		case 0x07: p += 8; return 0;
+		case 0x1e: p += 16; return 0;
+		case 0x09: p += leb(false); return 0;
+		default: throw new Error("DW_FORM " + f + " in a line table header");
+		}
+	};
+	const files = [], fileIx = new Map(), rows = [];
+	const fid = (path) => {
+		const q = strip && path.startsWith(strip) ? path.slice(strip.length) : path.replace(/^\.\//, "");
+		if (!fileIx.has(q)) {
+			fileIx.set(q, files.length);
+			files.push(q);
+		}
+		return fileIx.get(q);
+	};
+	while (p + 4 <= d.length) {
+		const len = u32(), end = p + len, ver = u16();
+		if (ver >= 5)
+			p += 2; // address size, segment selector size
+		const hlen = u32(), prog = p + hlen;
+		const minInst = u8();
+		if (ver >= 4)
+			u8(); // maximum operations per instruction
+		u8(); // default is_stmt
+		const lineBase = (u8() << 24) >> 24, lineRange = u8(), opBase = u8();
+		const stdLen = Array.from({ length: opBase - 1 }, () => u8());
+		const dirs = [], names = [];
+		if (ver >= 5) {
+			const entries = (out, isFile) => {
+				const fmt = Array.from({ length: u8() }, () => [leb(false), leb(false)]);
+				const n = leb(false);
+				for (let i = 0; i < n; i++) {
+					const e = { path: "", dir: 0 };
+					for (const [ct, f] of fmt) {
+						const v = form(f);
+						if (ct === 1) e.path = v;
+						else if (ct === 2) e.dir = v;
+					}
+					out.push(isFile ? e : e.path);
+				}
+			};
+			entries(dirs, false);
+			entries(names, true);
+		} else {
+			dirs.push("");
+			for (let s; (s = form(0x08));)
+				dirs.push(s);
+			for (let s; (s = form(0x08));) {
+				const dir = leb(false);
+				leb(false);
+				leb(false);
+				names.push({ path: s, dir });
+			}
+			names.unshift(null); // DWARF 4 files count from 1
+		}
+		const path = (k) => {
+			const f = names[k];
+			if (!f)
+				return "?";
+			const dir = ver >= 5 && f.dir === 0 ? "" : dirs[f.dir] || "";
+			return f.path.startsWith("/") || !dir ? f.path : dir.replace(/\/$/, "") + "/" + f.path;
+		};
+		p = prog;
+		let addr = null, file = 1, line = 1;
+		const row = (e) => {
+			if (addr !== null)
+				rows.push([addr, e ? -1 : fid(path(file)), line]);
+		};
+		while (p < end) {
+			const op = u8();
+			if (op >= opBase) {
+				const adj = op - opBase;
+				if (addr !== null)
+					addr += Math.floor(adj / lineRange) * minInst;
+				line += lineBase + adj % lineRange;
+				row(false);
+			} else if (op === 0) {
+				const n = leb(false), at0 = p, sub = u8();
+				if (sub === 1) {
+					row(true);
+					addr = null;
+					file = 1;
+					line = 1;
+				} else if (sub === 2) {
+					const r = rel.get(p);
+					const x = r ? hpTarget(o, sec, r) : null;
+					addr = x && x.sec !== undefined ? at(x.sec, x.off) : null;
+				}
+				p = at0 + n;
+			} else if (op === 1) {
+				row(false);
+			} else if (op === 2) {
+				const a = leb(false);
+				if (addr !== null)
+					addr += a * minInst;
+			} else if (op === 3) {
+				line += leb(true);
+			} else if (op === 4) {
+				file = leb(false);
+			} else if (op === 8) {
+				if (addr !== null)
+					addr += Math.floor((255 - opBase) / lineRange) * minInst;
+			} else if (op === 9) {
+				if (addr !== null)
+					addr += u16();
+			} else {
+				for (let i = 0; i < stdLen[op - 1]; i++)
+					leb(false);
+			}
+		}
+		p = end;
+	}
+	// At one address an end goes before the next sequence's first row.
+	rows.sort((a, b) => a[0] - b[0] || (b[1] < 0) - (a[1] < 0));
+	return { files, rows };
 }
 
 // lookup(name, sym) for hpPlan over the running kernel's symbols
@@ -467,4 +679,4 @@ function hpArgv(argv, out) {
 	return a;
 }
 
-export { hpElf, hpIndex, hpDesc, hpProto, hpPlan, hpLookup, hpArgv, hpHex, HP_REFUSE };
+export { hpElf, hpIndex, hpDesc, hpProto, hpPlan, hpVerify, hpLines, hpLookup, hpArgv, hpHex, HP_REFUSE };

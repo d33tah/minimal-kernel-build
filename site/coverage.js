@@ -128,7 +128,10 @@ function covKeep() {
 	const img = image, fl = dbgFiles();
 	if (fl.state !== "ok")
 		return null;
-	const run = covRun(fl.F, true);
+	// The tree's own record when it is of this run (counting a big
+	// kernel's lines again takes seconds: Debian's thousands of rows per table).
+	const c = COV.run, st = stepper;
+	const run = c && c.F === fl.F && c.st === st && st && c.unique === st.unique ? c : covRun(fl.F, true);
 	if (!run.tint)
 		return null;
 	const F = fl.F, b = img.build || null;

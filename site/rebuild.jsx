@@ -511,10 +511,11 @@ function initRebuild() {
 }
 
 // Back to the shipped kernel: what ran in this build is kept to compare (E8).
-const rbBack = () => {
+// After the click is handled: covKeep may count a big kernel's lines for a while.
+const rbBack = () => setTimeout(() => {
 	covKeep();
 	api.machine.loadKernel(kernels.find((x) => x.name === rbFrom())).catch((e) => setStatus(String(e)));
-};
+}, 0);
 
 // The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
 function RebuildPanel() {

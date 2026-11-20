@@ -367,7 +367,7 @@ def rebuildmap_run(browser, base, shots):
         # As for a big kernel whose coverage tree was not shown: build 2's
         # line tables not read when it is left (the record says what it lacks).
         if not edit_text(page, t1, problems, "build 3") or \
-                not rebuild(page, 3, problems, "build 3", r, before=lambda: page.evaluate("MKB.DBG.tables.clear()")):
+                not rebuild(page, 3, problems, "build 3", r, before=lambda: page.evaluate("MKB.DBG.tables.clear(); MKB.COV.run = null")):
             return problems, r
         if page.input_value("#dbg_addr") != "nosuch.c:5":
             problems.append(f"build 3: the Run to field of another file became {page.input_value('#dbg_addr')!r}")

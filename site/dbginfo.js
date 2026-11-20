@@ -574,6 +574,9 @@ function dbgUnwind(r, read32, toPhys, symAt, entryEsp) {
 function dbgTableAt(pa, peek) {
 	if (!dbgHas())
 		return { state: "none", why: DBG.why };
+	// The code of hot patches (hotpatch.jsx): their own table.
+	if (DBG.patch && pa >= DBG.patch.lo && pa < DBG.patch.hi)
+		return { state: "ok", t: DBG.patch.t, end: DBG.patch.hi };
 	if (!DBG.index)
 		return { state: "loading" };
 	let t, key, end = Infinity;

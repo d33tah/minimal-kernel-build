@@ -19,7 +19,7 @@ Layers, bottom up (each imports only from layers below it):
    stepper (`stepper.js`, `stepbase.js`, the Calls frames in `frames.js`),
    jump paths (`jumps.js`), DWARF and CFI (`dwarf*.js`, `dwexpr.js`,
    `unwind.js`, `asmnames.js`), the build (`kgen.js`, `kit.js`, `wasi.js`,
-   `clang.js`), patches (`edpatch.js`), snapshots' records
+   `clang.js`), hot patches' objects (`hpelf.js`), patches (`edpatch.js`), snapshots' records
    (`snaprecord.js`, `snapworker.js`).
 3. State and API (`store.js`, `page.js`): the values the modules share,
    each a live binding with a setter that also updates the store and
@@ -34,7 +34,8 @@ Layers, bottom up (each imports only from layers below it):
    `snapdiff.js`, `replay.js`, `reverse.js`), Events (`memevents.js`,
    `mev*.js`), bookmarks, tips, the jump history.
 5. React components (`*.jsx`, mounted by `shell.jsx`): the tab bar,
-   Settings, Quests, Events and the Rebuild box. They read the store
+   Settings, Quests, Events, the Rebuild box and Patch running kernel
+   (`hotpatch.jsx`). They read the store
    through `useStore(key)` (`ui.jsx`) or a controller's
    `subscribe`/`rev` (`QUESTS`, `MEV`, `RB`).
 6. The entry: `app.js` (`init()`), and `debug.js`, which exposes every
@@ -3203,6 +3204,101 @@ compile error's log has clang's `error: expected expression`, `exit 1`
 and no link command; Copy puts the whole text on the clipboard, and with
 the clipboard refused it selects it; at 390 px it fits the screen.
 Screenshots `rebuild-*-buildlog-{light,dark}`.
+
+### Patch running kernel (hotpatch.jsx, hpelf.js)
+
+How to try it: pick hello with `?paused=1` (or press Pause at any time),
+open `boot/hello.c` in the Source panel, Edit, change `put_line` (say
+`(unsigned char)(*s++ ^ 0x20)`), wait a moment for "Ready" under the
+Source tab's "Patch running kernel" (the same button is in the editor's
+bar), press it, then Continue: the lines come out with their case swapped,
+without a reboot.
+
+While the machine is paused and exactly one C file of the shown kernel
+differs from the code it runs (the shipped text, a rebuilt kernel's edit
+or an earlier patch's), the page checks the edit in the background: the
+file's object is compiled twice by clang.wasm with the kit's own command
+line (`hpArgv`: no LTO, so the minified Linux's bitcode objects become
+machine code, and `-ffunction-sections`, so references between functions
+are relocations), once with the running text and once with the edit, in a
+`ClangWorker` kept for the next check. `hpPlan` compares the two objects:
+
+- per function: its bytes with the relocated places blanked, plus what
+  each relocation points at (a symbol, a function and offset, a string by
+  its text, a variable and offset). A function that inlines an edited
+  one changes too and is replaced with it; in a section of several
+  functions (`.init.text`: the assembler resolved the calls inside it)
+  the functions after the edit count as changed;
+- per data section: size, symbols and contents (relocations by what they
+  point at); global constants by their bytes.
+
+It refuses, and the button stays disabled with the reason under it: data
+added, removed or initialised differently ("a patch replaces code
+only"), a removed global function, a changed signature (the declaration
+text of the function in the two sources, `hpProto`), a function that uses
+what the kernel set up at boot (static keys in `__jump_table`, as
+`pr_debug` does; `__ex_table`; static call, retpoline and return thunk
+sites; dynamic debug descriptors), no room left, and from the running
+machine: a function the kernel also inlined elsewhere (its DWARF's
+inlined copies outside the replaced functions), a jump target the CPU is
+stopped inside, reserved memory not mapped where the code expects it,
+and a replaced function whose running code is not what its source
+compiles to here (`hpVerify`: the kernel's bytes against the object's,
+except the relocated places and the sites the kernel patched at boot).
+That last check matters for the minified Linux, which is linked with LTO:
+LLVM gives its internal functions the fastcc convention (arguments in ECX
+and EDX), so most of its functions differ from a compile of their unit
+without LTO, and a call the replaced code did not make is refused there
+(its callee may take its arguments elsewhere). Its functions that do
+match include `do_exit`, `kernel_init` and `rest_init`.
+Alternatives, BUG/WARN entries and SMP lock prefixes keep their compiled
+instructions, which are valid on any CPU (the status notes it).
+
+The plan lays the changed and the new functions out in the reserved
+memory with the read-only data they use (string literals, switch tables),
+copied; relocations point at the copies for the replaced functions and at
+the running kernel's addresses for everything else (its symbols.json;
+for Debian's trimmed symbols the static variables come from types.json,
+by name and file; a name LTO promoted to `name.llvm.N` counts as
+`name`); calls of `mcount`/`__fentry__` become 5-byte NOPs, as the
+kernel's ftrace made them at boot. Pressing the button writes the code
+and a 5-byte `jmp rel32` at each old entry (`emulator.write_memory`: the
+JIT drops its code of those pages; M1 records them as the emulator's
+writes).
+
+The reserved memory is physical 0x60000-0x7FFFF (128 KiB) of conventional
+memory, mapped by Linux at PAGE_OFFSET + address: Linux reserves the
+whole first megabyte from its allocator (`memblock_reserve(0, SZ_1M)` in
+`setup_arch`, kept in the minified tree), its BIOS corruption check scans
+only the first 64 KiB, v86 puts the real-mode setup and the command line
+at 0x90000 and up, the BIOS keeps its data below 0x1000 and from the
+EBDA up, and hello only uses its image and stack at 1 MiB. No kernel
+binary and no command line changed. Suite `hotpatch` checks that the
+range is zero when each kernel is paused for its first patch (hello at
+`hello_main`, the minified Linux at `start_kernel`, Debian at its
+`(initramfs)` prompt) and still holds the patch's bytes after the new
+code ran. Patches fill it in turn; a boot empties it.
+
+A patch is part of the run (`replay.js` `inputPatch`): logged at the
+instruction count where it was made with its bytes, like typed keys (J4).
+A replay writes it at the same count; stepping back over it restores the
+memory without it and stepping forward again writes it again; a snapshot
+carries the log, so restoring one taken before a patch gives a machine
+without it and one taken after gives the patch. The page derives the
+patches the machine has from its log (`hpSync`): the list under the
+button, the reserved bytes in use, the text each file now runs, and the
+symbols of the copies (`put_line (patch 1)`) for the listings, the Calls
+and the Debugger.
+
+Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
+`put_line` and `hello_main` (a new string, the call to the kernel's
+`put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`
+of a new line; with LTO refused), and refusals (a variable added, a
+signature changed, a comment only, no room), and the copies' line rows;
+on d-claude also Debian (`fs/proc/version.c`
+patched; `run_init_process` refused for its `pr_debug` static keys).
+Suite `hotpatch` (job `kit`): the cases in the comment of
+`tests/browser/hotpatch.py`, with the edit-to-effect times.
 
 ## Testing
 

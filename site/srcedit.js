@@ -476,6 +476,7 @@ function edStatus(text, state) {
 function edChanged() {
 	edRender();
 	api.source.rbSync(); // rebuild.js: the count of edits it would build with
+	api.source.hpSync(); // hotpatch.jsx: whether the edit can be patched in
 	if (srcPanel && !$("src_panel").hidden)
 		edSync();
 }

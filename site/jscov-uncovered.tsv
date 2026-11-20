@@ -98,15 +98,15 @@ dbginfo.js	166	0104effd	types Worker error after an IndexedDB write of a replace
 dbginfo.js	184-185	3d58cc52	the locals request of one unit fails after the types pass read the same unit without error: decodeData with locals runs in both, so a unit that fails fails the types first
 dbginfo.js	230-238	090dd4f6	a unit's locals bring types the types pass did not have: both passes read the same DIEs; the merge is a guard for a table from IndexedDB of an older page version
 dbginfo.js	351	2c0239a6	a types table without function facts: written by an older version of this page into IndexedDB; the current page always adds funcs
-dbginfo.js	639	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
-dbginfo.js	643	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
-dbginfo.js	681	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
+dbginfo.js	642	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
+dbginfo.js	646	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
+dbginfo.js	684	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
 dbginfo.js	275	f753a4ac	E6: code compiled in the page whose data files have no types.json: kgen.js kgenDwarf always writes types.json with the line shards
 dbgmerge.js	202	1acb157f	E6: a line shard of format 1 (no is_stmt data) under a rebuild: CI and the page write format 2 since the is_stmt step; only an old shard
 dbgmerge.js	337	70207f09	E6: the page's and CI's shards of different sizes: both come from kgen.js's SHARD_BITS; only inconsistent data
 dbgmerge.js	437	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask for (its dbgGet asks only index, line, cfi, locals, ownLocals, funcs, types, files)
 dbgmerge.js	514	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
-debug.js	101	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
+debug.js	103	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 dwarfread.js	36	d99af19c	the size of DW_FORM_strx3/addrx3 (3-byte indexes): needs a unit with 65,536 or more string or address indexes; the kernels the suites read have none (clang writes strx1/strx2/addrx); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 dwarfread.js	52	6abc25fb	cstrAt with no string section or an offset past it: only for corrupt DWARF (a strp/line_strp beyond .debug_str); every file in the tests has its strings
 dwarfread.js	226-227	5456a1c5	reading a DW_FORM_strx3/addrx3 value: as 49; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -256,18 +256,18 @@ quests.jsx	461	f86b4bd8	localStorage.setItem throwing (storage blocked or full) 
 quests.jsx	481-482	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
 rebuild.jsx	325-326	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
 rebuild.jsx	411	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
-replay.js	109	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
-replay.js	179-181	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
-replay.js	192	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
-replay.js	194	867c6556	a snapshot save or a JIT checkpoint during a replay: JIT checkpoints are off during replays (revJitTick) and no test saves mid-replay; the replayStop path itself is checked for Step and Step back
-replay.js	208	366a13b0	Restore during a replay: reachable (Restore while a replay runs) but not in a test yet; replayStop itself is checked for Step and Step back
-replay.js	250	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
-replay.js	287-291	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
-replay.js	405	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
-replay.js	432	2e745bf3	replayStop with no replay running: its callers check replayActive() first
-replay.js	466	33ddae1b	renderRunInfo without #run_text: the element is in index.html
-replay.js	498	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
-replay.js	510	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
+replay.js	131	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
+replay.js	207-209	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
+replay.js	220	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
+replay.js	222	867c6556	a snapshot save or a JIT checkpoint during a replay: JIT checkpoints are off during replays (revJitTick) and no test saves mid-replay; the replayStop path itself is checked for Step and Step back
+replay.js	236	366a13b0	Restore during a replay: reachable (Restore while a replay runs) but not in a test yet; replayStop itself is checked for Step and Step back
+replay.js	279	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
+replay.js	317-321	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
+replay.js	436	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
+replay.js	463	2e745bf3	replayStop with no replay running: its callers check replayActive() first
+replay.js	497	33ddae1b	renderRunInfo without #run_text: the element is in index.html
+replay.js	529	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
+replay.js	541	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
 reverse.js	157	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
 reverse.js	177-180	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
 reverse.js	202-204	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
@@ -338,9 +338,9 @@ srcedit.js	288	d00bbce5	Edit pressed on a file that cannot be edited: the Edit b
 srcedit.js	345	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 srcedit.js	354	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
 srcedit.js	371	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
-srcedit.js	540	d861a51e	Download with no edits: the button is disabled while there are none
-srcedit.js	553	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	619	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+srcedit.js	541	d861a51e	Download with no edits: the button is disabled while there are none
+srcedit.js	554	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
+srcedit.js	620	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 v86patch.js	61	63341348	v86.wasm with no or several functions matching a step export's pattern: the shipped v86.wasm is pinned and built by the workflow, so each pattern matches once
 v86patch.js	66	25f3f9cf	v86.wasm without an export section: as line 74
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it
@@ -437,3 +437,64 @@ wasi.js	453	1bc1f6b3	E0c track (wasi.js, another agent's file): an error return 
 wasi.js	465	d74bcc73	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	513	51b191a5	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
 wasi.js	543	4d723cd3	E0c track (wasi.js, another agent's file): an error return of the WASI layer (bad descriptor, not a directory, is a directory, no such entry) that clang, lld and the host tools never provoke on the test inputs; wasi-probe tests the calls on its own program in Node
+hotpatch.jsx	94	fca23807	the running text of a kernel rebuilt in the page with edits (image.edits): no suite hot patches a rebuilt kernel (suite hotpatch patches the shipped hello, minified Linux and editable Debian)
+hotpatch.jsx	179	11d965ea	sometimes: hpSync while a patch is being written (HP.busy): only when the store or the editor changes in the few milliseconds between the press and the write; not forced by any suite
+hotpatch.jsx	185	dec148e2	sometimes: the patch box before kits/index.json arrived or on a site without kits: the browser-test jobs have no kits, the kit job has them; which job's coverage records it depends on whether srcedit's first edChanged comes before the index fetch
+hotpatch.jsx	187	f99d7387	sometimes: a kernel without a build kit (the shipped GCC Debian, an import) while the kits list is loaded: hpSync runs on every edit and pause, so it runs in the jobs whose suites pause such a kernel with kits present; the hotpatch suite never does
+hotpatch.jsx	210	4220a41f	the object cache's eviction after 8 different texts: the hotpatch suite checks at most 5 texts of one file per page
+hotpatch.jsx	226-227	7d87f429	two files differing from the running code at once: the suite edits one file at a time (the refusal text is plain; a two-file case would need two editors' saves before one check)
+hotpatch.jsx	237	6d6ccd47	a check overtaken by a newer one while kitHash/kit fetches ran (gen changed): timing-dependent, the suite waits for each check to end before the next edit
+hotpatch.jsx	243	6d6ccd47	the same, after the two compiles: a newer edit or pause arrived while clang ran
+hotpatch.jsx	257-259	6a3ba1af	hpLines throwing on a line table it cannot read (a DW_FORM outside the list): clang 22's DWARF 5 tables of the three kernels use only the forms handled
+hotpatch.jsx	266	ae6ac23f	the result of a check that a newer check replaced (gen changed after hpMake returned): timing-dependent, as above
+hotpatch.jsx	285	0e4a4a41	the CPU stopped inside the first 5 bytes of a function to replace: the suite pauses at a function's first byte (Run to) or at the prompt, never mid-prologue; needs a Step into a prologue
+hotpatch.jsx	290	8502e045	reserved memory not mapped by the kernel's page tables: every shipped Linux maps the first megabyte at PAGE_OFFSET once paging is on, and hello runs without paging
+hotpatch.jsx	300	34ba3fc6	function facts not loaded or absent (dbgFnFacts state none): the three kernels ship funcs-*.json.gz shards
+hotpatch.jsx	303-306	9d4e3448	a replaced function with inlined copies in the running kernel: hello and the minified Linux are -O0 (nothing inlined), Debian's version_proc_show is not inlined anywhere
+hotpatch.jsx	318-321	4028c213	the press with no current background plan (the check result was overtaken): the button is enabled only when the check made a plan, so this needs a state change between the check and the press
+hotpatch.jsx	324	79d1a66e	a machine check refusing at the press (hpMachineWhy): its three refusals are listed above as not reachable by the suite
+hotpatch.jsx	342-347	f8b3eda9	the press failing: only after the refusals above or a write error, which the suite cannot produce
+hpelf.js	60	26274640	an LLVM bitcode or non-ELF object: hpArgv removes -flto, so the page always compiles machine code (test_hotpatch.mjs and the minified Linux's LTO kit show it)
+hpelf.js	64	b023159b	an ELF that is not a 32-bit x86 relocatable object: the kits compile -m32 objects only
+hpelf.js	96	dd17bb51	RELA relocations: i386 objects use REL; a defensive refusal
+hpelf.js	152	7218bd8b	a relocation naming a symbol index past the symbol table: malformed objects only
+hpelf.js	156	37260d5e	a relocation against an absolute symbol (SHN_ABS): the kernels' units have none in the code a patch replaces
+hpelf.js	214	3e0efc98	hpProto skipping a use of the name inside a function body before the definition: the suite's replaced functions are defined before their first use in their files
+hpelf.js	224	f186f723	hpProto finding no definition (a function made by a macro): the suite's replaced functions are written out
+hpelf.js	241-243	ded00b5c	a data section that differs without symbols added or removed (a size, place or initial value change): the suite's data refusal adds a variable (test_hotpatch.mjs runs that refusal in Node)
+hpelf.js	261-262	61b5162b	a global constant changed: refused in Node only (test_hotpatch.mjs has no such case in the browser); the suite's edits change code
+hpelf.js	269	d4283a5d	an edit adding a function: the suite's edits change existing ones
+hpelf.js	275	60a73477	an edit removing a global function: no suite case
+hpelf.js	280	f8d0168c	a changed function with a split-off .cold part: clang at -O0 (hello, minified) and Debian's version_proc_show have none
+hpelf.js	282	434c3111	an edit that changes no function's code: test_hotpatch.mjs (Node, kernels job) refuses a comment-only edit; no browser case
+hpelf.js	284	57ac2d40	an edit that only adds functions: no suite case
+hpelf.js	288	69fc841e	a changed signature: test_hotpatch.mjs (Node, kernels job) refuses put_line with a third parameter; the browser suite does not repeat it
+hpelf.js	324-326	789ef0ef	notes for alternatives, BUG/WARN entries and lock prefixes in placed code: the suite's replaced functions (put_line, do_exit, version_proc_show) have none
+hpelf.js	339	1418ed58	no room in the reserved memory: test_hotpatch.mjs (Node) refuses with 8 bytes left; the suite makes one patch per boot (128 KiB free)
+hpelf.js	369	690424e3	a symbol the running kernel lacks: the suite's patches only reference symbols the kernels have; the Node test's plans do the same
+hpelf.js	377	48dbb8af	a relocation type other than R_386_32, PC32 and PLT32 (GOT, TLS): the kernel units are -fno-pic
+hpelf.js	389	fbda4533	the value of an absolute symbol: see the SHN_ABS row above
+hpelf.js	398	d0eb36c9	a reference into a placed code section at no function (or into a replaced function by its section): the suite's copies reference other functions by symbol only
+hpelf.js	404-405	230158c5	a reference into code outside any function: compiler-generated code always has its symbol
+hpelf.js	409-413	8b69ad2e	a reference to a variable from the placed code: the suite's new code uses kernel functions, strings and the VGA address (a constant), no variables
+hpelf.js	427	9fc658f8	a changed function the running kernel lacks: no suite case
+hpelf.js	429	48814ea8	a replaced function shorter than the 5-byte jump: no such function in the suite's edits
+hpelf.js	433	7c4a705e	hpVerify refusing a replaced function: in the suite the minified Linux's LTO case is refused earlier, by the new call (ltoCall)
+hpelf.js	457	07a4b4e5	hpVerify without a way to read the kernel (opts.read): the page always passes one; test_hotpatch.mjs (Node) has none
+hpelf.js	471	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
+hpelf.js	474	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
+hpelf.js	476-477	1fadc6c8	the running code differing from the compile: see the hpVerify row above
+hpelf.js	490	aa216095	an object without .debug_line: the kits compile with -g
+hpelf.js	505	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
+hpelf.js	507	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
+hpelf.js	509-512	0fa890b5	DW_FORM_data1/data2/data4/data8 in a line table header: clang 22 writes udata indices and data16 MD5s
+hpelf.js	514-515	0df6d192	DW_FORM_block or an unknown form in a line table header: not in clang's tables
+hpelf.js	556-566	94b181a0	a DWARF 4 line table header: clang 22 writes DWARF 5 for the three kernels
+hpelf.js	570	0e3dd80d	a line row naming a file index outside the table: malformed DWARF only
+hpelf.js	615-616	a5916579	DW_LNS_const_add_pc after an address: clang's line programs for these small functions do not use it
+hpelf.js	652-655	29d5e71e	a variable missing from symbols.json, looked up in types.json (Debian's trimmed symbols): the suite's new code references no variable
+hpelf.js	657	a49e977d	several kernel symbols of one name, told apart by size: no name the suite's patches reference is duplicated
+hpelf.js	659	200faad4	the same, told apart by binding
+hpelf.js	661	b0ccabb7	the same, told apart by the unit's file (types.json)
+hpelf.js	663	2ec36e6c	a name still ambiguous after those: no suite case
+hpelf.js	676	e52b096c	a kit compile command without -o: every kit object's command has one

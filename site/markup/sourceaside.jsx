@@ -57,6 +57,8 @@ function SourceAside() {
 					<button id="ed_revert" type="button" title="Throw away your edits of this file (press twice)">Revert</button>
 					{" "}
 					<span id="rb_go_slot" className="rbslot" />
+					{" "}
+					<span id="hp_go_slot" className="rbslot" />
 				</span>
 			</div>
 			{" "}

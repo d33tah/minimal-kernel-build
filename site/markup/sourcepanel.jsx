@@ -63,6 +63,8 @@ function SourceTabPanel() {
 				<pre id="ed_diff" className="eddiff" hidden />
 				{" "}
 				<div id="rb_box" className="rbbox" />
+				{" "}
+				<div id="hp_box" className="rbbox" />
 			</div>
 			{" "}
 			<p id="cov_status" className="note" />

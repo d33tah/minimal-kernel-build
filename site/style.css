@@ -697,6 +697,11 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
 #rb_progress[hidden] { display: none; }
 #rb_status { margin: 0.2rem 0; overflow-wrap: anywhere; }
 #rb_status[data-state="failed"] { color: var(--err-fg); }
+/* Patch running kernel (E7). */
+#hp_status { margin: 0.2rem 0; overflow-wrap: anywhere; }
+#hp_status[data-state="failed"], #hp_status[data-state="refused"] { color: var(--err-fg); }
+.hplist { margin: 0.2rem 0; padding-left: 1.2rem; overflow-wrap: anywhere; }
+.hplist[hidden] { display: none; }
 .rblog { margin: 0.3rem 0; padding: 0.4rem; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere;
 	background: var(--err-bg); color: var(--err-fg); border-radius: 4px; max-height: 40vh; overflow: auto; }
 .rblog[hidden], #rb_files[hidden] { display: none; }

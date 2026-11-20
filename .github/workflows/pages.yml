@@ -1344,6 +1344,16 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuild_debian --shots rebuild-screenshots'
 
+    # Patch running kernel (plan E7, hotpatch.jsx): an edit put into the
+    # paused machine without a reboot on hello, the minified Linux and the
+    # Debian rebuilt from source; refusals; snapshots and a replay of a
+    # patched run.
+    - name: Patch running kernel in the page (test_browser.py hotpatch)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites hotpatch --shots rebuild-screenshots'
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:

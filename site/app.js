@@ -31,6 +31,7 @@ import { initReplay } from "./replay.js";
 import { initReverse } from "./reverse.js";
 import { initBookmarks } from "./bminit.js";
 import { initRebuild } from "./rebuild.jsx";
+import { initHotPatch } from "./hotpatch.jsx";
 import { showHeader, setStatus } from "./header.js";
 import { setAutoscan, scan } from "./scan.js";
 import { initLegend, drawMaps, gridRam, pageAt, showHover } from "./memview.js";
@@ -110,6 +111,7 @@ async function init() {
 	initSource();
 	initSrcEdit();
 	initRebuild();
+	initHotPatch();
 	initJumps();
 	initCoverage();
 	setupVars();

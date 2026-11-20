@@ -18,6 +18,7 @@ import { SettingsPanel } from "./settings.jsx";
 import { QuestsPanel } from "./quests.jsx";
 import { EventsPanel } from "./events.jsx";
 import { RebuildPanel, RebuildPanelButton } from "./rebuild.jsx";
+import { HotPatchPanel, HotPatchButton } from "./hotpatch.jsx";
 
 // Mount a tab's component the first time the store's `tab` names it
 // (mountShell runs before init() reads the URL's tab: the Machine tab is
@@ -38,6 +39,8 @@ function mountShell() {
 	mountOnTab("events", "panel_events", <EventsPanel />);
 	mount($("rb_box"), <RebuildPanel />);
 	mount($("rb_go_slot"), <RebuildPanelButton />);
+	mount($("hp_box"), <HotPatchPanel />);
+	mount($("hp_go_slot"), <HotPatchButton />);
 }
 
 export { mountShell };

@@ -83,11 +83,16 @@ function inputRedo(st) {
 				INPUT.send(c);
 		if (e.reset)
 			v86ResetHidden(emulator, "save");
+		if (e.patch)
+			inputPatchWrite(e.patch);
 		INPUT.log.push(e);
 	}
 	if (n) {
+		const patched = redo.slice(0, n).some((e) => e.patch);
 		redo.splice(0, n);
 		renderRunInfo();
+		if (patched)
+			api.source.hpSync();
 	}
 }
 
@@ -98,6 +103,23 @@ function inputRewind(n) {
 	INPUT.pending = [];
 	const modes = INPUT.log.filter((e) => e.mode);
 	INPUT.mode = modes.length ? modes[modes.length - 1].mode : null;
+	renderRunInfo();
+	api.source.hpSync();
+}
+
+// A hot patch (hotpatch.jsx, plan E7) in the log: its bytes written into
+// guest memory as the page's writes (the JIT's code of those pages is
+// dropped), at its count, when it is made, replayed or redone.
+function inputPatchWrite(p) {
+	for (const [pa, hex] of p.writes)
+		emulator.write_memory(Uint8Array.from(hex.match(/../g), (x) => parseInt(x, 16)), pa);
+}
+
+// A patch made now: written and logged at this count.
+function inputPatch(st, patch) {
+	inputPatchWrite(patch);
+	// Also on the real-time clock: the patches the machine has are the log's.
+	INPUT.log.push({ at: st.steps, t: CLOCK.now(), patch });
 	renderRunInfo();
 }
 
@@ -110,7 +132,7 @@ function inputFlush(st) {
 	const rp = INPUT.replay;
 	if (rp && !rp.done) {
 		const log = rp.run.log;
-		let mode = null;
+		let mode = null, patched = false;
 		while (rp.i < log.length && inputDue(log[rp.i], st)) {
 			const e = log[rp.i++];
 			const t = CLOCK.now();
@@ -121,14 +143,20 @@ function inputFlush(st) {
 					INPUT.send(c);
 			if (e.reset)
 				v86ResetHidden(emulator, "save");
+			if (e.patch) {
+				inputPatchWrite(e.patch);
+				patched = true;
+			}
 			if (e.mode) {
 				rp.mode = INPUT.mode = e.mode;
 				mode = e.mode;
 			}
 			INPUT.log.push(e.keys ? { at: e.at, t: e.t, keys: e.keys.slice() } : e.reset ? { at: e.at, t: e.t, reset: true } :
-				{ at: e.at, t: e.t, mode: e.mode });
+				e.patch ? { at: e.at, t: e.t, patch: e.patch } : { at: e.at, t: e.t, mode: e.mode });
 		}
 		renderRunInfo();
+		if (patched)
+			api.source.hpSync();
 		if (rp.run.end && inputDue(rp.run.end, st) && rp.i >= log.length)
 			return "end";
 		const now = runState === "stepped" ? "stepped" : runState === "jit" ? "jit" : null;
@@ -224,6 +252,7 @@ function inputRestore(meta) {
 	if (stepper && CLOCK.virtual)
 		INPUT.log.push({ at: stepper.steps, t: CLOCK.now(), reset: true });
 	renderRunInfo();
+	api.source.hpSync(); // the patches in the restored memory are its log's
 }
 
 // ---- a machine powered on -----------------------------------------------------
@@ -268,6 +297,7 @@ function inputBoot(em) {
 		runStatus("Replaying " + runLabel(INPUT.replay.run) + "...", "running");
 	}
 	renderRunInfo();
+	api.source.hpSync();
 }
 
 // ---- the run ------------------------------------------------------------------
@@ -336,7 +366,8 @@ function runCheck(run) {
 		return "the run was on the real-time clock: its inputs were not recorded";
 	for (let i = 0; i < run.log.length; i++) {
 		const e = run.log[i], p = run.log[i - 1];
-		if (typeof e.at !== "number" || typeof e.t !== "number" || !(Array.isArray(e.keys) || e.mode === "jit" || e.mode === "stepped" || e.reset === true) ||
+		if (typeof e.at !== "number" || typeof e.t !== "number" || !(Array.isArray(e.keys) || e.mode === "jit" || e.mode === "stepped" || e.reset === true ||
+			(e.patch && Array.isArray(e.patch.writes))) ||
 			(p && (e.at < p.at || (e.at === p.at && e.t < p.t))))
 			return "the log's entry " + (i + 1) + " is not readable or out of order";
 	}
@@ -532,5 +563,5 @@ function initReplay() {
 }
 
 export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
-	inputTaint, inputReset, inputRestore, inputBoot, runScreenHash, runNow, replayRun, replayFinish, replayStop,
+	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, runScreenHash, runNow, replayRun, replayFinish, replayStop,
 	replayAfterStop, runStatus, initReplay };

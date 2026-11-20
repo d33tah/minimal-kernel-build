@@ -445,7 +445,10 @@ def rebuildmap_hotpatch(browser, base, shots, width, scheme):
             b = bm_dialog_save(page, problems, tag, "line", name="e8 hello line")
             bm_id = b and b["id"]
         show_tab(page, "debugger")
-        page.fill("#dbg_addr", f"{RBM_FILE}:{store - 1}")
+        # 1280: the store line, which the patch changes and moves; 390: a
+        # line above the edit, which stays.
+        want_field = f"{RBM_FILE}:{5 if phone else store}"
+        page.fill("#dbg_addr", f"{RBM_FILE}:{5 if phone else store - 1}")
         if not rbl_open(page, RBM_FILE, phone):
             return problems + [f"{tag}: Edit did not open {RBM_FILE}"], r
         hp_edit(page, patched)
@@ -482,8 +485,12 @@ def rebuildmap_hotpatch(browser, base, shots, width, scheme):
             problems.append(f"{tag}: line {store} in the panel is {row}, want the patched store")
         # The Run to target moved by the patch's extra line; it stops in the copy.
         r["run to"] = [page.input_value("#dbg_addr"), page.inner_text("#dbg_status")]
-        if page.input_value("#dbg_addr") != f"{RBM_FILE}:{store}":
-            problems.append(f"{tag}: the Run to field {r['run to']}, want {RBM_FILE}:{store}")
+        if page.input_value("#dbg_addr") != want_field:
+            problems.append(f"{tag}: the Run to field {r['run to']}, want {want_field}")
+        if phone:
+            show_tab(page, "debugger")
+            page.fill("#dbg_addr", f"{RBM_FILE}:{store}")
+            open_file(page, store)
         tg = page.evaluate("async (t) => { const w = await MKB.api.step.runToTargets(t); return w.targets || w.why; }", f"{RBM_FILE}:{store}")
         r["run to targets"] = tg
         if not isinstance(tg, list) or not any(HP_PA <= a < HP_PA + 0x20000 for a in tg):

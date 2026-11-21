@@ -13,6 +13,7 @@
 // and the modules read.
 
 import { memo, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { stepper, runState, api, setPrevRegs } from "./page.js";
 import { useStore, useController, DomNodes, Tip } from "./ui.jsx";
 import { DBGSTATUS, DBGIN, DBGCODE, nMount, addrMount, stepCount, codeMount } from "./dbgtab.js";
@@ -112,7 +113,9 @@ const Regs = memo(function Regs() {
 // A section's buttons: the GDT and the IDT, or translating an address and
 // the page directory.
 function CpuTools({ kind }) {
-	const [out, setOut] = useState("");
+	const [text, setText] = useState("");
+	// At once (a script reads the output right after its click).
+	const setOut = (t) => flushSync(() => setText(t));
 	const ref = useRef(null);
 	if (kind === "tables")
 		return (
@@ -120,7 +123,7 @@ function CpuTools({ kind }) {
 				<button type="button" id="view_gdt" onClick={() => setOut(gdtText(stepper))}>view GDT</button>
 				{" "}
 				<button type="button" id="view_idt" onClick={() => setOut(idtText(stepper))}>view IDT</button>
-				<pre id="cpu_table" className="mono">{out}</pre>
+				<pre id="cpu_table" className="mono">{text}</pre>
 			</div>
 		);
 	const go = () => setOut(translateText(stepper, ref.current.value));
@@ -132,7 +135,7 @@ function CpuTools({ kind }) {
 			<button type="button" id="xlate_go" onClick={go}>translate</button>
 			{" "}
 			<button type="button" id="pd_view" onClick={() => setOut(pageDirText(stepper))}>page directory</button>
-			<pre id="xlate_out" className="mono">{out}</pre>
+			<pre id="xlate_out" className="mono">{text}</pre>
 		</div>
 	);
 }

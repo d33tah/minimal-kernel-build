@@ -358,6 +358,10 @@ const EdBar = memo(function EdBar({ box }) {
 function useBox(box) {
 	useLayoutEffect(() => {
 		box.toggleAttribute("hidden", !SRCV.open);
+		// Closed: not editing (the editor bar is not drawn while the panel
+		// is closed, srcedit.js edSync; opening it draws the bar again).
+		if (!SRCV.open)
+			box.classList.remove("editing", "diffing");
 	});
 	useLayoutEffect(() => {
 		const keys = (ev) => {

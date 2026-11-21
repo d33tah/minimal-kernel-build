@@ -357,7 +357,13 @@ the same way (the Snapshots tab first):
   (`publishMachine()`, from drawDebugUi, at most once per drawn frame):
   the Debugger's registers and CPU state sections (`useStore("machine")`).
   Nothing per instruction reaches React, and until the tab is first
-  shown none of it is drawn. The Debugger's status line
+  shown none of it is drawn: with minified Linux in slow motion (1k/s,
+  the Debugger drawn every frame) the renderer's main thread worked
+  157.7 ms per second on the Machine tab (the Debugger never shown)
+  against 172.5 ms before R3 (43308392f, which drew the hidden registers
+  and CPU state) and 169.0 ms before A1's Debugger (5d0bd7521), and
+  206.1 / 220.5 / 213.3 ms with the Debugger shown (d-claude, 4 runs
+  each, CDP TaskDuration over 10 s). The Debugger's status line
   (`dbgStatus()`: Run to, Step, a pause, a snapshot restored, a reverse
   step with its `data-rev`), the Run to field and Code at EIP's nodes are
   dbgtab.js's (`DBGSTATUS`, `DBGIN`, `DBGCODE`), which the modules that

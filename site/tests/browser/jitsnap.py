@@ -101,6 +101,9 @@ def jitsnap_window(browser, base, shots, name, a, b, problems, r):
             if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused' && MKB.emuReady"), 300, 0.5):
                 raise PlaywrightError("did not start paused")
             page.evaluate(JITSNAP_DRV_JS)
+            # JS4.save/restore read the Snapshots tab's status: shown once, it stays mounted (A1).
+            show_tab(page, "snapshots")
+            show_tab(page, "machine")
 
         def run(cap, rec=True):
             x = page.evaluate("([c, rec]) => JS4.run(c, rec)", [cap, rec])
@@ -189,6 +192,8 @@ def jitsnap_ui(browser, base, shots, name, scheme, phone, problems, r):
         machine_do(page, "tap" if phone else "click", "#dbg_pause")
         wait_for(lambda: page.evaluate("MKB.runState") == "paused", 20)
         page.evaluate(JITSNAP_DRV_JS)
+        # JS4.save reads the Snapshots tab's status: the tab is shown first (A1: mounted on first show).
+        show_tab(page, "snapshots")
         sv = page.evaluate("() => JS4.save()")
         res["saved_at"] = sv["steps"]
         resets = page.evaluate(JITSNAP_RUN_JS)["resets"]

@@ -6,7 +6,8 @@
 import { realNow } from "./clock.js";
 import { kib, hex, $, h4, h8, PAGE, esc, asciiOf } from "./util.js";
 import { emulator, emuRam, setSelectedPage, api } from "./page.js";
-import { snapById, snapBlob, snapMeta, snapWorker, snapCount, snapButton } from "./snaprecord.js";
+import { snapById, snapBlob, snapMeta, snapWorker, snapCount } from "./snaprecord.js";
+import { controller } from "./ui.jsx";
 let snapDiff = null;      // { a, b, pages, ... } of the diff shown
 let pageSnapView = null;  // the Page tab shows a snapshot's page: { page, bytes, base, name, against, cur }
 // Other modules set them through these (an imported binding is read-only).
@@ -30,14 +31,21 @@ function snapNowInfo() {
 	return { name: "now", meta, ram: emuRam };
 }
 
-async function snapRunDiff() {
-	const a = $("snap_a").value, b = $("snap_b").value;
+// What the diff box shows besides snapDiff (snapshotspanel.jsx draws it):
+// the status line, the state of the last diff ("running", "done",
+// "error"), how many pages it compared (-1: all), whether one runs, and the
+// pickers' choices (null: the default, the newest two).
+// n counts the diffs made (the box draws a new one afresh: its groups open).
+const DIFF = controller({ status: "", state: "", compared: -1, busy: false, pickA: null, pickB: null, n: 0 });
+
+// Diff a and b (snapshot ids or "now"), the pickers' values.
+async function snapRunDiff(a, b) {
 	if (!a || !b || !emulator)
 		return;
-	const out = $("snap_diff_out");
-	out.dataset.state = "running";
-	$("snap_diff_status").textContent = "Decompressing and comparing...";
-	$("snap_diff").disabled = true;
+	DIFF.state = "running";
+	DIFF.status = "Decompressing and comparing...";
+	DIFF.busy = true;
+	DIFF.changed();
 	const t0 = realNow();
 	try {
 		const now = a === "now" || b === "now" ? snapNowInfo() : null;
@@ -50,17 +58,18 @@ async function snapRunDiff() {
 			return { id, name: s.name, meta: s.meta, regs, ram: s.ram };
 		};
 		snapDiff = { a: info(a, r.a), b: info(b, r.b), pages: r.pages, ms: Math.round(realNow() - t0), workerMs: r.ms, hex: null };
-		renderSnapDiff();
-		out.dataset.compared = r.compared >= 0 ? r.compared : "all";
-		$("snap_diff_status").textContent = "Compared in " + snapDiff.ms + " ms (the comparison itself " + r.ms + " ms, in a Worker" +
+		DIFF.n++;
+		DIFF.compared = r.compared;
+		DIFF.status = "Compared in " + snapDiff.ms + " ms (the comparison itself " + r.ms + " ms, in a Worker" +
 			(r.compared >= 0 ? "; one side is a delta of the other, so only its " + r.compared.toLocaleString("en") + " page" +
 				(r.compared === 1 ? " was" : "s were") + " compared" : "") + ").";
-		out.dataset.state = "done";
+		DIFF.state = "done";
 	} catch (e) {
-		$("snap_diff_status").textContent = "Diff failed: " + ((e && e.message) || e);
-		out.dataset.state = "error";
+		DIFF.status = "Diff failed: " + ((e && e.message) || e);
+		DIFF.state = "error";
 	}
-	$("snap_diff").disabled = false;
+	DIFF.busy = false;
+	DIFF.changed();
 }
 
 const SNAP_REGS = ["EIP", "EFLAGS", "EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", "CS", "DS", "SS", "ES", "FS", "GS", "CR0", "CR2", "CR3", "CR4"];
@@ -76,121 +85,56 @@ function snapRegText(n, v) {
 	return t;
 }
 
+// The diff shown changed (or is gone): the box draws it again.
 function renderSnapDiff() {
-	const out = $("snap_diff_out");
+	DIFF.changed();
+}
+
+// What the diff's summary, registers and screen show, from snapDiff.
+function snapDiffView() {
 	const d = snapDiff;
-	out.hidden = !d;
-	if (!d)
-		return;
 	const A = d.a, B = d.b;
 	const nm = (x) => (x.id === "now" ? "now" : "“" + x.name + "”");
-	out.dataset.icountA = A.meta.icount;
-	out.dataset.icountB = B.meta.icount;
 	const nA = snapCount(A.meta), nB = snapCount(B.meta);
-	out.dataset.countA = nA;
-	out.dataset.countB = nB;
-	const sum = $("snap_diff_sum");
-	sum.textContent = "From " + nm(A) + " to " + nm(B) + ": instruction " + nA.toLocaleString("en") + " → " +
+	const sum = "From " + nm(A) + " to " + nm(B) + ": instruction " + nA.toLocaleString("en") + " → " +
 		nB.toLocaleString("en") + " (" + (nB >= nA ? "+" + (nB - nA).toLocaleString("en") :
 		"earlier by " + (nA - nB).toLocaleString("en")) + "), EIP " +
 		(A.meta.sym || hex(A.meta.eip)) + " → " + (B.meta.sym || hex(B.meta.eip)) + "; " + d.pages.length + " of " +
 		Math.ceil(Math.max(A.ram, B.ram) / PAGE).toLocaleString("en") + " pages of RAM changed, " +
 		d.pages.reduce((n, p) => n + p[1], 0).toLocaleString("en") + " bytes." +
 		(A.ram !== B.ram ? " The RAM sizes differ (" + kib(A.ram) + ", " + kib(B.ram) + "): pages on one side only count as changed." : "");
-	// registers
-	const tb = $("snap_regs").tBodies[0];
-	tb.textContent = "";
-	const same = [];
+	const regs = [], same = [];
 	for (const n of SNAP_REGS) {
 		const o = A.regs[n], v = B.regs[n];
-		if (o === v) {
+		if (o === v)
 			same.push(n);
-			continue;
-		}
-		const tr = tb.insertRow();
-		Object.assign(tr.dataset, { reg: n, old: o === undefined ? "" : hex(o), new: v === undefined ? "" : hex(v) });
-		tr.insertCell().textContent = n;
-		tr.insertCell().textContent = snapRegText(n, o);
-		tr.insertCell().textContent = "→";
-		const c = tr.insertCell();
-		c.textContent = snapRegText(n, v);
-		c.className = "snapnew";
+		else
+			regs.push({ n, old: o === undefined ? "" : hex(o), new: v === undefined ? "" : hex(v), oldText: snapRegText(n, o), newText: snapRegText(n, v) });
 	}
-	$("snap_regs").hidden = !tb.rows.length;
-	$("snap_regs_same").textContent = tb.rows.length ? "Unchanged: " + same.join(" ") + "." : "No register changed.";
-	// screen
-	const sc = $("snap_screen");
-	sc.textContent = "";
 	const la = A.meta.screen || [], lb = B.meta.screen || [];
-	let nScr = 0;
+	const screen = [];
 	for (let i = 0; i < Math.max(la.length, lb.length); i++) {
 		const o = la[i] || "", v = lb[i] || "";
-		if (o === v)
-			continue;
-		nScr++;
-		const row = document.createElement("div");
-		row.dataset.line = i;
-		row.className = "snapscr";
-		const n = document.createElement("span");
-		n.className = "snapln";
-		n.textContent = "line " + (i + 1);
-		const po = document.createElement("pre");
-		po.textContent = "- " + o;
-		const pv = document.createElement("pre");
-		pv.textContent = "+ " + v;
-		pv.className = "snapnew";
-		row.append(n, po, pv);
-		sc.append(row);
+		if (o !== v)
+			screen.push({ i, o, v });
 	}
-	if (!nScr)
-		sc.textContent = "No line of the VGA text screen changed.";
-	renderSnapPages();
-	renderSnapHex();
+	return { nA, nB, sum, regs, same, screen };
 }
 
 // Changed pages grouped by region / ELF section, with their symbols.
-function renderSnapPages() {
-	const box = $("snap_pages");
-	box.textContent = "";
-	const d = snapDiff;
-	if (!d.pages.length) {
-		box.textContent = "No page of RAM changed.";
-		return;
-	}
+function snapPageGroups() {
 	const groups = new Map();
-	for (const [p, n] of d.pages) {
+	for (const [p, n] of snapDiff.pages) {
 		const g = p * PAGE < emuRam ? api.memory.pageLabel(p) || "RAM" : "beyond this machine's RAM";
 		if (!groups.has(g))
 			groups.set(g, []);
-		groups.get(g).push([p, n]);
+		groups.get(g).push([p, n, api.memory.symbolsInPage(p)]);
 	}
-	for (const [g, list] of groups) {
-		const det = document.createElement("details");
-		det.open = true;
-		const sumEl = document.createElement("summary");
-		sumEl.textContent = g + ": " + list.length + " page" + (list.length === 1 ? "" : "s") + ", " +
-			list.reduce((n, x) => n + x[1], 0).toLocaleString("en") + " bytes changed";
-		det.append(sumEl);
-		for (const [p, n] of list) {
-			const row = document.createElement("div");
-			row.className = "snappg";
-			Object.assign(row.dataset, { page: p, bytes: n });
-			const syms = api.memory.symbolsInPage(p);
-			const addr = document.createElement("code");
-			addr.textContent = "0x" + h8(p * PAGE);
-			row.append(addr, " " + n.toLocaleString("en") + " byte" + (n === 1 ? "" : "s") +
-				(syms.length ? " · " + syms.slice(0, 3).map((s) => s.name).join(", ") + (syms.length > 3 ? " +" + (syms.length - 3) : "") : "") + " ");
-			row.append(snapButton("hexdump", "snaphex", "Both sides of this page, byte by byte", () => snapShowHex(p)), " ",
-				snapButton("Page tab: " + (d.b.id === "now" ? "now" : "#" + snapById(d.b.id).seq), "snapopen",
-					"Open this page in the Page tab as " + (d.b.id === "now" ? "it is now" : "“" + d.b.name + "” had it") +
-					"; yellow bytes differ from " + (d.a.id === "now" ? "now" : "“" + d.a.name + "”"), () => snapOpenPage(p, "b")), " ",
-				snapButton("Page tab: " + (d.a.id === "now" ? "now" : "#" + snapById(d.a.id).seq), "snapopena",
-					"Open this page in the Page tab as " + (d.a.id === "now" ? "it is now" : "“" + d.a.name + "” had it"), () => snapOpenPage(p, "a")));
-			det.append(row);
-		}
-		box.append(det);
-	}
+	return groups;
 }
+
+// A side's name in the page rows' buttons: "now" or "#seq".
+const snapSideTag = (x) => (x.id === "now" ? "now" : "#" + snapById(x.id).seq);
 
 async function snapPages(p) {
 	const d = snapDiff;
@@ -204,42 +148,26 @@ async function snapShowHex(p) {
 		if (d !== snapDiff)
 			return;
 		d.hex = { p, a: r.a, b: r.b, all: false };
-		renderSnapHex();
 	} catch (e) {
-		$("snap_diff_status").textContent = "Reading the page failed: " + ((e && e.message) || e);
+		DIFF.status = "Reading the page failed: " + ((e && e.message) || e);
 	}
+	DIFF.changed();
 }
 
-function renderSnapHex() {
-	const box = $("snap_hex");
-	const d = snapDiff, h = d && d.hex;
-	box.hidden = !h;
-	box.textContent = "";
-	if (!h) {
-		delete box.dataset.page;
-		return;
-	}
-	const per = window.matchMedia("(max-width: 640px)").matches ? 8 : 16;
-	const head = document.createElement("p");
-	head.className = "note";
+function snapHexAll() {
+	snapDiff.hex.all = true;
+	DIFF.changed();
+}
+
+// The hexdump's two columns: per side its title and the rows' HTML (bytes
+// that differ in <mark>), and the count of bytes that differ.
+function snapHexView(per) {
+	const d = snapDiff, h = d.hex;
 	let nChg = 0;
 	for (let i = 0; i < PAGE; i++)
 		nChg += h.a[i] !== h.b[i];
-	head.append("Page 0x" + h8(h.p * PAGE) + " (" + api.memory.pageLabel(h.p) + "): " + nChg + " bytes differ, marked yellow" +
-		(h.all ? "." : "; rows without a change are left out. "));
-	if (!h.all)
-		head.append(snapButton("all rows", "", "Show all " + PAGE / per + " rows", () => {
-			h.all = true;
-			renderSnapHex();
-		}));
-	const grid = document.createElement("div");
-	grid.className = "snaphexgrid";
+	const cols = [];
 	for (const [side, mine, other, x] of [["a", h.a, h.b, d.a], ["b", h.b, h.a, d.b]]) {
-		const col = document.createElement("div");
-		col.className = "snapcol snapcol-" + side;
-		const t = document.createElement("b");
-		t.textContent = x.id === "now" ? "now" : "#" + snapById(x.id).seq + " " + x.name;
-		const pre = document.createElement("pre");
 		let html = "";
 		for (let o = 0; o < PAGE; o += per) {
 			let chg = false;
@@ -256,12 +184,9 @@ function renderSnapHex() {
 			}
 			html += "  " + asc + "\n";
 		}
-		pre.innerHTML = html || "(no row differs)";
-		col.append(t, pre);
-		grid.append(col);
+		cols.push({ side, title: x.id === "now" ? "now" : "#" + snapById(x.id).seq + " " + x.name, html: html || "(no row differs)" });
 	}
-	box.append(head, grid);
-	box.dataset.page = h.p;
+	return { nChg, cols, label: "Page 0x" + h8(h.p * PAGE) + " (" + api.memory.pageLabel(h.p) + "): " + nChg + " bytes differ, marked yellow" };
 }
 
 // The Page tab at a snapshot's page (side "a" or "b"); Back returns here.
@@ -271,7 +196,8 @@ async function snapOpenPage(p, which) {
 	try {
 		r = await snapPages(p);
 	} catch (e) {
-		$("snap_diff_status").textContent = "Reading the page failed: " + ((e && e.message) || e);
+		DIFF.status = "Reading the page failed: " + ((e && e.message) || e);
+		DIFF.changed();
 		return;
 	}
 	if (d !== snapDiff)
@@ -299,4 +225,4 @@ function pageSnapBanner(on) {
 }
 
 export { snapDiff, pageSnapView, setSnapDiff, setPageSnapView, snapRunDiff, renderSnapDiff, snapPages,
-	pageSnapBanner };
+	pageSnapBanner, DIFF, snapDiffView, snapPageGroups, snapSideTag, snapShowHex, snapHexAll, snapHexView, snapOpenPage };

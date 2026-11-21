@@ -30,23 +30,25 @@
 // chain (the full snapshot, then each delta's pages). Deleting a base folds
 // it into its deltas first (they become deltas of its base, or full).
 //
-// Here: storage, save, restore, rename, delete and the table; the list,
-// the records and the snapshot Worker are snaprecord.js's, the diff
-// snapdiff.js's.
+// Here: storage, save, restore, rename, delete and what the tab shows
+// (SNAP, the rows, the store line, the pickers); snapshotspanel.jsx draws
+// it (A1). The list, the records and the snapshot Worker are
+// snaprecord.js's, the diff snapdiff.js's.
 
 import { CLOCK, GUEST, realNow } from "./clock.js";
 import { kib, hex, $ } from "./util.js";
+import { controller } from "./ui.jsx";
 import { image, initrd, stepper, emulator, emuReady, emuRam, counting, runState, selectedPage, setCounting,
 	setCountNote, tab, kernels, api, provide } from "./page.js";
 import { jitPending, jitFlush } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
-import { inputReset, INPUT, inputRestore, replayRun, runStatus } from "./replay.js";
+import { inputReset, INPUT, inputRestore } from "./replay.js";
 import { REV, revReset } from "./reverse.js";
 import { setStatus } from "./header.js";
 import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snapKernelName, snapCount, snapById,
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
-	SNAP_EXT, snapCodec, setSnapshots, snapButton, snapHow } from "./snaprecord.js";
-import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff, snapRunDiff, setPageSnapView } from "./snapdiff.js";
+	SNAP_EXT, snapCodec, setSnapshots, snapHow } from "./snaprecord.js";
+import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff, setPageSnapView } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
@@ -54,9 +56,33 @@ let snapDbWhy = "";       // why not
 let snapDbOpen = null;    // Promise of snapDb
 let snapPersist = null;   // navigator.storage.persist() result
 let snapEstimate = null;  // navigator.storage.estimate() result
-let snapEditing = false;  // a name is being edited: no redraw of the table
 let snapDelAllTimer = null;
 let snapBase = null;      // the last snapshot saved or restored: { id, kernelKey, ram, hashes }
+
+// What the Snapshots tab shows besides the list (snapshotspanel.jsx draws
+// it): the status line (restored: the id of the snapshot a Restore
+// finished), whether Save can start (ready: boot.js, when the machine is
+// loaded; saving: a save runs), the name being edited, Delete all armed.
+// said counts the status lines written: each is written anew, also when
+// its text is the one before (as the element's textContent was).
+const SNAP = controller({ status: "", said: 0, restored: "", ready: false, saving: false, editing: null, delArmed: false });
+
+// The status line says text (drawn with the next changed()).
+function snapNote(text) {
+	SNAP.status = text;
+	SNAP.said++;
+}
+
+function snapSay(text) {
+	snapNote(text);
+	SNAP.changed();
+}
+
+// The machine can be saved (boot.js: loaded) or not (a boot starts).
+function snapReady(v) {
+	SNAP.ready = v;
+	SNAP.changed();
+}
 
 // The identity of the loaded kernel (and initrd), or null while it is computed.
 function snapKernelKey() {
@@ -162,7 +188,7 @@ async function snapUpdateEstimate() {
 	} catch (e) {
 		snapEstimate = null;
 	}
-	renderSnapStore();
+	SNAP.changed();
 }
 
 async function snapLoad() {
@@ -195,8 +221,8 @@ async function saveSnapshot() {
 	if (!emulator || !emuReady || REV.busy)
 		return;
 	const em = emulator;
-	$("snap_save").disabled = true;
-	$("snap_status").textContent = "Saving...";
+	SNAP.saving = true;
+	snapSay("Saving...");
 	try {
 		snapKernelKey();
 		const key = image.snapKeyP ? await image.snapKeyP : null;
@@ -259,14 +285,14 @@ async function saveSnapshot() {
 		const mem = snapshots.filter((x) => x.where === "memory");
 		if (mem.length > MAX_SNAPSHOTS)
 			await snapDelete(mem.slice(0, mem.length - MAX_SNAPSHOTS), true);
-		$("snap_status").textContent = "Saved #" + seq + " (" + s.name + "): save_state " + s.saveMs + " ms" +
+		snapNote("Saved #" + seq + " (" + s.name + "): save_state " + s.saveMs + " ms" +
 			(codec === "lz4" ? ", page hashes and LZ4 level " + SNAP_LZ4_LEVEL + " " + packMs + " ms in a Worker" : "") +
 			(delta ? "; a delta of #" + base.seq + ": " + snapPagesText(delta.pages) + ", " + snapFmtSize(s.size) +
-				" stored instead of a full snapshot." : ".") + why;
+				" stored instead of a full snapshot." : ".") + why);
 	} catch (e) {
-		$("snap_status").textContent = "save_state failed: " + e;
+		snapNote("save_state failed: " + e);
 	}
-	$("snap_save").disabled = !emulator;
+	SNAP.saving = false;
 	renderSnapshots();
 	snapUpdateEstimate();
 }
@@ -275,12 +301,11 @@ async function restoreSnapshot(s) {
 	if (REV.busy)
 		return;
 	if (!emulator || emuRam !== s.ram) {
-		$("snap_status").textContent = "“" + s.name + "” was taken with " + kib(s.ram) +
-			" of RAM; boot with that size to restore it.";
+		snapSay("“" + s.name + "” was taken with " + kib(s.ram) + " of RAM; boot with that size to restore it.");
 		return;
 	}
-	$("snap_status").textContent = "Restoring “" + s.name + "”...";
-	delete $("snap_status").dataset.restored;
+	SNAP.restored = "";
+	snapSay("Restoring “" + s.name + "”...");
 	try {
 		// Another timeline: the reverse history (R2) starts anew from the
 		// snapshot, with the recordings as they were.
@@ -352,12 +377,12 @@ async function restoreSnapshot(s) {
 		$("dbg_status").textContent = "Restored the snapshot “" + s.name + "”.";
 		if (runState === "paused" || runState === "stepped")
 			api.step.afterStop();
-		$("snap_status").textContent = "Restored “" + s.name + "” (" + s.kernel + ").";
-		$("snap_status").dataset.restored = s.id;
+		SNAP.restored = s.id;
+		snapSay("Restored “" + s.name + "” (" + s.kernel + ").");
 		if (selectedPage >= 0)
 			api.show.inspect();
 	} catch (e) {
-		$("snap_status").textContent = "restore_state failed: " + e;
+		snapSay("restore_state failed: " + e);
 	}
 }
 
@@ -368,7 +393,7 @@ async function downloadSnapshot(s) {
 		try {
 			blob = new Blob([(await snapWorker({ op: "export", s: snapBlob(s) })).data]);
 		} catch (e) {
-			$("snap_status").textContent = "Download failed: " + ((e && e.message) || e);
+			snapSay("Download failed: " + ((e && e.message) || e));
 			return;
 		}
 	}
@@ -386,7 +411,7 @@ async function snapRename(s, name) {
 		return;
 	s.name = name;
 	if (s.where === "stored")
-		$("snap_status").textContent = "Renamed." + (await snapStore(s));
+		snapSay("Renamed." + (await snapStore(s)));
 	// The diff and a snapshot's page in the Page tab hold their own copy of
 	// the name.
 	if (snapDiff) {
@@ -429,8 +454,7 @@ async function snapDelete(list, quiet) {
 				folded++;
 			}
 		} catch (e) {
-			$("snap_status").textContent = "Not deleted: “" + x.name + "” is the base of a delta that could not be rebuilt (" +
-				((e && e.message) || e) + ").";
+			snapSay("Not deleted: “" + x.name + "” is the base of a delta that could not be rebuilt (" + ((e && e.message) || e) + ").");
 			break;
 		}
 		setSnapshots(snapshots.filter((s) => s !== x));
@@ -440,12 +464,12 @@ async function snapDelete(list, quiet) {
 			try {
 				await snapTx("readwrite", (st) => st.delete(x.id));
 			} catch (e) {
-				$("snap_status").textContent = "Deleting from IndexedDB failed: " + ((e && e.message) || e);
+				snapSay("Deleting from IndexedDB failed: " + ((e && e.message) || e));
 			}
 	}
 	if (folded && !quiet)
-		$("snap_status").textContent = "Deleted; " + folded + " delta snapshot" + (folded === 1 ? " was" : "s were") +
-			" rebuilt without " + (list.length === 1 ? "it" : "them") + "." + why;
+		snapNote("Deleted; " + folded + " delta snapshot" + (folded === 1 ? " was" : "s were") +
+			" rebuilt without " + (list.length === 1 ? "it" : "them") + "." + why);
 	if (snapDiff && (ids.has(snapDiff.a.id) || ids.has(snapDiff.b.id))) {
 		setSnapDiff(null);
 		renderSnapDiff();
@@ -454,41 +478,38 @@ async function snapDelete(list, quiet) {
 	snapUpdateEstimate();
 }
 
+// Delete all: the first press arms it for 5 s, the second deletes.
 function snapDeleteAll() {
-	const b = $("snap_delall");
-	if (!b.dataset.armed) {
-		b.dataset.armed = "1";
-		b.textContent = "Delete all " + snapshots.length + "? Press again";
-		clearTimeout(snapDelAllTimer);
+	clearTimeout(snapDelAllTimer);
+	if (!SNAP.delArmed) {
+		SNAP.delArmed = true;
+		SNAP.changed();
 		snapDelAllTimer = setTimeout(() => {
-			delete b.dataset.armed;
-			b.textContent = "Delete all";
+			SNAP.delArmed = false;
+			SNAP.changed();
 		}, 5000);
 		return;
 	}
-	clearTimeout(snapDelAllTimer);
-	delete b.dataset.armed;
-	b.textContent = "Delete all";
+	SNAP.delArmed = false;
+	SNAP.changed();
 	const n = snapshots.length;
-	snapDelete(snapshots.slice(), true).then(() => {
-		$("snap_status").textContent = "Deleted " + n + " snapshot" + (n === 1 ? "" : "s") + ".";
-	});
+	snapDelete(snapshots.slice(), true).then(() => snapSay("Deleted " + n + " snapshot" + (n === 1 ? "" : "s") + "."));
 }
 
 function snapSwitch(s) {
 	const k = kernels.find((x) => x.name === s.kernel);
 	if (!k) {
-		$("snap_status").textContent = "“" + s.kernel + "” is not one of the listed kernels: load that bzImage from disk " +
-			"(Machine tab) with " + kib(s.ram) + " of RAM to restore “" + s.name + "”.";
+		snapSay("“" + s.kernel + "” is not one of the listed kernels: load that bzImage from disk " +
+			"(Machine tab) with " + kib(s.ram) + " of RAM to restore “" + s.name + "”.");
 		return;
 	}
 	$("kernel").value = k.name;
 	if (![...$("memory").options].some((o) => o.value === String(s.ram)))
 		$("memory").add(new Option(kib(s.ram), String(s.ram)));
-	$("snap_status").textContent = "Switching to " + k.name + " with " + kib(s.ram) + "...";
+	snapSay("Switching to " + k.name + " with " + kib(s.ram) + "...");
 	api.machine.loadKernel(k, String(s.ram)).catch((e) => {
 		setStatus(String(e));
-		$("snap_status").textContent = "Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".";
+		snapSay("Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".");
 	});
 }
 
@@ -507,57 +528,35 @@ function snapMatch(s) {
 const snapOfBuild = (s) => "of " + (s.build || "an earlier build of " + recFamily(s)) + ", not the build running (" + imageLabel() +
 	"): Rebuild and boot with the same edits makes the same bytes, and then it can be restored";
 
-function snapEditName(s, td) {
-	snapEditing = true;
-	const inp = document.createElement("input");
-	inp.className = "snapedit";
-	inp.value = s.name;
-	inp.setAttribute("aria-label", "Name of snapshot #" + s.seq);
-	let done = false;
-	const finish = async (save) => {
-		if (done)
-			return;
-		done = true;
-		snapEditing = false;
-		if (save)
-			await snapRename(s, inp.value);
-		renderSnapshots();
-	};
-	inp.addEventListener("keydown", (ev) => {
-		ev.stopPropagation();
-		if (ev.key === "Enter")
-			finish(true);
-		else if (ev.key === "Escape")
-			finish(false);
-	});
-	inp.addEventListener("keyup", (ev) => ev.stopPropagation());
-	inp.addEventListener("blur", () => finish(true));
-	td.textContent = "";
-	td.append(inp);
-	inp.focus();
-	inp.select();
+// The name of s is being edited (its button became a text field), or
+// the edit ended: save it renamed (Enter, leaving the field) or not (Esc).
+function snapEditName(s) {
+	SNAP.editing = s.id;
+	SNAP.changed();
 }
 
+function snapEditEnd(s, name) {
+	SNAP.editing = null;
+	if (name !== null)
+		snapRename(s, name);
+	SNAP.changed();
+}
+
+// The list, the store line and the pickers changed: the tab draws them.
 function renderSnapshots() {
-	if (snapEditing)
-		return;
-	const tbody = $("snapshots").tBodies[0];
-	tbody.textContent = "";
-	const key = snapKernelKey();
-	for (const s of snapshots) {
-		const tr = tbody.insertRow();
-		const match = snapMatch(s);
-		Object.assign(tr.dataset, { id: s.id, raw: s.raw, full: s.full || s.raw, stored: s.size, kernel: match, where: s.where,
-			codec: snapCodec(s), base: s.delta ? s.delta.base : "", depth: snapDepth(s), pages: s.delta ? s.delta.pages : -1 });
-		if (match === "other" || match === "build")
-			tr.className = "snapother";
-		const name = tr.insertCell();
-		name.className = "snapcell-name";
-		const nb = snapButton(s.name, "snapname", "Rename (Enter saves, Esc cancels)", () => snapEditName(s, name));
-		name.append(nb);
-		const ratio = s.raw / s.size;
-		const day = new Date(s.time);
-		const cells = [
+	SNAP.changed();
+}
+
+// One row of the table: its data attributes, kind and cells.
+function snapRow(s) {
+	const match = snapMatch(s);
+	const ratio = s.raw / s.size;
+	const day = new Date(s.time);
+	return {
+		s, match,
+		data: { id: s.id, raw: s.raw, full: s.full || s.raw, stored: s.size, kernel: match, where: s.where, codec: snapCodec(s),
+			base: s.delta ? s.delta.base : "", depth: snapDepth(s), pages: s.delta ? s.delta.pages : -1 },
+		cells: [
 			"#" + s.seq + ", " + (day.toDateString() === new Date().toDateString() ? day.toLocaleTimeString("en-GB") :
 				day.toLocaleString("en-GB")),
 			s.meta ? "instruction " + snapCount(s.meta).toLocaleString("en") + ", " + (s.meta.sym || "EIP " + hex(s.meta.eip)) : "",
@@ -569,85 +568,45 @@ function renderSnapshots() {
 			s.raw.toLocaleString("en") + (s.delta && s.full ? " (full state " + s.full.toLocaleString("en") + ")" : ""),
 			snapCodec(s) !== "raw" ? ratio.toFixed(1) + " : 1 (" + (100 * s.size / s.raw).toFixed(2) + "%)" : "-",
 			snapHow(s),
-		];
-		for (const v of cells)
-			tr.insertCell().textContent = v;
-		tr.cells[6].className = "ratio";
-		const td = tr.insertCell();
-		td.className = "snapacts";
-		if (match === "other")
-			td.append(snapButton("Switch to " + s.kernel, "snapswitch", "Load " + s.kernel + " with " + kib(s.ram) +
-				" of RAM; then this snapshot can be restored", () => snapSwitch(s)), " ");
-		else if (match === "match")
-			td.append(snapButton("Restore", "restore", "", () => restoreSnapshot(s)), " ");
-		if (s.meta && s.meta.run)
-			td.append(snapButton("Replay", "snapreplay", "Boot " + s.meta.run.kernel + " again and replay this snapshot's run (the same keys at the same " +
-				"instruction counts) to " + s.meta.run.end.at.toLocaleString("en") + " instructions: the same state without restoring it",
-			() => replayRun(s.meta.run).catch((e) => runStatus("Replay failed: " + e, "error"))), " ");
-		td.append(snapButton("Download", "snapdl", "", () => downloadSnapshot(s)), " ",
-			snapButton("Delete", "snapdel", "Delete this snapshot" + (s.where === "stored" ? " from this browser" : ""),
-				() => snapDelete([s])));
-	}
-	$("snapshots").hidden = snapshots.length === 0;
-	$("snap_delall").hidden = snapshots.length === 0;
-	$("snapshots").dataset.kernelKey = key || "";
-	renderSnapStore();
-	renderSnapPick();
+		],
+	};
 }
 
-function renderSnapStore() {
-	const el = $("snap_store");
+// The store line under Save: its text and data-storage.
+function snapStoreView() {
 	const stored = snapshots.filter((s) => s.where === "stored");
 	const mem = snapshots.length - stored.length;
 	const sum = (l) => l.reduce((n, s) => n + s.size, 0);
 	const key = snapKernelKey();
 	const mine = snapshots.filter((s) => key && s.kernelKey === key);
-	if (!snapDb && snapDbOpen) {
-		el.textContent = "Snapshots are not stored in this browser (" + (snapDbWhy || "no IndexedDB") + "): they are kept in memory only, " +
+	if (!snapDb && snapDbOpen)
+		return { storage: "none", text: "Snapshots are not stored in this browser (" + (snapDbWhy || "no IndexedDB") + "): they are kept in memory only, " +
 			"the last " + MAX_SNAPSHOTS + ", until the page is closed. " +
-			(mem ? mem + " in memory, " + snapFmtSize(sum(snapshots)) + "." : "");
-		el.dataset.storage = "none";
-		return;
-	}
-	el.dataset.storage = "indexeddb";
+			(mem ? mem + " in memory, " + snapFmtSize(sum(snapshots)) + "." : "") };
 	const nd = stored.filter((s) => s.delta).length;
 	const est = snapEstimate && snapEstimate.quota ? " This site uses " + snapFmtSize(snapEstimate.usage || 0) + " of " +
 		snapFmtSize(snapEstimate.quota) + " the browser allows it" + (snapPersist === true ? ", kept persistently." :
 		snapPersist === false ? "; the browser may evict it when the disk fills up." : ".") : "";
-	el.textContent = "Stored in this browser (IndexedDB), kept across reloads: " + stored.length + " snapshot" +
+	return { storage: "indexeddb", text: "Stored in this browser (IndexedDB), kept across reloads: " + stored.length + " snapshot" +
 		(stored.length === 1 ? "" : "s") + ", " + snapFmtSize(sum(stored)) +
 		(nd ? " (" + nd + " delta" + (nd === 1 ? "" : "s") + ": only the pages changed since the snapshot before)" : "") +
 		(image ? "; " + mine.length + " for " + snapKernelName() : "") + "." +
-		(mem ? " In memory only (not stored): " + mem + ", " + snapFmtSize(sum(snapshots) - sum(stored)) + "." : "") + est;
+		(mem ? " In memory only (not stored): " + mem + ", " + snapFmtSize(sum(snapshots) - sum(stored)) + "." : "") + est };
 }
 
-// The diff's two pickers: this kernel's snapshots and "now".
-function renderSnapPick() {
+// The diff's two pickers: this kernel's snapshots and "now"; the user's
+// pick stays while it is listed, otherwise the newest two (a new save
+// moves them).
+function snapPicker(pickA, pickB) {
 	const key = snapKernelKey();
 	const mine = snapshots.filter((s) => key && s.kernelKey === key);
-	for (const [id, dflt] of [["snap_a", mine.length >= 2 ? mine[mine.length - 2] : mine[0]], ["snap_b", mine.length >= 2 ? mine[mine.length - 1] : null]]) {
-		const sel = $(id), was = sel.value;
-		sel.textContent = "";
-		for (const s of mine)
-			sel.add(new Option("#" + s.seq + " " + s.name, s.id));
-		sel.add(new Option("now (the running machine)", "now"));
-		// The user's pick stays; otherwise the newest two (a new save moves them).
-		const keep = sel.dataset.picked && [...sel.options].some((o) => o.value === was);
-		sel.value = keep ? was : dflt ? dflt.id : "now";
-	}
-	$("snap_diff").disabled = !mine.length || !emulator;
-	$("snap_diffbox").hidden = !mine.length;
+	const ids = new Set(mine.map((s) => s.id).concat("now"));
+	const dA = mine.length >= 2 ? mine[mine.length - 2] : mine[0], dB = mine.length >= 2 ? mine[mine.length - 1] : null;
+	return { mine, a: pickA !== null && ids.has(pickA) ? pickA : dA ? dA.id : "now", b: pickB !== null && ids.has(pickB) ? pickB : dB ? dB.id : "now" };
 }
 
 function initSnapshots() {
-	$("snap_save").addEventListener("click", saveSnapshot);
-	$("snap_save").title = "save_state(), then page hashes and LZ4 level " + SNAP_LZ4_LEVEL + " (lz4-wasm 0.9.2) in a Worker: " +
-		"after the first snapshot only the pages changed since the last one saved or restored are kept (a delta); " +
-		"a download is the full state as an LZ4 frame (.v86state.lz4) that lz4 -d reads.";
-	$("snap_delall").addEventListener("click", snapDeleteAll);
-	$("snap_diff").addEventListener("click", snapRunDiff);
-	for (const id of ["snap_a", "snap_b"])
-		$(id).addEventListener("change", () => ($(id).dataset.picked = "1"));
+	// The Page tab's "Show live memory" of a snapshot's page (Page tab, A1: goes with its component).
 	$("page_snap_live").addEventListener("click", () => api.show.navJump(() => {
 		setPageSnapView(null);
 		api.show.inspect();
@@ -657,4 +616,5 @@ function initSnapshots() {
 
 provide({ snapKernelKey, snapWorker });
 
-export { snapKernelKey, snapTx, saveSnapshot, restoreSnapshot, renderSnapshots, initSnapshots };
+export { snapKernelKey, snapTx, saveSnapshot, restoreSnapshot, renderSnapshots, initSnapshots, SNAP, snapReady, snapRow,
+	snapStoreView, snapPicker, snapEditName, snapEditEnd, snapDeleteAll, snapDelete, snapSwitch, downloadSnapshot, snapOfBuild };

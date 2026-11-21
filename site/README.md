@@ -295,16 +295,71 @@ and boot box with its build log (`RebuildPanel`, rebuild.jsx, in
 `#rb_box`; the build log's `<pre>` is written line by line as the build
 runs, from a ref, not drawn by React per line) at once; the Settings tab
 (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
-quests.jsx) and the Events tab (`EventsPanel`, events.jsx) when the
+quests.jsx), the Events tab (`EventsPanel`, events.jsx) and the Snapshots
+tab (`SnapshotsPanel`, snapshotspanel.jsx, A1) when the
 store's `tab` first names them (`mountOnTab`): hidden at load, their first
-render is work the boot does not need (their controllers, `QUESTS` and
-`MEV`, run from the start; the panel shows their state when it mounts).
+render is work the boot does not need (their controllers, `QUESTS`,
+`MEV`, `SNAP`, run from the start; the panel shows their state when it mounts).
+
+A1 turns the remaining tabs into such components, one tab per commit, in
+the same way (the Snapshots tab first):
+
+- The tab's file leaves `markup/` (`site/<name>.jsx`, no pragmas, out of
+  `markup/static.js`); index.src.html keeps its empty element, and
+  shell.jsx mounts it with `mountOnTab`.
+- What the tab shows lives in a controller of its module, made with
+  ui.jsx's `controller({ fields })`: the module sets fields and calls
+  `changed()`, the component reads them through `useController(c)`
+  (`useSyncExternalStore` on `rev`). `changed()` draws at once
+  (`flushSync`) and does nothing more while the tab is not mounted. The
+  Snapshots tab has three: `SNAP` (snapshots.js: status line, Save
+  enabled, the name edited, Delete all armed), `DIFF` (snapdiff.js: the
+  diff's status and the pickers' choices) and `RUN` (replay.js: the run
+  box). Values a component can compute from module state (the table's
+  rows, the store line, the diff) are computed when it renders.
+- A status line or control of the tab that another module sets is one of
+  those fields, set through the owner's function (boot.js calls
+  `snapReady()` for Save; bookmarks.js and the table's Replay call
+  `runStatus()`), so nothing is lost while the tab is not mounted. A value
+  several tabs share goes into page.js's store with a setter.
+- Handlers are props (`onClick={saveSnapshot}`); ids and data attributes
+  stay as the tests read them. A test that reads the tab's DOM opens the
+  tab first (show_tab), as a user would; it stays mounted after that
+  (jitsnap and jitrev do this for the status lines they read).
+- A frequent update (the run box after each slice of a replay) changes
+  the controller only when what it shows differs.
+
+Modules that still look up elements by id (`$("x")` or getElementById,
+A1's list, kept up to date by each chunk; besides canvases and the Source
+panel's editor textarea these go with the A1 chunk of their tab: Page,
+Calls controls, Debugger, Source tab, Machine; Memory, Events,
+bookmarks, nav and the run badge stay as they are for now):
+
+| module | elements of |
+|---|---|
+| app.js | Machine, Memory, Page |
+| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Page, Debugger, Calls, Source panel |
+| boot.js | Machine (screen, `cmdline`, `count`), Memory, Debugger (`dbg_status`) |
+| buildmap.js, runto.js, reverse.js, run.js, hotpatch.jsx, rebuild.jsx | Debugger (`dbg_status`, `dbg_addr`, ...), Machine run controls, Source tab (`rb_box`) |
+| calltree.js, graph.js, graphinit.js, graphnav.js | Calls (`graph_canvas` stays a canvas) |
+| coverage.js, srcedit.js | Source tab, Source panel (`ed_text`: the editor) |
+| cpustate.js, debugui.js, vars.js, jumpview.js, symview.js | Debugger, Machine, Page, run badge |
+| genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
+| listing.js, livedis.js, srclinks.js | Page |
+| memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js, scan.js | Memory (`mm_map`, the grid: canvases), About's legend |
+| nav.js, source.js, srcswitch.js, tabs.jsx, tips.js | run badge, Source panel, Page, popovers |
+| replay.js | Machine (`guest_keys`, the boot settings a replay sets) |
+| snapdiff.js | Page (`page_snap`: a snapshot's page shown) |
+| snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
+| snapshots.js | Debugger (`dbg_status`), Machine (`kernel`, `memory`), Page (`page_snap_live`) |
+
+No module looks up an element of the Snapshots tab.
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
 Machine (machinepanel.jsx), Memory (memorypanel.jsx), Page
 (pagepanel.jsx), Debugger (debuggerpanel.jsx), Calls (callspanel.jsx),
-Source (sourcepanel.jsx), Snapshots (snapshotspanel.jsx), About
+Source (sourcepanel.jsx), About
 (about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first

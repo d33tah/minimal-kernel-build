@@ -121,18 +121,6 @@ async function snapUnpack(s) {
 	return (await snapWorker({ op: "unpack", s: snapBlob(s) })).raw;
 }
 
-function snapButton(text, cls, title, fn) {
-	const b = document.createElement("button");
-	b.type = "button";
-	b.textContent = text;
-	if (cls)
-		b.className = cls;
-	if (title)
-		b.title = title;
-	b.addEventListener("click", fn);
-	return b;
-}
-
 // ---- the diff -------------------------------------------------------------
 
 function snapWorker(msg, transfer) {
@@ -169,4 +157,4 @@ const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
 export { MAX_SNAPSHOTS, SNAP_DB, SNAP_STORE, SNAP_LZ4_LEVEL, snapshots, setSnapshots, SNAP_DELTA_MAX, snapCodec,
 	SNAP_EXT, snapHow, snapFmtSize, sha256Hex, snapKernelName, snapRecord, snapMeta, snapCount, snapBlob, snapDepth,
-	snapPagesText, snapUnpack, snapButton, snapWorker, setSnapWorker, snapById };
+	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById };

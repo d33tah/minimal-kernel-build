@@ -33,6 +33,7 @@
 
 import { CLOCK, GUEST } from "./clock.js";
 import { $, VERSION, kib } from "./util.js";
+import { controller } from "./ui.jsx";
 import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPaused, kernels, setPrefSpeed,
 	setStartPaused, setCounting, api } from "./page.js";
 import { setCmdlineFromUrl } from "./symimport.js";
@@ -494,18 +495,28 @@ function replayAfterStop() {
 
 // ---- the page ----------------------------------------------------------------------
 
+// The run box of the Snapshots tab (snapshotspanel.jsx draws it): the
+// status of the last download or replay, what this run holds and whether
+// Download and Replay can start. renderRunInfo() keeps it, at each change of
+// the log (between two slices at most); the box draws only when it differs.
+const RUN = controller({
+	status: "",
+	said: 0,          // status lines written (each anew, also the same text again)
+	replay: "",       // the status's state: "running", "match", "differ", "stopped", "error" or ""
+	text: "",
+	nowable: false,
+});
+
 function runStatus(text, state) {
-	const el = $("run_status");
-	el.textContent = text;
-	el.dataset.replay = state || "";
-	renderRunInfo();
+	RUN.status = text;
+	RUN.replay = state || "";
+	RUN.said++;
+	renderRunInfo(true);
 }
 
-// The run box (Snapshots tab) and the Machine tab's guest input line.
-function renderRunInfo() {
-	const el = $("run_text");
-	if (!el)
-		return;
+// The run box (Snapshots tab) and the Machine tab's guest input line;
+// changed: the status changed (the box draws then in any case).
+function renderRunInfo(changed = false) {
 	const rp = INPUT.replay;
 	const keys = INPUT.log.filter((e) => e.keys).reduce((n, e) => n + e.keys.length, 0);
 	const switches = Math.max(0, INPUT.log.filter((e) => e.mode).length - 1);
@@ -519,8 +530,12 @@ function renderRunInfo() {
 			"This run: " + keys + " scancode" + (keys === 1 ? "" : "s") + " recorded at the instruction count where the guest got them" +
 			(switches ? ", " + switches + " switch" + (switches === 1 ? "" : "es") + " between the JIT and stepping" : "") + "." +
 			(INPUT.taint ? " A replay from boot follows it only to instruction " + INPUT.taint.at.toLocaleString("en") + ": " + INPUT.taint.why + "." : "");
-	el.textContent = text;
-	$("run_dl").disabled = $("run_replay").disabled = !runNowable();
+	const nowable = runNowable();
+	if (changed || text !== RUN.text || nowable !== RUN.nowable) {
+		RUN.text = text;
+		RUN.nowable = nowable;
+		RUN.changed();
+	}
 	const g = $("guest_keys");
 	if (g)
 		g.textContent = !stepper || !INPUT.settings ? "" : INPUT.settings.clock === "real" ? "" :
@@ -546,8 +561,16 @@ function downloadRun() {
 	runStatus("Downloaded " + a.download + ": " + run.log.length + " log entries, ends at instruction " + run.end.at.toLocaleString("en") + ".", "");
 }
 
-async function replayFile() {
-	const f = $("run_file").files[0];
+// Replay (the run box's button): this run from boot.
+function replayNow() {
+	const run = runNow();
+	if (run)
+		replayRun(run).catch((e) => runStatus("Replay failed: " + e, "error"));
+}
+
+// The file input's change: the run in the file picked.
+async function replayFile(input) {
+	const f = input.files[0];
 	if (!f)
 		return;
 	let run = null;
@@ -557,22 +580,15 @@ async function replayFile() {
 		runStatus("Cannot replay " + f.name + ": not JSON (" + e.message + ").", "error");
 		return;
 	} finally {
-		$("run_file").value = "";
+		input.value = "";
 	}
 	replayRun(run).catch((e) => runStatus("Replay failed: " + e, "error"));
 }
 
 function initReplay() {
-	$("run_dl").addEventListener("click", downloadRun);
-	$("run_replay").addEventListener("click", () => {
-		const run = runNow();
-		if (run)
-			replayRun(run).catch((e) => runStatus("Replay failed: " + e, "error"));
-	});
-	$("run_file").addEventListener("change", replayFile);
 	renderRunInfo();
 }
 
 export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
 	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, runScreenHash, runNow, replayRun, replayFinish, replayStop,
-	replayAfterStop, runStatus, initReplay };
+	replayAfterStop, runStatus, initReplay, RUN, downloadRun, replayNow, replayFile };

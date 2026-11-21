@@ -17,7 +17,7 @@ import { setFfActive, ffEnabled, ffTarget, jitDetInstall, fastForward, ffAbort, 
 import { MEV } from "./memevents.js";
 import { varsTaskNow } from "./vartasks.js";
 import { setPageSnapView, setSnapDiff, renderSnapDiff } from "./snapdiff.js";
-import { renderSnapshots } from "./snapshots.js";
+import { snapReady } from "./snapshots.js";
 import { inputBoot, replayActive } from "./replay.js";
 import { ram, checkImage, setStatus, kernelEnd } from "./header.js";
 import { setScanCopy, setAutoscan } from "./scan.js";
@@ -84,7 +84,7 @@ async function boot() {
 	if (gen !== bootGen)
 		return;
 	$("scan").disabled = true;
-	$("snap_save").disabled = true;
+	snapReady(false);
 	$("footprint").textContent = "";
 	setScanCopy(null);
 	setUsedPages(null);
@@ -144,8 +144,7 @@ async function boot() {
 		setStatus("Running " + image.name + " with " + kib(ram()) +
 			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
-		$("snap_save").disabled = false;
-		renderSnapshots();
+		snapReady(true);
 		try {
 			setStepper(new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr)));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));

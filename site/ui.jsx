@@ -19,6 +19,37 @@ function useStore(key) {
 	return useSyncExternalStore(subscribe, get);
 }
 
+// A view's controller (A1): an object of the fields a tab shows, which its
+// module changes and then calls changed(); its component reads it with
+// useController(c) and renders again. changed() draws at once (flushSync:
+// a test or a handler reads the DOM right after), and costs nothing while
+// the tab is not mounted (no subscriber). Fields may be anything the
+// module keeps; the component reads them, never copies them.
+function controller(fields) {
+	const subs = new Set();
+	const c = {
+		...fields,
+		rev: 0,
+		subscribe(fn) {
+			subs.add(fn);
+			return () => subs.delete(fn);
+		},
+		changed() {
+			c.rev++;
+			if (subs.size)
+				flushSync(() => {
+					for (const fn of subs)
+						fn();
+				});
+		},
+	};
+	return c;
+}
+
+function useController(c) {
+	return useSyncExternalStore(c.subscribe, () => c.rev);
+}
+
 // Render a component into an element at once: app.js mounts the shell
 // before init() wires the controls, which then exist.
 function mount(el, element) {
@@ -40,4 +71,4 @@ function SrcLink({ file, line, text, pa = -1 }) {
 		data-pa={pa}>{text || srcName({ file, line })}</button>;
 }
 
-export { useStore, mount, Tip, SrcLink };
+export { useStore, controller, useController, mount, Tip, SrcLink };

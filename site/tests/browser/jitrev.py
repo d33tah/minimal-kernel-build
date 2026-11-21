@@ -50,9 +50,10 @@ def jitrev_back(page, phone, sel, n, tag, problems, r, key):
 def jitrev_replay(page, run, want, regs, tag, problems, r, key, ui):
     """Replay run (ending at the count stepped back to) from boot: the page's
     verdict, and the registers there."""
+    # The run box's status is the Snapshots tab's, drawn once the tab was shown (A1: mounted on first show).
+    show_tab(page, "snapshots")
     page.evaluate("() => { MKB.INPUT.replay = null; delete document.getElementById('run_status').dataset.replay; }")
     if ui:
-        show_tab(page, "snapshots")
         page.eval_on_selector("#run_box", "e => e.scrollIntoView()")
         page.click("#run_replay")
     else:

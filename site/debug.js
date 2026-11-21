@@ -77,6 +77,7 @@ import * as memview from "./memview.js";
 import * as listing from "./listing.js";
 import * as debugui from "./debugui.js";
 import * as dbgtab from "./dbgtab.js";
+import * as machtab from "./machtab.js";
 import * as tabs from "./tabs.jsx";
 import * as nav from "./nav.js";
 import * as symview from "./symview.js";
@@ -93,7 +94,7 @@ const MODULES = [util, clock, jumps, jumpview, stepper, v86patch, frames, stepba
 	asmnames, dbginfo, dbgmerge, dbgimport, source, srctext, srclinks, srcswitch, srcedit, edpatch, coverage, symimport,
 	livedis, fastforward, cpustate, memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist,
 	quests, vars, varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay,
-	reverse, bookmarks, bminit, clang, kit, genimport, rebuild, hotpatch, hpelf, buildmap, pwa, header, scan, memview, listing, debugui, dbgtab, tabs,
+	reverse, bookmarks, bminit, clang, kit, genimport, rebuild, hotpatch, hpelf, buildmap, pwa, header, scan, memview, listing, debugui, dbgtab, machtab, tabs,
 	nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {

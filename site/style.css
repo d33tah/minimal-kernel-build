@@ -179,6 +179,7 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 .tabrow { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: center; margin: 0.3rem 0 0.3rem; }
 .tabbar { display: flex; flex-wrap: wrap; gap: 0.2rem; }
 .mstatus { margin: 0.2rem 0; }
+#machine_top { display: contents; }
 .tabbar button { border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.7rem; min-height: 32px; min-width: 44px; color: var(--muted); }
 .tabbar button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .tabbar .temo { font-weight: 400; }

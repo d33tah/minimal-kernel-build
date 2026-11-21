@@ -5,33 +5,18 @@
 // newer deploy is live, so old and new files are never mixed silently.
 // README.md, "Offline and installing".
 
-import { $, VERSION } from "./util.js";
+import { VERSION } from "./util.js";
 import { api } from "./page.js";
+import { MHEAD } from "./machtab.js";
 
 const PWA = { reg: null, reloading: false, newer: null, misses: [] };
 const PWA_CHECK_MS = 5 * 60 * 1000;
 
+// The notes above the Machine tab's screen (machinepanel.jsx).
 function pwaNotes() {
-	const el = $("pwa_notes");
-	el.textContent = "";
-	if (PWA.newer) {
-		const div = document.createElement("div");
-		div.id = "pwa_update";
-		div.className = "warn";
-		const b = document.createElement("button");
-		b.type = "button";
-		b.textContent = "Reload";
-		b.addEventListener("click", pwaReload);
-		div.append("A new version of this page is deployed (" + PWA.newer + "). ", b);
-		el.append(div);
-	}
-	if (PWA.misses.length) {
-		const div = document.createElement("div");
-		div.className = "warn";
-		div.textContent = "Offline: " + PWA.misses.join(", ") + (PWA.misses.length > 1 ? " are" : " is") +
-			" not available offline yet (a file is kept for offline use once the page has fetched it online).";
-		el.append(div);
-	}
+	MHEAD.pwaNewer = PWA.newer;
+	MHEAD.pwaMisses = PWA.misses.slice();
+	MHEAD.changed();
 	// The menu toggle (debugui.js) shows the new version on every tab.
 	api.show.renderRunBadgePwa();
 }

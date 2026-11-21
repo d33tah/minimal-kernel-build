@@ -3,8 +3,9 @@
 // The bzImage's boot header (the Machine tab's header table), the status
 // line, and the guest's RAM.
 
-import { $, V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR } from "./util.js";
+import { V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR } from "./util.js";
 import { initrd, image } from "./page.js";
+import { MSET, MHEAD, setStatus } from "./machtab.js";
 
 // Where v86 0.5.471 puts a bzImage (src/kernel.js, load_kernel): the
 // real-mode part at 0x80000, the command line at 0x8e000, the 32-bit part
@@ -12,10 +13,6 @@ import { initrd, image } from "./page.js";
 const V86_SETUP_ADDR = 0x80000;
 const V86_CMDLINE_ADDR = 0x8e000;
 const DEFAULT_RAM = 2 * 1024 * 1024;
-
-function setStatus(text) {
-	$("status").textContent = text;
-}
 
 // ---- boot header ----------------------------------------------------------
 
@@ -104,28 +101,27 @@ function verStr(v) {
 	return (v >> 8) + "." + (v & 0xff).toString().padStart(2, "0");
 }
 
+// The Machine tab's header line and the header check's problems (machinepanel.jsx).
 function showHeader() {
-	$("problems").textContent = "";
-	$("kinfo").textContent = "";
-	if (!image)
+	MHEAD.kinfo = "";
+	MHEAD.problems = [];
+	if (!image) {
+		MHEAD.changed();
 		return;
+	}
 	const h = image.hdr;
 	const parts = [h.size.toLocaleString("en") + " B", "proto " + verStr(h.version),
 		"setup " + h.setup_size + " B", "32-bit " + (h.syssize * 16).toLocaleString("en") + " B @ " + hex(h.code32_start),
 		h.loaded_high ? "LOADED_HIGH" : "low"];
 	if (h.has_init_size)
 		parts.push("init_size " + kib(h.init_size));
-	$("kinfo").textContent = parts.join(" \u00b7 ");
-	for (const [level, text] of checkImage(h, ram())) {
-		const div = document.createElement("div");
-		div.className = level;
-		div.textContent = text;
-		$("problems").append(div);
-	}
+	MHEAD.kinfo = parts.join(" \u00b7 ");
+	MHEAD.problems = checkImage(h, ram());
+	MHEAD.changed();
 }
 
 function ram() {
-	return Number($("memory").value);
+	return Number(MSET.ram);
 }
 
 export { ram, V86_SETUP_ADDR, V86_CMDLINE_ADDR, kernelEnd, checkImage, setStatus, parseHeader, DEFAULT_RAM,

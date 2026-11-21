@@ -36,7 +36,7 @@
 // snaprecord.js's, the diff snapdiff.js's.
 
 import { CLOCK, GUEST, realNow } from "./clock.js";
-import { kib, hex, $ } from "./util.js";
+import { kib, hex } from "./util.js";
 import { controller } from "./ui.jsx";
 import { image, initrd, stepper, emulator, emuReady, emuRam, counting, runState, selectedPage, setCounting,
 	setCountNote, tab, kernels, api, provide } from "./page.js";
@@ -51,6 +51,7 @@ import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snap
 import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 import { dbgStatus } from "./dbgtab.js";
+import { setSettings, addRam } from "./machtab.js";
 
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
 let snapDbWhy = "";       // why not
@@ -504,9 +505,8 @@ function snapSwitch(s) {
 			"(Machine tab) with " + kib(s.ram) + " of RAM to restore “" + s.name + "”.");
 		return;
 	}
-	$("kernel").value = k.name;
-	if (![...$("memory").options].some((o) => o.value === String(s.ram)))
-		$("memory").add(new Option(kib(s.ram), String(s.ram)));
+	setSettings({ kernel: k.name });
+	addRam(s.ram);
 	snapSay("Switching to " + k.name + " with " + kib(s.ram) + "...");
 	api.machine.loadKernel(k, String(s.ram)).catch((e) => {
 		setStatus(String(e));

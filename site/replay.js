@@ -32,7 +32,7 @@
 // real-time clock nothing is recorded.
 
 import { CLOCK, GUEST } from "./clock.js";
-import { $, VERSION, kib } from "./util.js";
+import { VERSION } from "./util.js";
 import { controller } from "./ui.jsx";
 import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPaused, kernels, setPrefSpeed,
 	setStartPaused, setCounting, api } from "./page.js";
@@ -41,6 +41,7 @@ import { ffEnabled } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
 import { showHeader } from "./header.js";
 import { imageLabel, RB_SUFFIX } from "./buildmap.js";
+import { MSET, CLOCKS, SPEEDS, setSettings, cmdline, setCmdline, addRam, setGuestKeys } from "./machtab.js";
 
 const RUN_FORMAT = "mkb-run";
 // 2: the gen-v86.sh build of v86 (R4) and its resets in the log. Its JIT
@@ -263,8 +264,8 @@ function inputRestore(meta) {
 function runSettings() {
 	const p = new URLSearchParams(location.search);
 	return {
-		kernel: image ? image.name : "", initrd: initrd ? initrd.name : null, ram: emuRam, cmdline: $("cmdline").value,
-		clock: api.machine.clockMips() ? String(api.machine.clockMips()) : "real", speed: prefSpeed, count: $("count").checked, paused: startPaused,
+		kernel: image ? image.name : "", initrd: initrd ? initrd.name : null, ram: emuRam, cmdline: cmdline(),
+		clock: api.machine.clockMips() ? String(api.machine.clockMips()) : "real", speed: prefSpeed, count: MSET.count, paused: startPaused,
 		fastforward: ffEnabled(), rtc: new Date(GUEST.rtcStart).toISOString(), seed: GUEST.seed,
 		panicbudget: p.get("panicbudget") || null,
 	};
@@ -401,7 +402,7 @@ async function replayRun(run) {
 		runStatus("Cannot replay: “" + run.kernel + "” is not one of the listed kernels; load that bzImage from disk (Machine tab) first.", "error");
 		return;
 	}
-	if (![...$("clock_mips").options].some((o) => o.value === run.clock))
+	if (!CLOCKS.some(([v]) => v === run.clock))
 		return runStatus("Cannot replay: this page has no clock of " + run.clock + " instructions per microsecond.", "error");
 	// The settings go into the URL (J2's ?rtc= and ?seed=, ?fastforward=,
 	// ?panicbudget= are read from it at boot) and the controls.
@@ -419,24 +420,22 @@ async function replayRun(run) {
 	set("panicbudget", run.panicbudget);
 	set("cmdline", run.cmdline);
 	history.replaceState(history.state, "", "?" + p.toString() + location.hash);
-	$("clock_mips").value = run.clock;
-	setPrefSpeed([...$("dbg_speed").options].some((o) => o.value === run.speed) ? run.speed : prefSpeed);
-	$("count").checked = !!run.count;
+	setSettings({ clock: run.clock, count: !!run.count });
+	setPrefSpeed(SPEEDS.some(([v]) => v === run.speed) ? run.speed : prefSpeed);
 	setStartPaused(!!run.paused);
 	setCmdlineFromUrl(run.cmdline);
-	$("cmdline").value = run.cmdline;
+	setCmdline(run.cmdline);
 	const mem = String(run.ram);
-	if (![...$("memory").options].some((o) => o.value === mem))
-		$("memory").add(new Option(kib(run.ram), mem));
+	addRam(mem);
 	INPUT.next = run;
 	runStatus("Booting " + run.kernel + " to replay it...", "running");
 	if (same) {
-		$("memory").value = mem;
+		setSettings({ ram: mem });
 		showHeader();
 		api.memory.drawMaps();
 		await api.machine.boot();
 	} else {
-		$("kernel").value = entry.name;
+		setSettings({ kernel: entry.name });
 		await api.machine.loadKernel(entry, mem);
 	}
 }
@@ -536,10 +535,8 @@ function renderRunInfo(changed = false) {
 		RUN.nowable = nowable;
 		RUN.changed();
 	}
-	const g = $("guest_keys");
-	if (g)
-		g.textContent = !stepper || !INPUT.settings ? "" : INPUT.settings.clock === "real" ? "" :
-			rp && !rp.done ? " · keyboard: replaying" : " · keyboard: " + keys + " scancode" + (keys === 1 ? "" : "s") + " recorded";
+	setGuestKeys(!stepper || !INPUT.settings ? "" : INPUT.settings.clock === "real" ? "" :
+		rp && !rp.done ? " · keyboard: replaying" : " · keyboard: " + keys + " scancode" + (keys === 1 ? "" : "s") + " recorded");
 }
 
 // Download and Replay wait for a replay running to end.

@@ -25,12 +25,12 @@
 
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { $ } from "./util.js";
 import { stepper, runState, image, tab, state, api } from "./page.js";
 import { PCI_CLASSES, pciBdf, pciClassName } from "./mevregions.js";
 import { MEV, MEV_CPU, MEV_M_WRITE } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { Tip } from "./ui.jsx";
+import { MV } from "./machtab.js";
 
 const QS_KEY = "mkb-quests";           // { kernel name: { quest id: time solved } }
 const QS_OPEN_KEY = "mkb-quests-open";
@@ -91,8 +91,7 @@ function qsOsStart(run) {
 
 // The machine has stopped for good (the end banner: halted, panic).
 function qsEnded() {
-	const b = $("end_banner");
-	return !!(b && b.dataset.kind);
+	return !!MV.end.kind;
 }
 
 // Not there (yet): "never" once the run has ended, else "wait".

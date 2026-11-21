@@ -51,6 +51,7 @@ import { DBG, dbgFrames, dbgLineCode } from "./dbginfo.js";
 import { srcFile } from "./srctext.js";
 import { textKeep, buildFamily, recFamily, imageLabel, mapLine } from "./buildmap.js";
 import { srcOpen } from "./srcview.js";
+import { setSettings } from "./machtab.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
@@ -566,7 +567,7 @@ function bmSwitch(b) {
 		return;
 	}
 	BM.pending = { b, until: realNow() + 120000 };
-	$("kernel").value = k.name;
+	setSettings({ kernel: k.name });
 	bmNote("Switching to " + k.name + " for “" + b.name + "”...");
 	api.machine.loadKernel(k).catch((e) => {
 		setStatus(String(e));

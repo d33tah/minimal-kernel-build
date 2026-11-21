@@ -9,18 +9,17 @@
 // Its own exports, for window.MKB (debug.js).
 import * as app from "./app.js";
 
-import { PAGE, $, kib, withV } from "./util.js";
-import { setStartPaused, setPrefSpeed, kernels, tab, selectedPage, setDisasm, setKernels } from "./page.js";
+import { PAGE, $, withV } from "./util.js";
+import { setStartPaused, setPrefSpeed, kernels, tab, selectedPage, setKernels } from "./page.js";
 import { exposeMKB } from "./debug.js";
 import { initJumps } from "./jumpview.js";
 import { renderGraphInfo } from "./graph.js";
 import { initGraph } from "./graphinit.js";
-import { dbgOnChange, dbgFresh } from "./dbginfo.js";
-import { srcFresh } from "./srctext.js";
+import { dbgOnChange } from "./dbginfo.js";
 import { initSource } from "./source.js";
 import { initSrcEdit } from "./srcedit.js";
 import { initCoverage } from "./coverage.js";
-import { initImport, initInitrd, setCmdlineFromUrl, showImported, restoreImported, restoreCmdline } from "./symimport.js";
+import { initImport, setCmdlineFromUrl, showImported } from "./symimport.js";
 import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { QUESTS } from "./quests.jsx";
@@ -31,7 +30,7 @@ import { initReverse } from "./reverse.js";
 import { initBookmarks } from "./bminit.js";
 import { initRebuild } from "./rebuild.jsx";
 import { initHotPatch } from "./hotpatch.jsx";
-import { showHeader, setStatus } from "./header.js";
+import { setStatus } from "./header.js";
 import { setAutoscan, scan } from "./scan.js";
 import { initLegend, drawMaps, pageAt, showHover } from "./memview.js";
 import { selectPage } from "./listing.js";
@@ -41,10 +40,10 @@ import { initCompactTabs, readHash } from "./tabs.jsx";
 import { initNav } from "./nav.js";
 import { listingStale } from "./symview.js";
 import { onVisibility } from "./run.js";
-import { initDebugger } from "./runto.js";
-import { boot, prefetchWasm } from "./boot.js";
+import { prefetchWasm } from "./boot.js";
 import { initTips } from "./tips.js";
-import { loadKernel, useImage } from "./kernel.js";
+import { loadKernel } from "./kernel.js";
+import { SPEEDS, CLOCKS, setSettings, addRam } from "./machtab.js";
 import { mountShell } from "./shell.jsx";
 
 async function init() {
@@ -62,11 +61,10 @@ async function init() {
 	const m = Number(params.get("mem"));
 	if (Number.isInteger(m) && m > 0 && m % PAGE === 0) {
 		memParam = String(m);
-		if (![...$("memory").options].some((o) => o.value === memParam))
-			$("memory").add(new Option(kib(m), memParam));
+		addRam(memParam);
 	}
 	setStartPaused(params.get("paused") === "1");
-	const options = [...$("dbg_speed").options].map((o) => o.value);
+	const options = SPEEDS.map(([v]) => v);
 	let stored = null;
 	try {
 		stored = localStorage.getItem(SPEED_KEY);
@@ -74,22 +72,20 @@ async function init() {
 		stored = null;
 	}
 	setPrefSpeed([params.get("speed"), stored, "1000"].find((v) => options.includes(v)));
-	const clocks = [...$("clock_mips").options].map((o) => o.value);
+	const clocks = CLOCKS.map(([v]) => v);
 	let storedMips = null;
 	try {
 		storedMips = localStorage.getItem(MIPS_KEY);
 	} catch (e) {
 		storedMips = null;
 	}
-	$("clock_mips").value = [params.get("mips"), storedMips, "10"].find((v) => clocks.includes(v));
+	setSettings({ clock: [params.get("mips"), storedMips, "10"].find((v) => clocks.includes(v)) });
 	initTips();
 	initLegend();
 	drawMaps();
-	initDebugger();
 	initReverse();
 	initGraph();
 	initImport();
-	initInitrd();
 	setInterval(watchPanicText, 250);
 	setInterval(watchJitEnd, 250);
 	setInterval(sampleSpeed, SPEED_SAMPLE_MS);
@@ -105,7 +101,7 @@ async function init() {
 		storedCount = null;
 	}
 	if (params.get("count") === "0" || (!params.has("count") && storedCount === "0"))
-		$("count").checked = false;
+		setSettings({ count: false });
 	initSource();
 	initSrcEdit();
 	initRebuild();
@@ -129,8 +125,6 @@ async function init() {
 	window.addEventListener("hashchange", readHash);
 	readHash();
 	initNav();
-	$("memory").addEventListener("change", () => { showHeader(); drawMaps(); });
-	$("boot").addEventListener("click", boot);
 	$("scan").addEventListener("click", () => scan());
 	$("autoscan").addEventListener("change", setAutoscan);
 	initSnapshots();
@@ -143,25 +137,6 @@ async function init() {
 	});
 	canvas.addEventListener("mousemove", (ev) => showHover(pageAt(ev)));
 	canvas.addEventListener("mouseleave", () => showHover(selectedPage));
-	$("kernel").addEventListener("change", () => {
-		const k = kernels.find((x) => x.name === $("kernel").value);
-		if (k)
-			loadKernel(k).catch((e) => setStatus(String(e)));
-	});
-	$("file").addEventListener("change", async () => {
-		const f = $("file").files[0];
-		if (!f)
-			return;
-		setDisasm(null); // a file from disk comes without disasm.json, C source or DWARF
-		srcFresh(null, "no C source for a bzImage from disk");
-		dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
-		syncSrcToggle();
-		useImage(f.name, await f.arrayBuffer());
-		showImported();
-		await restoreImported();
-		await restoreCmdline();
-		await boot();
-	});
 
 	try {
 		setKernels((await kernelsJson).kernels);
@@ -169,14 +144,12 @@ async function init() {
 		setStatus("No kernels.json (" + e + "). Load a bzImage from disk.");
 		return;
 	}
-	for (const k of kernels)
-		$("kernel").add(new Option(k.label || k.name, k.name));
 	const wanted = kernels.find((k) => k.name === params.get("kernel")) || kernels[0];
+	setSettings({ kernels: kernels.map((k) => [k.name, k.label || k.name]), kernel: wanted ? wanted.name : "" });
 	if (!wanted) {
 		setStatus("kernels.json lists no kernels. Load a bzImage from disk.");
 		return;
 	}
-	$("kernel").value = wanted.name;
 	await loadKernel(wanted, memParam);
 }
 

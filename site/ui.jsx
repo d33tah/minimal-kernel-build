@@ -50,6 +50,13 @@ function useController(c) {
 	return useSyncExternalStore(c.subscribe, () => c.rev);
 }
 
+// One field of a controller: the component renders again only when the
+// module put another value there (===), not at every changed() (the
+// Machine tab's parts, drawn with every frame while the machine runs).
+function useField(c, key) {
+	return useSyncExternalStore(c.subscribe, () => c[key]);
+}
+
 // Render a component into an element at once: app.js mounts the shell
 // before init() wires the controls, which then exist.
 function mount(el, element) {
@@ -82,4 +89,4 @@ function SrcLink({ file, line, text, pa = -1 }) {
 		data-pa={pa}>{text || srcName({ file, line })}</button>;
 }
 
-export { useStore, controller, useController, mount, DomNodes, Tip, SrcLink };
+export { useStore, controller, useController, useField, mount, DomNodes, Tip, SrcLink };

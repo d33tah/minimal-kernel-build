@@ -16,11 +16,11 @@
 // of the rest; dbgChanged() re-renders when it arrives. The text is
 // srctext.js's, the links srclinks.js's, the switcher's lists srcswitch.js's.
 
-import { $, escHtml } from "./util.js";
+import { escHtml } from "./util.js";
 import { stepper, runState, api, provide } from "./page.js";
 import { dwarfEachLine } from "./dwarftables.js";
 import { dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG, dbgFunction, dbgOnChange } from "./dbginfo.js";
-import { srcFile, srcText, srcStatementView, SRC, srcPickTar, srcPickFolder, srcStatus } from "./srctext.js";
+import { srcFile, srcText, srcStatementView, SRC, srcStatus } from "./srctext.js";
 import { srcLinkHtml, srcLinkEl, showSource, srcName, srcLocHtml, srcLinkAgain, srcLinkMark } from "./srclinks.js";
 import { srcSw, srcSwOpen, srcSwClose, srcRemember, srcSwRender } from "./srcswitch.js";
 import { SRCV, srcOpen, srcShow } from "./srcview.js";
@@ -473,16 +473,6 @@ function initSource() {
 			a.click();
 		}
 	}, true);
-	$("src_tar").addEventListener("change", () => {
-		const f = $("src_tar").files[0];
-		if (f)
-			srcPickTar(f);
-	});
-	$("src_dir_btn").addEventListener("click", () => $("src_dir").click());
-	$("src_dir").addEventListener("change", () => {
-		if ($("src_dir").files.length)
-			srcPickFolder($("src_dir").files);
-	});
 	dbgOnChange(() => {
 		srcStatus();
 		if (srcPanel && srcOpen()) {

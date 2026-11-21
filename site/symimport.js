@@ -6,12 +6,13 @@
 // size}], symbols: [{name, vaddr, paddr, size, type, section}] } plus
 // { source, offset, offsetHow }.
 
-import { V86_KERNEL_ADDR, hex, $, kib, V86_INITRD_ADDR } from "./util.js";
+import { V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR } from "./util.js";
 import { image, setSymbols, symbols, setDisasm, disasm, kernels, initrd, setInitrd, api } from "./page.js";
 import { dbgFresh, dbgHas, DBG } from "./dbginfo.js";
 import { dbgImport, dbgRestore, dbgForget } from "./dbgimport.js";
 import { srcFresh } from "./srctext.js";
 import { showHeader, ram, setStatus } from "./header.js";
+import { MSET, MIMP, setImp, setSettings, ramSizes, cmdline, setCmdline, symOffset, DEFAULT_CMDLINE } from "./machtab.js";
 
 const PAGE_OFFSET_I386 = 0xC0000000;
 const MAP_KEY = "mkb-map-";
@@ -318,25 +319,21 @@ function applySymbols(map) {
 	showImported();
 }
 
+// The Machine tab's symbol status (#sym_status) and forget symbols.
 function showImported() {
-	const el = $("sym_status");
 	const im = symbols && symbols.imported;
-	el.dataset.state = im ? "imported" : "";
-	el.textContent = im ? im.file + (im.file === im.source ? "" : " (" + im.source + ")") + ": " + symbols.symbols.length + " symbols, offset " +
-		hex(im.offset) + ", " + im.how + ". " + (disasm ? "" : "No disasm.json for these symbols: code is disassembled live. ") +
-		(dbgHas() ? DBG.info : "No file:line: " + DBG.why) + "." : "";
-	el.dataset.dwarf = im ? DBG.mode || "" : "";
-	$("sym_forget").hidden = !im;
+	setImp({ forget: !!im, sym: { state: im ? "imported" : "", dwarf: im ? DBG.mode || "" : "",
+		text: im ? im.file + (im.file === im.source ? "" : " (" + im.source + ")") + ": " + symbols.symbols.length + " symbols, offset " +
+			hex(im.offset) + ", " + im.how + ". " + (disasm ? "" : "No disasm.json for these symbols: code is disassembled live. ") +
+			(dbgHas() ? DBG.info : "No file:line: " + DBG.why) + "." : "" } });
 }
 
 async function importSymbols(file) {
-	const el = $("sym_status");
 	let map;
 	try {
-		map = await parseSymbolFile(file, $("sym_offset").value);
+		map = await parseSymbolFile(file, symOffset());
 	} catch (e) {
-		el.dataset.state = "error";
-		el.textContent = "Could not use " + file.name + ": " + e.message + ". The previous symbols stay.";
+		setImp({ sym: { ...MIMP.sym, state: "error", text: "Could not use " + file.name + ": " + e.message + ". The previous symbols stay." } });
 		return false;
 	}
 	applySymbols(map);
@@ -352,7 +349,7 @@ async function importSymbols(file) {
 		dbgImport(file, map.offset, key);
 	// The files CI makes for a shipped kernel, made here (genimport.js):
 	// they place code by the ELF's PT_LOAD, so not with an offset by hand.
-	if (map.source === "ELF" && /^(auto)?$/.test($("sym_offset").value.trim().toLowerCase()))
+	if (map.source === "ELF" && /^(auto)?$/.test(symOffset().trim().toLowerCase()))
 		api.source.genImport(file, key);
 	if (image)
 		await api.machine.boot();
@@ -369,7 +366,7 @@ async function restoreImported() {
 			applySymbols(map);
 			if (map.source === "ELF")
 				await dbgRestore(key);
-			$("sym_status").textContent += " (remembered for this bzImage)";
+			setImp({ sym: { ...MIMP.sym, text: MIMP.sym.text + " (remembered for this bzImage)" } });
 			if (map.source === "ELF")
 				await api.source.genRestore(key);
 			return true;
@@ -408,7 +405,7 @@ const setCmdlineFromUrl = (c) => { cmdlineFromUrl = c; }; // for other modules (
 
 async function restoreCmdline() {
 	if (cmdlineFromUrl !== null) {
-		$("cmdline").value = cmdlineFromUrl;
+		setCmdline(cmdlineFromUrl);
 		return;
 	}
 	// A remembered cmdline for this image wins; otherwise keep what the user
@@ -421,9 +418,9 @@ async function restoreCmdline() {
 		v = null;
 	}
 	if (v !== null)
-		$("cmdline").value = v;
-	else if (!$("cmdline").dataset.typed)
-		$("cmdline").value = defaultCmdline();
+		setCmdline(v);
+	else if (!MSET.cmdlineTyped)
+		setCmdline(defaultCmdline());
 }
 
 // The command line a kernel starts with when nothing is remembered and
@@ -431,7 +428,6 @@ async function restoreCmdline() {
 // System.maps only line up without KASLR) and cryptomgr.notests (skips
 // the crypto self-tests, which take long when stepped). Kernels that do
 // not know them ignore them; the minified Linux ignores the command line.
-const DEFAULT_CMDLINE = "nokaslr cryptomgr.notests";
 function defaultCmdline() {
 	const k = image && kernels.find((x) => x.name === image.name);
 	return k && typeof k.cmdline === "string" ? k.cmdline : DEFAULT_CMDLINE;
@@ -441,26 +437,26 @@ async function saveCmdline() {
 	try {
 		const key = await imageKey();
 		if (key)
-			localStorage.setItem(key.replace(MAP_KEY, CMDLINE_KEY), $("cmdline").value);
+			localStorage.setItem(key.replace(MAP_KEY, CMDLINE_KEY), cmdline());
 	} catch (e) {
 		// not remembered
 	}
 }
 
+// The Machine tab's initrd line and its no initrd button.
 function initrdNote() {
-	const el = $("initrd_status");
-	$("initrd_clear").hidden = !initrd;
 	if (!initrd) {
-		el.textContent = "";
+		setImp({ initrd: { text: "", clear: false, mismatch: MIMP.initrd.mismatch } });
 		return;
 	}
 	// hello and the minified Linux have no bootloader-initrd support; the
 	// Debian sample and kernels from disk use it.
 	const ignores = image && /^(hello|minified-linux)$/.test(image.name);
-	el.textContent = initrd.name + ": " + kib(initrd.bytes.length) + ", v86 puts it at " + hex(V86_INITRD_ADDR) + "." +
-		(ignores ? " This kernel ignores a bootloader initrd (the minified Linux only unpacks its built-in initramfs)." : "") +
-		(initrd.info && !ignores ? initrdMatch(initrd.info) : "");
-	el.dataset.mismatch = initrd.info && !ignores && initrdMismatch(initrd.info) ? "1" : "";
+	setImp({ initrd: { clear: true,
+		text: initrd.name + ": " + kib(initrd.bytes.length) + ", v86 puts it at " + hex(V86_INITRD_ADDR) + "." +
+			(ignores ? " This kernel ignores a bootloader initrd (the minified Linux only unpacks its built-in initramfs)." : "") +
+			(initrd.info && !ignores ? initrdMatch(initrd.info) : ""),
+		mismatch: initrd.info && !ignores && initrdMismatch(initrd.info) ? "1" : "" } });
 }
 
 // ---- what an initrd is for ---------------------------------------------------
@@ -590,54 +586,51 @@ function ramForInitrd() {
 	const need = V86_INITRD_ADDR + initrd.bytes.length;
 	if (ram() > need)
 		return;
-	const opt = [...$("memory").options].map((o) => Number(o.value)).filter((v) => v > need).sort((a, b) => a - b)[0];
+	const opt = ramSizes().filter((v) => v > need).sort((a, b) => a - b)[0];
 	if (opt)
-		$("memory").value = String(opt);
+		setSettings({ ram: String(opt) });
 }
 
-function initInitrd() {
-	$("initrd_file").addEventListener("change", async () => {
-		const f = $("initrd_file").files[0];
-		if (!f)
-			return;
-		setInitrd({ name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) });
-		initrd.info = await analyzeInitrd(initrd.bytes, f.name);
-		$("initrd_file").value = "";
-		ramForInitrd();
-		initrdNote();
-		showHeader();
-		api.memory.drawMaps();
-		await api.machine.boot();
-	});
-	$("initrd_clear").addEventListener("click", async () => {
-		setInitrd(null);
-		initrdNote();
-		showHeader();
-		api.memory.drawMaps();
-		await api.machine.boot();
-	});
-	$("cmdline").addEventListener("input", () => { $("cmdline").dataset.typed = "1"; });
-	$("cmdline").addEventListener("change", saveCmdline);
-	$("cmdline").addEventListener("keydown", (ev) => {
-		if (ev.key === "Enter") {
-			saveCmdline();
-			api.machine.boot();
-		}
-	});
+// The Machine tab's initrd file picked: it boots with it.
+async function initrdPicked(f) {
+	setInitrd({ name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) });
+	initrd.info = await analyzeInitrd(initrd.bytes, f.name);
+	ramForInitrd();
+	initrdNote();
+	showHeader();
+	api.memory.drawMaps();
+	await api.machine.boot();
+}
+
+// No initrd: boots without.
+async function initrdClear() {
+	setInitrd(null);
+	initrdNote();
+	showHeader();
+	api.memory.drawMaps();
+	await api.machine.boot();
+}
+
+// The command line field: typed in (a kernel loaded later keeps it), Enter boots.
+function cmdlineInput() {
+	MSET.cmdlineTyped = true;
+}
+
+function cmdlineKey(ev) {
+	if (ev.key === "Enter") {
+		saveCmdline();
+		api.machine.boot();
+	}
 }
 
 function looksLikeBzImage(buf) {
 	return buf.byteLength > 0x206 && new DataView(buf).getUint32(0x202, true) === 0x53726448;
 }
 
+// The Machine tab's Symbols file picked.
+const symfilePicked = (f) => importSymbols(f);
+
 function initImport() {
-	$("symfile").addEventListener("change", async () => {
-		const f = $("symfile").files[0];
-		if (f)
-			await importSymbols(f);
-		$("symfile").value = "";
-	});
-	$("sym_forget").addEventListener("click", forgetImported);
 	// Drop a bzImage, a System.map / vmlinux, or both on the page.
 	document.addEventListener("dragover", (ev) => { ev.preventDefault(); });
 	document.addEventListener("drop", async (ev) => {
@@ -666,4 +659,4 @@ function initImport() {
 
 export { MAP_KEY, parseSymbolFile, applySymbols, showImported, restoreImported, forgetImported, CMDLINE_KEY,
 	cmdlineFromUrl, setCmdlineFromUrl, restoreCmdline, defaultCmdline, initrdNote, gunzip, analyzeInitrd,
-	ramForInitrd, initInitrd, initImport };
+	ramForInitrd, initImport, initrdPicked, initrdClear, cmdlineInput, cmdlineKey, saveCmdline, symfilePicked };

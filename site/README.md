@@ -427,37 +427,34 @@ the same way (the Snapshots tab first):
   effect (`wireGraphCanvas`, the depth slider).
 
 Modules that still look up elements by id (`$("x")` or getElementById,
-A1's list, kept up to date by each chunk; besides canvases these go with
-the A1 chunk of their tab: Machine; Memory, Events, bookmarks, nav and
-the run badge stay as they are for now):
+A1's list, kept up to date by each chunk). Of A1's six tabs only canvases
+and the VGA screen are left; Memory, Events, the bookmarks, nav, the menu
+toggle and About stay as they are (outside A1):
 
 | module | elements of |
 |---|---|
-| app.js | Machine, Memory |
-| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, the Source panel's aside (`src_panel`: whether the focus is in it) |
-| boot.js | Machine (screen, `cmdline`, `count`, `entry_info`), Memory |
-| runto.js, reverse.js, run.js, rebuild.jsx | Machine run controls (`dbg_step`, `dbg_back`, `dbg_speed`, ...), Memory (`pages`), Machine (`memory`, `screen_container`) |
+| app.js, run.js, scan.js, symview.js, boot.js | Memory (`pages`: a canvas; `scan`, `autoscan`, `footprint`) |
+| boot.js, snaprecord.js, rebuild.jsx | the VGA screen (`screen_container`, `screen_text`: index.html's, v86 draws into it; boot.js empties it and hands it to v86, snaprecord.js reads its rows for a snapshot, rebuild.jsx scrolls it into view) |
+| bminit.js, bookmarks.js | the bookmarks in the menu toggle (`bm_*`), the bookmark dialog, the menu (`runbadge_menu`, `runbadge_toggle`: its height and its toggle), Memory (`pages_box`), the Source panel's aside (`src_panel`: whether the focus is in it) |
 | calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
-| debugui.js, jumpview.js, symview.js | Machine (`dbg_state`, the overlay, counters, clock), run badge, Memory (`pages`, `footprint`), the Source panel's aside (`src_panel`: where it is on a phone), `jump_pop` |
-| genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
-| listing.js | the Source panel's aside (`src_panel`, where it covers the listing on a phone) |
-| memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js, scan.js | Memory (`mm_map`, the grid: canvases), About's legend |
-| nav.js, tabs.jsx, tips.js | the top bar's history, the tab panels, popovers (tips.js watches the Source panel's aside for its marks) |
-| source.js | Machine (`src_tar`, `src_dir`: the source folder or .tar picked) |
-| replay.js | Machine (`guest_keys`, the boot settings a replay sets) |
-| snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
-| snapshots.js | Machine (`kernel`, `memory`) |
+| debugui.js | the menu toggle (`runbadge*`: its face, state, Pause or Continue and new version notice; its menu holds the bookmarks and nav, which fill it by id), About (`build_subject`) |
+| jumpview.js, tips.js | the popovers (`jump_pop`, `tip_pop`; tips.js watches the Page and Debugger panels and the Source panel's aside for its marks) |
+| listing.js, symview.js | the Source panel's aside (`src_panel`: where it covers the listing on a phone) |
+| memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js | Memory (`mm_map`, the grid: canvases, and the tab's lines), About's legend |
+| nav.js | the menu toggle's Back and Forward (`nav_*`) |
+| shell.jsx | the elements it mounts components into (`tabrow`, `src_panel`, the Machine tab's `machine_run`, `machine_top`, `screen_wrap`, `machine_ctl`) |
 
-No module looks up an element of the Snapshots, Page, Debugger or Source
-tab, of the Calls tab besides its canvas, or of the Source panel besides
-its aside (`#src_panel`, the element of index.html it is mounted in, read
+No module looks up an element of the Machine, Snapshots, Page, Debugger
+or Source tab besides the VGA screen and the boxes shell.jsx mounts into,
+of the Calls tab besides its canvas, or of the Source panel besides its
+aside (`#src_panel`, the element of index.html it is mounted in, read
 for its place on screen and for the focus): the file's text, the editor's
 textarea with its line numbers and the file's diff are written through
 the refs the component gives (above).
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
-Machine (machinepanel.jsx), Memory (memorypanel.jsx), About
+Memory (memorypanel.jsx), About
 (about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there)
 and the menu toggle with the bookmarks (runbadge.jsx). These files name another JSX runtime in their first
 lines (`@jsxRuntime classic`, `@jsx h`): `markup/html.js`, whose `h()`

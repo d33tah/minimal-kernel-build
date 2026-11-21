@@ -4,12 +4,11 @@
 // as in a hand-written index.html; React mounts its components (shell.jsx)
 // into other elements.
 
-import { MachinePanel } from "./machinepanel.jsx";
 import { MemoryPanel } from "./memorypanel.jsx";
 import { AboutPanel } from "./about.jsx";
 import { RunBadgeMenu } from "./runbadge.jsx";
 
-const STATIC = { panel_machine: MachinePanel, panel_memory: MemoryPanel, panel_about: AboutPanel,
+const STATIC = { panel_memory: MemoryPanel, panel_about: AboutPanel,
 	runbadge: RunBadgeMenu };
 
 // id -> the HTML of its component.

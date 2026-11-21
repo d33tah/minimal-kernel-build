@@ -48,7 +48,7 @@
 // ahead (Stepper.branch).
 
 import { CLOCK, realNow, GUEST } from "./clock.js";
-import { num, $, hex, kib } from "./util.js";
+import { num, hex, kib } from "./util.js";
 import { stepper, emulator, emuReady, runState, api, provide } from "./page.js";
 import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
@@ -658,12 +658,8 @@ function revView() {
 	return { back, text, tip, cps: on ? REV.cps.length : 0, start: on ? REV.cps[0].steps : "", ahead: st && st.behind() ? st.ahead : "" };
 }
 
+// Step back (Machine tab) and the Debugger's reverse controls, drawn again.
 function revRender() {
-	const v = revView(), b = $("dbg_back");
-	if (b) {
-		b.disabled = !v.back;
-		b.title = "Undo the last instruction: restore the checkpoint before it and step forward to it" + v.tip;
-	}
 	REVV.changed();
 }
 
@@ -681,7 +677,6 @@ async function revBackToField() {
 }
 
 function initReverse() {
-	$("dbg_back").addEventListener("click", () => revStepBack(1));
 	revRender();
 }
 

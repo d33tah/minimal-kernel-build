@@ -14,7 +14,8 @@
 // Only for an ELF with the "auto" offset: the files place code at the
 // ELF's PT_LOAD addresses.
 
-import { withV, $ } from "./util.js";
+import { withV } from "./util.js";
+import { setImp } from "./machtab.js";
 import { image, symbols, setSymbols, setDisasm, disasm, api, provide } from "./page.js";
 import { dbgIdbOp, dbgUseShards, dbgChanged } from "./dbginfo.js";
 import { srcUseShipped, SRC } from "./srctext.js";
@@ -30,10 +31,9 @@ function kfetch(url) {
 	return b ? Promise.resolve(new Response(b)) : fetch(withV(url));
 }
 
+// The Machine tab's line of the files made here (#gen_status).
 function genStatus(text) {
-	const el = $("gen_status");
-	el.dataset.state = GEN.state || "";
-	el.textContent = text === undefined ? GEN.note : text;
+	setImp({ gen: { state: GEN.state || "", text: text === undefined ? GEN.note : text } });
 }
 
 // key: symimport.js imageKey() of the bzImage (null without storage).

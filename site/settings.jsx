@@ -13,14 +13,16 @@
 // tab is shown, the speed or compact tabs change, or an entry is forgotten.
 
 import { useReducer, useState, useEffect } from "react";
-import { num, $ } from "./util.js";
+import { num } from "./util.js";
 import { image, setCompactTabs } from "./page.js";
 import { dbgIdbOp } from "./dbginfo.js";
 import { dbgForget } from "./dbgimport.js";
 import { MAP_KEY, CMDLINE_KEY, cmdlineFromUrl, forgetImported, defaultCmdline } from "./symimport.js";
 import { WATCH_KEY, watchKernel, setWatchKernel, watchLoad, renderWatches } from "./vars.js";
 import { compactDefault, chooseCompactTabs } from "./tabs.jsx";
-import { useStore } from "./ui.jsx";
+import { useStore, useController } from "./ui.jsx";
+import { MSET, SPEEDS, CLOCKS, setCmdline } from "./machtab.js";
+import { chooseSpeed, chooseClock, chooseCount } from "./runto.js";
 import { REF_KEY } from "./debugui.js";
 
 const SET_PREFIX = "mkb-";
@@ -107,8 +109,8 @@ async function setForget(k) {
 	}
 	setRemove(k);
 	if (k.startsWith(CMDLINE_KEY) && cur && k === CMDLINE_KEY + cur && cmdlineFromUrl === null) {
-		delete $("cmdline").dataset.typed;
-		$("cmdline").value = defaultCmdline(); // for the next Boot
+		MSET.cmdlineTyped = false;
+		setCmdline(defaultCmdline()); // for the next Boot
 	}
 	if (k.startsWith(WATCH_KEY) && k === WATCH_KEY + watchKernel) {
 		setWatchKernel(undefined); // reload the (now empty) list
@@ -123,20 +125,13 @@ async function setIdbCount() {
 	return (await dbgIdbOp("readonly", (s) => s.count())) || 0;
 }
 
-// A change here is the same as a change in the Machine tab: that control's own
-// handler applies and remembers it.
-function setMirror(to, prop, v) {
-	$(to)[prop] = v;
-	$(to).dispatchEvent(new Event("change"));
-}
-
 // Back to the defaults (their handlers remember them), then forget all;
 // returns how many entries were forgotten.
 async function resetSettings() {
 	setCompactTabs(compactDefault());
-	setMirror("dbg_speed", "value", "1000");
-	setMirror("clock_mips", "value", "10");
-	setMirror("count", "checked", true);
+	chooseSpeed("1000");
+	chooseClock("10");
+	chooseCount(true);
 	const keys = setStoredKeys();
 	for (const k of keys)
 		await setForget(k);
@@ -145,9 +140,6 @@ async function resetSettings() {
 		setRemove(k);
 	return keys.length;
 }
-
-// The options of a select of the Machine tab (speed, clock), as [label, value].
-const setOptionsOf = (id) => [...$(id).options].map((o) => [o.textContent, o.value]);
 
 // One remembered entry with its Forget button.
 function SetRow({ k, text, onForget }) {
@@ -188,11 +180,11 @@ function SettingsPanel() {
 	const compact = useStore("compactTabs");
 	const speed = useStore("prefSpeed");
 	// A new drawing of the stored entries (Forget, Reset); the clock and
-	// count controls read the Machine tab's when drawn.
+	// count controls are the Machine tab's (machtab.js MSET): a change here
+	// is the same as a change there, whose handler applies and remembers it.
+	useController(MSET);
 	const [drawing, redraw] = useReducer((n) => n + 1, 0);
 	const [status, setStatus] = useState("");
-	const [speeds] = useState(() => setOptionsOf("dbg_speed"));
-	const [clocks] = useState(() => setOptionsOf("clock_mips"));
 	const forget = async (k) => {
 		await setForget(k);
 		setStatus("Forgot " + k + ".");
@@ -203,8 +195,8 @@ function SettingsPanel() {
 		setStatus("All settings reset: " + num(n) + (n === 1 ? " entry" : " entries") + " forgotten.");
 		redraw();
 	};
-	const mirror = (to, prop, v) => {
-		setMirror(to, prop, v);
+	const mirror = (choose, v) => {
+		choose(v);
 		redraw();
 	};
 	return (
@@ -219,21 +211,21 @@ function SettingsPanel() {
 			<h3>Running</h3>
 			<div className="setrow">
 				<label>Speed after the kernel entry <select id="set_speed" data-key="mkb-speed" value={speed}
-					onChange={(e) => mirror("dbg_speed", "value", e.target.value)}>
-					{speeds.map(([label, v]) => <option key={v} value={v}>{label}</option>)}
+					onChange={(e) => mirror(chooseSpeed, e.target.value)}>
+					{SPEEDS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
 				</select></label>
 				{" "}<span className="note">The speed in the Machine tab: BIOS and setup are stepped as fast as possible, then the kernel runs at this speed. Changing it there changes it here. ?speed= in the URL overrides it for one visit.</span>
 			</div>
 			<div className="setrow">
-				<label>Clock <select id="set_mips" data-key="mkb-mips" value={$("clock_mips").value}
-					onChange={(e) => mirror("clock_mips", "value", e.target.value)}>
-					{clocks.map(([label, v]) => <option key={v} value={v}>{label}</option>)}
+				<label>Clock <select id="set_mips" data-key="mkb-mips" value={MSET.clock}
+					onChange={(e) => mirror(chooseClock, e.target.value)}>
+					{CLOCKS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
 				</select></label>
 				{" "}<span className="note">Guest time while the page steps the CPU: a virtual clock of this many instructions per microsecond, or real time (the clock in the Machine tab). ?mips= in the URL overrides it.</span>
 			</div>
 			<div className="setrow">
-				<label><input type="checkbox" id="set_count" data-key="mkb-count" checked={$("count").checked}
-					onChange={(e) => mirror("count", "checked", e.target.checked)} /> Count the boot at full speed</label>
+				<label><input type="checkbox" id="set_count" data-key="mkb-count" checked={MSET.count}
+					onChange={(e) => mirror(chooseCount, e.target.checked)} /> Count the boot at full speed</label>
 				{" "}<span className="note">The count box in the Machine tab: at full speed, first step the whole boot in the background, counting, then run the JIT. ?count=0 in the URL turns it off for one visit.</span>
 			</div>
 			<h3>Remembered for each kernel</h3>

@@ -4,7 +4,7 @@
 // controls.
 
 import { realNow, CLOCK } from "./clock.js";
-import { $, num, hex, V86_KERNEL_ADDR } from "./util.js";
+import { num, hex, V86_KERNEL_ADDR } from "./util.js";
 import { runState, stepper, symbols, disasm, runToFrom, setRunToFrom, setRunToMoved, setRunTo, setRunToLabel,
 	entryPhase, setPrefSpeed, prefSpeed, counting, setCounting, setCountNote, provide } from "./page.js";
 import { dbgFrames, dbgLineCodeWait } from "./dbginfo.js";
@@ -15,13 +15,14 @@ import { replayActive, replayStop, inputFlush, inputMark, inputRoom, inputTaint 
 import { REV, revNeedsJit, revStepTo, revTick, revRate, revBranch, revReset } from "./reverse.js";
 import { scan } from "./scan.js";
 import { insnIndex } from "./listing.js";
-import { endText, updateDebugUi, finishEntry, speed, SPEED_KEY, renderClock, MIPS_KEY, clockMips,
+import { endText, updateDebugUi, finishEntry, SPEED_KEY, renderClock, MIPS_KEY, clockMips,
 	renderCounters, COUNT_KEY } from "./debugui.js";
 import { showTab } from "./tabs.jsx";
 import { navJump } from "./nav.js";
 import { afterStop } from "./symview.js";
 import { pause, resume } from "./run.js";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
+import { setSettings, clockText } from "./machtab.js";
 
 // Pause, and wait for a fast-forward or a fast Run to that is still running
 // (they are paused too) to return: a second one started next to it ran two
@@ -232,58 +233,69 @@ async function doRunTo() {
 	resume();
 }
 
-function initDebugger() {
-	$("dbg_pause").addEventListener("click", () => pause("Paused."));
-	$("dbg_continue").addEventListener("click", () => { dbgStatus(""); resume(true); });
-	$("vm_continue").addEventListener("click", () => $("dbg_continue").click());
-	$("dbg_step").addEventListener("click", () => doStep(1));
-	$("dbg_speed").addEventListener("change", () => {
-		setPrefSpeed(speed());
-		try {
-			localStorage.setItem(SPEED_KEY, prefSpeed);
-		} catch (e) {
-			// storage unavailable: the choice lasts until reload
-		}
-		if (runState === "stepped" || runState === "jit")
-			resume(true);
-	});
-	$("clock_mips").addEventListener("change", () => {
-		try {
-			localStorage.setItem(MIPS_KEY, $("clock_mips").value);
-		} catch (e) {
-			// no storage: until reload
-		}
-		if (stepper && runState !== "off") {
-			inputTaint(stepper, "the clock was changed to " + $("clock_mips").selectedOptions[0].text);
-			revBranch(stepper, "the clock was changed");
-			revReset("the clock was changed at instruction " + num(stepper.steps));
-		}
-		if (runState === "jit") {
-			resume(true); // the JIT from the page (virtual) or v86's own loop (real)
-		} else {
-			CLOCK.set(!!clockMips());
-			if (clockMips())
-				CLOCK.setMips(clockMips());
-		}
-		renderClock();
-	});
-	$("count").addEventListener("change", () => {
-		try {
-			localStorage.setItem(COUNT_KEY, $("count").checked ? "1" : "0");
-		} catch (e) {
-			// no storage: until reload
-		}
-		if (!$("count").checked && counting) {
-			setCounting(false);
-			setCountNote("Counting switched off.");
-			if (runState === "stepped")
-				resume();
-		}
-		renderCounters();
-	});
+// The Machine tab's run controls (machinepanel.jsx; the menu toggle's
+// Pause and Continue and the Settings tab use them too).
+const machPause = () => pause("Paused.");
+
+function machContinue() {
+	dbgStatus("");
+	resume(true);
+}
+
+// The speed menu (prefSpeed, remembered): a run goes on at that speed.
+function chooseSpeed(v) {
+	setSettings({ speed: v });
+	setPrefSpeed(v);
+	try {
+		localStorage.setItem(SPEED_KEY, prefSpeed);
+	} catch (e) {
+		// storage unavailable: the choice lasts until reload
+	}
+	if (runState === "stepped" || runState === "jit")
+		resume(true);
+}
+
+// The clock menu (remembered): the reverse history and a recorded run end there.
+function chooseClock(v) {
+	setSettings({ clock: v });
+	try {
+		localStorage.setItem(MIPS_KEY, v);
+	} catch (e) {
+		// no storage: until reload
+	}
+	if (stepper && runState !== "off") {
+		inputTaint(stepper, "the clock was changed to " + clockText());
+		revBranch(stepper, "the clock was changed");
+		revReset("the clock was changed at instruction " + num(stepper.steps));
+	}
+	if (runState === "jit") {
+		resume(true); // the JIT from the page (virtual) or v86's own loop (real)
+	} else {
+		CLOCK.set(!!clockMips());
+		if (clockMips())
+			CLOCK.setMips(clockMips());
+	}
+	renderClock();
+}
+
+// The count box (remembered): off stops counting a run that counts.
+function chooseCount(on) {
+	setSettings({ count: on });
+	try {
+		localStorage.setItem(COUNT_KEY, on ? "1" : "0");
+	} catch (e) {
+		// no storage: until reload
+	}
+	if (!on && counting) {
+		setCounting(false);
+		setCountNote("Counting switched off.");
+		if (runState === "stepped")
+			resume();
+	}
+	renderCounters();
 }
 
 // The page API's entries of this module (page.js).
 provide({ runToStopped, runToLine, pauseAll, runToTargets });
 
-export { initDebugger, pauseAll, doStep, doRunTo };
+export { pauseAll, doStep, doRunTo, machPause, machContinue, chooseSpeed, chooseClock, chooseCount };

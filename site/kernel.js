@@ -2,10 +2,11 @@
 
 // Loading a kernel: its bzImage, symbols.json and disasm.json.
 
-import { kib, $, withV, httpWhy } from "./util.js";
-import { image, setImage, setSymbols, setDisasm, initrd, setInitrd, provide } from "./page.js";
-import { dbgUseShards } from "./dbginfo.js";
-import { srcUseShipped } from "./srctext.js";
+import { kib, withV, httpWhy } from "./util.js";
+import { image, setImage, setSymbols, setDisasm, initrd, setInitrd, kernels, provide } from "./page.js";
+import { dbgUseShards, dbgFresh } from "./dbginfo.js";
+import { srcUseShipped, srcFresh } from "./srctext.js";
+import { setSettings, ramHas, ramSizes } from "./machtab.js";
 import { ramForInitrd, initrdNote, showImported, restoreImported, restoreCmdline, analyzeInitrd } from "./symimport.js";
 import { renderSnapshots } from "./snapshots.js";
 import { setStatus, ram, parseHeader, DEFAULT_RAM, showHeader, kernelEnd } from "./header.js";
@@ -28,16 +29,17 @@ function useImage(name, buffer, memFromUrl, syms) {
 	const bytes = new Uint8Array(buffer);
 	setImage({ name, bytes, hdr: parseHeader(bytes) });
 	setSymbols(syms || null);
-	$("memory").value = memFromUrl || String(DEFAULT_RAM);
+	let mem = memFromUrl || String(DEFAULT_RAM);
 	// A kernel that needs more than the default (a distro kernel decompresses
 	// to 16 MiB and beyond) gets the smallest listed size that fits it.
 	if (!memFromUrl) {
 		const need = kernelEnd(image.hdr);
-		const opts = Array.from($("memory").options, (o) => Number(o.value)).sort((a, b) => a - b);
+		const opts = ramSizes().sort((a, b) => a - b);
 		const fit = opts.find((v) => v >= need);
 		if (need > DEFAULT_RAM)
-			$("memory").value = String(fit || opts[opts.length - 1]);
+			mem = String(fit || opts[opts.length - 1]);
 	}
+	setSettings({ ram: mem });
 	ramForInitrd(); // keeps a loaded initrd: v86 needs RAM above 64 MiB + its size
 	initrdNote();
 	showHeader();
@@ -89,7 +91,7 @@ async function loadKernel(entry, memFromUrl) {
 	dbgUseShards(entry);
 	syncSrcToggle();
 	// kernels.json may give a kernel its own RAM size (meta.json "ram").
-	const ramDefault = entry.ram && [...$("memory").options].some((o) => o.value === String(entry.ram)) ? String(entry.ram) : null;
+	const ramDefault = entry.ram && ramHas(entry.ram) ? String(entry.ram) : null;
 	// kernels.json "initrd": the initrd that comes with this entry. One the
 	// user loaded stays; one from another entry goes.
 	if (entry.initrd && (!initrd || initrd.entry)) {
@@ -118,7 +120,36 @@ async function shippedDebugFor(entry) {
 	syncSrcToggle();
 }
 
+// The Machine tab's Kernel menu: that kernel, loaded and booted.
+function chooseKernel(name) {
+	setSettings({ kernel: name });
+	const k = kernels.find((x) => x.name === name);
+	if (k)
+		loadKernel(k).catch((e) => setStatus(String(e)));
+}
+
+// The RAM menu: the header check and the memory map again (Boot uses it).
+function chooseRam(v) {
+	setSettings({ ram: v });
+	showHeader();
+	drawMaps();
+}
+
+// From disk: a bzImage file, booted (without disasm.json, C source or
+// DWARF, until its vmlinux is imported).
+async function bootFromDisk(f) {
+	setDisasm(null);
+	srcFresh(null, "no C source for a bzImage from disk");
+	dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
+	syncSrcToggle();
+	useImage(f.name, await f.arrayBuffer());
+	showImported();
+	await restoreImported();
+	await restoreCmdline();
+	await boot();
+}
+
 // The page API's entries of this module (page.js).
 provide({ loadKernel, useImage });
 
-export { loadKernel, useImage, loadSymbols, loadDisasm, shippedDebugFor };
+export { loadKernel, useImage, loadSymbols, loadDisasm, shippedDebugFor, chooseKernel, chooseRam, bootFromDisk };

@@ -39,6 +39,7 @@ import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
 import { Tip, DomNodes } from "./ui.jsx";
 import { setStatus } from "./header.js";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
+import { MSET } from "./machtab.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -439,7 +440,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const nEdits = Object.keys(edits).length;
 	const elfName = elfPath.replace(/^.*\//, "");
 	RB.last = { from, bytes, elf, elfName, same };
-	const mem = $("memory").value;
+	const mem = MSET.ram;
 	// A kit whose objects have no debug sections (Debian): with no edit the
 	// ELF has no DWARF and is CI's bytes, so the shipped kernel's data files
 	// are this kernel's and are used as they are; with edits the ELF has the

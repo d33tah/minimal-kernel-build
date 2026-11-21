@@ -25,7 +25,19 @@
 <!-- The empty elements that markup/static.js names get their tab's markup
      from markup/*.jsx when build.mjs writes index.html from this file. -->
 <main>
-<section class="panel" id="panel_machine" role="tabpanel" aria-labelledby="tab_machine"></section>
+<!-- The Machine tab: the screen is this file's (v86 draws into
+     #screen_container, needed before the page's init); MachinePanel in
+     machinepanel.jsx draws the rest into the empty boxes (shell.jsx). -->
+<section class="panel" id="panel_machine" role="tabpanel" aria-labelledby="tab_machine">
+<div id="machine_top"></div>
+<div class="machine">
+  <div class="screenwrap" id="screen_wrap">
+    <div id="screen_container" title="The VGA text screen (click it and type: the keys go to the VM)"><div id="screen_text"></div> <canvas id="screen_canvas" style="display: none"></canvas></div>
+  </div>
+  <div class="run" id="machine_run"></div>
+</div>
+<section class="controls" id="machine_ctl" aria-label="Kernel and boot"></section>
+</section>
 
 <section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory" hidden></section>
 

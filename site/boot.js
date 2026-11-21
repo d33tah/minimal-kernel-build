@@ -23,7 +23,8 @@ import { ram, checkImage, setStatus, kernelEnd } from "./header.js";
 import { setScanCopy, setAutoscan } from "./scan.js";
 import { computePageClasses, drawGrid } from "./memview.js";
 import { setLive, inspect, insnIndex } from "./listing.js";
-import { updateDebugUi, clockMips, finishEntry } from "./debugui.js";
+import { updateDebugUi, clockMips, finishEntry, entryInfo } from "./debugui.js";
+import { MSET, setSettings, cmdline } from "./machtab.js";
 import { vmKeys } from "./tabs.jsx";
 import { codeSymbols, afterStop } from "./symview.js";
 import { stopDriver, resetCounters, resume } from "./run.js";
@@ -95,7 +96,7 @@ async function boot() {
 	setSnapDiff(null);
 	renderSnapDiff();
 	setEmuRam(ram());
-	$("screen_text").textContent = "";
+	$("screen_text").textContent = ""; // v86's text rows (index.html's screen)
 	resetCounters();
 	updateDebugUi();
 	const fatal = checkImage(image.hdr, ram()).some(([level]) => level === "error");
@@ -121,7 +122,7 @@ async function boot() {
 			bios: { url: withV("v86/seabios.bin") },
 			vga_bios: { url: withV("v86/vgabios.bin") },
 			bzimage: { buffer: image.bytes.buffer.slice(0) },
-			cmdline: $("cmdline").value,
+			cmdline: cmdline(),
 			initrd: initrd ? { buffer: initrd.bytes.buffer.slice(initrd.bytes.byteOffset, initrd.bytes.byteOffset + initrd.bytes.length) } : undefined,
 			autostart: false,
 			disable_mouse: true,
@@ -188,12 +189,11 @@ async function boot() {
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
 		// "full", count the whole boot in the background, then run the JIT.
-		$("dbg_speed").value = prefSpeed;
+		setSettings({ speed: prefSpeed });
 		setEntryPhase(!!stepper && prefSpeed !== "full");
-		setCounting(!!stepper && (entryPhase || $("count").checked));
+		setCounting(!!stepper && (entryPhase || MSET.count));
 		initrdNote();
-		$("entry_info").textContent = entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "";
-		delete $("entry_info").dataset.steps;
+		entryInfo(entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "");
 		setCountStart(realNow());
 		setCountMs(0);
 		setCountSteps(0);

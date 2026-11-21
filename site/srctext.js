@@ -3,7 +3,7 @@
 // The C source text the Source panel shows (source.js): the shipped
 // files, a folder or .tar picked by the user, statements over lines.
 
-import { $ } from "./util.js";
+import { setImp } from "./machtab.js";
 import { api, image } from "./page.js";
 import { dbgChanged, dbgHas } from "./dbginfo.js";
 import { dbgGunzip } from "./dbgmerge.js";
@@ -223,11 +223,9 @@ async function srcPickTar(file) {
 // vmlinux, a bzImage from disk with one).
 function srcStatus() {
 	const show = dbgHas() && SRC.mode !== "shipped";
-	$("src_pick").hidden = !show;
-	const el = $("src_status");
-	el.dataset.state = SRC.mode === "picked" && SRC.entries ? "picked" : SRC.mode === "picked" ? "indexing" : "";
-	el.textContent = !show ? "" : SRC.mode === "picked" ? "C source: " + SRC.info :
-		"file:line only: pick the kernel's source folder or .tar for the text of the lines (" + SRC.why + ")";
+	setImp({ src: { show, state: SRC.mode === "picked" && SRC.entries ? "picked" : SRC.mode === "picked" ? "indexing" : "",
+		text: !show ? "" : SRC.mode === "picked" ? "C source: " + SRC.info :
+			"file:line only: pick the kernel's source folder or .tar for the text of the lines (" + SRC.why + ")" } });
 }
 
 // ---- statements spanning several lines --------------------------------------

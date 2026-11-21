@@ -28,13 +28,14 @@ const SRC_ADDRS_SHOWN = 40;
 
 // The title: "fn, dir/dir/file.c:first-last" or "dir/dir/file.c (whole
 // file)", each directory of the path a button that lists its files in the
-// switcher, the file name one that opens the whole file.
-function SrcTitle() {
-	return <b id="src_title">{srcPanel ? <SrcTitleParts /> : null}</b>;
-}
+// switcher, the file name one that opens the whole file. The title and
+// the parts below are drawn again only when what they show changed (the
+// panel is drawn every second while stepping).
+const SrcTitle = memo(function SrcTitle({ fn, path, whole, range }) {
+	return <b id="src_title">{path ? <SrcTitleParts fn={fn} path={path} whole={whole} range={range} /> : null}</b>;
+});
 
-function SrcTitleParts() {
-	const { fn, path, whole } = srcPanel;
+function SrcTitleParts({ fn, path, whole, range }) {
 	const parts = path.split("/");
 	return (
 		<>
@@ -48,7 +49,7 @@ function SrcTitleParts() {
 				return whole ? p : <button key={k} type="button" className="crumb" data-path={path} title={"Open the whole of " + path}
 					onClick={() => openSourceFile(path)}>{p}</button>;
 			})}
-			{whole ? " (whole file)" : SRCV.range}
+			{whole ? " (whole file)" : range}
 		</>
 	);
 }
@@ -104,8 +105,9 @@ function outlinePick(v) {
 		openSourceLine(srcPanel.path, Number(v));
 }
 
-function SrcNav() {
-	const o = srcPanel ? srcOutlineView() : { list: [], los: new Map(), state: "none", incl: [] };
+const NO_OUTLINE = { list: [], los: new Map(), state: "none", incl: [] };
+
+const SrcNav = memo(function SrcNav({ o }) {
 	const { list, incl } = o;
 	return (
 		<div id="src_nav" className="srcnav" hidden={!list.length && !incl.length}>
@@ -126,7 +128,7 @@ function SrcNav() {
 			</select>
 		</div>
 	);
-}
+});
 
 // One row of the switcher: a file with its counts, or a directory.
 const SwRow = memo(function SwRow({ x, i, active, current }) {
@@ -209,19 +211,20 @@ const SrcSwitch = memo(function SrcSwitch() {
 // opened): every address of its code (each inlined copy and each inlined
 // call made on it, dbgLineCode) with a jump to it, and "Run to file:line".
 // A line that continues a statement shows its first line's.
-function SrcAddrs() {
-	const pick = srcPanel && srcPanel.ready && srcPanel.pick;
-	const v = pick ? srcAddrsView(pick) : null;
+// start: the first line of the statement pick continues (0: none); ver, st
+// and syms (the DWARF's version, a stepper, the symbols) are here to draw
+// it again when they change.
+const SrcAddrs = memo(function SrcAddrs({ path, pick, start, ver, st, syms }) {
+	const v = pick ? srcAddrsView(path, pick, start) : null;
 	return <div id="src_addrs" className="note srcaddrs" hidden={!v} {...(v ? v.data : {})}>{v ? v.body : null}</div>;
-}
+});
 
-function srcAddrsView(pick) {
-	const c = srcPanel.cont && srcPanel.cont.get(pick);
-	const line = c ? c.start : pick;
-	const r = dbgLineCode(srcPanel.path, line);
-	const where = (r.path || srcPanel.path) + ":" + line;
-	const lead = [<span key="loc" className="srcloc">{where}</span>, c ? " (line " + pick + " continues this statement): " : ": "];
-	const data = { "data-state": r.state, "data-line": line, "data-path": r.path || srcPanel.path };
+function srcAddrsView(path, pick, start) {
+	const line = start || pick;
+	const r = dbgLineCode(path, line);
+	const where = (r.path || path) + ":" + line;
+	const lead = [<span key="loc" className="srcloc">{where}</span>, start ? " (line " + pick + " continues this statement): " : ": "];
+	const data = { "data-state": r.state, "data-line": line, "data-path": r.path || path };
 	if (r.state !== "ok")
 		return { data: { ...data, "data-bps": "[]", "data-rows": "[]", "data-calls": "[]" },
 			body: <div>{lead}{r.state === "loading" ? r.why || "reading DWARF…" : r.why}</div> };
@@ -374,11 +377,13 @@ function useBox(box) {
 
 function SourceAside({ box }) {
 	useController(SRCV);
+	const pick = srcPanel && srcPanel.ready ? srcPanel.pick || 0 : 0;
+	const c = pick && srcPanel.cont ? srcPanel.cont.get(pick) : null;
 	useBox(box);
 	return (
 		<>
 			<div className="scan srchead">
-				<SrcTitle />
+				<SrcTitle fn={srcPanel ? srcPanel.fn : null} path={srcPanel ? srcPanel.path : ""} whole={!!srcPanel && !!srcPanel.whole} range={SRCV.range} />
 				{" "}
 				<span className="srcbtns">
 					<button id="bm_add_src" type="button" className="bmadd" aria-label="Bookmark the picked line" onClick={() => bmAsk(bmDraftHere("src"))}
@@ -396,7 +401,7 @@ function SourceAside({ box }) {
 			{" "}
 			<SrcSwitch />
 			{" "}
-			<SrcNav />
+			<SrcNav o={srcPanel ? srcOutlineView() : NO_OUTLINE} />
 			{" "}
 			<EdBar box={box} />
 			{" "}
@@ -409,7 +414,7 @@ function SourceAside({ box }) {
 			{" "}
 			<p id="src_info" className="note">{srcPanel ? SRCV.info : ""}</p>
 			{" "}
-			<SrcAddrs />
+			<SrcAddrs path={srcPanel ? srcPanel.path : ""} pick={pick} start={c ? c.start : 0} ver={DBG.version} st={!!stepper} syms={symbols} />
 			{" "}
 			<pre id="src_body" ref={bodyMount} className="srcview" tabIndex="0" onClick={srcBodyClick} />
 		</>

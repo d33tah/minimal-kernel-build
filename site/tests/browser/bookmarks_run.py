@@ -17,7 +17,8 @@ def tip_long_press(page, cdp, x, y, ms=800):
     cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
 
 BM_WHERE_JS = """() => { const sp = document.getElementById('src_panel'), sb = document.getElementById('src_body');
-  const L = document.getElementById('listing'), lb = L.getBoundingClientRect();
+  // (No #listing before the Page tab is first shown: an empty one stands in.)
+  const L = document.getElementById('listing') || document.createElement('pre'), lb = L.getBoundingClientRect();
   const vis = (a) => { const e = L.querySelector('.ins[data-addr="' + a + '"]'); if (!e) return false;
     const r = e.getBoundingClientRect(); return r.top >= lb.top - 1 && r.bottom <= lb.bottom + 1 && r.bottom > 0 && r.top < innerHeight; };
   return { tab: MKB.tab, page: MKB.selectedPage, listingPage: Number(L.dataset.page ?? -1), srcOpen: !sp.hidden, file: sb.dataset.file || '',

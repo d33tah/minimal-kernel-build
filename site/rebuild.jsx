@@ -136,6 +136,8 @@ function rbShow(text, state, frac) {
 function rbStepText(e) {
 	if (e.kind === "fetch")
 		return ["Fetching the kit: " + e.done + " of " + e.of + " files…", 0.1 + 0.1 * e.done / e.of];
+	if (e.kind === "gen")
+		return ["Making " + e.out + " (" + (e.tool === "cpio" ? "gen_init_cpio" : e.tool) + ", " + (e.done + 1) + " of " + e.of + ")…", 0.2];
 	if (e.kind === "compile")
 		return ["Compiling " + e.out + " (" + (e.done + 1) + " of " + e.of + ")…", 0.2 + 0.5 * e.done / e.of];
 	if (e.kind === "object")
@@ -202,7 +204,9 @@ function rbLogEvent(e) {
 	if (e.kind === "command") {
 		RB.logCmds++;
 		rbLogSum(true);
-		rbLogAdd("$ " + e.argv.map(rbWord).join(" ") + (e.stdin ? " < (the previous step's output)" : "") + "\n", "rbcmd");
+		rbLogAdd("$ " + e.argv.map(rbWord).join(" ") + (e.stdin ? " < (the previous step's output)" : e.list ? " <<EOF" : "") + "\n", "rbcmd");
+		if (e.list)
+			rbLogAdd(e.list.join("\n") + "\nEOF\n");
 		return;
 	}
 	if (e.stdout)
@@ -475,6 +479,9 @@ async function rbBoot(from, kit, edits, r, ms) {
 		srcFresh("picked", "");
 		SRC.name = "the edited tree of " + from;
 		SRC.entries = r.tree;
+		// What the kit assembles (the minified Linux's elo/init.nasm, plan
+		// E9): listed though no DWARF names it.
+		SRC.extra = (kit.gen || []).filter((g) => g.tool === "nasm").flatMap((g) => g.inputs);
 		SRC.info = from + "'s tree with your " + nEdits + " edit" + (nEdits === 1 ? "" : "s") + " (" + r.tree.size + " files)";
 		srcChanged();
 		dbgImport(elfFile, map.offset, null);
@@ -544,7 +551,7 @@ function RebuildPanel() {
 			<div className="scan"><button id="rb_go" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title}
 				onClick={rbRun}><span aria-hidden="true">⟳</span> Rebuild and boot</button>{" "}<label className="rball"><input id="rb_all"
 				type="checkbox" checked={RB.all} onChange={(e) => { RB.all = e.target.checked; RB.changed(); }} /> compile every object</label>
-			<Tip text="Builds this kernel again in this browser, with your edits, and boots it: the build kit CI made for it (its objects, sources, headers and the link steps) is fetched, the objects that include a file you changed are compiled by clang.wasm (the page's clang 22.1.0, fetched once, 77 MB), the others are CI's, and the link steps (ld.lld, objcopy, the kernel's own tools as wasm) make the bzImage and the ELF with debug info. The kernel boots at once; its symbols, disassembly, DWARF (lines, types, locals, call frames) and the C source of your edited tree are then made in this browser, so the listings, the Source panel, the Debugger and the coverage follow the edit. With no edit the bzImage and the ELF are CI's bytes, which the status checks. Compile every object: compile all of them from the sources, not only the changed ones. Nothing is uploaded." />
+			<Tip text="Builds this kernel again in this browser, with your edits, and boots it: the build kit CI made for it (its objects, sources, headers and the link steps) is fetched, what the kit makes from your files first is made again (the minified Linux's /init from elo/init.nasm by nasm, then its initramfs), the objects that include a file you changed are compiled by clang.wasm (the page's clang 22.1.0, fetched once, 77 MB), the others are CI's, and the link steps (ld.lld, objcopy, the kernel's own tools as wasm) make the bzImage and the ELF with debug info. The kernel boots at once; its symbols, disassembly, DWARF (lines, types, locals, call frames) and the C source of your edited tree are then made in this browser, so the listings, the Source panel, the Debugger and the coverage follow the edit. With no edit the bzImage and the ELF are CI's bytes, which the status checks. Compile every object: compile all of them from the sources, not only the changed ones. Nothing is uploaded." />
 			{" "}<button id="rb_back" type="button" hidden={!(image && image.from) || RB.busy} onClick={rbBack}>Back to the shipped kernel</button></div>
 			<progress id="rb_progress" max="1" value={RB.progress || 0} hidden={RB.progress === null}></progress>
 			<p id="rb_status" className="note" role="status" data-state={RB.state}>{RB.status}</p>

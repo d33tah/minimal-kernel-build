@@ -132,7 +132,7 @@ async function gen({ id, file, name, clang, label = name, trim = "auto", disasm 
 	return { files, log, why, times };
 }
 
-async function src({ id, dwarf, tree, origin, notes }) {
+async function src({ id, dwarf, tree, origin, notes, extra }) {
 	const say = (progress) => self.postMessage({ id, progress });
 	const dw = new Map(dwarf);
 	const entries = new Map(tree);
@@ -158,7 +158,7 @@ async function src({ id, dwarf, tree, origin, notes }) {
 			say("C source: " + n + " files");
 		const f = find(p);
 		return f ? new Uint8Array(rd.readAsArrayBuffer(f)) : null;
-	}, { origin, notes, gzip, put: (name, data) => files.push(["src/" + name, bytesOf(data)]), log: (text) => log.push("src: " + text) });
+	}, { origin, notes, extra, gzip, put: (name, data) => files.push(["src/" + name, bytesOf(data)]), log: (text) => log.push("src: " + text) });
 	return { files, missing: r.missing, pastEnd: r.pastEnd, log };
 }
 

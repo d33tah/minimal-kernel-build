@@ -2,14 +2,15 @@
 "use strict";
 // The C source files a kernel's DWARF names, for the page's source view.
 //
-//   site/gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...]
+//   site/gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...] [--extra PATH ...]
 //       DWARF_DIR is gen-dwarf.js's output; every path its line rows,
 //       inlined-call sites and variables (types.json: where each is
 //       defined) name is looked up under SRC_ROOT (the tree the
 //       kernel was built from) and written gzipped to OUTDIR/<path>.gz.
 //       OUTDIR/index.json lists them, says why the others are missing and
 //       carries --origin (where the tree comes from) and --note (how a file
-//       was made, e.g. a regenerated header).
+//       was made, e.g. a regenerated header). --extra: a file the DWARF
+//       does not name that is listed too (an assembly source of /init).
 //
 // Fails when a line the DWARF names is past the end of its file: the tree
 // is not the one the kernel was built from. Also counts the inlined calls
@@ -22,12 +23,12 @@ import zlib from "zlib";
 import { kgenSrc } from "./kgen.js";
 
 function usage() {
-	console.error("usage: gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...]");
+	console.error("usage: gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...] [--extra PATH ...]");
 	process.exit(2);
 }
 
 const args = process.argv.slice(2);
-const pos = [], notes = {};
+const pos = [], notes = {}, extra = [];
 let origin = null;
 for (let k = 0; k < args.length; k++) {
 	if (args[k] === "--origin")
@@ -37,7 +38,9 @@ for (let k = 0; k < args.length; k++) {
 		if (!m)
 			usage();
 		notes[m[1]] = m[2];
-	} else
+	} else if (args[k] === "--extra")
+		extra.push(args[++k]);
+	else
 		pos.push(args[k]);
 }
 if (pos.length !== 3 || !origin)
@@ -53,7 +56,7 @@ async function main() {
 		const src = path.join(root, p);
 		return fs.existsSync(src) && fs.statSync(src).isFile() ? fs.readFileSync(src) : null;
 	}, {
-		origin, notes,
+		origin, notes, extra,
 		put: (name, data) => {
 			fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
 			fs.writeFileSync(path.join(outDir, name), data);

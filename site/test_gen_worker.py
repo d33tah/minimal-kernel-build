@@ -106,7 +106,7 @@ RUN_JS = """async ({ k, elfs, ci }) => {
   for (const p of ix.files)
     tree.push(['linux/' + p, new Blob([await gunzip(new Uint8Array(await (await get(ci + 'src/' + p.split('/').map(encodeURIComponent).join('/') + '.gz')).arrayBuffer()))])]);
   const dwarf = b.files.map(([p, d]) => [p.slice('dwarf/'.length), d]);
-  const c = await w.request({ op: 'src', dwarf, tree, origin: ix.origin, notes: ix.notes });
+  const c = await w.request({ op: 'src', dwarf, tree, origin: ix.origin, notes: ix.notes, extra: ix.extra });
   res.ms.src = c.ms; res.log = res.log.concat(c.log); res.pastEnd = c.pastEnd;
   res.files = await sums([...a.files, ...b.files, ...c.files]);
   res.why = { ...a.why, ...b.why };

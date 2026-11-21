@@ -3048,26 +3048,58 @@ against its SHA-256 and every step's output against CI's. A fetch that
 gets a server error is tried again after 0.5, 1 and 2 s (GitHub Pages
 answered 503 to one of the 32 parallel blob fetches in E3's live check).
 
-The kits do not make generated files again: kbuild's headers
-(`autoconf.h`, `asm-offsets.h`, `bounds.h`, the syscall tables) and
-`usr/initramfs_data.cpio` (gen_init_cpio, from `minified/elo`) are files
-of the kit as CI made them (listed by `gen-kit.py`, kind 1 in the kit). An
-edit that should change one of them (a struct field asm-offsets reads, the
-initramfs list) is not rebuilt; vdso2c (no vdso in these kernels) and
-gen_init_cpio would be host tools in wasm when that matters (Debian, E6).
+The kits do not make kbuild's generated headers again (`autoconf.h`,
+`asm-offsets.h`, `bounds.h`, the syscall tables): they are files of the
+kit as CI made them (listed by `gen-kit.py`, kind 1 in the kit), and an
+edit that should change one of them (a struct field asm-offsets reads) is
+not rebuilt; vdso2c (no vdso in these kernels) would be a host tool in
+wasm when that matters.
+
+The minified Linux's /init is rebuilt (plan E9). `minified/elo/init.nasm`
+is assembled by `nasm -f bin` (`elo/Makefile`; the binary `elo/init` is
+committed) and `usr/gen_initramfs.sh` packs every file of `elo/` (`init`,
+`init.nasm`, `Makefile`, with their mode and owner) plus `/dev` and
+`/dev/console` into `usr/initramfs_data.cpio` with `usr/gen_init_cpio`;
+`usr/initramfs_data.S` puts it into vmlinux with `.incbin`. Its kit has
+two generators (`gen` in the kit, `gen-kit.py --gen-nasm
+elo/init=elo/init.nasm --initramfs usr/initramfs_data.cpio=elo`): the nasm
+command, with the pinned nasm 2.16.03 in wasm that hello's kit uses
+(`gen-host-tools.py nasm`, SHA-256 and licence checked by `--check`), and
+gen_init_cpio's input lines as the script writes them (mode and owner
+read from CI's checkout). The cpio is written by `kitcpio.js`, a
+JavaScript port of `gen_init_cpio.c` (newc, every mtime 0, inodes from
+721, the trailer and the padding to 512 bytes). `gen-kit.py` checks both
+when it makes the kit: nasm's output is the tree's `elo/init` and its
+Python `newc()` of the lines is CI's cpio. In the page a generator runs
+when one of its inputs is edited, or with "compile every object"; what it
+makes counts as an edit, so `usr/initramfs_data.o` (the cpio's only user)
+is compiled again and the link steps follow. An assembly error stops the
+build with nasm's `elo/init.nasm:LINE: error: ...` in the messages box and
+the log, like a compile error. `gen-src.js --extra elo/init.nasm` lists
+the file in the minified kernels' `src/` (no DWARF names it; a note says
+what it is), so the Source panel's Files finds it; a rebuilt kernel's
+`src/` made in the page lists it too. The page shows no symbols or
+disassembly of userspace programs, /init included: the symbols, the
+listings and the DWARF are vmlinux's (the shipped /init has none either).
 Neither kernel compresses its image (hello has no decompressor, the
 minified Linux's `vmlinux.bin.raw` is the raw image with its size), so no
 compressor runs in the page; the editable Debian's gzip is kgzip in wasm
 (below).
 
 Tests: `test_kit.mjs --unit` (kitSed against GNU sed, kitUsers, the
-errors) and `--build` (the kernels job, Node 20, wasi.js and clang.wasm:
-every kit from CI's objects and again from the sources, every object,
-step output, vmlinux and bzImage CI's bytes; an edit of `init/main.c`
-or `boot/hello.c` gives other products). `test_kit.py` (job `kit`):
+errors, kitCpio against `gen_init_cpio` compiled with cc on three input
+lists and five refused lines) and `--build` (the kernels job, Node 20,
+wasi.js and clang.wasm: every kit from CI's objects and again from the
+sources, every object, step and generator output, vmlinux and bzImage
+CI's bytes; an edit of `init/main.c` or `boot/hello.c` gives other
+products; for the minified Linux, the string /init prints edited: /init
+and the cpio made again, only `usr/initramfs_data.o` compiled, the string
+in the bzImage; `elo/init.nasm` unchanged as an edit: every product CI's
+bytes; an undefined symbol: `elo/init.nasm:45: error:`). `test_kit.py` (job `kit`):
 Chromium, Firefox and WebKit, the same builds in the page plus hello
 with "Hello, World!" edited to "Hello, Kit!!!", synthetic kits for the
-errors and the `.S` path, and qemu boots of the bzImages the browsers
+errors, the `.S` path and a cpio generator (its bytes against
+`gen-kit.py`'s `newc()`, a refused line, a missing file), and qemu boots of the bzImages the browsers
 wrote (each browser's bytes equal). `gen-kit.py --budget TREE` estimates
 a kit of a built kbuild tree (the debian-clang job prints Debian's).
 
@@ -3295,6 +3327,26 @@ compiled, vmlinux and bzImage are the kit's bytes and the bzImage is the
 shipped one but for the 20-byte build-id (`kit.shipped.differs`). It
 reports the seconds from the press to the string on the screen and to the
 data files.
+
+Suite `rebuild_init` (plan E9, job `kit`) edits the minified Linux's
+/init at 1280 px (-O0, light) and 390 px (-Os, touch, dark): the Source
+panel opened from the file list, Files, `init.nasm`, its note ("the
+source of /init"), Edit, `'Hello, World!'` typed over with `'Hello from
+an edited /init!'`, Rebuild and boot. The progress says "Making elo/init
+(nasm, 1 of 2)" and "Making usr/initramfs_data.cpio (gen_init_cpio, 2 of
+2)", the build log has the nasm command and gen_init_cpio's input lines
+(47 commands: 2 generators, 1 compile, 44 link steps), exactly
+`usr/initramfs_data.o` is compiled, the screen shows the new string and
+then `Still alive` (no `Hello, World!`), the downloaded bzImage holds it
+and the rebuilt kernel's `src/` (made in the page) lists `elo/init.nasm`
+with the edited text. Then `mov eax, [nosuchlabel]` added after the first
+`int 0x80`: not built, "elo/init: nasm failed", the messages box has
+``elo/init.nasm:45: error: symbol `nosuchlabel' not defined``, the log has
+`exit 1` and no clang command, the machine keeps the kernel it ran.
+`rebuild_linux`'s unchanged rebuild of every object runs both generators
+and still gives CI's bytes. On d-claude (`speed=full`): built in 6.7 s
+(-O0) and 7.8 s (-Os), the new string on the screen 7.6 s and 8.6 s after
+the press (edit to boot).
 
 Suite `rebuild_debian` (plan E6, job `kit`) does it on the editable
 Debian at 1280 px: boots it with `speed=full` to `(initramfs)`, edits

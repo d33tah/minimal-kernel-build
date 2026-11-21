@@ -298,6 +298,11 @@ def rebuild_linux_run(browser, base, shots, tmp, name, phone, scheme):
     n = len(kit["objects"])
     if st["state"] != "done" or "identical to CI's build" not in st["status"] or f"{n} objects compiled" not in st["status"]:
         problems.append(f"{tag}: the unchanged rebuild: {st['state']} {st['status']!r} {st['log'][:300]!r}")
+    # Every object compiled: /init assembled and the initramfs made again too (E9).
+    log = page.evaluate("document.getElementById('rb_buildlog').textContent")
+    for g in kit.get("gen", []):
+        if "$ " + " ".join(g["argv"]) not in log:
+            problems.append(f"{tag}: the unchanged rebuild of every object did not run {' '.join(g['argv'])!r}")
     if not wait_for(lambda: gate_on_screen(page), 120) or RBL_MSG in page.inner_text("#screen_container"):
         problems.append(f"{tag}: the unchanged rebuild's screen: {page.inner_text('#screen_container')[:300]!r}")
     _, elf = rb_download(page, "#rb_dl_elf", phone, tmp)

@@ -246,8 +246,11 @@ jobs:
         site/gen-dwarf.js "$g/minified-os/vmlinux" out/minified-linux-os/dwarf
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
         site/gen-dwarf.js "$g/hello-os/boot/high/kernel.elf" out/hello-os/dwarf
-        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12) with site/unoptimized.patch (built with -O0)"
-        site/gen-src.js out/minified-linux-os/dwarf "$g/minified-os" out/minified-linux-os/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
+        # elo/init.nasm: the source of /init (nasm -f bin, packed into the
+        # initramfs), which the page rebuilds too (plan E9); no DWARF names it.
+        init="elo/init.nasm=the source of /init: nasm -f bin assembles it, usr/gen_init_cpio packs it into the initramfs (usr/initramfs_data.cpio); Edit, then Rebuild and boot builds both again"
+        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12) with site/unoptimized.patch (built with -O0)" --extra elo/init.nasm --note "$init"
+        site/gen-src.js out/minified-linux-os/dwarf "$g/minified-os" out/minified-linux-os/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)" --extra elo/init.nasm --note "$init"
         site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/gen-src.js out/hello-os/dwarf "$g/hello-os" out/hello-os/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --types 2000 --cfi 5000 --locals 3000 --operands 2000 --lines 3000 --funcs 2000 --vars 2000 --strip "$(realpath "$g/minified")/"
@@ -1327,13 +1330,15 @@ jobs:
     # Rebuild and boot as a user (plans E4 and E5, rebuild.js): edit hello
     # and the minified Linux -O0/-Os in the page, rebuild, boot, every debug
     # feature of the rebuilt kernel; a header edit compiles its users; an
-    # unchanged rebuild of every object gives CI's bytes. Needs the kits and
-    # clang.wasm, so it runs here and not in browser-test.
+    # unchanged rebuild of every object gives CI's bytes; the minified
+    # Linux's /init edited (plan E9: nasm and the initramfs in the page) and
+    # an assembly error. Needs the kits and clang.wasm, so it runs here and
+    # not in browser-test.
     - name: Rebuild and boot in the page (test_browser.py rebuild)
       if: always()
       env:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
-      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuild,rebuild_linux --shots rebuild-screenshots'
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites rebuild,rebuild_linux,rebuild_init --shots rebuild-screenshots'
 
     # The same for the editable Debian (plan E6): boot to the initramfs
     # prompt, edit init/main.c, rebuild, boot to the edited line; a header

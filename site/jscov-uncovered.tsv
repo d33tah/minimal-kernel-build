@@ -258,8 +258,8 @@ kgen.js	533-534	2306e7d5	the function table without instruction starts (objdump 
 kgen.js	553	c8b20a61	a type or partial unit: the imported kernels have only compile units
 kgen.js	628	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the callers check first
 kgen.js	637	c8b20a61	a type or partial unit (see 552)
-kgen.js	746-748	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
-kgen.js	768	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
+kgen.js	751-753	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
+kgen.js	773	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
 listing.js	91	2d431e36	needs a listing with instructions of a page below the kernel, or before the kernel entry, after a fast-forward; disasm.json has no instructions below the kernel and the fast-forward always runs to the entry before code is listed
 listing.js	399	32eddd6f	stubShift without disasm.json or with an empty one: it is only called for yellow lines, which only exist when disasm.json has instructions
 listing.js	434	3cb18174	diffTip's sameAt for an address past RAM: the shifted address is at most a page above a listed instruction, inside RAM for every shipped kernel and RAM size
@@ -307,9 +307,9 @@ quests.jsx	216	2ece24a2	sometimes: the E820 quest answered right: ran in every r
 quests.jsx	242	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.jsx	461	f86b4bd8	localStorage.setItem throwing (storage blocked or full) when the Quests panel is opened or closed: the quests suite's no-storage case does not open or close it; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 quests.jsx	481-482	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
-rebuild.jsx	299-301	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
-rebuild.jsx	407-408	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
-rebuild.jsx	513	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
+rebuild.jsx	303-305	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
+rebuild.jsx	411-412	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
+rebuild.jsx	520	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	133	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	209-211	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	222	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
@@ -409,15 +409,15 @@ srcswitch.js	25,27	6bb7dbb9	localStorage.getItem throwing (storage blocked): the
 srcswitch.js	39,41	9b16c2ca	localStorage.setItem throwing (storage blocked or full): as line 848
 srcswitch.js	87	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race
 srcswitch.js	93,95	4f2fd304	unwindHere throwing: unwind.js answers stop reasons instead of throwing for the stacks the suites reach; a defensive catch
-srctext.js	25-27	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
-srctext.js	37	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
-srctext.js	44	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
-srctext.js	74	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
-srctext.js	83	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
-srctext.js	90	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
-srctext.js	169	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
-srctext.js	206	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
-srctext.js	273	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
+srctext.js	28-30	ca881eb9	srcUseShipped for a kernel without "src": every kernels.json entry (hello, hello-os, both minified builds, Debian with and without its initrd) ships its source
+srctext.js	40	5eacb3f2	race: another kernel loaded while index.json was being fetched; not forceable without stalling a fetch across a kernel switch
+srctext.js	48	5eacb3f2	race: as the row above, the index.json fetch failed after another kernel was loaded
+srctext.js	78	545d249f	srcFile without a path: its callers pass the file of a DWARF frame after checking file and line; a defensive guard
+srctext.js	87	83b18dcd	sometimes: a line asked for while the shipped index.json is still loading: ran in run 43588908776, not in 43600287802, 43602952211, 43605289270 or 43611610762 (whether a suite asks before the index arrives is timing)
+srctext.js	94	d0d02f63	the picked C source still being read when a line is asked for: the tests ask after the pick is read; a race
+srctext.js	173	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
+srctext.js	210	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
+srctext.js	277	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
 stepbase.js	244-248	ae1d0681	unrewind: a snapshot restored while stepped back with recordings ahead; the snapdiff, deltasnap and reverse suites restore snapshots only when not behind
 stepbase.js	262	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
 stepbase.js	278	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return

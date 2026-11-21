@@ -15,8 +15,11 @@ let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
 // moved to this text (dbginfo.js DBG.remap).
 const SRC_OVER = new Map();
 
+// extra: files no DWARF names that src/ lists (gen-src.js --extra: the
+// minified Linux's elo/init.nasm); a tree picked for the same kernel keeps
+// the list, so the src/ made from it lists them too.
 function srcFresh(mode, why) {
-	SRC = { mode, why, files: new Map(), missing: {}, notes: {} };
+	SRC = { mode, why, files: new Map(), missing: {}, notes: {}, extra: mode === "picked" ? SRC.extra : undefined };
 }
 
 // A shipped kernel: kernels.json "src" (a directory with index.json).
@@ -38,6 +41,7 @@ async function srcUseShipped(entry) {
 		SRC.have = new Set(ix.files);
 		SRC.missing = ix.missing || {};
 		SRC.notes = ix.notes || {};
+		SRC.extra = ix.extra;
 		SRC.info = ix.origin;
 	} catch (e) {
 		if (mine !== SRC)

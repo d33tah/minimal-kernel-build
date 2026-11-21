@@ -155,7 +155,7 @@ function genSrcPicked() {
 	const w = GEN.worker || (GEN.worker = new ClangWorker(withV("genworker.js")));
 	w.onprogress = (m) => { if (mine === GEN) genStatus("Indexing the C source in this browser: " + m.progress + "…"); };
 	genStatus("Indexing the C source in this browser…");
-	return w.request({ op: "src", dwarf, tree: [...pick.entries], origin: pick.info + ", indexed in this browser" })
+	return w.request({ op: "src", dwarf, tree: [...pick.entries], origin: pick.info + ", indexed in this browser", extra: pick.extra || [] })
 		.then((r) => genSrcMade(mine, pick, r), (e) => {
 			if (mine === GEN)
 				genStatus(GEN.note + " The C source was not indexed (" + e.message + "): its lines are read from the pick as they are shown.");

@@ -739,6 +739,11 @@ async function kgenSrc(getDwarf, readSrc, opts) {
 					note(f, l);
 			}
 	}
+	// Files no DWARF names that the page lists too (opts.extra: the minified
+	// Linux's elo/init.nasm, its /init).
+	for (const p of opts.extra || [])
+		if (!maxLine.has(p))
+			maxLine.set(p, 0);
 	const files = [], missing = {}, text = new Map(), pastEnd = [];
 	let raw = 0, packed = 0;
 	for (const p of [...maxLine.keys()].sort()) {
@@ -771,7 +776,8 @@ async function kgenSrc(getDwarf, readSrc, opts) {
 		if (lines.slice(Math.max(0, l - 3), l + 2).some((s) => s.includes(fn)))
 			named++;
 	}
-	put("index.json", JSON.stringify({ format: 1, origin: opts.origin, files, missing, notes: opts.notes || {}, bytes: raw, gzipBytes: packed }));
+	put("index.json", JSON.stringify({ format: 1, origin: opts.origin, files, missing, notes: opts.notes || {},
+		...(opts.extra && opts.extra.length ? { extra: opts.extra } : {}), bytes: raw, gzipBytes: packed }));
 	log(`${files.length} files (${raw} bytes, ${packed} gzipped), ${Object.keys(missing).length} missing` +
 		(Object.keys(missing).length ? ": " + Object.keys(missing).join(", ") : "") +
 		`; inlined calls whose call line names the function: ${named}/${checked}`);

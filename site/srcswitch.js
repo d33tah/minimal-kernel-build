@@ -60,7 +60,7 @@ function srcKnownFiles() {
 	if (SRC.entries) {
 		const pre = SRC.prefix || "";
 		for (const name of SRC.entries.keys())
-			if (name.startsWith(pre) && /\.(c|h|S|s|lds|inc)$/.test(name) && !m.has(name.slice(pre.length)))
+			if (name.startsWith(pre) && /\.(c|h|S|s|lds|inc|nasm)$/.test(name) && !m.has(name.slice(pre.length)))
 				m.set(name.slice(pre.length), { k: -1 });
 	}
 	srcSw.known = m;

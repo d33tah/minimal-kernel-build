@@ -81,7 +81,7 @@ function snapSay(text) {
 // The machine can be saved (boot.js: loaded) or not (a boot starts).
 function snapReady(v) {
 	SNAP.ready = v;
-	SNAP.changed();
+	renderSnapshots();
 }
 
 // The identity of the loaded kernel (and initrd), or null while it is computed.
@@ -519,9 +519,8 @@ function snapSwitch(s) {
 // in this page has no entry in the kernel list to switch to); "other".
 function snapMatch(s) {
 	const key = snapKernelKey();
-	if (!key)
-		return "";
-	return s.kernelKey === key ? "match" : recFamily(s) === buildFamily() && !kernels.some((k) => k.name === s.kernel) ? "build" : "other";
+	// "" while the kernel's hash is computed (a row drawn in those milliseconds).
+	return !key ? "" : s.kernelKey === key ? "match" : recFamily(s) === buildFamily() && !kernels.some((k) => k.name === s.kernel) ? "build" : "other";
 }
 
 // What a row says of a snapshot of another build of this kernel.
@@ -542,8 +541,11 @@ function snapEditEnd(s, name) {
 	SNAP.changed();
 }
 
-// The list, the store line and the pickers changed: the tab draws them.
+// The list, the store line and the pickers changed (or the kernel: its
+// hash starts here, at its load, as the bookmarks and runs use it too):
+// the tab draws them.
 function renderSnapshots() {
+	snapKernelKey();
 	SNAP.changed();
 }
 

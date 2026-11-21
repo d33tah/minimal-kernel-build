@@ -16,13 +16,6 @@ const srcName = (f) => f.file && f.line ? f.file.replace(/^.*\//, "") + ":" + f.
 // with .srcloc and the C text with .srctext (style.css).
 const srcLocHtml = (s) => '<span class="srcloc">' + escHtml(s) + "</span>";
 
-function srcLocEl(s) {
-	const e = document.createElement("span");
-	e.className = "srcloc";
-	e.textContent = s;
-	return e;
-}
-
 // A file:line that opens the Source panel at that line (srcOpenAt), as an
 // element or as HTML for the listings built as strings. Every view showing
 // a C location outside the Source panel makes it with one of these two;
@@ -71,5 +64,5 @@ function srcFocusKeep(draw) {
 	return out;
 }
 
-export { showSource, srcName, srcLocHtml, srcLocEl, srcLinkTitle, srcLinkEl, srcLinkHtml, srcLinkMark,
+export { showSource, srcName, srcLocHtml, srcLinkTitle, srcLinkEl, srcLinkHtml, srcLinkMark,
 	srcLinkAgain, srcFocusKeep };

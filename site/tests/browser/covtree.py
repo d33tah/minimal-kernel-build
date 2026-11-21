@@ -117,6 +117,14 @@ def covtree_case(browser, base, shots):
         page.screenshot(path=str(shots / f"covtree-{scheme}-{width}.png"))
     page.fill("#cov_filter", "")
     page.set_viewport_size({"width": 1280, "height": 1000})
+    # The root's arrow closes the tree to its one row and opens it again as it was.
+    n_open = len(cov_rows(page))
+    page.click('#cov_tree .covrow[data-kind="root"] .ttog')
+    closed = len(cov_rows(page))
+    page.click('#cov_tree .covrow[data-kind="root"] .ttog')
+    r["root arrow"] = [n_open, closed, len(cov_rows(page))]
+    if closed != 1 or r["root arrow"][2] != n_open:
+        problems.append(f"the root's arrow: rows open, closed, open again {r['root arrow']}")
     page.locator('#cov_tree .covrow[data-kind="func"][data-path$=":start_kernel"] .covname').click()
     syms = {x["name"]: x for x in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
     if not wait_for(lambda: page.get_attribute("#listing", "data-page") == str(syms["start_kernel"]["paddr"] // 4096), 5):

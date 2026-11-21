@@ -394,8 +394,8 @@ source.js	130	7dc2a1f4	openSource for a frame without file or line: its callers 
 source.js	133	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
 source.js	232	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
 source.js	271	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
-sourceaside.jsx	191	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
-sourceaside.jsx	102	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
+sourceaside.jsx	193	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
+sourceaside.jsx	103	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
 srcedit.js	136	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
 srcedit.js	275	4f0af11e	sometimes: ran in run 44099591689 (kit job: rebuild_debian opens files while the rebuilt Debian's data files arrive): edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
 srcedit.js	316	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)

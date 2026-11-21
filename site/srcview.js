@@ -5,9 +5,9 @@
 //   SRCV: the panel: open (shown beside the tab), range (the title's
 //     lines), info (the line under the text), and the elements the modules
 //     write through their refs: the file's text (bodyEl: thousands of lines
-//     of HTML, drawn by source.js as the Page listing is), the editor
-//     (taEl, its gutter gutterEl, its diff pdiffEl) and the buttons the
-//     focus goes back to (filesEl, editEl).
+//     of HTML, drawn by source.js as the Page listing is), the editor's
+//     line numbers and diff (gutterEl, pdiffEl; its textarea is srcedit.js's
+//     own node) and the buttons the focus goes back to (filesEl, editEl).
 //   SWV: the file switcher (its rows are srcswitch.js's srcSw; qEl its
 //     filter, an uncontrolled input; listEl its list).
 //   EDBAR: the Edit button and the editor bar (srcedit.js's ED: editing,
@@ -19,7 +19,7 @@
 
 import { controller } from "./ui.jsx";
 
-const SRCV = controller({ open: false, range: "", info: "", bodyEl: null, taEl: null, gutterEl: null, pdiffEl: null, filesEl: null,
+const SRCV = controller({ open: false, range: "", info: "", bodyEl: null, gutterEl: null, pdiffEl: null, filesEl: null,
 	editEl: null });
 const SWV = controller({ open: false, qEl: null, listEl: null });
 const EDBAR = controller({});

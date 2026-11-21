@@ -10,16 +10,16 @@
 // and marked editing here. Element ids and data attributes are the ones the
 // tests and the modules read.
 
-import { memo, useLayoutEffect, useRef } from "react";
+import { memo, useLayoutEffect } from "react";
 import { hex } from "./util.js";
 import { stepper, symbols, api } from "./page.js";
-import { useController } from "./ui.jsx";
+import { useController, DomNodes } from "./ui.jsx";
 import { SRCV, SWV, EDBAR, EDSTATE } from "./srcview.js";
 import { srcPanel, closeSource, openSourceFile, openSourceLine, fileLines, srcBodyClick, srcSwPick } from "./source.js";
 import { srcSw, srcSwOpen, srcSwClose, srcSwFilter, srcSwMove, srcFileCounts, SRC_SW_GROUPS } from "./srcswitch.js";
 import { SRC } from "./srctext.js";
 import { DBG, dbgFiles, dbgFrames, dbgLineCode, dbgChainText } from "./dbginfo.js";
-import { ED, edMap, edCan, edToggle, edDiffToggle, edRevertPanel, edWire } from "./srcedit.js";
+import { ED, ED_TA, edMap, edCan, edToggle, edDiffToggle, edRevertPanel } from "./srcedit.js";
 import { bmAsk, bmDraftHere } from "./bookmarks.js";
 import { RebuildPanelButton } from "./rebuild.jsx";
 import { HotPatchButton } from "./hotpatch.jsx";
@@ -281,6 +281,8 @@ const EdStateLine = memo(function EdStateLine() {
 });
 
 const filesMount = (el) => { SRCV.filesEl = el; };
+// The editor's textarea, srcedit.js's own node (the same array at every render).
+const TA_NODES = [ED_TA];
 
 // Files: opens and closes the switcher (drawn with it, on SWV).
 const FilesButton = memo(function FilesButton() {
@@ -372,11 +374,6 @@ function useBox(box) {
 
 function SourceAside({ box }) {
 	useController(SRCV);
-	const ta = useRef(null);
-	useLayoutEffect(() => {
-		SRCV.taEl = ta.current;
-		edWire(ta.current);
-	}, []);
 	useBox(box);
 	return (
 		<>
@@ -405,7 +402,7 @@ function SourceAside({ box }) {
 			{" "}
 			<div id="ed_area" className="edarea">
 				<pre id="ed_gutter" ref={gutterMount} className="edgutter" aria-hidden="true" />
-				<textarea id="ed_text" ref={ta} className="edtext" wrap="off" spellCheck="false" autoComplete="off" autoCapitalize="off" aria-label="Text of the file" />
+				<DomNodes nodes={TA_NODES} />
 			</div>
 			{" "}
 			<pre id="ed_pdiff" ref={pdiffMount} className="eddiff edpanel" />

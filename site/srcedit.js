@@ -192,9 +192,24 @@ async function edApply(text) {
 
 // ---- the editor in the Source panel ----------------------------------------
 
-// The editor's textarea (sourceaside.jsx renders it; this module writes
-// its text and listens to it, edWire).
-const edTa = () => SRCV.taEl;
+// The editor's textarea: this module's own node, which the Source panel
+// shows (sourceaside.jsx) and React does not draw: the browser's editor,
+// written and listened to here (React's change tracking of a textarea it
+// draws reads the whole text again at every key).
+const ED_TA = edMakeTa();
+const edTa = () => ED_TA;
+
+function edMakeTa() {
+	const ta = document.createElement("textarea");
+	ta.id = "ed_text";
+	ta.className = "edtext";
+	ta.wrap = "off";
+	ta.spellcheck = false;
+	ta.setAttribute("autocomplete", "off");
+	ta.setAttribute("autocapitalize", "off");
+	ta.setAttribute("aria-label", "Text of the file");
+	return ta;
+}
 
 // After srcShown (another file in the panel) and closeSource (srcPanel null).
 function edPanelShown() {
@@ -572,9 +587,7 @@ const srcOverlay = {
 	apply: edApply,
 };
 
-// The editor's listeners (the component's effect, once it has the
-// textarea): native ones, since a script's input event does not reach
-// React's root.
+// The editor's listeners.
 function edWire(ta) {
 	ta.addEventListener("input", edInput);
 	ta.addEventListener("keydown", edKeys);
@@ -589,6 +602,7 @@ const edRevertPanel = () => edArmed("panel", () => srcPanel && edRevert([srcPane
 
 function initSrcEdit() {
 	ED.ready = srcOverlay.ready = edLoad().then(() => edChanged());
+	edWire(ED_TA);
 	window.addEventListener("pagehide", edFlush);
 	dbgOnChange(() => {
 		edRender();
@@ -602,5 +616,5 @@ function initSrcEdit() {
 
 provide({ edPanelShown });
 
-export { ED, EDV, edMap, edCan, edToggle, edDiffToggle, edRevertPanel, edWire, edLineClass, edStats, edArmed, edRevert, edOpen, edListDiff, edDownload, edUpload, edState, edFlush, srcOverlay,
+export { ED, EDV, ED_TA, edMap, edCan, edToggle, edDiffToggle, edRevertPanel, edLineClass, edStats, edArmed, edRevert, edOpen, edListDiff, edDownload, edUpload, edState, edFlush, srcOverlay,
 	initSrcEdit };

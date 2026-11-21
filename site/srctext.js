@@ -4,7 +4,7 @@
 // files, a folder or .tar picked by the user, statements over lines.
 
 import { $ } from "./util.js";
-import { api } from "./page.js";
+import { api, image } from "./page.js";
 import { dbgChanged, dbgHas } from "./dbginfo.js";
 import { dbgGunzip } from "./dbgmerge.js";
 
@@ -16,10 +16,13 @@ let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
 const SRC_OVER = new Map();
 
 // extra: files no DWARF names that src/ lists (gen-src.js --extra: the
-// minified Linux's elo/init.nasm); a tree picked for the same kernel keeps
-// the list, so the src/ made from it lists them too.
+// minified Linux's elo/init.nasm), per shipped kernel; a tree picked for
+// that kernel (also after a vmlinux was imported into it) gets the list, so
+// the src/ made from it lists them too.
+const SRC_EXTRA = new Map();
 function srcFresh(mode, why) {
-	SRC = { mode, why, files: new Map(), missing: {}, notes: {}, extra: mode === "picked" ? SRC.extra : undefined };
+	SRC = { mode, why, files: new Map(), missing: {}, notes: {},
+		extra: mode === "picked" && image ? SRC_EXTRA.get(image.from || image.name) : undefined };
 }
 
 // A shipped kernel: kernels.json "src" (a directory with index.json).
@@ -42,6 +45,8 @@ async function srcUseShipped(entry) {
 		SRC.missing = ix.missing || {};
 		SRC.notes = ix.notes || {};
 		SRC.extra = ix.extra;
+		if (entry.name)
+			SRC_EXTRA.set(entry.name, ix.extra);
 		SRC.info = ix.origin;
 	} catch (e) {
 		if (mine !== SRC)

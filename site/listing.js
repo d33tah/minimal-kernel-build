@@ -40,8 +40,7 @@ const PAGETAB = controller({ el: null, title: "No page selected", page: -1, snap
 // The component's <pre> mounted: the hint until a page is listed.
 function listingMount(el) {
 	PAGETAB.el = el;
-	if (el)
-		el.textContent = "Click a page in the Memory tab.";
+	el.textContent = "Click a page in the Memory tab.";
 }
 
 // ---- page listing ---------------------------------------------------------

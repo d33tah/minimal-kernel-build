@@ -31,7 +31,7 @@ boot.js	210	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch 
 boot.js	224-225	e5830e96	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
 buildmap.js	51	e158c7c3	more than 400 file texts kept in one page: the suites see a few texts per file
 buildmap.js	111	b8d99835	more than 64 line maps in one page: the suites map a few texts
-calltree.js	27-29	5acd6377	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
+calltree.js	27-30	e5880000	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
 calltree.js	150-152	621631a0	drawTop without a stepper: as line 326
 coverage.js	64	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
 coverage.js	130	9c0c91df	a kernel whose file list is not read (yet), or has none (an imported vmlinux has no Rebuild and boot): the suites rebuild shipped kernels after their Source tab read files.json
@@ -245,6 +245,7 @@ hpelf.js	661	b0ccabb7	the same, told apart by the unit's file (types.json)
 hpelf.js	663	2ec36e6c	a name still ambiguous after those: no suite case
 hpelf.js	676	e52b096c	a kit compile command without -o: every kit object's command has one
 jumps.js	151	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
+jumps.js	318	925c71a0	jumpsJitNote before a stepper exists: its callers draw a listing with instructions (the Page tab's jump line, Code at EIP, the path lists), and since the Page tab is mounted when first shown (A1) no suite shows one before boot makes the stepper; before A1 the hidden Page listing was drawn too
 jumpview.js	215	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
 jumpview.js	324-325	70f8592d	a path whose other end has no physical address: every recorded and static transfer of the shipped kernels lands in RAM
 jumpview.js	342	fcf87860	the "no direct path" note in a list of paths into an instruction: not reached by the suites' lists (those with paths in have direct ones)
@@ -259,13 +260,13 @@ kgen.js	628	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the calle
 kgen.js	637	c8b20a61	a type or partial unit (see 552)
 kgen.js	746-748	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
 kgen.js	768	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
-listing.js	91	2d431e36	needs a listing with instructions of a page below the kernel, or before the kernel entry, after a fast-forward; disasm.json has no instructions below the kernel and the fast-forward always runs to the entry before code is listed
-listing.js	399	32eddd6f	stubShift without disasm.json or with an empty one: it is only called for yellow lines, which only exist when disasm.json has instructions
-listing.js	434	3cb18174	diffTip's sameAt for an address past RAM: the shifted address is at most a page above a listed instruction, inside RAM for every shipped kernel and RAM size
-listing.js	448	a9e430e6	sometimes: ran in run 43749791653 in the genimport job (jscov-raw-gen-worker) only: a yellow line over all-zero memory: needs a kernel whose code is listed before it is loaded there (Debian decompressed above 16 MiB, listed at the reset vector); no suite opens such a listing and none of the kernels built here has that layout
-listing.js	498-499	4ea716be	sometimes: ran in run 43749791653 in the speedasm,runbadge,overlap,memeip,graphopen,srcfiles,srcedit job only: the boxed line that had EIP inside it (mid-instruction) is always a yellow line (the relocation stub's shifted bytes); a plain line with EIP inside needs a jump into the middle of an unchanged instruction, which no shipped kernel does in its stepped part
-listing.js	530-532	e57c5977	inspect of a page past the grid: needs a picked page above a smaller RAM size after Boot, and followEip moves the pick to EIP's page right after every Boot first
-listing.js	564	34977f3b	the live checkbox's timer while the machine runs with a page picked: Live is off by default and no suite turns it on while running
+listing.js	90	2d431e36	needs a listing with instructions of a page below the kernel, or before the kernel entry, after a fast-forward; disasm.json has no instructions below the kernel and the fast-forward always runs to the entry before code is listed
+listing.js	398	32eddd6f	stubShift without disasm.json or with an empty one: it is only called for yellow lines, which only exist when disasm.json has instructions
+listing.js	433	3cb18174	diffTip's sameAt for an address past RAM: the shifted address is at most a page above a listed instruction, inside RAM for every shipped kernel and RAM size
+listing.js	447	a9e430e6	sometimes: ran in run 43749791653 in the genimport job (jscov-raw-gen-worker) only: a yellow line over all-zero memory: needs a kernel whose code is listed before it is loaded there (Debian decompressed above 16 MiB, listed at the reset vector); no suite opens such a listing and none of the kernels built here has that layout
+listing.js	497-498	4ea716be	sometimes: ran in run 43749791653 in the speedasm,runbadge,overlap,memeip,graphopen,srcfiles,srcedit job only: the boxed line that had EIP inside it (mid-instruction) is always a yellow line (the relocation stub's shifted bytes); a plain line with EIP inside needs a jump into the middle of an unchanged instruction, which no shipped kernel does in its stepped part
+listing.js	529-531	e57c5977	inspect of a page past the grid: needs a picked page above a smaller RAM size after Boot, and followEip moves the pick to EIP's page right after every Boot first
+listing.js	563	34977f3b	the live checkbox's timer while the machine runs with a page picked: Live is off by default and no suite turns it on while running
 livedis.js	35	14f00310	iced_x86.js without its Node tail: the pinned iced 1.21.0 (fetch-v86.sh, SHA-256) has it
 livedis.js	50-53	83f776e5	iced failing to load (fetch or instantiate error): the site ships it and no test blocks it
 livedis.js	78	55acfc6c	decodeLive before iced has loaded: its callers return early until iced is set

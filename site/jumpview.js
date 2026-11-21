@@ -468,15 +468,15 @@ function initJumps() {
 // EIP; the Page listing when its component mounts) are drawn again.
 let arcsRo = null;
 function jumpArcsObserve(box) {
-	if (typeof ResizeObserver !== "function")
-		return;
-	if (!arcsRo)
-		arcsRo = new ResizeObserver((entries) => {
-			for (const en of entries)
-				if (en.target._jarcs)
-					drawJumpArcs(en.target, en.target._jarcs);
-		});
-	arcsRo.observe(box);
+	if (typeof ResizeObserver === "function") {
+		if (!arcsRo)
+			arcsRo = new ResizeObserver((entries) => {
+				for (const en of entries)
+					if (en.target._jarcs)
+						drawJumpArcs(en.target, en.target._jarcs);
+			});
+		arcsRo.observe(box);
+	}
 }
 
 export { jumpInlineMax, jumpInlineHtml, jumpStubAttrs, drawJumpArcs, jumpsDrawn, jumpPopClose, jumpGo,

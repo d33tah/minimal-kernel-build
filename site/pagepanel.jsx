@@ -8,7 +8,7 @@
 
 import { memo, useLayoutEffect, useMemo, useRef } from "react";
 import { PAGE, hex } from "./util.js";
-import { selectedPage, symbols, api, setShowSrc, setLiveDecode } from "./page.js";
+import { selectedPage, symbols, api, setShowSrc, setLiveDecodeOn } from "./page.js";
 import { useStore, useController, DomNodes, Tip } from "./ui.jsx";
 import { PAGETAB, inspect, selectPage, setLive, listingMount, symbolIndexGo } from "./listing.js";
 import { symbolsInPage, symRange, gridRam, openLegend } from "./memview.js";
@@ -141,11 +141,7 @@ const Listing = memo(function Listing() {
 			}
 		});
 		ro.observe(el);
-		return () => {
-			ro.disconnect();
-			listingMount(null);
-		};
-	}, []);
+	}, []); // the tab stays mounted: nothing to undo
 	return <pre id="listing" ref={ref} className="asm" data-jbox="" onClickCapture={srcLineClick} onMouseMove={varsListingMove}
 		onMouseLeave={varsListingLeave} onClick={varsListingClick} />;
 });
@@ -153,7 +149,7 @@ const Listing = memo(function Listing() {
 function PagePanel() {
 	useController(PAGETAB);
 	const showSrc = useStore("showSrc");
-	const liveDecode = useStore("liveDecode");
+	const liveDecode = useStore("liveDecodeOn");
 	const t = PAGETAB;
 	return (
 		<>
@@ -187,7 +183,7 @@ function PagePanel() {
 				{" "}
 				<label>
 					<input type="checkbox" id="live_decode" checked={liveDecode} onChange={(ev) => {
-						setLiveDecode(ev.target.checked);
+						setLiveDecodeOn(ev.target.checked);
 						if (ev.target.checked)
 							loadIced();
 						inspect();

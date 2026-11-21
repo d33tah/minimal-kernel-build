@@ -343,7 +343,7 @@ the same way (the Snapshots tab first):
 - DOM nodes a module's helper builds for several views (a variable's
   declaration, a function's facts, a file:line chain) are shown with
   ui.jsx's `DomNodes`.
-- A toggle another tab follows is a store value (`showSrc`, `liveDecode`:
+- A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's
   pointer and keys, an input event a script sends, which does not bubble

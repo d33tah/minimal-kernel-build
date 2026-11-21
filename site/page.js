@@ -68,13 +68,13 @@ let tabShows = 0;
 // The Page tab's "C source" and "live decode" toggles (A1): the Debugger's
 // Code at EIP and the C links follow them too (srclinks.js, livedis.js).
 let showSrc = true;
-let liveDecode = false;
+let liveDecodeOn = false;
 
 const state = new Store({ kernels, image, initrd, emulator, emuRam, emuReady, symbols, disasm, pageClass, grid,
 	selectedPage, tab, vmHasKeys, stepper, runState, counting, countNote, startPaused, prefSpeed, machine,
 	usedPages, changedPages, wasmPatchError, countStart, countMs, countSteps, runTo, runToLabel, runToFrom,
 	runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, compactTabs, tabShows, showSrc,
-	liveDecode });
+	liveDecodeOn });
 
 const setKernels = (v) => { kernels = v; state.set("kernels", v); };
 const setImage = (v) => { image = v; state.set("image", v); };
@@ -114,7 +114,7 @@ const setNavBuilt = (v) => { navBuilt = v; state.set("navBuilt", v); };
 const setOpenFnWant = (v) => { openFnWant = v; state.set("openFnWant", v); };
 const setCompactTabs = (v) => { compactTabs = v; state.set("compactTabs", v); };
 const setShowSrc = (v) => { showSrc = v; state.set("showSrc", v); };
-const setLiveDecode = (v) => { liveDecode = v; state.set("liveDecode", v); };
+const setLiveDecodeOn = (v) => { liveDecodeOn = v; state.set("liveDecodeOn", v); };
 const markTabShown = () => { tabShows++; state.set("tabShows", tabShows); };
 // The machine's state was drawn anew (registers, counters, screen): views
 // that show it may read it again.
@@ -177,4 +177,4 @@ export { state, kernels, image, initrd, emulator, emuRam, emuReady, symbols, dis
 	runToFrom, runToMoved, entryPhase, refSaved, jitLoopId, prevRegs, flashes, navBuilt, openFnWant, setUsedPages,
 	setChangedPages, setWasmPatchError, setCountStart, setCountMs, setCountSteps, setRunTo, setRunToLabel,
 	setRunToFrom, setRunToMoved, setEntryPhase, setRefSaved, setJitLoopId, setPrevRegs, setFlashes, setNavBuilt,
-	setOpenFnWant, compactTabs, setCompactTabs, markTabShown, showSrc, setShowSrc, liveDecode, setLiveDecode, api, provide };
+	setOpenFnWant, compactTabs, setCompactTabs, markTabShown, showSrc, setShowSrc, liveDecodeOn, setLiveDecodeOn, api, provide };

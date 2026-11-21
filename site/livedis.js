@@ -12,9 +12,9 @@ import { withV, V86_KERNEL_ADDR, PAGE } from "./util.js";
 import { symbols, stepper, emulator, emuReady, emuRam, api, provide, state } from "./page.js";
 import { asmSymLookup, asmBranchTarget, asmTargetName } from "./asmnames.js";
 
-// The "live decode" toggle (Page tab, the store's liveDecode): decode guest
+// The "live decode" toggle (Page tab, the store's liveDecodeOn): decode guest
 // memory even where disasm.json has the build's instructions.
-const liveDecode = () => state.get("liveDecode");
+const liveDecode = () => state.get("liveDecodeOn");
 
 let iced = null;
 let icedLoading = null;

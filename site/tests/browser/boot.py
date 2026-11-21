@@ -192,7 +192,11 @@ def source_check(page, name, problems, shots, tag):
     if not wait_for(lambda: page.is_visible("#src_panel"), 3):
         problems.append("tapping a C line opened no source panel")
         return r
+    # The panel opens at once and reads the file's text (fetched when not
+    # yet loaded: on a deployed site that takes a moment) and the lines.
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") != "loading", 20, 0.05)
     r["panel"] = page.inner_text("#src_title")
+    r["state"] = page.get_attribute("#src_body", "data-state")
     r["executed"] = int(page.get_attribute("#src_body", "data-executed") or 0)
     r["code"] = int(page.get_attribute("#src_body", "data-code") or 0)
     if r["executed"] < 1:

@@ -36,7 +36,7 @@ FOLLOW_EIP_JS = """() => {
         (v === 'context' || MKB.runState === 'stepped' || MKB.selectedPage === Math.floor(MKB.stepper.nextPhys() / MKB.PAGE));
     const state = (v) => ({ view: v, boxed: boxed(v), eip: MKB.stepper.nextPhys(), steps: MKB.stepper.steps, state: MKB.runState,
         speed: MKB.speed(), fast: MKB.fastStepping(), runTo: MKB.runTo !== null, kernel: MKB.image && MKB.image.name,
-        source: !document.getElementById('src_panel').hidden, page: Number(document.getElementById('listing').dataset.page) });
+        source: !document.getElementById('src_panel').hidden, page: Number(document.getElementById('listing')?.dataset.page) });
     const seen = (v) => {
         if (!MKB.stepper)
             return;
@@ -50,10 +50,22 @@ FOLLOW_EIP_JS = """() => {
             // left, before it is followed) is caught by the time limit.
             M.viol.push({ kind: 'drawn without EIP boxed', ...state(v) });
     };
-    for (const v of ['context', 'listing'])
-        new MutationObserver(() => seen(v)).observe(document.getElementById(v), { attributes: true, attributeFilter: ['data-draws'] });
+    // Each listing is watched from when it exists (the Page tab's from its
+    // first showing: A1 mounts it then).
+    const watched = {};
+    const watch = () => {
+        for (const v of ['context', 'listing']) {
+            const e = document.getElementById(v);
+            if (e && watched[v] !== e) {
+                watched[v] = e;
+                new MutationObserver(() => seen(v)).observe(e, { attributes: true, attributeFilter: ['data-draws'] });
+            }
+        }
+    };
+    watch();
     const limit = () => Math.max(1000, 2 * (MKB.viewCost || 0) + 400);
     M.timer = setInterval(() => {
+        watch();
         M.samples++;
         for (const v of ['context', 'listing']) {
             if (!due(v)) {
@@ -82,7 +94,8 @@ FOLLOW_EIP_JS = """() => {
 
 
 def follow_install(page):
-    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!document.getElementById('listing')"), 60)
+    # The Page tab's listing exists once that tab has been shown (A1: mounted then).
+    wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && (MKB.tab !== 'page' || !!document.getElementById('listing'))"), 60)
     page.evaluate(FOLLOW_EIP_JS)
 
 

@@ -31,8 +31,9 @@ SCANP_WANT_JS = """() => { const P = 4096, a = window.__scanCopy, b = MKB.emulat
 SCANP_GOT_JS = """() => { const f = document.getElementById('footprint'), l = document.getElementById('listing');
   const idx = (a) => { const o = []; if (a) for (let p = 0; p < a.length; p++) if (a[p]) o.push(p); return o; };
   return { changed: idx(MKB.changedPages), used: idx(MKB.usedPages), fpChanged: f.dataset.changed, fpNonzero: f.dataset.nonzero,
-    page: l.dataset.page, lchanged: l.dataset.changed, marks: l.querySelectorAll('mark').length,
-    info: document.getElementById('dump_info').textContent }; }"""
+    page: l && l.dataset.page, lchanged: l && l.dataset.changed, marks: l ? l.querySelectorAll('mark').length : 0,
+    info: l ? document.getElementById('dump_info').textContent : '' }; }"""
+# (No #listing, #dump_info before the Page tab is first shown: A1 mounts it then.)
 # (marks: a changed byte is marked twice, in the hex and in the ASCII column.)
 # A scan with the Page tab shown, read in the same task: a later drawing of
 # the listing (the Page tab draws again once it has its width) says "since

@@ -65,10 +65,11 @@ LONG_TASKS_JS = """() => { window.mkbLong = []; new PerformanceObserver((l) => {
     for (const e of l.getEntries()) window.mkbLong.push(e.duration); }).observe({ type: 'longtask' }); }"""
 # Page: data-draws counts full drawings and moves of the EIP mark (data-reads,
 # the full ones, on apps from before B3).
-VIEW_DRAWS_JS = """() => ({ page: Number(document.getElementById('listing').dataset.draws || document.getElementById('listing').dataset.reads || 0),
+# (No #listing before the Page tab is first shown: no drawings.)
+VIEW_DRAWS_JS = """() => { const l = document.getElementById('listing'); return { page: l ? Number(l.dataset.draws || l.dataset.reads || 0) : 0,
     debugger: Number(document.getElementById('context').dataset.draws || 0),
     memory: Number(document.getElementById('pages').dataset.draws || 0),
-    long: (window.mkbLong || []).reduce((a, b) => a + b, 0), longMax: Math.max(0, ...(window.mkbLong || [])) })"""
+    long: (window.mkbLong || []).reduce((a, b) => a + b, 0), longMax: Math.max(0, ...(window.mkbLong || [])) }; }"""
 
 
 def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=25):

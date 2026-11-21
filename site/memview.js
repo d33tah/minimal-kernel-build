@@ -472,8 +472,6 @@ function initLegend() {
 		graph.append(item(dir, dir === "other" ? "other or unknown" : dir + "/", { background: colour }));
 	graph.append(item("irq", "interrupt and exception handlers (timeline)", { background: IRQ_COLOUR }),
 		item("switch", "task switch (timeline line)", { background: SWITCH, height: "2px" }));
-	for (const b of document.querySelectorAll(".legendlink"))
-		b.addEventListener("click", openLegend);
 	// The EIP's page in the map and the grid, drawn with the Debugger.
 	state.subscribe(renderMemEip, ["machine"]);
 	// The grid (and the bars, when they changed while the tab was hidden)

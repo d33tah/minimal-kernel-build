@@ -220,7 +220,7 @@ hpelf.js	339	1418ed58	no room in the reserved memory: test_hotpatch.mjs (Node) r
 hpelf.js	369	690424e3	a symbol the running kernel lacks: the suite's patches only reference symbols the kernels have; the Node test's plans do the same
 hpelf.js	377	48dbb8af	a relocation type other than R_386_32, PC32 and PLT32 (GOT, TLS): the kernel units are -fno-pic
 hpelf.js	389	fbda4533	the value of an absolute symbol: see the SHN_ABS row above
-hpelf.js	398	d0eb36c9	a reference into a placed code section at no function (or into a replaced function by its section): the suite's copies reference other functions by symbol only
+hpelf.js	398	d0eb36c9	sometimes: ran in run 44925504470 (e6656eb71, its kit job: rebuild, rebuild_linux, rebuild_debian, hotpatch, rebuildmap) and in no run before it; a reference into a placed code section at no function (or into a replaced function by its section): the suite's copies reference other functions by symbol only
 hpelf.js	404-405	230158c5	a reference into code outside any function: compiler-generated code always has its symbol
 hpelf.js	409-413	8b69ad2e	a reference to a variable from the placed code: the suite's new code uses kernel functions, strings and the VGA address (a constant), no variables
 hpelf.js	427	9fc658f8	a changed function the running kernel lacks: no suite case

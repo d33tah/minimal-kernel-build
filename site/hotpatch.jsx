@@ -451,13 +451,19 @@ function HotPatchPanel() {
 	);
 }
 
-// The editor bar's button (next to its Rebuild and boot).
+// The editor bar's button (next to its Rebuild and boot). While it is
+// disabled, why is said under it as text (a title alone is never seen on a
+// phone).
 function HotPatchButton() {
 	useSyncExternalStore(HP.subscribe, () => HP.rev);
+	const off = !HP.can.ok || HP.busy;
 	return (
-		<button id="hp_go_panel" type="button" className="rbgo" disabled={!HP.can.ok || HP.busy} title={HP.title || undefined} onClick={hpRun}>
-			<span aria-hidden="true">⚡</span>{" "}<span className="rblabel">Patch running kernel</span>
-		</button>
+		<>
+			<button id="hp_go_panel" type="button" className="rbgo" disabled={off} title={HP.title || undefined} onClick={hpRun}>
+				<span aria-hidden="true">⚡</span>{" "}<span className="rblabel">Patch running kernel</span>
+			</button>
+			{off ? <span id="hp_go_why" className="note rbwhy">{"Patch running kernel: " + (HP.busy ? HP.status : HP.can.why)}</span> : null}
+		</>
 	);
 }
 

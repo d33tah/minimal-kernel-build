@@ -567,16 +567,20 @@ function RebuildPanel() {
 }
 
 // The Source panel's Rebuild and boot button (in the editor's bar): the
-// same build as the box's button, its label the progress while it runs.
+// same build as the box's button, its label the progress while it runs;
+// while it is disabled, why is said under it as text.
 function RebuildPanelButton() {
 	useSyncExternalStore(RB.subscribe, () => RB.rev);
 	const running = RB.state === "running";
 	return (
-		<button id="rb_go_panel" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title || undefined}
-			aria-busy={RB.shownFor ? String(running) : undefined} onClick={rbRun}>
-			<span aria-hidden="true">⟳</span>{" "}<span className="rblabel">{running ? "Rebuilding… " + Math.round((RB.progress || 0) * 100) + "%" :
-				"Rebuild and boot"}</span>
-		</button>
+		<>
+			<button id="rb_go_panel" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title || undefined}
+				aria-busy={RB.shownFor ? String(running) : undefined} onClick={rbRun}>
+				<span aria-hidden="true">⟳</span>{" "}<span className="rblabel">{running ? "Rebuilding… " + Math.round((RB.progress || 0) * 100) + "%" :
+					"Rebuild and boot"}</span>
+			</button>
+			{!RB.can.ok && !running && RB.can.why ? <span id="rb_go_why" className="note rbwhy">{"Rebuild and boot: " + RB.can.why}</span> : null}
+		</>
 	);
 }
 

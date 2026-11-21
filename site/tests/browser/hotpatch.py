@@ -44,7 +44,8 @@ HP_DO_EXIT = ("\t{\n\t\tvolatile unsigned short *vga = (volatile unsigned short 
 
 HP_STATE_JS = """() => { const $ = (i) => document.getElementById(i);
   return { state: $('hp_status').dataset.state || '', status: $('hp_status').textContent, go: !$('hp_go').disabled,
-    goPanel: $('hp_go_panel') ? !$('hp_go_panel').disabled : null, list: [...document.querySelectorAll('#hp_list li')].map((e) => e.textContent),
+    goPanel: $('hp_go_panel') ? !$('hp_go_panel').disabled : null,
+    why: $('hp_go_why') ? ($('hp_go_why').getClientRects().length ? $('hp_go_why').textContent : '(not shown)') : null, list: [...document.querySelectorAll('#hp_list li')].map((e) => e.textContent),
     patches: MKB.hpPatches().map((p) => ({ n: p.n, at: p.at, path: p.path, used: p.used, funcs: p.funcs.map((f) => [f.name, f.va, f.old]) })),
     syms: MKB.symbols ? MKB.symbols.symbols.filter((s) => s.patch).map((s) => [s.name, s.vaddr, s.paddr]) : [],
     run: MKB.runState, steps: MKB.stepper ? MKB.stepper.steps : null,
@@ -83,6 +84,15 @@ def hp_edit(page, text):
     return t
 
 
+def hp_why_shown(st, tag, problems):
+    """A disabled Patch running kernel in the Source panel says why as text
+    under it (a title is never seen on a phone); an enabled one says nothing."""
+    if st["goPanel"] is False and (not st["why"] or st["why"] == "(not shown)"):
+        problems.append(f"{tag}: the panel's Patch running kernel is disabled ({st['state']}) without its reason as text: {st['why']!r}")
+    elif st["goPanel"] and st["why"] is not None:
+        problems.append(f"{tag}: the panel's Patch running kernel is enabled with a reason under it: {st['why']!r}")
+
+
 def hp_wait(page, states, timeout=300):
     wait_for(lambda: hp_state(page)["state"] in states, timeout, 0.1)
     return hp_state(page)
@@ -100,8 +110,10 @@ def hp_continue(page):
 def hp_apply(page, r, key, problems, tag, phone=False, sel="#hp_go_panel"):
     """Press the button once the check says ready; the patch's state."""
     t0 = time.monotonic()
+    hp_why_shown(hp_state(page), tag + " checking", problems)
     st = hp_wait(page, ("ready", "refused", ""), 600)
     r[key + " check s"] = round(time.monotonic() - t0, 1)
+    hp_why_shown(st, tag + " " + (st["state"] or "no state"), problems)
     if st["state"] != "ready" or not st["go"]:
         problems.append(f"{tag}: the edit is not ready to patch: {st['state']} {st['status']!r}")
         return None
@@ -173,6 +185,9 @@ def hp_hello(browser, base, shots, problems, r):
         r["refused: a variable"] = st["status"]
         if st["state"] != "refused" or st["go"] or st["goPanel"] or "adds hp_count" not in st["status"]:
             problems.append(f"{tag}: a variable added: {st['state']} go={st['go']} {st['status']!r}")
+        hp_why_shown(st, tag + " a variable added", problems)
+        if st["why"] and "adds hp_count" not in st["why"]:
+            problems.append(f"{tag}: a variable added: the reason under the panel's button {st['why']!r}")
         # An edit that does not compile: clang's message.
         hp_edit(page, shipped.replace("while (*s)", "int broken = ;\n\twhile (*s)"))
         st = hp_wait(page, ("refused", "ready"), 300)

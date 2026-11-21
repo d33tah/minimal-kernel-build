@@ -164,7 +164,7 @@ def jumps_live_case(browser, base, shots):
         got = page.evaluate("""() => { const S = MKB.jumpsFor(MKB.disasm.insns);
           const pa = MKB.disasm.insns.map((x) => x[0]).find((a) => MKB.jumpPaths(S, null, a).noDirect);
           if (pa === undefined) return null;
-          MKB.renderEipJumps(S, pa); const t = document.getElementById('eip_jumps').textContent;
+          MKB.renderEipJumps(document.getElementById('eip_jumps'), S, pa); const t = document.getElementById('eip_jumps').textContent;
           const d = document.createElement('div'); d.innerHTML = MKB.jumpBadgesHtml(MKB.jumpPaths(S, null, pa), pa);
           const n = d.querySelector('.jnone'); return { pa, eip: t, title: n ? n.dataset.tip || n.title : null }; }""")
         r["hello build"] = got
@@ -200,7 +200,7 @@ STUB_LIVE_JS = """([lo, hi]) => { const box = document.getElementById('listing')
     const a = +e.dataset.addr; if (a < lo || a >= hi) continue;
     const i = S ? MKB.jumpsIndex(S, a) : -1, text = i >= 0 ? S.insns[i][2] : '';
     let eip = '';
-    if (S && i >= 0) { MKB.renderEipJumps(S, a); eip = document.getElementById('eip_jumps').textContent; }
+    if (S && i >= 0) { MKB.renderEipJumps(document.getElementById('eip_jumps'), S, a); eip = document.getElementById('eip_jumps').textContent; }
     out.push([a, text, marks.has(a), eip]); }
   MKB.renderContext();
   return out; }"""

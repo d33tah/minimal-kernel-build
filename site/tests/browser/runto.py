@@ -291,7 +291,10 @@ def cpu_state_tools(page, sk, problems, r):
         if not idt or not all(l.endswith(" not mapped") for l in idt):
             problems.append(f"IDT at an unmapped address: {idt[:3]}")
     # MMX and SSE registers: shown once they hold a value; a changed row marked.
-    fpu = lambda: page.evaluate("""() => { MKB.renderCpuState(); return [...document.querySelectorAll('#cpu_fpu [data-reg]')]
+    # The sections are drawn when the machine is published (the Debugger's
+    # drawing does it): publish, then read them once drawn.
+    fpu = lambda: page.evaluate("""async () => { MKB.publishMachine(); await new Promise((ok) => setTimeout(ok, 0));
+        return [...document.querySelectorAll('#cpu_fpu [data-reg]')]
         .map((e) => [e.dataset.reg, e.textContent, e.classList.contains('chg')]); }""")
     before = fpu()
     saved = page.evaluate("""() => { const c = MKB.stepper.cpu, s = [Array.from(c.fpu_st), Array.from(c.reg_xmm32s), c.fpu_stack_empty[0]];
@@ -302,7 +305,7 @@ def cpu_state_tools(page, sk, problems, r):
         st = fpu()
     finally:
         page.evaluate("""(s) => { const c = MKB.stepper.cpu; c.fpu_st.set(s[0]); c.reg_xmm32s.set(s[1]); c.fpu_stack_empty[0] = s[2];
-            MKB.renderCpuState(); }""", saved)
+            MKB.publishMachine(); }""", saved)
     names = lambda rows: [x[0] for x in rows]
     row = lambda rows, n: next((x for x in rows if x[0] == n), None)
     r["fpu_rows"] = [len(before), len(mmx), len(st)]

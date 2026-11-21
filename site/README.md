@@ -382,23 +382,43 @@ the same way (the Snapshots tab first):
   overlay on `EDV` (its status line a field). The lcov line is
   `COVV.exportStatus`.
 - The Source panel (A1) is a component on srcview.js's `SRCV` (open, the
-  title's range, the line under the text), `SWV` (the file switcher; its
-  rows are srcswitch.js's `srcSw`) and `EDSTATE` (the editor bar's line,
-  its own `memo` component, drawn at every key typed). It is mounted at
-  load, in place of the two roots of its Rebuild and hot patch buttons
-  before A1: every view's file:line links open it and its editor's
-  textarea is wired when it mounts. The aside itself (`#src_panel`, the
-  mount element) is shown and marked `editing` / `diffing` by the
-  component (a layout effect), and its keys (Enter and Space on its
-  buttons before v86, Escape) are a listener the component adds to it.
-  The file's text (`#src_body`, a whole file is thousands of lines of
-  HTML, drawn again every second while stepping), the editor's textarea
-  with its line numbers (`#ed_text`, `#ed_gutter`) and the file's diff
-  (`#ed_pdiff`) are written by source.js and srcedit.js through their
-  refs (`SRCV.bodyEl`, `taEl`, `gutterEl`, `pdiffEl`), as the Page
-  listing is; the title, the outline, the switcher, the picked line's
-  addresses, the editor bar and the line under the text are React. Other
-  modules ask `srcOpen()` instead of reading the aside's `hidden`.
+  view source.js last drew, `shown`, kept while the panel is closed so
+  that opening the same file again changes nothing, the title's range,
+  the line under the text), `SWV` (the file switcher; its rows are
+  srcswitch.js's `srcSw`), `EDBAR` (the Edit button and the editor bar,
+  drawn only when what they show differs) and `EDSTATE` (the editor bar's
+  line, its own `memo` component, drawn at every key typed); the title,
+  the outline and the picked line's addresses are `memo` components on
+  what they show (the panel is drawn every second while stepping). It is
+  mounted at load, in place of the two roots of its Rebuild and hot patch
+  buttons before A1: every view's file:line links open it. The aside
+  itself (`#src_panel`, the mount element) is shown and marked `editing`
+  / `diffing` by the component (layout effects), and its keys (Enter and
+  Space on its buttons before v86, Escape) are a listener the component
+  adds to it. The file's text (`#src_body`: a whole file is thousands of
+  lines of HTML, drawn again every second while stepping), the editor's
+  line numbers (`#ed_gutter`) and the file's diff (`#ed_pdiff`) are
+  written by source.js and srcedit.js through their refs (`SRCV.bodyEl`,
+  `gutterEl`, `pdiffEl`), as the Page listing is. The editor's textarea
+  (`#ed_text`) is srcedit.js's own node, made and wired at load and shown
+  by the panel (`DomNodes`): React tracks the value of a textarea it
+  draws and reads the whole text again at every key; its keys and input
+  stop at the textarea (nothing above handles a textarea's: v86 and the
+  page's shortcuts skip one). The title, the outline, the switcher, the
+  picked line's addresses, the editor bar and the line under the text
+  are React. Other modules ask `srcOpen()` instead of reading the aside's
+  `hidden`. A disabled Rebuild and boot or Patch running kernel in the
+  editor bar says why as text under it (`#rb_go_why`, `#hp_go_why`; a
+  title alone is never seen on a phone). Measured on d-claude (minified
+  Linux, fs/namei.c whole, 922 lines, renderSourcePanel in the page, 3
+  loads): the text written as HTML took 23-25 ms each time; drawn as
+  React elements (an experiment build) 37-42 ms the first time and 4-6 ms
+  again for the same text: opening a file, the panel's critical path,
+  stays HTML. bench_ui 12 runs (busy host), 27c798f20 / c032a29cc / this:
+  Source panel open 16.62 / 16.63 / 16.81 ms of work (+1.1%), typing
+  3.40 / 3.30 / 3.42 ms per key (+0.6%), tab switch 52.88 / 55.20 /
+  54.53 ms (+3.1%); boottime 12 runs, 43308392f / c032a29cc / this: hello
+  654 / 663 / 681 ms (+4.1%), minified 1029 / 1015 / 1025 ms (-0.4%).
 - A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's

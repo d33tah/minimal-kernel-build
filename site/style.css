@@ -919,4 +919,4 @@ button.bmadd { font: inherit; white-space: nowrap; }
 
 /* The Source panel's Rebuild button sits in its own element (React mounts it there, shell.jsx); the element adds no box. */
 .rbslot { display: contents; }
-.rbwhy { flex-basis: 100%; margin: 0; overflow-wrap: anywhere; }
+.rbwhy { order: 1; flex-basis: 100%; margin: 0; overflow-wrap: anywhere; }

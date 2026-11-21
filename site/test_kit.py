@@ -245,8 +245,8 @@ def check_errors(bname, res, sed_want, problems):
         problems.append(f"{bname}: grep steps (a file, the previous step's output): {res['grep']}")
     if not res["post"]["size"] > res["post"]["plain"]:
         problems.append(f"{bname}: an object's post step did not rewrite it: {res['post']}")
-    want = cpio_bytes(["file /x c.txt 644 0 0", "dir /dev 755 0 0", "nod /dev/console 600 0 0 c 5 1"], {"c.txt": b"abc"})
-    w = [hashlib.sha256(want).hexdigest(), len(want)]
+    cb = cpio_bytes(["file /x c.txt 644 0 0", "dir /dev 755 0 0", "nod /dev/console 600 0 0 c 5 1"], {"c.txt": b"abc"})
+    w = [hashlib.sha256(cb).hexdigest(), len(cb)]
     if res["cpio"] != [["out.cpio"] + w, ["out.cpio"] + w] or res["cpioNotRun"] != 0:
         problems.append(f"{bname}: a cpio generator: {res['cpio']} (ran {res['cpioNotRun']} times without compiling), gen-kit.py's newc(): {w}")
     if not res["asm"]["size"] or res["asm"]["tmp"]:

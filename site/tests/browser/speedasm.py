@@ -2,7 +2,7 @@
 
 import time
 
-from tests.browser.common import PHONE, report, wait_for
+from tests.browser.common import dbg_shown_once, PHONE, report, wait_for
 from tests.browser.speedline import speed_line_bad, SPEED_LINE_JS
 
 
@@ -95,6 +95,8 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed={rate}")
     wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180)
+    # VIEW_DRAWS_JS reads Code at EIP (#context): there once the Debugger tab has been shown.
+    dbg_shown_once(page)
     page.tap("#tab_" + tab)
     page.evaluate(LONG_TASKS_JS)
     if tab == "memory":

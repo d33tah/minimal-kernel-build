@@ -38,6 +38,7 @@ import { genImport, GEN } from "./genimport.js";
 import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
 import { Tip } from "./ui.jsx";
 import { setStatus } from "./header.js";
+import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -253,7 +254,7 @@ async function rbTree(kit, src, edits) {
 function rbPaths(kit, edits) {
 	const have = kit.files.filter((f) => f[3] !== 2).map((f) => f[0]);
 	const paths = new Set([...Object.keys(edits), ...Object.keys(image && image.build ? image.build.files : {}), ...SRC_OVER.keys()]);
-	const m = /^(.*\D.*):(\d+)$/.exec($("dbg_addr").value.trim());
+	const m = /^(.*\D.*):(\d+)$/.exec(runToText());
 	if (m) {
 		const q = m[1].replace(/^\.?\//, "");
 		const p = have.find((x) => x === q) || have.find((x) => x.endsWith("/" + q));
@@ -289,7 +290,7 @@ async function rbShown(path) {
 // it and the offset: a function for the new kernel's symbols that gives
 // the new address and what to say, or null.
 function rbRunToAddr() {
-	const v = $("dbg_addr").value.trim();
+	const v = runToText();
 	if (!/^(0x)?[0-9a-f]+$/i.test(v) || !symbols || symbols.symbols.some((s) => s.name === v))
 		return null;
 	const n = parseInt(v.replace(/^0x/i, ""), 16);
@@ -305,8 +306,8 @@ function rbRunToAddr() {
 			return "Run to " + v + " (" + s.name + "+" + hex(off) + ") has no place in this build: " + (t ? s.name + " is shorter now" : "no " + s.name + " here") + ".";
 		if (t.paddr === s.paddr)
 			return "";
-		$("dbg_addr").value = "0x" + (n + t.paddr - s.paddr).toString(16);
-		return "Run to " + v + " is " + $("dbg_addr").value + " now: " + s.name + "+" + hex(off) + " moved with the build" +
+		setRunToText("0x" + (n + t.paddr - s.paddr).toString(16));
+		return "Run to " + v + " is " + runToText() + " now: " + s.name + "+" + hex(off) + " moved with the build" +
 			(t.size !== s.size ? " (" + s.name + " changed size: the offset may be another instruction)" : "") + ".";
 	};
 }
@@ -465,7 +466,7 @@ async function rbBoot(from, kit, edits, r, ms) {
 	// The Run to target (the Debugger's breakpoint) in this build's terms.
 	const moved = [moveRunTo(texts), moveAddr ? moveAddr() : ""].filter(Boolean).join(" ");
 	if (moved)
-		$("dbg_status").textContent = moved;
+		dbgStatus(moved);
 	rbSync();
 	const sha = (h) => h.slice(0, 12);
 	const s = (x) => (x / 1000).toFixed(1) + " s";

@@ -5,6 +5,7 @@ import re
 import time
 
 from tests.browser.common import (
+    dbg_shown_once,
     gate_on_screen, kernel_entries, machine_do, nav_press, open_page, page_center, PHONE, report, run_to_wait,
     show_tab, shown_tab, SITE, tip_fits, tip_tap_away, tip_wait, wait_for,
 )
@@ -344,6 +345,7 @@ def memory_controls_case(browser, base, shots):
     mem = (2 << 20) + (64 << 10)
     page.goto(f"{base}/index.html?kernel=hello&mem={mem}")
     wait_for(lambda: gate_on_screen(page), 60)
+    dbg_shown_once(page)  # #dbg_status (read after Step below) is there once the Debugger tab has been shown
     show_tab(page, "memory")
     li = page.locator("#legend li[data-cls='r-conv']")
     n = page.evaluate("MKB.pageClass.filter((c) => c === 'r-conv').length")

@@ -11,7 +11,7 @@
 // operand names varops.js's, the tasks vartasks.js's; here the watches,
 // the panels and the Page listing's bytes.
 
-import { hex, $ } from "./util.js";
+import { hex } from "./util.js";
 import { stepper, image, tab, runState, api } from "./page.js";
 import { dwTypeName, dwWhere } from "./dwarflocals.js";
 import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgOnChange } from "./dbginfo.js";
@@ -21,6 +21,7 @@ import { varsTaskLayout, varsCurrentTask } from "./vartasks.js";
 import { localsOpen, localsCtx, localsGroup } from "./varlocals.js";
 import { brtTitle } from "./varops.js";
 import { controller } from "./ui.jsx";
+import { DBGCODE, dbgMounted } from "./dbgtab.js";
 
 const WATCH_KEY = "mkb-watch:";
 // Shown as one-tap suggestions when the kernel has them.
@@ -64,38 +65,35 @@ function watchAdd(expr) {
 	renderWatches();
 }
 
-// The Debugger's Variables section.
+// The Debugger's Variables section (debuggerpanel.jsx Watches draws it):
+// the status line, the one-tap suggestions, the input's completions
+// (names) and the watches, each a node varsRow builds (or the text when
+// there are none). Drawn while the Debugger tab is shown.
+const WATCHV = controller({ status: "", state: "", started: "", quick: [], rows: [], empty: "", names: [] });
+
 function renderWatches() {
-	const box = $("watches");
-	if (!box || tab !== "debugger")
+	const v = WATCHV;
+	if (!dbgMounted() || tab !== "debugger")
 		return;
 	watchLoad();
-	const st = $("watch_status");
 	const r = dbgTypes();
-	box.dataset.state = r.state;
-	$("watch_quick").textContent = "";
+	v.state = r.state;
+	v.quick = [];
+	v.rows = [];
+	v.empty = "";
 	if (r.state !== "ok") {
-		st.textContent = r.why;
-		box.textContent = "";
+		v.status = r.why;
+		v.changed();
 		return;
 	}
 	const T = r.T;
 	const names = varsByName(T);
-	st.textContent = T.vars.length + " variables and " + (T.types.length - (T.sub ? T.sub.size : 0)) + " types from the DWARF. " +
+	v.status = T.vars.length + " variables and " + (T.types.length - (T.sub ? T.sub.size : 0)) + " types from the DWARF. " +
 		(varsReady() ? "Values read from guest RAM " + (runState === "jit" ? "while it runs (Refresh, or pause)" : "now") + "." :
 			"Boot the kernel to read values.") + (varsNotStarted() ? " " + VARS_NOT_STARTED : "");
-	box.dataset.started = varsNotStarted() ? "no" : "";
-	for (const n of WATCH_SUGGEST)
-		if (names.has(n) && !watchList.includes(n)) {
-			const b = document.createElement("button");
-			b.type = "button";
-			b.textContent = "+ " + n;
-			b.title = "Watch " + n;
-			b.addEventListener("click", () => watchAdd(n));
-			$("watch_quick").append(b);
-		}
-	box.textContent = "";
-	watchList.forEach((expr, i) => {
+	v.started = varsNotStarted() ? "no" : "";
+	v.quick = WATCH_SUGGEST.filter((n) => names.has(n) && !watchList.includes(n));
+	v.rows = watchList.map((expr, i) => {
 		const w = document.createElement("div");
 		w.className = "watch";
 		w.dataset.expr = expr;
@@ -129,47 +127,49 @@ function renderWatches() {
 			}
 			w.append(...varsDeclNotes(T, e.v, e.all));
 		}
-		box.append(w);
+		return w;
 	});
 	if (!watchList.length)
-		box.textContent = "No watches: type a variable (init_task.comm, jiffies_64, ...) or tap a byte in the Page tab's hex rows.";
+		v.empty = "No watches: type a variable (init_task.comm, jiffies_64, ...) or tap a byte in the Page tab's hex rows.";
+	v.changed();
 }
 
 // Names for the input's suggestions: those starting with what is typed.
-function watchSuggest() {
+function watchSuggest(text) {
 	const r = dbgTypes();
-	const dl = $("watch_names");
-	dl.textContent = "";
-	const q = $("watch_expr").value.trim();
-	if (r.state !== "ok" || q.length < 2 || /[.\-[]/.test(q))
-		return;
-	let n = 0;
-	for (const name of varsByName(r.T).keys())
-		if (name.startsWith(q)) {
-			const o = document.createElement("option");
-			o.value = name;
-			dl.append(o);
-			if (++n >= 40)
-				break;
-		}
+	const q = text.trim();
+	const names = [];
+	if (r.state === "ok" && q.length >= 2 && !/[.\-[]/.test(q))
+		for (const name of varsByName(r.T).keys())
+			if (name.startsWith(q)) {
+				names.push(name);
+				if (names.length >= 40)
+					break;
+			}
+	if (names.length || WATCHV.names.length) {
+		WATCHV.names = names;
+		WATCHV.changed();
+	}
 }
 
 // The Debugger's "Parameters and locals" section for the unwound frames
-// uw (unwindHere), or the reason there are none.
+// uw (unwindHere), or the reason there are none: DBGCODE.locals (a
+// <details> per frame, filled when opened) and localsStatus, drawn when
+// drawContext calls DBGCODE.changed().
 function renderLocals(uw) {
-	const box = $("locals"), st = $("locals_status");
+	const box = [];
+	DBGCODE.locals = box;
 	setVarsCells([]);
-	box.textContent = "";
 	if (!uw) {
-		st.textContent = runState === "jit" ? "Pause to see the parameters and locals of the call frames." : "";
+		DBGCODE.localsStatus = runState === "jit" ? "Pause to see the parameters and locals of the call frames." : "";
 		return;
 	}
 	if (!dbgHas()) {
-		st.textContent = "No parameters or locals: " + DBG.why + ".";
+		DBGCODE.localsStatus = "No parameters or locals: " + DBG.why + ".";
 		return;
 	}
 	const frames = uw.frames.filter((f) => !f.user);
-	st.textContent = frames.length ? "From the DWARF at each frame's EIP (the call instruction for callers), read from its registers and stack" +
+	DBGCODE.localsStatus = frames.length ? "From the DWARF at each frame's EIP (the call instruction for callers), read from its registers and stack" +
 		(uw.state !== "ok" ? "; frames below the last unwound one have no registers, so their variables cannot be read" : "") + "." :
 		"No call frames unwound here" + (uw.why ? " (" + uw.why + ")" : "") + ".";
 	frames.forEach((f, n) => {
@@ -225,7 +225,7 @@ function renderLocals(uw) {
 			if (det.open)
 				fill();
 		});
-		box.append(det);
+		box.push(det);
 	});
 }
 
@@ -400,16 +400,6 @@ function setupVars() {
 			api.show.jumpTo(Number(b.dataset.pa));
 		}
 	}, true);
-	$("watch_add").addEventListener("click", () => {
-		watchAdd($("watch_expr").value);
-		$("watch_expr").value = "";
-	});
-	$("watch_expr").addEventListener("keydown", (ev) => {
-		if (ev.key === "Enter")
-			$("watch_add").click();
-	});
-	$("watch_expr").addEventListener("input", watchSuggest);
-	$("watch_refresh").addEventListener("click", renderWatches);
 	dbgOnChange(() => {
 		renderWatches();
 		if (varPinned >= 0 || VARINFO.addr !== "")
@@ -417,5 +407,5 @@ function setupVars() {
 	});
 }
 
-export { WATCH_KEY, watchList, watchKernel, setWatchKernel, watchLoad, renderWatches, renderLocals, renderTaskRow,
+export { WATCH_KEY, WATCHV, watchList, watchKernel, setWatchKernel, watchLoad, watchAdd, watchSuggest, renderWatches, renderLocals, renderTaskRow,
 	varTypeOf, setupVars, VARINFO, varWatch, varsListingMove, varsListingLeave, varsListingClick };

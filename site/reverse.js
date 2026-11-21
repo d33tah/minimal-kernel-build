@@ -53,6 +53,8 @@ import { stepper, emulator, emuReady, runState, api, provide } from "./page.js";
 import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
 import { INPUT, inputReset, replayActive, inputRewind, inputRedo, inputRoom, replayStop } from "./replay.js";
+import { controller } from "./ui.jsx";
+import { dbgStatus, runToText } from "./dbgtab.js";
 
 const REV_MAX = 32;        // checkpoints kept
 const REV_GROUP = 8;       // a full one, then deltas; the oldest group goes first
@@ -473,13 +475,7 @@ async function revForward(st, target, targets = null, what = "Stepping back") {
 }
 
 function revStatus(text, state, ms) {
-	const s = $("dbg_status");
-	s.textContent = text;
-	s.dataset.rev = state;
-	if (ms !== undefined)
-		s.dataset.revMs = Math.round(ms);
-	else
-		delete s.dataset.revMs;
+	dbgStatus(text, state, ms);
 }
 
 // Wait for the machine to stop, then run fn(st) with the history locked.
@@ -638,21 +634,15 @@ function revBranch(st, why) {
 	revRender();
 }
 
-// The Debugger's reverse buttons and the line about the history.
-function revRender() {
-	const el = $("rev_info");
-	if (!el)
-		return;
+// The Debugger's reverse buttons and the line about the history: the
+// Machine tab's Step back here, the Debugger's (its line, Step back n,
+// Back to) drawn from revView() by debuggerpanel.jsx on REVV.
+const REVV = controller({});
+
+function revView() {
 	const st = stepper, on = !!st && REV.st === st && REV.cps.length > 0;
 	const ok = on && runState !== "off" && !REV.busy && !ffActive;
 	const back = ok && st.steps > REV.cps[0].steps;
-	for (const id of ["dbg_back", "dbg_backn"]) {
-		const b = $(id);
-		if (b)
-			b.disabled = !back;
-	}
-	if ($("dbg_backto"))
-		$("dbg_backto").disabled = !back;
 	const bytes = REV.cps.reduce((n, c) => n + c.stored, 0);
 	let text;
 	if (!st || runState === "off")
@@ -664,36 +654,37 @@ function revRender() {
 			(REV.cps.length === 1 ? "" : "s") + revEveryText() + " · " + kib(bytes) +
 			(st.behind() ? " · stepped back " + num(st.ahead - st.steps) + ": the recorded call stack, path and Calls go on to " +
 				num(st.ahead) : "");
-	el.textContent = text;
-	el.dataset.cps = on ? REV.cps.length : 0;
-	el.dataset.start = on ? REV.cps[0].steps : "";
-	el.dataset.ahead = st && st.behind() ? st.ahead : "";
 	const tip = back ? "" : " (" + (REV.busy ? "busy" : !on ? revNoneText() : "at the start of the reverse history") + ")";
-	if ($("dbg_back"))
-		$("dbg_back").title = "Undo the last instruction: restore the checkpoint before it and step forward to it" + tip;
-	if ($("dbg_backn"))
-		$("dbg_backn").title = "Step back this many instructions" + tip;
-	if ($("dbg_backto"))
-		$("dbg_backto").title = "Reverse continue: back to the last time the CPU was at this address before now" + tip;
+	return { back, text, tip, cps: on ? REV.cps.length : 0, start: on ? REV.cps[0].steps : "", ahead: st && st.behind() ? st.ahead : "" };
+}
+
+function revRender() {
+	const v = revView(), b = $("dbg_back");
+	if (b) {
+		b.disabled = !v.back;
+		b.title = "Undo the last instruction: restore the checkpoint before it and step forward to it" + v.tip;
+	}
+	REVV.changed();
+}
+
+// The Debugger's Back to: back to the Run to field's target.
+async function revBackToField() {
+	if (!stepper || REV.busy)
+		return;
+	const want = await api.step.runToTargets(runToText());
+	if (!want.targets) {
+		dbgStatus(want.why.replace(/\bRun to\b/g, "Back to"));
+		api.show.updateDebugUi();
+		return;
+	}
+	revBackTo(want.targets, want.label);
 }
 
 function initReverse() {
 	$("dbg_back").addEventListener("click", () => revStepBack(1));
-	$("dbg_backn").addEventListener("click", () => revStepBack(Math.max(1, Math.floor(Number($("dbg_n").value) || 100))));
-	$("dbg_backto").addEventListener("click", async () => {
-		if (!stepper || REV.busy)
-			return;
-		const want = await api.step.runToTargets($("dbg_addr").value.trim());
-		if (!want.targets) {
-			$("dbg_status").textContent = want.why.replace(/\bRun to\b/g, "Back to");
-			api.show.updateDebugUi();
-			return;
-		}
-		revBackTo(want.targets, want.label);
-	});
 	revRender();
 }
 
 provide({ revMark, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
-export { REV, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
+export { REV, REVV, revView, revBackToField, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
 	revStepTo, revNeedsJit, revBranch, revRender, initReverse };

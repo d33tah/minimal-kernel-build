@@ -2,7 +2,7 @@
 
 import time
 
-from tests.browser.common import machine_do, report, show_tab, wait_for
+from tests.browser.common import dbg_shown_once, machine_do, report, show_tab, wait_for
 from tests.browser.runstate import RUN_STATE_JS
 
 
@@ -117,8 +117,12 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed=1#{tab}")
     if not wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180):
+        dbg_shown_once(page)  # RUN_STATE_JS reads #dbg_status
+        st = page.evaluate(RUN_STATE_JS)
         ctx.close()
-        return [{"no slow motion after the entry": page.evaluate(RUN_STATE_JS)}], {}
+        return [{"no slow motion after the entry": st}], {}
+    # Step N and Run to (used from either tab below) exist once the Debugger tab has been shown.
+    dbg_shown_once(page)
     follow_install(page)
     phases = []
 

@@ -27,6 +27,7 @@ import { updateDebugUi, clockMips, finishEntry } from "./debugui.js";
 import { vmKeys } from "./tabs.jsx";
 import { codeSymbols, afterStop } from "./symview.js";
 import { stopDriver, resetCounters, resume } from "./run.js";
+import { dbgStatus } from "./dbgtab.js";
 
 // v86.wasm with two internal functions exported for stepping (stepper.js).
 // If the patch fails the page still boots, without the debugger
@@ -175,7 +176,7 @@ async function boot() {
 			};
 		} catch (e) {
 			setStepper(null);
-			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
+			dbgStatus("No debugger: " + (wasmPatchError || e));
 		}
 		graphReset(stepper);
 		if (stepper) {
@@ -204,7 +205,7 @@ async function boot() {
 		if (startPaused && stepper) {
 			setStartPaused(false);
 			setRunState("paused");
-			$("dbg_status").textContent = "Paused at the reset vector.";
+			dbgStatus("Paused at the reset vector.");
 			afterStop();
 			if (replayActive())
 				resume(true); // the replayed run went on from here
@@ -221,8 +222,8 @@ async function boot() {
 					return;
 				}
 				if (!ok)
-					$("dbg_status").textContent = "Fast-forward did not reach " + t.name + "; stepping from here." +
-						(ffInfo && ffInfo.error ? " " + ffInfo.error : "");
+					dbgStatus("Fast-forward did not reach " + t.name + "; stepping from here." +
+						(ffInfo && ffInfo.error ? " " + ffInfo.error : ""));
 				else
 					finishEntry();
 				resume();

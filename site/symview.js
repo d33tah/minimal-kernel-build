@@ -14,6 +14,7 @@ import { srcLinkEl } from "./srclinks.js";
 import { openSource, renderSourceRows } from "./source.js";
 import { pageWalk, phys32 } from "./cpustate.js";
 import { renderTaskRow } from "./vars.js";
+import { DBGCODE } from "./dbgtab.js";
 import { renderFnRows } from "./fnfacts.js";
 import { bmFnNames, bmStarEl, bmAddButton, bmDraftFn } from "./bookmarks.js";
 import { scan } from "./scan.js";
@@ -234,10 +235,11 @@ function symButton(text, addr, title) {
 }
 
 // Debugger tab: current and previous symbol, the last few symbols, and
-// the disassembly around EIP.
+// the disassembly around EIP. The rows are made anew in DBGCODE.sym (the
+// tab's #sym_info draws them when drawContext calls changed()); returns
+// the unwound call stack.
 function renderSymbols(phys) {
-	const box = $("sym_info");
-	box.textContent = "";
+	const box = document.createElement("div");
 	const st = stepper;
 	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
 	const row = (label, ...nodes) => {
@@ -292,6 +294,7 @@ function renderSymbols(phys) {
 	}
 	items.forEach((it, k) => crumbs.append(k ? " ← " : "", it));
 	crumbs.dataset.count = items.length;
+	DBGCODE.sym = [...box.childNodes];
 	return uw;
 }
 

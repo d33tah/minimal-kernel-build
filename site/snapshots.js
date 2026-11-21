@@ -50,6 +50,7 @@ import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snap
 	SNAP_EXT, snapCodec, setSnapshots, snapHow } from "./snaprecord.js";
 import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
+import { dbgStatus } from "./dbgtab.js";
 
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
 let snapDbWhy = "";       // why not
@@ -374,7 +375,7 @@ async function restoreSnapshot(s) {
 		// The Debugger's note (shown over the screen while paused) said why
 		// the machine stopped where it was before ("Paused at the reset
 		// vector.", a Run to): now it is here because of the Restore.
-		$("dbg_status").textContent = "Restored the snapshot “" + s.name + "”.";
+		dbgStatus("Restored the snapshot “" + s.name + "”.");
 		if (runState === "paused" || runState === "stepped")
 			api.step.afterStop();
 		SNAP.restored = s.id;

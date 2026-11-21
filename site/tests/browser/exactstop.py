@@ -4,7 +4,7 @@ import os
 import re
 import time
 
-from tests.browser.common import debian_names, machine_do, PHONE, report, show_tab, wait_for
+from tests.browser.common import dbg_shown_once, debian_names, machine_do, PHONE, report, show_tab, wait_for
 
 
 # ---- exactstop: Debian's end stops at an exact instruction (J3) ------------
@@ -47,6 +47,7 @@ def exactstop_run(browser, base, shots, name, mode, scheme, phone, tag, problems
             page.screenshot(path=str(shots / f"exactstop-{tag}-timeout.png"))
             return None
         time.sleep(0.5)
+        dbg_shown_once(page)  # #dbg_status exists once the Debugger tab has been shown
         out = page.evaluate(EXACTSTOP_STATE_JS)
         out["seconds"] = round(time.monotonic() - t0)
         show_tab(page, "machine")

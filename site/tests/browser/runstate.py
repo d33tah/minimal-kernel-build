@@ -6,7 +6,7 @@ import time
 
 from playwright.sync_api import Error as PlaywrightError
 
-from tests.browser.common import machine_do, PHONE, report, show_tab, wait_for
+from tests.browser.common import dbg_shown_once, machine_do, PHONE, report, show_tab, wait_for
 
 
 # ---- run state: random clicks at 1/s ---------------------------------------
@@ -168,12 +168,15 @@ def run_fuzz_case(browser, base, shots, kernel, touch, seed, actions, verbose=Fa
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed=1")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") not in (None, "", "off"), 120)
+    # RUN_STATE_JS reads #dbg_status and Run to's field is set below: there once the Debugger tab has been shown.
+    dbg_shown_once(page)
     log, problems = [], []
     for _ in range(actions):
         for extra in ctx.pages[1:]:
             extra.close()
         if "/index.html" not in page.url:  # a link left the page: back to it
             page.go_back()
+            dbg_shown_once(page)  # a new load of the page: the Debugger tab not shown yet
         pause = rng.choice([0, 0, 0.05, 0.3, 1, 2])
         log.append(run_fuzz_action(page, rng, touch))
         time.sleep(pause)
@@ -206,8 +209,10 @@ def double_boot_case(browser, base, shots, touch):
     else:
         page.evaluate("() => { const b = document.getElementById('boot'); b.click(); b.click(); }")
     problems = []
-    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped"
-                    and page.evaluate("!MKB.entryPhase"), 60):
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped"
+                  and page.evaluate("!MKB.entryPhase"), 60)
+    dbg_shown_once(page)  # RUN_STATE_JS reads #dbg_status: there once the Debugger tab has been shown
+    if not ok:
         problems.append({"not running at 1/s 60 s after two Boots": page.evaluate(RUN_STATE_JS)})
     else:
         bad = run_state_problem(page)

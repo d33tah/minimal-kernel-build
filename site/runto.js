@@ -19,8 +19,9 @@ import { endText, updateDebugUi, finishEntry, speed, SPEED_KEY, renderClock, MIP
 	renderCounters, COUNT_KEY } from "./debugui.js";
 import { showTab } from "./tabs.jsx";
 import { navJump } from "./nav.js";
-import { afterStop, jumpTo } from "./symview.js";
+import { afterStop } from "./symview.js";
 import { pause, resume } from "./run.js";
+import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
 
 // Pause, and wait for a fast-forward or a fast Run to that is still running
 // (they are paused too) to return: a second one started next to it ran two
@@ -40,7 +41,7 @@ async function doStep(n) {
 	if (!stepper)
 		return;
 	if (stepper.dead()) {
-		$("dbg_status").textContent = "The CPU executed hlt with interrupts off: nothing to step.";
+		dbgStatus("The CPU executed hlt with interrupts off: nothing to step.");
 		return;
 	}
 	// The keys typed while paused go in first; the run steps from here (J4).
@@ -73,9 +74,9 @@ async function doStep(n) {
 			break;
 		}
 	}
-	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
+	dbgStatus("Stepped " + num(stepper.steps - before) + " instruction" +
 		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
-			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "prompt" ? " (at the (initramfs) prompt)" : reason === "time" ? " (5 s limit)" : "") + ".";
+			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "prompt" ? " (at the (initramfs) prompt)" : reason === "time" ? " (5 s limit)" : "") + ".");
 	scan(false);
 	afterStop();
 }
@@ -150,7 +151,7 @@ function symbolTargets(text) {
 async function runToTargets(text) {
 	const m = /^(.*\D.*):(\d+)$/.exec(text);
 	if (m) {
-		$("dbg_status").textContent = "Finding the code of " + text + "…";
+		dbgStatus("Finding the code of " + text + "…");
 		const r = await dbgLineCodeWait(m[1], Number(m[2]));
 		if (r.state !== "ok")
 			return { why: "Run to " + text + ": " + r.why };
@@ -168,7 +169,7 @@ async function runToTargets(text) {
 
 // "Run to file:line" from the Source panel: the Debugger's own Run to.
 function runToLine(where) {
-	$("dbg_addr").value = where;
+	setRunToText(where);
 	navJump(() => showTab("debugger"));
 	doRunTo();
 }
@@ -176,9 +177,9 @@ function runToLine(where) {
 async function doRunTo() {
 	if (!stepper || REV.busy)
 		return;
-	const want = await runToTargets($("dbg_addr").value.trim());
+	const want = await runToTargets(runToText());
 	if (!want.targets) {
-		$("dbg_status").textContent = want.why;
+		dbgStatus(want.why);
 		updateDebugUi(); // the paused screen's overlay says it too
 		return;
 	}
@@ -205,7 +206,7 @@ async function doRunTo() {
 	if (t && (sameSec || targets.every((a) => inText(a) && a >= V86_KERNEL_ADDR))) {
 		setFfInfo(null);
 		inputTaint(stepper, "a Run to with the JIT and breakpoints");
-		$("dbg_status").textContent = "Running to " + label + " with the JIT...";
+		dbgStatus("Running to " + label + " with the JIT...");
 		let ok = true;
 		if (stepper.sinceEntry < 0 || stepper.nextPhys() < V86_KERNEL_ADDR)
 			ok = await fastForward(t.phys, t.name);
@@ -227,27 +228,15 @@ async function doRunTo() {
 	}
 	setRunTo(at);
 	setRunToLabel(label);
-	$("dbg_status").textContent = "Running to " + (targets.length > 1 ? label + " (" + targets.length + " addresses)" : "physical " + hex(targets[0])) + "...";
+	dbgStatus("Running to " + (targets.length > 1 ? label + " (" + targets.length + " addresses)" : "physical " + hex(targets[0])) + "...");
 	resume();
 }
 
 function initDebugger() {
 	$("dbg_pause").addEventListener("click", () => pause("Paused."));
-	$("dbg_continue").addEventListener("click", () => { $("dbg_status").textContent = ""; resume(true); });
+	$("dbg_continue").addEventListener("click", () => { dbgStatus(""); resume(true); });
 	$("vm_continue").addEventListener("click", () => $("dbg_continue").click());
 	$("dbg_step").addEventListener("click", () => doStep(1));
-	$("dbg_stepn").addEventListener("click", () => {
-		const n = Math.max(1, Math.floor(Number($("dbg_n").value) || 100));
-		doStep(n);
-	});
-	$("dbg_runto").addEventListener("click", doRunTo);
-	$("context").addEventListener("click", (ev) => {
-		const line = ev.target.closest("[data-addr]");
-		if (line)
-			jumpTo(Number(line.dataset.addr));
-	});
-	$("dbg_addr").addEventListener("keydown", (e) => { if (e.key === "Enter") doRunTo(); });
-	$("dbg_n").addEventListener("keydown", (e) => { if (e.key === "Enter") $("dbg_stepn").click(); });
 	$("dbg_speed").addEventListener("change", () => {
 		setPrefSpeed(speed());
 		try {
@@ -297,4 +286,4 @@ function initDebugger() {
 // The page API's entries of this module (page.js).
 provide({ runToStopped, runToLine, pauseAll, runToTargets });
 
-export { initDebugger, pauseAll, doStep };
+export { initDebugger, pauseAll, doStep, doRunTo };

@@ -30,7 +30,7 @@
 
 import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { hex, $ } from "./util.js";
+import { hex } from "./util.js";
 import { image, emulator, stepper, runState, symbols, setSymbols, state, provide, api } from "./page.js";
 import { DBG, dbgChanged, dbgTypes, dbgFnFacts, dbgSetRemap } from "./dbginfo.js";
 import { dwarfPack } from "./dwarftables.js";
@@ -44,6 +44,7 @@ import { hpPlan, hpLines, hpLookup, hpArgv } from "./hpelf.js";
 import { pageWalk } from "./cpustate.js";
 import { INPUT, inputPatch } from "./replay.js";
 import { Tip } from "./ui.jsx";
+import { dbgStatus } from "./dbgtab.js";
 
 const HP_PA = 0x60000, HP_SIZE = 0x20000;
 
@@ -228,7 +229,7 @@ async function hpView() {
 	// The Run to target (the Debugger's breakpoint) counts on the text shown.
 	const moved = same ? moveRunTo(texts) : "";
 	if (moved)
-		$("dbg_status").textContent = moved;
+		dbgStatus(moved);
 }
 
 // The text path was built from (no patch): the rebuilt kernel's edit, else the kit's.

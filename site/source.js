@@ -780,7 +780,6 @@ function initSource() {
 		api.show.writeHash();
 		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
 	});
-	$("context").addEventListener("click", srcLineClick, true);
 	$("src_tar").addEventListener("change", () => {
 		const f = $("src_tar").files[0];
 		if (f)

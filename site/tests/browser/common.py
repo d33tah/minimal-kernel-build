@@ -91,6 +91,26 @@ def shown_tab(page):
     return page.get_attribute(".tabbar [role=tab][aria-selected=true]", "data-tab")
 
 
+def dbg_shown_once(page):
+    """The Debugger tab's elements exist only once it has been shown (the
+    panel is mounted the first time it is shown and stays): if it has not
+    been shown since the page loaded, show it as a user would and go back
+    to the tab shown before."""
+    if page.locator("#dbg_status").count():
+        return
+    back = shown_tab(page)
+    # (Right after a load the tab bar may not answer yet: click again.)
+    end = time.monotonic() + 30
+    while not page.locator("#dbg_status").count() and time.monotonic() < end:
+        show_tab(page, "debugger")
+        try:
+            page.wait_for_selector("#dbg_status", state="attached", timeout=2000)
+        except PlaywrightError:
+            pass
+    if back and back != "debugger":
+        show_tab(page, back)
+
+
 def machine_do(page, method, sel, *args, **kw):
     """Use a run control (U5: in the Machine tab) from any tab as a user
     would: open the Machine tab, use it, go back to the tab shown before."""
@@ -188,6 +208,7 @@ def symbolize_frames(elf, vaddrs):
 
 def source_rows(page):
     """EIP, state and frames of the Debugger's source rows, once loaded."""
+    dbg_shown_once(page)
     def get():
         return page.evaluate("""() => { const e = document.getElementById('cur_src');
             return e ? [e.dataset.state, e.dataset.frames] : [null, '[]']; }""")
@@ -203,6 +224,7 @@ DWARF_STEPS = (0, 37, 101, 263, 541, 1009, 2003, 3001, 4007, 5003, 7001, 9001)
 
 def source_texts(page):
     """The C text of each source row (frame) of the Debugger, "" where none, once the files loaded."""
+    dbg_shown_once(page)
     get = lambda: page.evaluate("""() => [...document.querySelectorAll('#cur_src .frame')].map(f => {
         const t = f.querySelector('.srctext'); return t ? t.textContent.trim() : ''; })""")
     wait_for(lambda: "reading " not in (page.inner_text("#cur_src") if page.locator("#cur_src").count() else "") and
@@ -236,6 +258,7 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=Non
     inlined-at chain) equal llvm-symbolizer --inlines on the kernel's -g ELF;
     the call stack names frames with file:line in their tooltips. With
     entry_fn (the C source is there): text_check on the rows' C text."""
+    dbg_shown_once(page)
     samples, texts = [], []
     for n in steps:
         if n:
@@ -343,6 +366,7 @@ LOCALS_DUMP_JS = """() => [...document.querySelectorAll('#locals details.lframe'
 def locals_open_all(page, timeout=30):
     """Open every frame of the Parameters and locals section and wait until
     each one has its variables (or says why not)."""
+    dbg_shown_once(page)
     page.evaluate("document.querySelectorAll('#locals details.lframe').forEach((d) => { d.open = true; })")
     wait_for(lambda: page.evaluate("[...document.querySelectorAll('#locals details.lframe')].every((d) => "
                                    "d.dataset.filled || (d.dataset.state && d.dataset.state !== 'loading'))"), timeout)
@@ -350,6 +374,7 @@ def locals_open_all(page, timeout=30):
 
 
 def run_to_wait(page, bps, timeout=240):
+    dbg_shown_once(page)
     ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
                   int(page.get_attribute("#regs", "data-phys") or -1) in bps, timeout)
     return ok, int(page.get_attribute("#regs", "data-phys") or -1), page.inner_text("#dbg_status")
@@ -658,6 +683,7 @@ def replay_wait(page, timeout):
 
 def rev_click(page, sel, phone, timeout=120):
     """Click a reverse button; wait for its result. (wall ms, the page's ms, status, state)."""
+    dbg_shown_once(page)
     page.evaluate("(() => { const s = document.getElementById('dbg_status'); delete s.dataset.rev; delete s.dataset.revMs; })()")
     loc = page.locator(sel)
     loc.scroll_into_view_if_needed()

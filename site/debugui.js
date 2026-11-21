@@ -6,7 +6,7 @@
 import { CLOCK, realNow, GUEST } from "./clock.js";
 import { $, V86_KERNEL_ADDR, escHtml, h8, hex, h4, num, withV } from "./util.js";
 import { runTo, entryPhase, stepper, tab, runState, api, disasm, image, symbols, emuRam, emulator, prevRegs,
-	setPrevRegs, refSaved, countMs, countSteps, counting, countNote, wasmPatchError, setRefSaved, emuReady,
+	refSaved, countMs, countSteps, counting, countNote, wasmPatchError, setRefSaved, emuReady,
 	setEntryPhase, jitLoopId, setCounting, state, vmHasKeys, publishMachine, provide } from "./page.js";
 import { jumpsFor, jumpPaths, jumpBadgesHtml } from "./jumps.js";
 import { jumpsDrawn, renderEipJumps, jumpInlineMax, jumpInlineHtml, jumpStubAttrs } from "./jumpview.js";
@@ -16,11 +16,11 @@ import { srcFocusKeep, srcLinkEl } from "./srclinks.js";
 import { srcLineHtml } from "./source.js";
 import { liveDecode, iced, icedError, loadIced, bitnessAt, decodeLive, virtOffset } from "./livedis.js";
 import { ffActive, ffInfo } from "./fastforward.js";
-import { renderCpuState } from "./cpustate.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { renderWatches, renderLocals } from "./vars.js";
 import { replayActive, replayAfterStop } from "./replay.js";
 import { REV, revRender } from "./reverse.js";
+import { DBGSTATUS, DBGCODE, dbgStatusText } from "./dbgtab.js";
 import { bmCodeStar, bmMenuFit } from "./bookmarks.js";
 import { PWA, pwaReload } from "./pwa.js";
 import { STEP_CONST } from "./stepper.js";
@@ -69,22 +69,30 @@ function renderContext() {
 	srcFocusKeep(drawContext);
 }
 
+// Code at EIP, the symbol rows, the paths at EIP and the call frames'
+// variables, once the tab was shown (debuggerpanel.jsx): the listing and
+// the paths are written through their refs (DBGCODE.ctxEl, jumpsEl), the
+// rows and the frames are nodes DBGCODE holds, drawn by changed().
 function drawContext() {
+	const el = DBGCODE.ctxEl;
+	if (!el)
+		return;
 	renderWatches();
-	const el = $("context");
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
 		el.textContent = runState === "jit" ? "Running at full speed (JIT). Pause to see the code at EIP; the symbol history is not recorded at full speed." : "";
-		$("sym_info").textContent = "";
-		$("eip_jumps").textContent = "";
+		DBGCODE.sym = [];
+		renderEipJumps(DBGCODE.jumpsEl, null, -1);
 		if (tab === "debugger")
 			renderLocals(null);
+		DBGCODE.changed();
 		return;
 	}
 	const phys = stepper.nextPhys();
 	if (phys < 0) {
 		el.textContent = "EIP is not mapped.";
 		renderLocals(null);
-		$("eip_jumps").textContent = "";
+		renderEipJumps(DBGCODE.jumpsEl, null, -1);
+		DBGCODE.changed();
 		return;
 	}
 	renderLocals(api.show.renderSymbols(phys));
@@ -182,11 +190,12 @@ function drawContext() {
 	el.dataset.draws = Number(el.dataset.draws || 0) + 1;
 	el.dataset.jlocal = live ? "instructions decoded live around EIP" : "";
 	jumpsDrawn(el, jS, paths);
-	renderEipJumps(exact ? jS : null, phys);
+	renderEipJumps(DBGCODE.jumpsEl, exact ? jS : null, phys);
 	el.dataset.phys = phys;
 	el.dataset.opsNamed = el.querySelectorAll(".opn").length;
 	const cur = el.querySelector(".ins.cur");
 	el.dataset.cur = cur ? cur.dataset.addr : "";
+	DBGCODE.changed();
 }
 
 // EIP to highlight in the inspector, or -1.
@@ -196,13 +205,13 @@ function currentPhys() {
 
 const FLAG_BITS = [[0, "CF"], [2, "PF"], [4, "AF"], [6, "ZF"], [7, "SF"], [8, "TF"], [9, "IF"], [10, "DF"], [11, "OF"], [14, "NT"], [16, "RF"], [17, "VM"]];
 
-function renderRegs() {
-	const el = $("regs");
-	if (!stepper) {
-		el.textContent = "";
-		renderCpuState();
-		return;
-	}
+// The Debugger's registers (debuggerpanel.jsx Regs draws them when the
+// machine is published): name, value, title and whether it changed since
+// they were last drawn (prevRegs, which Regs sets once drawn), or null
+// without a stepper.
+function regsView() {
+	if (!stepper)
+		return null;
 	const r = stepper.regs();
 	const flags = FLAG_BITS.filter(([b]) => r.eflags & (1 << b)).map(([, n]) => n);
 	flags.push("IOPL" + ((r.eflags >> 12) & 3));
@@ -220,27 +229,12 @@ function renderRegs() {
 		["CPL", String(r.cpl), "Current privilege level"],
 		["mode", mode + ", " + (r.is32 ? "32" : "16") + "-bit" + (r.hlt ? ", hlt" : "")],
 		["phys", phys < 0 ? "unmapped" : h8(phys), "Physical address of the next instruction"],
-	];
-	el.textContent = "";
-	for (const [name, value, title] of cells) {
-		const d = document.createElement("div");
-		d.dataset.reg = name;
+	].map(([name, value, title]) => {
 		const chg = !!prevRegs && prevRegs[name] !== undefined && prevRegs[name] !== value;
-		if (chg)
-			d.className = "chg";
-		const b = document.createElement("b");
-		b.textContent = name;
-		d.append(b, " " + value);
-		if (title || chg)
-			d.title = (title ? title + ". " : "") + (chg ? "Yellow: changed since the registers were last shown" : "");
-		if (name === "EFLAGS" || name === "mode")
-			d.classList.add("wide");
-		el.append(d);
-	}
-	setPrevRegs(Object.fromEntries(cells.map(([n, v]) => [n, v])));
-	el.dataset.eip = r.eip;
-	el.dataset.phys = phys;
-	renderCpuState();
+		return { name, value, chg, wide: name === "EFLAGS" || name === "mode",
+			title: title || chg ? (title ? title + ". " : "") + (chg ? "Yellow: changed since the registers were last shown" : "") : undefined };
+	});
+	return { cells, eip: r.eip, phys, shown: Object.fromEntries(cells.map((c) => [c.name, c.value])) };
 }
 
 function renderCounters() {
@@ -710,20 +704,19 @@ function drawDebugUi() {
 	$("vm_overlay").hidden = !paused;
 	if (paused) {
 		// The note keeps its file:line links (a copy of #dbg_status).
-		const end = stepper.end ? "end: " + endText() : "", status = $("dbg_status"), note = status.textContent;
+		const end = stepper.end ? "end: " + endText() : "", note = dbgStatusText(), said = DBGSTATUS.note;
 		if (end && !note.startsWith("Run to ") || !note)
 			$("vm_reason").textContent = end;
 		else
-			$("vm_reason").replaceChildren(...[...status.childNodes].map((n) => n.cloneNode(true)));
+			$("vm_reason").replaceChildren(...[].concat(said).map((n) => (typeof n === "string" ? n : n.cloneNode(true))));
 		$("vm_continue").hidden = !!stepper.end;
 	}
-	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
-		$(id).disabled = !can || runState === "off" || REV.busy;
+	$("dbg_step").disabled = !can || runState === "off" || REV.busy;
 	revRender();
 	// The views subscribed to "machine" draw now: the run badge
-	// (initRunBadge), the EIP's page in the Memory tab (initLegend).
+	// (initRunBadge), the EIP's page in the Memory tab (initLegend), the
+	// Debugger's registers, CPU state and buttons once it was shown.
 	publishMachine();
-	renderRegs();
 	renderCounters();
 	if (runState !== "stepped")
 		renderContext();
@@ -739,6 +732,6 @@ state.subscribe(() => {
 provide({ currentPhys, renderContext, speedReset, updateDebugUi, syncSrcToggle, clockMips, flushScreen, FLAG_BITS,
 	runBadgeOpen, renderRunBadgePwa });
 
-export { REF_KEY, renderContext, updateDebugUi, clockMips, finishEntry, speed, speedReset, flushScreen, watchJitEnd,
+export { REF_KEY, regsView, renderContext, updateDebugUi, clockMips, finishEntry, speed, speedReset, flushScreen, watchJitEnd,
 	endText, fastStepping, highRate, COUNT_LIMIT_MS, SPEED_KEY, renderClock, MIPS_KEY, renderCounters, COUNT_KEY,
 	syncSrcToggle, watchPanicText, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, initRunBadge };

@@ -376,9 +376,9 @@ function jumpGo(pa) {
 	});
 }
 
-// The Debugger's summary of EIP's own paths.
-function renderEipJumps(S, pa) {
-	const el = $("eip_jumps");
+// The Debugger's summary of EIP's own paths, into its line el (#eip_jumps,
+// drawn through the Debugger tab's ref; debugui.js drawContext).
+function renderEipJumps(el, S, pa) {
 	el._jS = S;
 	el.replaceChildren();
 	if (pa < 0 || !S) {
@@ -461,11 +461,11 @@ function initJumps() {
 			jumpPopClose(true);
 		}
 	}, true);
-	jumpArcsObserve($("context"));
 }
 
 // Lines wrap differently at another width: the arcs of a listing (Code at
-// EIP; the Page listing when its component mounts) are drawn again.
+// EIP and the Page listing, when their tab's component mounts) are drawn
+// again.
 let arcsRo = null;
 function jumpArcsObserve(box) {
 	if (typeof ResizeObserver === "function") {

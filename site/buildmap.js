@@ -18,6 +18,7 @@
 
 import { image, initrd } from "./page.js";
 import { edDiff } from "./edpatch.js";
+import { runToText, setRunToText } from "./dbgtab.js";
 
 const BLD = {
 	n: new Map(),       // family -> builds made in this page
@@ -161,8 +162,7 @@ function moveLine(a, b, line) {
 // them moves with the edit. texts: Map(path -> [old text, new text]).
 // Returns what the Debugger's status says, or "".
 function moveRunTo(texts) {
-	const el = document.getElementById("dbg_addr");
-	const m = el ? /^(.*\D.*):(\d+)$/.exec(el.value.trim()) : null;
+	const m = /^(.*\D.*):(\d+)$/.exec(runToText());
 	if (!m)
 		return "";
 	const q = m[1].replace(/^\.?\//, "");
@@ -173,8 +173,8 @@ function moveRunTo(texts) {
 	const r = moveLine(a, b, Number(m[2]));
 	if (r.how === "same")
 		return "";
-	el.value = m[1] + ":" + r.line;
-	return "Run to " + m[1] + ":" + m[2] + " is " + el.value + " now: " + (r.how === "moved" ? "the edit moved the line" :
+	setRunToText(m[1] + ":" + r.line);
+	return "Run to " + m[1] + ":" + m[2] + " is " + runToText() + " now: " + (r.how === "moved" ? "the edit moved the line" :
 		r.how === "changed" ? "the edit changed that line, this is the next line it kept" : "its place in the new text is not known") + ".";
 }
 

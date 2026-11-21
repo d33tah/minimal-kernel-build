@@ -5,7 +5,7 @@ import time
 
 from playwright.sync_api import Error as PlaywrightError
 
-from tests.browser.common import machine_do, report, show_tab, wait_for
+from tests.browser.common import dbg_shown_once, machine_do, report, show_tab, wait_for
 from tests.browser.runstate import RUN_FUZZ_PICK
 from tests.browser.followeip import follow_install
 
@@ -101,6 +101,8 @@ def follow_fuzz_case(browser, base, shots, kernel, seed, actions, verbose=False)
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed={rng.choice(['1', '10'])}#{rng.choice(['debugger', 'page'])}")
     wait_for(lambda: page.evaluate("typeof window.MKB?.entryPhase !== 'undefined' && MKB.runState === 'stepped' && !MKB.entryPhase && !MKB.ffActive"), 180)
+    # The Debugger's controls (Run to's address) exist once its tab has been shown.
+    dbg_shown_once(page)
     follow_install(page)
     log, problems = [], []
     for _ in range(actions):

@@ -15,6 +15,7 @@ import { STEP_CONST } from "./stepper.js";
 import { speed, speedReset, updateDebugUi, clockMips, flushScreen, watchJitEnd, endText, finishEntry,
 	fastStepping, highRate, COUNT_LIMIT_MS } from "./debugui.js";
 import { afterStop, frameUpdate } from "./symview.js";
+import { dbgStatus } from "./dbgtab.js";
 
 const { TEXT_PROMPT, TEXT_PANIC } = STEP_CONST;
 
@@ -291,7 +292,7 @@ async function pause(note) {
 		finishEntry(); // a Run to (stepped) went past the kernel entry
 	// note: text, or nodes (runToStopped's file:line link).
 	if (note !== undefined)
-		$("dbg_status").replaceChildren(...[].concat(note));
+		dbgStatus(note);
 	afterStop();
 }
 

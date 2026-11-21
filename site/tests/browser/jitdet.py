@@ -2,7 +2,7 @@
 
 import time
 
-from tests.browser.common import debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, PHONE, report, wait_for
+from tests.browser.common import dbg_shown_once, debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, PHONE, report, wait_for
 
 
 JITDET_MIN_RATIO = 0.9
@@ -36,6 +36,7 @@ def jitdet_count_run(browser, base, shots, name, mips, scheme, phone, tag, probl
         if not wait_for(lambda: page.evaluate("typeof window.MKB?.stepper !== 'undefined' && !!MKB.stepper && MKB.runState === 'paused'"), 180, 0.5):
             problems.append(f"{tag}: not paused at the reset vector")
             return None
+        dbg_shown_once(page)  # JITDET_RUNNING_JS reads #dbg_status: there once the Debugger tab has been shown
         page.evaluate(JITDET_WATCH_JS, [JITDET_CAP, mips == "real"])
         machine_do(page, "click", "#dbg_continue")
         # Look at the running page well before the cap: a fast runner (CI,

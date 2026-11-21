@@ -3,7 +3,7 @@
 import time
 
 from tests.browser.common import (
-    debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, mev_page, replay_wait, report, show_tab, wait_for,
+    dbg_shown_once, debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, mev_page, replay_wait, report, show_tab, wait_for,
 )
 
 
@@ -135,6 +135,7 @@ def mev_repeat_case(browser, base, shots, problems, r):
             digests.append(page.evaluate(MEV_DIGEST_JS, None))
             if i == 0:
                 continue
+            dbg_shown_once(page)  # #dbg_status (read after each step back) is there once the Debugger tab has been shown
             N = page.evaluate("MKB.stepper.steps")
             entry = page.evaluate("MKB.REV.cps.length ? MKB.REV.cps[0].steps : null")
             r["paused"] = {"steps": N, "history": entry}

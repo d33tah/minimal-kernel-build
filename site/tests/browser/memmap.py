@@ -3,7 +3,7 @@
 import time
 
 from tests.browser.common import (
-    debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, mev_page, report, show_tab, wait_for,
+    dbg_shown_once, debian_names, JITDET_CAP, JITDET_WATCH_JS, machine_do, mev_page, report, show_tab, wait_for,
 )
 from tests.browser.memevents import MEV_DIGEST_JS
 
@@ -225,6 +225,7 @@ def mm_ui_case(browser, base, shots, problems, r):
         target = page.evaluate("""() => { const b = document.querySelector('#mm_info .mm-go'); const pos = Number(b.title.match(/instruction ([\\d,]+)/)[1].replace(/,/g, ''));
           b.click(); return pos; }""")
         ok = wait_for(lambda: page.evaluate("!MKB.REV.busy && MKB.runState === 'paused' && MKB.stepper.steps <= %d" % target), 300, 0.2)
+        dbg_shown_once(page)  # #rev_info (read below) is there once the Debugger tab has been shown
         mm_frames(page)
         back = page.evaluate("({ steps: MKB.stepper.steps, n: MKB.MEV.n, idx: MKB.MMAP.idx, live: MKB.MMAP.live, samples: MKB.MMAP.samples.length, rev: document.getElementById('rev_info').textContent.slice(0, 160) })")
         r["go there"] = {"target": target, **back}

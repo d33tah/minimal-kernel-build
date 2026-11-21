@@ -10,7 +10,6 @@
 //   PIT, RTC: JS objects in cpu.devices (src/pit.js, src/rtc.js).
 // What v86 does not keep is shown as "not emulated" or "not kept".
 
-import { $ } from "./util.js";
 import { stepper, symbols, api, provide } from "./page.js";
 import { jitPending, jitFlush } from "./fastforward.js";
 import { MEV } from "./memevents.js";
@@ -121,7 +120,10 @@ function decodeSegDesc(lo, hi) {
 
 // ---- sections -----------------------------------------------------------
 
-// Each section: [id, title, rows(st, ctx)] with rows [name, value, title?].
+// Each section: [id, title, rows(st), tools] with rows [name, value, title?];
+// tools names the section's buttons (debuggerpanel.jsx CpuTools: "tables"
+// views the GDT and the IDT, "paging" translates an address and lists the
+// page directory, into gdtText, idtText, translateText, pageDirText).
 const CPU_SECTIONS = [
 	["segments", "Segments (selector and hidden descriptor cache)", (st) => {
 		const c = st.cpu, rows = [];
@@ -149,7 +151,7 @@ const CPU_SECTIONS = [
 			["LDTR", x4(c.sreg[7]) + " base " + x8(c.segment_offsets[7]) + " limit " + x8(c.segment_limits[7])],
 			["TR", x4(c.sreg[6]) + " base " + x8(c.segment_offsets[6]) + " limit " + x8(c.segment_limits[6]) + " (" + (c.tss_size_32[0] ? "32-bit" : "16-bit") + " TSS)"],
 		];
-	}, (st, box) => tableButtons(st, box)],
+	}, "tables"],
 	["control", "Control registers", (st) => {
 		const c = st.cpu, cr0 = c.cr[0] >>> 0, cr4 = c.cr[4] >>> 0;
 		const efer = c.efer[0] >>> 0;
@@ -266,26 +268,10 @@ const CPU_SECTIONS = [
 		const c = st.cpu, cr0 = c.cr[0] >>> 0, cr4 = c.cr[4] >>> 0;
 		return [["mode", !(cr0 & 0x80000000) ? "off" : cr4 & 0x20 ? "PAE (3-level)" : "2-level" + (cr4 & 0x10 ? " with 4 MiB pages (PSE)" : "")],
 			["CR3", x8(c.cr[3])]];
-	}, (st, box) => pagingTools(st, box)],
+	}, "paging"],
 ];
 
 // ---- tools inside sections ---------------------------------------------
-
-function toolRow(box, html) {
-	const d = document.createElement("div");
-	d.className = "cpu_tool";
-	d.innerHTML = html;
-	box.append(d);
-	return d;
-}
-
-function tableButtons(st, box) {
-	const d = toolRow(box, '<button type="button" id="view_gdt">view GDT</button> <button type="button" id="view_idt">view IDT</button><pre id="cpu_table" class="mono"></pre>');
-	d.querySelector("#view_gdt").addEventListener("click", () => { $("cpu_table").textContent = gdtText(G_STEPPER()); });
-	d.querySelector("#view_idt").addEventListener("click", () => { $("cpu_table").textContent = idtText(G_STEPPER()); });
-}
-
-const G_STEPPER = () => stepper;
 
 function gdtText(st) {
 	const c = st.cpu, base = c.gdtr_offset[0] >>> 0, n = Math.floor(((c.gdtr_size[0] & 0xffff) + 1) / 8);
@@ -327,15 +313,6 @@ function idtText(st) {
 			" DPL " + ((access >> 5) & 3) + " " + symAtLinear(st, off));
 	}
 	return out.join("\n") || "empty";
-}
-
-function pagingTools(st, box) {
-	const d = toolRow(box, '<label>translate <input id="xlate_in" class="mono" size="12" placeholder="0xc1000000" aria-label="linear address to translate"></label> ' +
-		'<button type="button" id="xlate_go">translate</button> <button type="button" id="pd_view">page directory</button><pre id="xlate_out" class="mono"></pre>');
-	const go = () => { $("xlate_out").textContent = translateText(G_STEPPER(), $("xlate_in").value); };
-	d.querySelector("#xlate_go").addEventListener("click", go);
-	d.querySelector("#xlate_in").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
-	d.querySelector("#pd_view").addEventListener("click", () => { $("xlate_out").textContent = pageDirText(G_STEPPER()); });
 }
 
 // Accepts a number or a symbol name (its virtual address).
@@ -415,61 +392,21 @@ function pageDirText(st) {
 
 // ---- rendering ------------------------------------------------------------
 
-let cpuPrev = {};
-function renderCpuState() {
-	const host = $("cpu_state");
-	// Without a debugger (a v86.wasm the page cannot patch): no sections,
-	// made again for the next machine with one.
-	if (!stepper) {
-		host.textContent = "";
-		delete host.dataset.built;
-		cpuPrev = {};
-		return;
+// The rows of a section of the stepper st, each with whether its value
+// changed since the section was last drawn (prev: "section:name" ->
+// value, which the drawing updates once drawn: CpuState in
+// debuggerpanel.jsx).
+function cpuRows(st, id, rows, prev) {
+	let list;
+	try {
+		list = rows(st);
+	} catch (e) {
+		list = [["error", String(e)]];
 	}
-	if (!host.dataset.built) {
-		host.dataset.built = "1";
-		for (const [id, title, , tools] of CPU_SECTIONS) {
-			const d = document.createElement("details");
-			d.id = "cpu_" + id;
-			const s = document.createElement("summary");
-			s.textContent = title;
-			const rows = document.createElement("div");
-			rows.className = "regs mono cpu_rows";
-			d.append(s, rows);
-			if (tools)
-				tools(stepper, d);
-			d.addEventListener("toggle", () => { if (d.open) renderCpuState(); });
-			host.append(d);
-		}
-	}
-	for (const [id, , rows] of CPU_SECTIONS) {
-		const d = $("cpu_" + id);
-		if (!d.open)
-			continue;
-		const box = d.querySelector(".cpu_rows");
-		box.textContent = "";
-		let list;
-		try {
-			list = rows(stepper);
-		} catch (e) {
-			list = [["error", String(e)]];
-		}
-		for (const [name, value, title] of list) {
-			const key = id + ":" + name;
-			const el = document.createElement("div");
-			el.dataset.reg = name;
-			el.className = "wide";
-			if (cpuPrev[key] !== undefined && cpuPrev[key] !== value)
-				el.classList.add("chg");
-			cpuPrev[key] = value;
-			const b = document.createElement("b");
-			b.textContent = name;
-			el.append(b, " " + value);
-			if (title)
-				el.title = title;
-			box.append(el);
-		}
-	}
+	return list.map(([name, value, title]) => {
+		const key = id + ":" + name;
+		return { key, name, value, title, chg: prev[key] !== undefined && prev[key] !== value };
+	});
 }
 
 // v86 0.5.471's CPU.set_state (src/cpu.js) assigns state[86..88] to
@@ -576,4 +513,4 @@ async function v86Restore(em, state) {
 }
 
 provide({ v86Restore });
-export { phys32, pageWalk, renderCpuState, v86ResetHidden, v86Restore };
+export { CPU_SECTIONS, cpuRows, gdtText, idtText, translateText, pageDirText, phys32, pageWalk, v86ResetHidden, v86Restore };

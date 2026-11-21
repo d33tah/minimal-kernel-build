@@ -248,7 +248,8 @@ instruction writes it. When the Debugger is drawn (`drawDebugUi`, at most
 once per frame while running, and after each stop) the page calls
 `publishMachine()`, which bumps `machine`; the views that show the
 machine subscribe to that key and read the stepper and the emulator then.
-The run badge (H1) and the EIP's page in the Memory tab (M1) do.
+The run badge (H1), the EIP's page in the Memory tab (M1) and, once the
+Debugger tab was shown, its registers and CPU state (A1) do.
 
 API: `api` holds the functions (and a few shared objects) that a module
 calls in a module above it in the import order, grouped by concern:
@@ -297,8 +298,9 @@ runs, from a ref, not drawn by React per line) at once; the Settings tab
 (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
 quests.jsx), the Events tab (`EventsPanel`, events.jsx), and A1's
 Snapshots tab (`SnapshotsPanel`, snapshotspanel.jsx), Page tab
-(`PagePanel`, pagepanel.jsx) and Calls tab (`CallsPanel`, callspanel.jsx)
-when the store's `tab` first names them (`mountOnTab`): hidden at load,
+(`PagePanel`, pagepanel.jsx), Calls tab (`CallsPanel`, callspanel.jsx)
+and Debugger tab (`DebuggerPanel`, debuggerpanel.jsx) when the store's
+`tab` first names them (`mountOnTab`): hidden at load,
 their first render is work the boot does not need (their controllers,
 `QUESTS`, `MEV`, `SNAP`, `PAGETAB`, `GV`..., run from the start; the panel
 shows their state when it mounts).
@@ -340,9 +342,29 @@ the same way (the Snapshots tab first):
   in place and jumpview.js draws the arcs over it, as before; the title,
   notes, symbol index and controls around it are React. Code outside the
   tab reaches it through `listingEl()`, null until the tab is first shown.
+  The Debugger's Code at EIP (`#context`) and its paths line
+  (`#eip_jumps`) are drawn the same way (`DBGCODE.ctxEl`, `jumpsEl`):
+  their lines are the HTML the Page listing's helpers make (insnHtml,
+  jumpInlineHtml, srcLineHtml, diffBytesHtml), with the arcs over them.
 - DOM nodes a module's helper builds for several views (a variable's
   declaration, a function's facts, a file:line chain) are shown with
-  ui.jsx's `DomNodes`.
+  ui.jsx's `DomNodes`: also the Debugger's symbol, source, function, task
+  and call stack rows (symview.js renderSymbols), the call frames'
+  `<details>` (vars.js renderLocals) and each watch (vars.js
+  renderWatches), drawn when their controller changes.
+- What the stepper and the emulator hold (registers, CPU state) is read
+  when the component renders after the store's `machine` changes
+  (`publishMachine()`, from drawDebugUi, at most once per drawn frame):
+  the Debugger's registers and CPU state sections (`useStore("machine")`).
+  Nothing per instruction reaches React, and until the tab is first
+  shown none of it is drawn. The Debugger's status line
+  (`dbgStatus()`: Run to, Step, a pause, a snapshot restored, a reverse
+  step with its `data-rev`), the Run to field and Code at EIP's nodes are
+  dbgtab.js's (`DBGSTATUS`, `DBGIN`, `DBGCODE`), which the modules that
+  set them import, so a line written while the tab was never shown is
+  there when it is. The Step count and the Run to field are uncontrolled
+  inputs (`runToText()` reads the element once it exists: a test sets
+  its value directly, a build moves its target).
 - A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's
@@ -352,34 +374,34 @@ the same way (the Snapshots tab first):
 
 Modules that still look up elements by id (`$("x")` or getElementById,
 A1's list, kept up to date by each chunk; besides canvases and the Source
-panel's editor textarea these go with the A1 chunk of their tab:
-Debugger, Source tab, Machine; Memory, Events, bookmarks, nav and the run
-badge stay as they are for now):
+panel's editor textarea these go with the A1 chunk of their tab: Source
+tab, Machine; Memory, Events, bookmarks, nav and the run badge stay as
+they are for now):
 
 | module | elements of |
 |---|---|
 | app.js | Machine, Memory |
-| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Debugger, Source panel |
-| boot.js | Machine (screen, `cmdline`, `count`), Memory, Debugger (`dbg_status`) |
-| buildmap.js, runto.js, reverse.js, run.js, hotpatch.jsx, rebuild.jsx | Debugger (`dbg_status`, `dbg_addr`, ...), Machine run controls, Source tab (`rb_box`) |
+| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Source panel |
+| boot.js | Machine (screen, `cmdline`, `count`, `entry_info`), Memory |
+| runto.js, reverse.js, run.js, rebuild.jsx | Machine run controls (`dbg_step`, `dbg_back`, `dbg_speed`, ...), Memory (`pages`), Source tab (`rb_box`) |
 | calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
 | coverage.js, srcedit.js | Source tab, Source panel (`ed_text`: the editor) |
-| cpustate.js, debugui.js, vars.js, jumpview.js, symview.js | Debugger, Machine, Memory (`pages`, `footprint`), Source panel, run badge, `jump_pop` |
+| debugui.js, jumpview.js, symview.js | Machine (`dbg_state`, the overlay, counters, clock), run badge, Memory (`pages`, `footprint`), Source panel, `jump_pop` |
 | genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
 | listing.js | Source panel (`src_panel`, where it covers the listing on a phone) |
 | memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js, scan.js | Memory (`mm_map`, the grid: canvases), About's legend |
-| nav.js, source.js, srcswitch.js, tabs.jsx, tips.js | run badge, Source panel, Debugger (`context`), the tab panels, popovers |
+| nav.js, source.js, srcswitch.js, tabs.jsx, tips.js | run badge, Source panel, the tab panels, popovers |
 | replay.js | Machine (`guest_keys`, the boot settings a replay sets) |
 | snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
-| snapshots.js | Debugger (`dbg_status`), Machine (`kernel`, `memory`) |
+| snapshots.js | Machine (`kernel`, `memory`) |
 
-No module looks up an element of the Snapshots or Page tab, or of the
-Calls tab besides its canvas.
+No module looks up an element of the Snapshots, Page or Debugger tab, or
+of the Calls tab besides its canvas.
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
-Machine (machinepanel.jsx), Memory (memorypanel.jsx), Debugger
-(debuggerpanel.jsx), Source (sourcepanel.jsx), About
+Machine (machinepanel.jsx), Memory (memorypanel.jsx), Source
+(sourcepanel.jsx), About
 (about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first

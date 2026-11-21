@@ -131,6 +131,17 @@ def tipmarks_case(browser, base, shots, name="hello"):
     anchored = page.evaluate("!!document.querySelector('#listing .jnone[aria-expanded=true]')")
     if not st["shown"] or not anchored:
         problems.append(f"{name}: the pinned ⊘ popover did not survive a redraw of the listing (shown {st['shown']}, anchored {anchored})")
+    # The page's own drawing (new lines, no aria-expanded copied over, the
+    # listing scrolled to EIP): the popover moves to the new mark, or closes
+    # when the mark is out of view; it never stays over a mark that is gone
+    # (A1: the listing is mounted with its tab, after the popovers' observer
+    # starts).
+    page.evaluate("MKB.inspect()")
+    time.sleep(0.6)
+    st = page.evaluate(TIP_STATE_JS)
+    anchored = page.evaluate("!!document.querySelector('#listing .jnone[aria-expanded=true]')")
+    if st["shown"] and not anchored:
+        problems.append(f"{name}: the pinned ⊘ popover stayed after the listing was drawn again, its mark gone")
     for scheme in ("light", "dark"):
         page.emulate_media(color_scheme=scheme)
         time.sleep(0.2)

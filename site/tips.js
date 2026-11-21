@@ -212,9 +212,10 @@ function initTips() {
 		if (tipLong && ev.target.closest && ev.target.closest("[data-tip]"))
 			ev.preventDefault();
 	});
-	// The listings are drawn again while the CPU runs.
+	// The listings are drawn again while the CPU runs. The Page tab (its
+	// listing and tint key) is mounted when first shown: its panel is watched.
 	const mo = new MutationObserver(tipReanchor);
-	for (const id of ["listing", "context", "cov_info", "eip_jumps", "cur_src", "src_body"])
+	for (const id of ["panel_page", "context", "eip_jumps", "cur_src", "src_body"])
 		if ($(id))
 			mo.observe($(id), { childList: true, subtree: true });
 	const follow = () => {

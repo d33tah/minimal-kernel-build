@@ -404,7 +404,7 @@ srcedit.js	382	66dce674	document.execCommand('insertText') refused: Chromium (th
 srcedit.js	399	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
 srcedit.js	533	d861a51e	Download with no edits: the button is disabled while there are none
 srcedit.js	546	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	612	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+srcedit.js	618	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 srcswitch.js	25,27	6bb7dbb9	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
 srcswitch.js	39,41	9b16c2ca	localStorage.setItem throwing (storage blocked or full): as line 848
 srcswitch.js	87	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race

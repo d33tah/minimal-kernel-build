@@ -57,13 +57,13 @@ function SrcTitleParts({ fn, path, whole, range }) {
 // The functions of the panel's file (from its line rows, each at its first
 // line in the file, and every function files.json puts in it) and the
 // files of code inlined into its lines (headers), each one pick away.
-function srcFileFacts(path) {
-	const c = srcPanel.facts;
+function srcFileFacts(sp, path) {
+	const c = sp.facts;
 	if (c && c.path === path && c.ver === DBG.version)
 		return c.r;
 	const r = fileLines(path);
 	if (r.state === "ok")
-		srcPanel.facts = { path, ver: DBG.version, r };
+		sp.facts = { path, ver: DBG.version, r };
 	return r;
 }
 
@@ -72,9 +72,9 @@ function srcFileFacts(path) {
 // functions are looked up in every one of the kernel's).
 let outlineLast = null;
 
-function srcOutlineView() {
-	const { path } = srcPanel;
-	const fl = dbgFiles(), r = srcFileFacts(path);
+function srcOutlineView(sp) {
+	const { path } = sp;
+	const fl = dbgFiles(), r = srcFileFacts(sp, path);
 	const key = [path, r.state, fl.state, DBG.version].join("\0");
 	if (outlineLast && outlineLast.key === key)
 		return outlineLast;
@@ -377,13 +377,16 @@ function useBox(box) {
 
 function SourceAside({ box }) {
 	useController(SRCV);
-	const pick = srcPanel && srcPanel.ready ? srcPanel.pick || 0 : 0;
-	const c = pick && srcPanel.cont ? srcPanel.cont.get(pick) : null;
+	// What the panel shows: the last view drawn (SRCV.shown), kept while it is
+	// closed, so opening the same file again changes nothing here.
+	const sp = SRCV.shown;
+	const pick = sp && sp.ready ? sp.pick || 0 : 0;
+	const c = pick && sp.cont ? sp.cont.get(pick) : null;
 	useBox(box);
 	return (
 		<>
 			<div className="scan srchead">
-				<SrcTitle fn={srcPanel ? srcPanel.fn : null} path={srcPanel ? srcPanel.path : ""} whole={!!srcPanel && !!srcPanel.whole} range={SRCV.range} />
+				<SrcTitle fn={sp ? sp.fn : null} path={sp ? sp.path : ""} whole={!!sp && !!sp.whole} range={SRCV.range} />
 				{" "}
 				<span className="srcbtns">
 					<button id="bm_add_src" type="button" className="bmadd" aria-label="Bookmark the picked line" onClick={() => bmAsk(bmDraftHere("src"))}
@@ -401,7 +404,7 @@ function SourceAside({ box }) {
 			{" "}
 			<SrcSwitch />
 			{" "}
-			<SrcNav o={srcPanel ? srcOutlineView() : NO_OUTLINE} />
+			<SrcNav o={sp ? srcOutlineView(sp) : NO_OUTLINE} />
 			{" "}
 			<EdBar box={box} />
 			{" "}
@@ -412,9 +415,9 @@ function SourceAside({ box }) {
 			{" "}
 			<pre id="ed_pdiff" ref={pdiffMount} className="eddiff edpanel" />
 			{" "}
-			<p id="src_info" className="note">{srcPanel ? SRCV.info : ""}</p>
+			<p id="src_info" className="note">{SRCV.info}</p>
 			{" "}
-			<SrcAddrs path={srcPanel ? srcPanel.path : ""} pick={pick} start={c ? c.start : 0} ver={DBG.version} st={!!stepper} syms={symbols} />
+			<SrcAddrs path={sp ? sp.path : ""} pick={pick} start={c ? c.start : 0} ver={DBG.version} st={!!stepper} syms={symbols} />
 			{" "}
 			<pre id="src_body" ref={bodyMount} className="srcview" tabIndex="0" onClick={srcBodyClick} />
 		</>

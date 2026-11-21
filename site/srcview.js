@@ -2,8 +2,9 @@
 
 // The Source panel's view state (A1): what source.js, srcswitch.js and
 // srcedit.js set and sourceaside.jsx draws.
-//   SRCV: the panel: open (shown beside the tab), range (the title's
-//     lines), info (the line under the text), and the elements the modules
+//   SRCV: the panel: open (shown beside the tab), shown (source.js's
+//     srcPanel last drawn, kept while the panel is closed), range (the
+//     title's lines), info (the line under the text), and the elements the modules
 //     write through their refs: the file's text (bodyEl: thousands of lines
 //     of HTML, drawn by source.js as the Page listing is), the editor's
 //     line numbers and diff (gutterEl, pdiffEl; its textarea is srcedit.js's
@@ -19,7 +20,7 @@
 
 import { controller } from "./ui.jsx";
 
-const SRCV = controller({ open: false, range: "", info: "", bodyEl: null, gutterEl: null, pdiffEl: null, filesEl: null,
+const SRCV = controller({ open: false, shown: null, range: "", info: "", bodyEl: null, gutterEl: null, pdiffEl: null, filesEl: null,
 	editEl: null });
 const SWV = controller({ open: false, qEl: null, listEl: null });
 const EDBAR = controller({});

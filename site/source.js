@@ -278,6 +278,7 @@ function renderSourcePanel() {
 	if (srcPanel.whole && pl.state === "none" && file.state === "ok")
 		pl = { state: "ok", first: 1, last: Infinity, code: new Map(), why: pl.why };
 	body.dataset.file = path;
+	SRCV.shown = srcPanel;
 	SRCV.range = pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "";
 	if (pl.state !== "ok" || file.state !== "ok") {
 		srcPanel.cont = null;

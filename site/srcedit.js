@@ -595,6 +595,12 @@ function edWire(ta) {
 	ta.addEventListener("blur", edFlush);
 	for (const t of ["click", "keyup", "select"])
 		ta.addEventListener(t, () => edState());
+	// Its keys and input end here: nothing above the textarea handles them
+	// (v86 and the page's shortcuts skip a textarea, the panel's own keys
+	// are for its buttons), and React's root on the panel would look for
+	// handlers there are none of at every key.
+	for (const t of ["keydown", "keypress", "keyup", "beforeinput", "input"])
+		ta.addEventListener(t, (ev) => ev.stopPropagation());
 }
 
 // The panel's Revert (press twice).

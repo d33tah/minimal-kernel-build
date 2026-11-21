@@ -10,6 +10,10 @@
 //     focus goes back to (filesEl, editEl).
 //   SWV: the file switcher (its rows are srcswitch.js's srcSw; qEl its
 //     filter, an uncontrolled input; listEl its list).
+//   EDBAR: the Edit button and the editor bar (srcedit.js's ED: editing,
+//     the diff shown, a revert armed), and the panel's editing marks: their
+//     own components, so a save or a file opened does not draw the panel
+//     again for them.
 //   EDSTATE: the editor bar's line (where the caret is, saved or not):
 //     its own small component, drawn at every key typed.
 
@@ -18,14 +22,17 @@ import { controller } from "./ui.jsx";
 const SRCV = controller({ open: false, range: "", info: "", bodyEl: null, taEl: null, gutterEl: null, pdiffEl: null, filesEl: null,
 	editEl: null });
 const SWV = controller({ open: false, qEl: null, listEl: null });
+const EDBAR = controller({});
 const EDSTATE = controller({ text: "" });
 
 // The panel is open (shown beside the tab).
 const srcOpen = () => SRCV.open;
 
+// Open: the caller draws the panel next (renderSourcePanel).
 function srcShow(open) {
 	SRCV.open = open;
-	SRCV.changed();
+	if (!open)
+		SRCV.changed();
 }
 
-export { SRCV, SWV, EDSTATE, srcOpen, srcShow };
+export { SRCV, SWV, EDBAR, EDSTATE, srcOpen, srcShow };

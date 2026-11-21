@@ -14,7 +14,7 @@ import { memo, useLayoutEffect, useRef } from "react";
 import { hex } from "./util.js";
 import { stepper, symbols, api } from "./page.js";
 import { useController } from "./ui.jsx";
-import { SRCV, SWV, EDSTATE } from "./srcview.js";
+import { SRCV, SWV, EDBAR, EDSTATE } from "./srcview.js";
 import { srcPanel, closeSource, openSourceFile, openSourceLine, fileLines, srcBodyClick, srcSwPick } from "./source.js";
 import { srcSw, srcSwOpen, srcSwClose, srcSwFilter, srcSwMove, srcFileCounts, SRC_SW_GROUPS } from "./srcswitch.js";
 import { SRC } from "./srctext.js";
@@ -66,9 +66,17 @@ function srcFileFacts(path) {
 	return r;
 }
 
+// Kept per file, its facts' state and the DWARF version (the panel is drawn
+// every second while stepping, and again for each file opened; the
+// functions are looked up in every one of the kernel's).
+let outlineLast = null;
+
 function srcOutlineView() {
 	const { path } = srcPanel;
 	const fl = dbgFiles(), r = srcFileFacts(path);
+	const key = [path, r.state, fl.state, DBG.version].join("\0");
+	if (outlineLast && outlineLast.key === key)
+		return outlineLast;
 	const fns = new Map(r.state === "ok" ? r.fns : []);
 	const los = new Map();
 	if (fl.state === "ok") {
@@ -81,7 +89,8 @@ function srcOutlineView() {
 		if (!fns.has(name))
 			fns.set(name, 0);
 	const list = [...fns].sort((x, y) => (x[1] || Infinity) - (y[1] || Infinity) || x[0].localeCompare(y[0]));
-	return { list, los, state: r.state, incl: r.state === "ok" ? [...r.incl].sort() : [] };
+	outlineLast = { key, list, los, state: r.state, incl: r.state === "ok" ? [...r.incl].sort() : [] };
+	return outlineLast;
 }
 
 // A function of the outline: its line, or (no line of its own here) the
@@ -290,15 +299,60 @@ const bodyMount = (el) => { SRCV.bodyEl = el; };
 const gutterMount = (el) => { SRCV.gutterEl = el; };
 const pdiffMount = (el) => { SRCV.pdiffEl = el; };
 
-// The panel's element (box, the aside of index.html): shown, marked while
-// editing, and its keys: v86 takes every key on the window for the VM while
-// the Machine tab shows its screen (preventDefault), so the panel's buttons
-// get Enter and Space here, before it; Escape closes the panel.
-function useBox(box, editing, diffing) {
+// Edit: the file shown into the editor and back.
+const EditButton = memo(function EditButton() {
+	useController(EDBAR);
+	const can = edCan();
+	return (
+		<button id="src_edit" ref={editMount} type="button" aria-pressed={ED.on} disabled={!ED.on && !can.ok} onClick={edToggle}
+			title={ED.on ? "Stop editing: back to the text the kernel was built from, with its coverage" :
+				can.ok ? "Edit this file. Your edits are kept in this browser (Source tab: the changed files, a patch). " +
+					"Tab inserts a tab, Escape leaves the text, Ctrl+S saves at once." : can.why}>
+			<span aria-hidden="true">✎</span>
+			{" Edit"}
+		</button>
+	);
+});
+
+// The editor bar (a changed file, or editing: the line, Diff, Revert, the
+// Rebuild and hot patch buttons), and the panel's marks while editing
+// (which view it shows: style.css).
+const EdBar = memo(function EdBar({ box }) {
+	useController(EDBAR);
+	const editing = ED.on && !!ED.cur;
+	const e = srcPanel ? edMap().get(srcPanel.path) : null;
+	useLayoutEffect(() => {
+		box.classList.toggle("editing", editing);
+		box.classList.toggle("diffing", editing && ED.diffShown);
+	});
+	return (
+		<div id="ed_bar" className="edbar" hidden={!editing && !e}>
+			<EdStateLine />
+			{" "}
+			<span className="edbtns">
+				<button id="ed_diffbtn" type="button" aria-pressed={ED.diffShown} disabled={!e} onClick={edDiffToggle}
+					title="This file's changes as a diff, in place of its text (again: back to the text)">
+					Diff
+				</button>
+				{" "}
+				<button id="ed_revert" type="button" disabled={!e} onClick={edRevertPanel}
+					title="Throw away your edits of this file (press twice)">{ED.armed === "panel" ? "Revert? Press again" : "Revert"}</button>
+				{" "}
+				<span id="rb_go_slot" className="rbslot"><RebuildPanelButton /></span>
+				{" "}
+				<span id="hp_go_slot" className="rbslot"><HotPatchButton /></span>
+			</span>
+		</div>
+	);
+});
+
+// The panel's element (box, the aside of index.html): shown, and its keys:
+// v86 takes every key on the window for the VM while the Machine tab shows
+// its screen (preventDefault), so the panel's buttons get Enter and Space
+// here, before it; Escape closes the panel.
+function useBox(box) {
 	useLayoutEffect(() => {
 		box.toggleAttribute("hidden", !SRCV.open);
-		box.classList.toggle("editing", editing);
-		box.classList.toggle("diffing", diffing);
 	});
 	useLayoutEffect(() => {
 		const keys = (ev) => {
@@ -323,10 +377,7 @@ function SourceAside({ box }) {
 		SRCV.taEl = ta.current;
 		edWire(ta.current);
 	}, []);
-	const editing = ED.on && !!ED.cur;
-	useBox(box, editing, editing && ED.diffShown);
-	const can = edCan();
-	const e = srcPanel ? edMap().get(srcPanel.path) : null;
+	useBox(box);
 	return (
 		<>
 			<div className="scan srchead">
@@ -340,13 +391,7 @@ function SourceAside({ box }) {
 					{" "}
 					<FilesButton />
 					{" "}
-					<button id="src_edit" ref={editMount} type="button" aria-pressed={ED.on} disabled={!ED.on && !can.ok} onClick={edToggle}
-						title={ED.on ? "Stop editing: back to the text the kernel was built from, with its coverage" :
-							can.ok ? "Edit this file. Your edits are kept in this browser (Source tab: the changed files, a patch). " +
-								"Tab inserts a tab, Escape leaves the text, Ctrl+S saves at once." : can.why}>
-						<span aria-hidden="true">✎</span>
-						{" Edit"}
-					</button>
+					<EditButton />
 					{" "}
 					<button id="src_close" type="button" onClick={closeSource}>Close</button>
 				</span>
@@ -356,23 +401,7 @@ function SourceAside({ box }) {
 			{" "}
 			<SrcNav />
 			{" "}
-			<div id="ed_bar" className="edbar" hidden={!editing && !e}>
-				<EdStateLine />
-				{" "}
-				<span className="edbtns">
-					<button id="ed_diffbtn" type="button" aria-pressed={ED.diffShown} disabled={!e} onClick={edDiffToggle}
-						title="This file's changes as a diff, in place of its text (again: back to the text)">
-						Diff
-					</button>
-					{" "}
-					<button id="ed_revert" type="button" disabled={!e} onClick={edRevertPanel}
-						title="Throw away your edits of this file (press twice)">{ED.armed === "panel" ? "Revert? Press again" : "Revert"}</button>
-					{" "}
-					<span id="rb_go_slot" className="rbslot"><RebuildPanelButton /></span>
-					{" "}
-					<span id="hp_go_slot" className="rbslot"><HotPatchButton /></span>
-				</span>
-			</div>
+			<EdBar box={box} />
 			{" "}
 			<div id="ed_area" className="edarea">
 				<pre id="ed_gutter" ref={gutterMount} className="edgutter" aria-hidden="true" />

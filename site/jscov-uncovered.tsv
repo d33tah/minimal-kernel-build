@@ -394,17 +394,17 @@ source.js	130	7dc2a1f4	openSource for a frame without file or line: its callers 
 source.js	133	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
 source.js	232	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
 source.js	271	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
-sourceaside.jsx	182	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
-sourceaside.jsx	93	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
-srcedit.js	135	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
-srcedit.js	253	4f0af11e	sometimes: ran in run 44099591689 (kit job: rebuild_debian opens files while the rebuilt Debian's data files arrive): edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
-srcedit.js	294	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
-srcedit.js	351	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-srcedit.js	360	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
-srcedit.js	377	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
-srcedit.js	510	d861a51e	Download with no edits: the button is disabled while there are none
-srcedit.js	523	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
-srcedit.js	590	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
+sourceaside.jsx	191	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
+sourceaside.jsx	102	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
+srcedit.js	136	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
+srcedit.js	260	4f0af11e	sometimes: ran in run 44099591689 (kit job: rebuild_debian opens files while the rebuilt Debian's data files arrive): edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
+srcedit.js	301	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
+srcedit.js	358	8898c3c1	saving an edit failing (IndexedDB write rejected): storage works in the suites; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+srcedit.js	367	66dce674	document.execCommand('insertText') refused: Chromium (the coverage jobs' browser) supports it in a textarea; the fallback is for browsers without it
+srcedit.js	384	ec617e90	edStats of a file without an edit: its callers (edSync, edRender) ask only for files in the overlay
+srcedit.js	518	d861a51e	Download with no edits: the button is disabled while there are none
+srcedit.js	531	98bdf0a1	the upload input's change event without a file: the input is emptied by the handler itself, which fires no change event
+srcedit.js	598	5601638c	sometimes: ran in run 44099591689 (kit job, rebuild_debian): the DWARF arriving while Edit is on and the editor waits for the shipped text (edEnterFile not done yet): a race
 srcswitch.js	25,27	6bb7dbb9	localStorage.getItem throwing (storage blocked): the browser tests run with storage; the recent files then live in memory
 srcswitch.js	39,41	9b16c2ca	localStorage.setItem throwing (storage blocked or full): as line 848
 srcswitch.js	87	d004e20b	the switcher's call stack group while the machine runs under the JIT: the srcfiles runs open the switcher paused, and opening the panel inside one of the short JIT stretches of the shipped kernels' loads is a race

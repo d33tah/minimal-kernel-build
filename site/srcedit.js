@@ -28,7 +28,7 @@ import { srcKernelKey } from "./srcswitch.js";
 import { srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
 import { edFilePatch, edParse, edApplyHunks, edLines } from "./edpatch.js";
 import { controller } from "./ui.jsx";
-import { SRCV, EDSTATE, srcOpen } from "./srcview.js";
+import { SRCV, EDBAR, EDSTATE, srcOpen } from "./srcview.js";
 
 const ED_DB = "mkb-srcedit";
 const ED_STORE = "edits";
@@ -48,6 +48,7 @@ const ED = {
 	listDiff: null,      // path whose diff the Source tab shows
 	armed: null,         // the revert waiting for its second press: "*", "panel" or "file:" + path
 	armTimer: 0,
+	barKey: "",          // what the Edit button and the editor bar show (edSync)
 };
 
 // What the Source tab's Your edits shows (A1, sourcepanel.jsx draws it from
@@ -233,7 +234,13 @@ function edSync() {
 				"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the " + (over.over ? "machine runs" : "kernel was built from") + "; Edit shows yours.");
 	} else if (ED.on && ED.cur)
 		edState();
-	SRCV.changed();
+	// Drawn again only when what they show differs (a file opened, a save).
+	const can = edCan();
+	const key = [ED.on, !!ED.cur, ED.diffShown, ED.armed, !!e, can.ok, can.why].join("\0");
+	if (key !== ED.barKey) {
+		ED.barKey = key;
+		EDBAR.changed();
+	}
 	if (ED.diffShown && srcPanel)
 		edShowPanelDiff();
 }
@@ -440,7 +447,8 @@ function edArmed(key, fn) {
 }
 
 function edArmLabels() {
-	SRCV.changed();
+	ED.barKey = "";
+	EDBAR.changed();
 	EDV.changed();
 }
 

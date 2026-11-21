@@ -16,21 +16,17 @@
 // of the rest; dbgChanged() re-renders when it arrives. The text is
 // srctext.js's, the links srclinks.js's, the switcher's lists srcswitch.js's.
 
-import { $, escHtml, hex } from "./util.js";
-import { stepper, runState, symbols, api, provide } from "./page.js";
+import { $, escHtml } from "./util.js";
+import { stepper, runState, api, provide } from "./page.js";
 import { dwarfEachLine } from "./dwarftables.js";
-import { dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG, dbgFunction, dbgLineCode,
-	dbgOnChange } from "./dbginfo.js";
+import { dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG, dbgFunction, dbgOnChange } from "./dbginfo.js";
 import { srcFile, srcText, srcStatementView, SRC, srcPickTar, srcPickFolder, srcStatus } from "./srctext.js";
-import { srcLinkHtml, srcLinkEl, showSource, srcName, srcLocHtml, srcLocEl, srcLinkAgain,
-	srcLinkMark } from "./srclinks.js";
-import { srcSwClose, srcRemember, srcSw, srcSwRows, SRC_SW_GROUPS, srcFileCounts,
-	srcSwMove } from "./srcswitch.js";
+import { srcLinkHtml, srcLinkEl, showSource, srcName, srcLocHtml, srcLinkAgain, srcLinkMark } from "./srclinks.js";
+import { srcSw, srcSwOpen, srcSwClose, srcRemember, srcSwRender } from "./srcswitch.js";
+import { SRCV, srcOpen, srcShow } from "./srcview.js";
 
 let srcPanel = null;      // { pa, fn, path, line } shown in the side panel
 const setSrcPanel = (p) => { srcPanel = p; }; // for other modules (an imported binding is read-only)
-// The panel is open (shown beside the tab).
-const srcOpen = () => !$("src_panel").hidden;
 
 // Open the Source panel at path:line, highlighted and scrolled into view.
 // Where pa's inline chain has that line (pa's own line, or the call site
@@ -144,8 +140,8 @@ function openSource(pa, k = 0) {
 // After srcPanel changed: shown, drawn, remembered, in the hash.
 function srcShown() {
 	srcSwClose(false);
-	const hold = $("src_panel").hidden ? api.show.listingHold() : null;
-	$("src_panel").hidden = false;
+	const hold = srcOpen() ? null : api.show.listingHold();
+	srcShow(true);
 	renderSourcePanel();
 	srcRemember(srcPanel.path);
 	api.show.writeHash();
@@ -267,11 +263,14 @@ function lineCoverage(pl) {
 	return { code: new Set(pl.code.keys()), run };
 }
 
+// The panel's text, drawn into its <pre> (SRCV.bodyEl: thousands of lines
+// of HTML, written as the Page listing is); the title, the outline, the
+// picked line's addresses and the line under the text are sourceaside.jsx's.
 function renderSourcePanel() {
 	if (!srcPanel)
 		return;
 	const { path, line } = srcPanel;
-	const body = $("src_body");
+	const body = SRCV.bodyEl;
 	let pl = panelLines();
 	const file = srcFile(path);
 	// A whole file without the file list (an imported vmlinux): its text,
@@ -279,20 +278,21 @@ function renderSourcePanel() {
 	if (srcPanel.whole && pl.state === "none" && file.state === "ok")
 		pl = { state: "ok", first: 1, last: Infinity, code: new Map(), why: pl.why };
 	body.dataset.file = path;
-	srcTitle(pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "");
-	srcOutline();
+	SRCV.range = pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "";
 	if (pl.state !== "ok" || file.state !== "ok") {
-		$("src_addrs").hidden = true;
+		srcPanel.cont = null;
+		srcPanel.ready = false;
 		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
 			pl.state === "none" ? pl.why : file.why;
 		body.dataset.code = body.dataset.executed = 0;
 		body.dataset.state = pl.state === "none" || file.state === "none" ? "none" : "loading";
-		$("src_info").textContent = "";
+		SRCV.info = "";
+		SRCV.changed();
 		return;
 	}
 	const { code, run } = lineCoverage(pl);
 	const sv = srcStatementView(file, pl.first, pl.last, code, run);
-	srcTitle(":" + sv.first + "-" + sv.last);
+	SRCV.range = ":" + sv.first + "-" + sv.last;
 	// The coverage tree compares with an earlier build (E8): ◌ a line that
 	// ran there (moved to this text) and not here.
 	const was = api.source.covWas(path);
@@ -313,10 +313,21 @@ function renderSourcePanel() {
 	}
 	body.innerHTML = out.join("\n");
 	srcPanel.cont = sv.cont;
-	renderLineAddrs();
+	srcPanel.ready = true;
+	const note = (SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "") +
+		(file.over ? " Patched: this is " + file.over + "." : "");
+	const cov = stepper ? api.source.coverageFor(stepper.kernelLo) : null;
+	SRCV.info = pl.why ? "No line is marked: " + pl.why + ". Source: " + (SRC.info || SRC.mode) + "." :
+		run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
+		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
+		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + "." +
+		(was ? " ◌ ran in the build the coverage tree (Source tab) compares with, not here: " + wasN + " shown." : "") + " Source: " + (SRC.info || SRC.mode) + "." + note;
+	// The title, the outline and the picked line's addresses (above the
+	// text: they change its height) are drawn before the scroll.
+	SRCV.changed();
 	// Opened at a line: scroll there once the file and the address list
-	// above it are drawn (the list changes the body's height). The row's
-	// offsetParent is the fixed panel, not the body: measure against the body.
+	// above it are drawn. The row's offsetParent is the fixed panel, not
+	// the body: measure against the body.
 	if (srcPanel.scrollPx !== undefined) {
 		body.scrollTop = srcPanel.scrollPx; // Back to this view: where it was left
 		delete srcPanel.scrollPx;
@@ -334,338 +345,7 @@ function renderSourcePanel() {
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;
 	body.dataset.was = was ? wasN : "";
-	const note = (SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "") +
-		(file.over ? " Patched: this is " + file.over + "." : "");
 	body.dataset.over = file.over ? "1" : "";
-	const cov = stepper ? api.source.coverageFor(stepper.kernelLo) : null;
-	$("src_info").textContent = pl.why ? "No line is marked: " + pl.why + ". Source: " + (SRC.info || SRC.mode) + "." :
-		run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
-		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
-		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + "." +
-		(was ? " ◌ ran in the build the coverage tree (Source tab) compares with, not here: " + wasN + " shown." : "") + " Source: " + (SRC.info || SRC.mode) + "." + note;
-}
-
-// ---- another file: breadcrumb, outline, file switcher ------------------------
-
-// The title: "fn, dir/dir/file.c:first-last" or "dir/dir/file.c (whole
-// file)", each directory of the path a button that lists its files in the
-// switcher, the file name one that opens the whole file. Drawn again only
-// when it changes (the panel is drawn every second while stepping, and a
-// focused button would lose the focus).
-function srcTitle(range) {
-	const { fn, path, whole } = srcPanel;
-	const key = [whole, fn, path, range].join("\0");
-	const t = $("src_title");
-	if (t.dataset.key === key)
-		return;
-	t.dataset.key = key;
-	t.textContent = "";
-	if (!whole)
-		t.append((fn || "?") + ", ");
-	const parts = path.split("/");
-	parts.forEach((p, k) => {
-		const b = document.createElement("button");
-		b.type = "button";
-		b.className = "crumb";
-		if (k < parts.length - 1) {
-			const dir = parts.slice(0, k + 1).join("/");
-			b.textContent = p + "/";
-			b.dataset.dir = dir;
-			b.title = "List the files in " + dir + "/";
-			b.addEventListener("click", () => srcSwOpen(dir));
-		} else if (!whole) {
-			b.textContent = p;
-			b.dataset.path = path;
-			b.title = "Open the whole of " + path;
-			b.addEventListener("click", () => openSourceFile(path));
-		} else {
-			t.append(p);
-			return;
-		}
-		t.append(b);
-	});
-	t.append(whole ? " (whole file)" : range);
-}
-
-// The functions of the panel's file (from its line rows, each at its first
-// line in the file, and every function files.json puts in it) and the
-// files of code inlined into its lines (headers), each one pick away.
-function srcFileFacts(path) {
-	const c = srcPanel.facts;
-	if (c && c.path === path && c.ver === DBG.version)
-		return c.r;
-	const r = fileLines(path);
-	if (r.state === "ok")
-		srcPanel.facts = { path, ver: DBG.version, r };
-	return r;
-}
-
-function srcOutline() {
-	const { path } = srcPanel;
-	const fl = dbgFiles(), r = srcFileFacts(path);
-	const key = [path, r.state, fl.state, DBG.version].join("\0");
-	const sel = $("src_outline"), inc = $("src_incl");
-	if (sel.dataset.key === key)
-		return;
-	sel.dataset.key = key;
-	const fns = new Map(r.state === "ok" ? r.fns : []);
-	const los = new Map();
-	if (fl.state === "ok") {
-		const k = fl.F.fileIx.get(path);
-		for (const fn of fl.F.funcs)
-			if (k !== undefined && fn[1] === k && !los.has(fn[0]))
-				los.set(fn[0], fn[4]);
-	}
-	for (const name of los.keys())
-		if (!fns.has(name))
-			fns.set(name, 0);
-	const list = [...fns].sort((x, y) => (x[1] || Infinity) - (y[1] || Infinity) || x[0].localeCompare(y[0]));
-	const incl = r.state === "ok" ? [...r.incl].sort() : [];
-	sel.textContent = inc.textContent = "";
-	sel.append(new Option(list.length ? "ƒ " + list.length + " function" + (list.length === 1 ? "" : "s") + " in this file…" :
-		r.state === "loading" ? "ƒ reading the functions…" : "ƒ no functions", ""));
-	for (const [name, line] of list) {
-		// A function without a line of its own here (only its address):
-		// the Page tab at its code.
-		const o = new Option(name + "()" + (line ? "  line " + line : "  (no line: opens its code)"), line ? String(line) : "@" + los.get(name));
-		o.dataset.fn = name;
-		sel.append(o);
-	}
-	sel.disabled = !list.length;
-	inc.append(new Option(incl.length + " header" + (incl.length === 1 ? "" : "s") + " inlined here…", ""));
-	for (const p of incl)
-		inc.append(new Option(p, p));
-	inc.hidden = !incl.length;
-	$("src_nav").hidden = !list.length && !incl.length;
-}
-
-function srcSwOpen(dir = null) {
-	srcSw.dir = dir;
-	srcSw.q = "";
-	srcSw.at = 0;
-	$("src_q").value = "";
-	$("src_switch").hidden = false;
-	$("src_switch").dataset.dir = dir === null ? "" : dir;
-	$("src_files").setAttribute("aria-expanded", "true");
-	$("src_q").setAttribute("aria-expanded", "true");
-	srcSwRender();
-	$("src_q").focus({ preventScroll: true });
-}
-
-function srcSwRender() {
-	if ($("src_switch").hidden)
-		return;
-	const rows = srcSwRows();
-	srcSw.rows = rows;
-	srcSw.at = Math.min(srcSw.at, Math.max(0, rows.length - 1));
-	const ul = $("src_list");
-	ul.textContent = "";
-	let group = null;
-	rows.forEach((x, i) => {
-		const head = srcSw.dir !== null ? (i === 0 ? "dir" : null) : x.group;
-		if (head && head !== group) {
-			group = head;
-			const h = document.createElement("li");
-			h.setAttribute("role", "presentation");
-			h.className = "srcswhead";
-			h.textContent = head === "dir" ? (srcSw.dir || "the source tree") + "/" : SRC_SW_GROUPS[head];
-			ul.append(h);
-		}
-		const li = document.createElement("li");
-		li.setAttribute("role", "option");
-		li.id = "src_opt_" + i;
-		li.className = "srcopt" + (i === srcSw.at ? " active" : "") + (x.path && srcPanel && x.path === srcPanel.path ? " current" : "");
-		li.setAttribute("aria-selected", i === srcSw.at);
-		li.dataset.i = i;
-		li.dataset.group = x.group;
-		if (x.path) {
-			li.dataset.path = x.path;
-			const c = srcFileCounts(x.info);
-			li.dataset.code = c.code === null ? "" : c.code;
-			li.dataset.executed = c.run === null ? "" : c.run;
-			const k = x.path.lastIndexOf("/");
-			const b = document.createElement("b");
-			b.textContent = x.path.slice(k + 1);
-			const dir = document.createElement("span");
-			dir.className = "dim";
-			dir.textContent = k >= 0 ? " " + x.path.slice(0, k + 1) : "";
-			const n = document.createElement("span");
-			n.className = "srcswn";
-			const text = SRC.mode === "shipped" && SRC.have && !SRC.have.has(x.path) ? "; no text: " + (SRC.missing[x.path] || "not shipped") : "";
-			n.textContent = c.code === null ? (x.info.k < 0 && dbgFiles().state === "ok" ? "no code" : "") + text :
-				(c.run === null ? "" : c.run + " of ") + c.code + " line" + (c.code === 1 ? "" : "s") + (c.run === null ? " with code" : " ran") + text;
-			li.title = x.path + (c.code === null ? "" : ": " + c.code + " lines with code" + (c.run === null ? (c.why ? "; " + c.why : "") : ", " + c.run + " of them have executed")) +
-				(text ? text.replace(/^;/, ".") : "");
-			li.append(b, dir, " ", n);
-		} else {
-			li.dataset.dir = x.dir;
-			li.textContent = x.group === "up" ? "↑ " + (x.dir || "the source tree") + "/" : x.dir.slice(x.dir.lastIndexOf("/") + 1) + "/";
-			li.title = "List the files in " + (x.dir || "the source tree") + "/";
-		}
-		ul.append(li);
-	});
-	if (srcSw.more || srcSw.none) {
-		const m = document.createElement("li");
-		m.setAttribute("role", "presentation");
-		m.className = "note";
-		m.textContent = srcSw.none ? (srcSw.q ? "No file matches." : "No file list: " + (dbgFiles().why || SRC.why || "no debug info")) :
-			"… and " + srcSw.more.toLocaleString("en") + " more: type to narrow.";
-		ul.append(m);
-	}
-	$("src_q").setAttribute("aria-activedescendant", rows.length ? "src_opt_" + srcSw.at : "");
-	if (!rows.length)
-		$("src_q").removeAttribute("aria-activedescendant");
-}
-
-function srcSwPick(i) {
-	const x = srcSw.rows[i];
-	if (!x)
-		return;
-	if (x.path) {
-		srcSwClose(false);
-		openSourceFile(x.path);
-		$("src_body").focus({ preventScroll: true });
-		return;
-	}
-	srcSwOpen(x.dir);
-}
-
-function initSourceFiles() {
-	$("src_files").addEventListener("click", () => $("src_switch").hidden ? srcSwOpen() : srcSwClose());
-	$("src_q").addEventListener("input", () => {
-		srcSw.q = $("src_q").value.trim();
-		srcSw.at = 0;
-		srcSwRender();
-	});
-	$("src_q").addEventListener("keydown", (ev) => {
-		const page = Math.max(1, Math.floor($("src_list").clientHeight / 24));
-		const to = { ArrowDown: srcSw.at + 1, ArrowUp: srcSw.at - 1, PageDown: srcSw.at + page, PageUp: srcSw.at - page }[ev.key];
-		if (to !== undefined)
-			srcSwMove(to);
-		else if (ev.key === "Enter")
-			srcSwPick(srcSw.at);
-		else if (ev.key === "Escape")
-			srcSwClose();
-		else
-			return;
-		ev.preventDefault();
-		ev.stopPropagation();
-	});
-	$("src_list").addEventListener("click", (ev) => {
-		const li = ev.target.closest(".srcopt");
-		if (li)
-			srcSwPick(Number(li.dataset.i));
-	});
-	$("src_outline").addEventListener("change", () => {
-		const v = $("src_outline").value;
-		$("src_outline").value = "";
-		if (!srcPanel || !v)
-			return;
-		if (v[0] === "@")
-			api.show.jumpTo(Number(v.slice(1)));
-		else
-			openSourceLine(srcPanel.path, Number(v));
-	});
-	$("src_incl").addEventListener("change", () => {
-		const v = $("src_incl").value;
-		$("src_incl").value = "";
-		if (v)
-			openSourceFile(v);
-	});
-	// v86 takes every key on the window for the VM while the Machine tab
-	// shows its screen (preventDefault): the panel's buttons get Enter and
-	// Space here, before it.
-	$("src_panel").addEventListener("keydown", (ev) => {
-		if ((ev.key === "Enter" || ev.key === " ") && ev.target.tagName === "BUTTON") {
-			ev.preventDefault();
-			ev.stopPropagation();
-			ev.target.click();
-		}
-	});
-}
-
-// The panel's picked line (a click on a line, or the line a listing's C
-// line opened): every address of its code (each inlined copy and each
-// inlined call made on it, dbgLineCode) with a jump to it, and "Run to
-// file:line". A line that continues a statement shows its first line's.
-const SRC_ADDRS_SHOWN = 40;
-
-function renderLineAddrs() {
-	const box = $("src_addrs");
-	const pick = srcPanel && srcPanel.pick;
-	box.hidden = !pick;
-	if (!pick)
-		return;
-	const c = srcPanel.cont && srcPanel.cont.get(pick);
-	const line = c ? c.start : pick;
-	const r = dbgLineCode(srcPanel.path, line);
-	const key = [srcPanel.path, pick, r.state, DBG.version, !!stepper].join("\0");
-	if (box.dataset.key === key)
-		return;
-	box.dataset.key = key;
-	box.textContent = "";
-	box.dataset.state = r.state;
-	box.dataset.line = line;
-	box.dataset.path = r.path || srcPanel.path;
-	const where = (r.path || srcPanel.path) + ":" + line;
-	const head = document.createElement("div");
-	head.append(srcLocEl(where), c ? " (line " + pick + " continues this statement): " : ": ");
-	box.append(head);
-	if (r.state !== "ok") {
-		head.append(r.state === "loading" ? r.why || "reading DWARF…" : r.why);
-		box.dataset.bps = box.dataset.rows = box.dataset.calls = "[]";
-		return;
-	}
-	box.dataset.bps = JSON.stringify(r.bps);
-	box.dataset.rows = JSON.stringify(r.rows.map(([a, b]) => [a, b]));
-	box.dataset.calls = JSON.stringify(r.calls.map(([a, b, name]) => [a, b, name]));
-	const outer = (pa) => {
-		const f = dbgFrames(pa, true);
-		return f.state === "ok" ? f.frames : null;
-	};
-	const fns = new Set(r.rows.map(([a]) => { const f = outer(a); return f ? f[f.length - 1].func : "?"; }));
-	head.append(r.rows.length + " range" + (r.rows.length === 1 ? "" : "s") + " of its own code" +
-		(fns.size > 1 ? " in " + fns.size + " functions (inlined copies)" : "") +
-		(r.calls.length ? ", " + r.calls.length + " range" + (r.calls.length === 1 ? "" : "s") + " of code inlined by a call on it" : "") + ". ");
-	const run = document.createElement("button");
-	run.type = "button";
-	run.id = "src_runto";
-	run.textContent = "Run to " + where;
-	run.disabled = !stepper;
-	run.title = !stepper ? "Boot a kernel first" : "Run until the kernel reaches the first of this line's " + r.bps.length +
-		" breakpoint address" + (r.bps.length === 1 ? "" : "es") + " (the is_stmt rows of the line table, and where each inlined call starts)" +
-		(r.noStmt ? ". This line table has no is_stmt flags: every range's start counts" : "");
-	run.addEventListener("click", () => api.step.runToLine(where));
-	head.append(run);
-	const list = document.createElement("ul");
-	const item = (a, b, text, title) => {
-		const li = document.createElement("li");
-		const btn = api.symbols.symButton(hex(a), a, "Show this code in the Page tab");
-		btn.dataset.addr = a;
-		const s = symbols && api.symbols.symbolAt(symbols.symbols, a);
-		li.append(btn, " " + (s ? s.name + (a > s.paddr ? "+0x" + (a - s.paddr).toString(16) : "") : "") + " (" + (b - a) + " byte" + (b - a === 1 ? "" : "s") + ")" + text);
-		li.title = title;
-		list.append(li);
-	};
-	const all = [...r.rows.map((x) => ["row", x]), ...r.calls.map((x) => ["call", x])].sort((x, y) => x[1][0] - y[1][0]);
-	for (const [kind, x] of all.slice(0, SRC_ADDRS_SHOWN)) {
-		if (kind === "row") {
-			const [a, b, bp] = x;
-			const f = outer(a);
-			const into = f && f.length > 1 ? "; inlined into " + (f[f.length - 1].func || "?") : "";
-			item(a, b, into + (bp.length ? "; breakpoint" + (bp.length > 1 ? "s at " + bp.map(hex).join(", ") : bp[0] === a ? " here" : " at " + hex(bp[0])) :
-				"; no is_stmt row here"), "Code of " + where + (f ? "\n" + dbgChainText(f) : ""));
-		} else {
-			const [a, b, name] = x;
-			item(a, b, "; " + (name || "?") + "() inlined by the call on this line; breakpoint at its start", "Code of " + (name || "?") + ", inlined at " + where);
-		}
-	}
-	if (all.length > SRC_ADDRS_SHOWN) {
-		const li = document.createElement("li");
-		li.textContent = "… and " + (all.length - SRC_ADDRS_SHOWN) + " more (Run to sets all " + r.bps.length + " breakpoints)";
-		list.append(li);
-	}
-	box.append(list);
 }
 
 // The Debugger's "source" rows: the C line at EIP and, for inlined code,
@@ -716,7 +396,7 @@ let srcOpener = null;
 function closeSource() {
 	srcSwClose(false);
 	const hold = api.show.listingHold();
-	$("src_panel").hidden = true;
+	srcShow(false);
 	srcPanel = null;
 	api.source.edPanelShown();
 	api.show.writeHash();
@@ -725,6 +405,34 @@ function closeSource() {
 	if (a)
 		a.focus();
 	srcOpener = null;
+}
+
+// The switcher's row i: a file opens, a directory lists its files.
+function srcSwPick(i) {
+	const x = srcSw.rows[i];
+	if (!x)
+		return;
+	if (x.path) {
+		srcSwClose(false);
+		openSourceFile(x.path);
+		SRCV.bodyEl.focus({ preventScroll: true });
+		return;
+	}
+	srcSwOpen(x.dir);
+}
+
+// A click on a line of the text picks it: its addresses are listed above.
+function srcBodyClick(ev) {
+	const row = ev.target.closest("[data-line]");
+	if (!row || !srcPanel || window.getSelection().toString())
+		return;
+	srcPanel.pick = Number(row.dataset.line);
+	for (const x of SRCV.bodyEl.querySelectorAll(".pick"))
+		x.classList.remove("pick");
+	row.classList.add("pick");
+	SRCV.changed();
+	api.show.writeHash();
+	row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
 }
 
 // A click (capture) on a listing's C line (Page listing, Code at EIP)
@@ -751,7 +459,7 @@ function initSource() {
 		srcOpener = ev.detail === 0 ? a : null;
 		if (srcOpener) {
 			srcLinkMark(a);
-			$("src_body").focus({ preventScroll: true });
+			SRCV.bodyEl.focus({ preventScroll: true });
 		}
 	}, true);
 	// v86 takes every key on the window for the VM (preventDefault), which
@@ -764,24 +472,6 @@ function initSource() {
 			a.click();
 		}
 	}, true);
-	$("src_panel").addEventListener("keydown", (ev) => {
-		if (ev.key === "Escape")
-			closeSource();
-	});
-	initSourceFiles();
-	$("src_close").addEventListener("click", closeSource);
-	$("src_body").addEventListener("click", (ev) => {
-		const row = ev.target.closest("[data-line]");
-		if (!row || !srcPanel || window.getSelection().toString())
-			return;
-		srcPanel.pick = Number(row.dataset.line);
-		for (const x of $("src_body").querySelectorAll(".pick"))
-			x.classList.remove("pick");
-		row.classList.add("pick");
-		renderLineAddrs();
-		api.show.writeHash();
-		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
-	});
 	$("src_tar").addEventListener("change", () => {
 		const f = $("src_tar").files[0];
 		if (f)
@@ -794,18 +484,18 @@ function initSource() {
 	});
 	dbgOnChange(() => {
 		srcStatus();
-		if (srcPanel && !$("src_panel").hidden) {
+		if (srcPanel && srcOpen()) {
 			renderSourcePanel();
 			srcSwRender();
 		}
 	});
 	setInterval(() => {
-		if (srcPanel && !$("src_panel").hidden && (runState === "stepped"))
+		if (srcPanel && srcOpen() && (runState === "stepped"))
 			renderSourcePanel();
 	}, 1000);
 }
 
 provide({ srcLinkHtml, srcLinkEl });
 
-export { srcPanel, setSrcPanel, srcOpen, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
+export { srcPanel, setSrcPanel, srcChainNodes, srcBodyClick, srcSwPick, srcLineHtml, openSource, openSourceFile, srcShowFile,
 	openSourceLine, fileLines, renderSourcePanel, renderSourceRows, closeSource, initSource, srcLineClick };

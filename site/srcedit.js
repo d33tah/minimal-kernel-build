@@ -21,7 +21,6 @@
 // paths() the changed files of the shown kernel, read(path) a file's text
 // with the overlay applied, original(path) the text it was built from.
 
-import { $ } from "./util.js";
 import { image, api, provide } from "./page.js";
 import { dbgOnChange } from "./dbginfo.js";
 import { srcFile, SRC } from "./srctext.js";
@@ -29,6 +28,7 @@ import { srcKernelKey } from "./srcswitch.js";
 import { srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
 import { edFilePatch, edParse, edApplyHunks, edLines } from "./edpatch.js";
 import { controller } from "./ui.jsx";
+import { SRCV, EDSTATE, srcOpen } from "./srcview.js";
 
 const ED_DB = "mkb-srcedit";
 const ED_STORE = "edits";
@@ -191,7 +191,9 @@ async function edApply(text) {
 
 // ---- the editor in the Source panel ----------------------------------------
 
-const edTa = () => $("ed_text");
+// The editor's textarea (sourceaside.jsx renders it; this module writes
+// its text and listens to it, edWire).
+const edTa = () => SRCV.taEl;
 
 // After srcShown (another file in the panel) and closeSource (srcPanel null).
 function edPanelShown() {
@@ -215,23 +217,10 @@ function edCan() {
 		{ ok: false, why: "No text to edit: " + f.why };
 }
 
-// The Edit button, the bar under the title and which view the panel shows.
+// The Edit button, the bar under the title and which view the panel shows
+// (sourceaside.jsx draws them from ED and edCan); the bar's line.
 function edSync() {
-	const panel = $("src_panel"), b = $("src_edit");
-	const can = edCan();
 	const e = srcPanel ? edMap().get(srcPanel.path) : null;
-	b.disabled = !ED.on && !can.ok;
-	b.setAttribute("aria-pressed", ED.on);
-	b.title = ED.on ? "Stop editing: back to the text the kernel was built from, with its coverage" :
-		can.ok ? "Edit this file. Your edits are kept in this browser (Source tab: the changed files, a patch). " +
-			"Tab inserts a tab, Escape leaves the text, Ctrl+S saves at once." : can.why;
-	panel.classList.toggle("editing", ED.on && !!ED.cur);
-	panel.classList.toggle("diffing", ED.on && !!ED.cur && ED.diffShown);
-	const bar = $("ed_bar");
-	bar.hidden = !(ED.on && ED.cur) && !e;
-	$("ed_diffbtn").setAttribute("aria-pressed", ED.diffShown);
-	$("ed_diffbtn").disabled = !e;
-	$("ed_revert").disabled = !e;
 	if (!ED.on && e) {
 		const s = edStats(srcPanel.path);
 		// A kernel rebuilt in the page (rebuild.js) was built from the edits.
@@ -239,13 +228,21 @@ function edSync() {
 		// Hot patched with this text (E8): the panel shows it (srctext.js SRC_OVER).
 		const over = srcFile(srcPanel.path);
 		const patched = over.over && over.lines.join("\n") === e.text;
-		$("ed_state").textContent = built ? "This kernel was rebuilt here from your text of this file (+" + s.add + " -" + s.del + "), shown here." :
+		edStateSay(built ? "This kernel was rebuilt here from your text of this file (+" + s.add + " -" + s.del + "), shown here." :
 			patched ? "The machine runs your text of this file (+" + s.add + " -" + s.del + "), hot patched in: shown here." :
-				"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the " + (over.over ? "machine runs" : "kernel was built from") + "; Edit shows yours.";
+				"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the " + (over.over ? "machine runs" : "kernel was built from") + "; Edit shows yours.");
 	} else if (ED.on && ED.cur)
 		edState();
+	SRCV.changed();
 	if (ED.diffShown && srcPanel)
 		edShowPanelDiff();
+}
+
+function edStateSay(text) {
+	if (EDSTATE.text === text)
+		return;
+	EDSTATE.text = text;
+	EDSTATE.changed();
 }
 
 async function edEnterFile() {
@@ -289,7 +286,7 @@ function edToggle() {
 		ED.on = false;
 		edSync();
 		renderSourcePanel();
-		$("src_edit").focus({ preventScroll: true });
+		SRCV.editEl.focus({ preventScroll: true });
 		edChanged();
 		return;
 	}
@@ -301,7 +298,7 @@ function edToggle() {
 
 // Line numbers: one per line of the text, redrawn when the count changes.
 function edGutter(force) {
-	const ta = edTa(), g = $("ed_gutter");
+	const ta = edTa(), g = SRCV.gutterEl;
 	let n = 1;
 	for (let i = ta.value.indexOf("\n"); i >= 0; i = ta.value.indexOf("\n", i + 1))
 		n++;
@@ -332,7 +329,7 @@ function edState(note) {
 	const where = "line " + line + ", column " + col;
 	const saved = ED.timer ? "saving…" : !e ? "the text the kernel was built from" :
 		ED.db ? "saved in this browser" : "kept until a reload (" + ED.why + ")";
-	$("ed_state").textContent = ED.cur.path + ": " + (note || saved) + "; " + where;
+	edStateSay(ED.cur.path + ": " + (note || saved) + "; " + where);
 }
 
 function edInput() {
@@ -365,7 +362,7 @@ function edKeys(ev) {
 	} else if (ev.key === "Escape") {
 		ev.preventDefault();
 		ev.stopPropagation();
-		$("src_edit").focus();
+		SRCV.editEl.focus();
 	} else if ((ev.ctrlKey || ev.metaKey) && (ev.key === "s" || ev.key === "S")) {
 		ev.preventDefault();
 		edFlush();
@@ -408,7 +405,7 @@ function edShowPanelDiff() {
 	const text = ED.cur ? edTa().value : e && e.text;
 	const base = ED.cur ? ED.cur.base : e && e.base;
 	const p = srcPanel ? edFilePatch(srcPanel.path, base, text).patch : "";
-	edDiffInto($("ed_pdiff"), p || "No change: the text is the one the kernel was built from.\n");
+	edDiffInto(SRCV.pdiffEl, p || "No change: the text is the one the kernel was built from.\n");
 }
 
 function edDiffToggle() {
@@ -443,7 +440,7 @@ function edArmed(key, fn) {
 }
 
 function edArmLabels() {
-	$("ed_revert").textContent = ED.armed === "panel" ? "Revert? Press again" : "Revert";
+	SRCV.changed();
 	EDV.changed();
 }
 
@@ -470,7 +467,7 @@ function edRevert(paths) {
 		ED.listDiff = null;
 	edStatus("Reverted " + paths.join(", ") + ".", "reverted");
 	edChanged();
-	if (srcPanel && !$("src_panel").hidden)
+	if (srcPanel && srcOpen())
 		renderSourcePanel();
 	return Promise.all(writes).catch((e) => edStatus("Reverted here, but not in the store: " + e.message, "reverted"));
 }
@@ -488,7 +485,7 @@ function edChanged() {
 	edRender();
 	api.source.rbSync(); // rebuild.js: the count of edits it would build with
 	api.source.hpSync(); // hotpatch.jsx: whether the edit can be patched in
-	if (srcPanel && !$("src_panel").hidden)
+	if (srcPanel && srcOpen())
 		edSync();
 }
 
@@ -538,7 +535,7 @@ async function edUpload(ev) {
 			}
 		}
 		edStatus("Applied " + f.name + ": " + done.map((d) => d.path + (d.base === null ? " (new)" : d.text === null ? " (deleted)" : "")).join(", ") + ".", "applied");
-		if (srcPanel && !$("src_panel").hidden)
+		if (srcPanel && srcOpen())
 			renderSourcePanel();
 	} catch (e) {
 		edStatus("Not applied, no file changed: " + e.message, "refused");
@@ -567,22 +564,27 @@ const srcOverlay = {
 	apply: edApply,
 };
 
-function initSrcEdit() {
-	ED.ready = srcOverlay.ready = edLoad().then(() => edChanged());
-	$("src_edit").addEventListener("click", edToggle);
-	$("ed_diffbtn").addEventListener("click", edDiffToggle);
-	$("ed_revert").addEventListener("click", () => edArmed("panel", () => srcPanel && edRevert([srcPanel.path])));
-	const ta = edTa();
+// The editor's listeners (the component's effect, once it has the
+// textarea): native ones, since a script's input event does not reach
+// React's root.
+function edWire(ta) {
 	ta.addEventListener("input", edInput);
 	ta.addEventListener("keydown", edKeys);
-	ta.addEventListener("scroll", () => { $("ed_gutter").scrollTop = ta.scrollTop; });
+	ta.addEventListener("scroll", () => { SRCV.gutterEl.scrollTop = ta.scrollTop; });
 	ta.addEventListener("blur", edFlush);
 	for (const t of ["click", "keyup", "select"])
 		ta.addEventListener(t, () => edState());
+}
+
+// The panel's Revert (press twice).
+const edRevertPanel = () => edArmed("panel", () => srcPanel && edRevert([srcPanel.path]));
+
+function initSrcEdit() {
+	ED.ready = srcOverlay.ready = edLoad().then(() => edChanged());
 	window.addEventListener("pagehide", edFlush);
 	dbgOnChange(() => {
 		edRender();
-		if (srcPanel && !$("src_panel").hidden) {
+		if (srcPanel && srcOpen()) {
 			edSync();
 			if (ED.on && !ED.cur)
 				edEnterFile();
@@ -592,5 +594,5 @@ function initSrcEdit() {
 
 provide({ edPanelShown });
 
-export { ED, EDV, edMap, edLineClass, edStats, edArmed, edRevert, edOpen, edListDiff, edDownload, edUpload, edState, edFlush, srcOverlay,
+export { ED, EDV, edMap, edCan, edToggle, edDiffToggle, edRevertPanel, edWire, edLineClass, edStats, edArmed, edRevert, edOpen, edListDiff, edDownload, edUpload, edState, edFlush, srcOverlay,
 	initSrcEdit };

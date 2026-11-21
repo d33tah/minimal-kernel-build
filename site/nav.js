@@ -18,6 +18,7 @@ import { pageSnapView, setPageSnapView } from "./snapdiff.js";
 import { drawGrid } from "./memview.js";
 import { navScrollWant, listingLineAt, setNavScrollWant, setLive, listingEl } from "./listing.js";
 import { TAB_LOOK, navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";
+import { SRCV, srcOpen, srcShow } from "./srcview.js";
 
 // ---- jump history ---------------------------------------------------------
 
@@ -90,10 +91,10 @@ function navLabel(v) {
 }
 
 function navCapture() {
-	const open = !!srcPanel && !$("src_panel").hidden;
+	const open = !!srcPanel && srcOpen();
 	const v = { tab, page: selectedPage, top: listingEl() ? listingEl().scrollTop : 0, hit: jumpHit, y: window.scrollY,
 		src: open ? { pa: srcPanel.pa, fn: srcPanel.fn, path: srcPanel.path, line: srcPanel.line, pick: srcPanel.pick, whole: srcPanel.whole } : null,
-		srcTop: open ? $("src_body").scrollTop : 0, graph: tab === "calls" ? graphCapture() : null,
+		srcTop: open ? SRCV.bodyEl.scrollTop : 0, graph: tab === "calls" ? graphCapture() : null,
 		snap: tab === "page" && pageSnapView && pageSnapView.page === selectedPage ? pageSnapView : null };
 	v.label = navLabel(v);
 	return v;
@@ -157,11 +158,11 @@ function navRestore(v) {
 	if (v.src) {
 		// Its scroll once the file is drawn (now, or when the file or DWARF arrives).
 		setSrcPanel({ ...v.src, scrollPx: v.srcTop });
-		$("src_panel").hidden = false;
+		srcShow(true);
 		renderSourcePanel();
-	} else if (!$("src_panel").hidden) {
-		$("src_panel").hidden = true;
+	} else if (srcOpen()) {
 		setSrcPanel(null);
+		srcShow(false);
 	}
 	writeHash(); // showTab wrote it before the panel was restored
 	window.scrollTo(window.scrollX, v.y);

@@ -4,9 +4,8 @@
 // "React shell").
 //
 // The tabs' static markup is in index.html already (markup/, written by
-// build.mjs); the React components go into its elements, some of them
-// inside that markup (the Source panel's Rebuild and hot patch buttons).
-// The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and Source
+// build.mjs); the React components go into other elements. The Source
+// panel (beside every tab) is mounted at load. The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and Source
 // tabs are mounted when they are first shown: React's first
 // render of them is work the boot does not need (they are hidden at load
 // unless the URL opens one).
@@ -23,8 +22,7 @@ import { PagePanel } from "./pagepanel.jsx";
 import { CallsPanel } from "./callspanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
 import { SourceTabPanel } from "./sourcepanel.jsx";
-import { RebuildPanelButton } from "./rebuild.jsx";
-import { HotPatchButton } from "./hotpatch.jsx";
+import { SourceAside } from "./sourceaside.jsx";
 
 // Mount a tab's component the first time the store's `tab` names it
 // (mountShell runs before init() reads the URL's tab: the Machine tab is
@@ -48,8 +46,9 @@ function mountShell() {
 	mountOnTab("calls", "panel_calls", <CallsPanel />);
 	mountOnTab("debugger", "panel_debugger", <DebuggerPanel />);
 	mountOnTab("source", "panel_source", <SourceTabPanel />);
-	mount($("rb_go_slot"), <RebuildPanelButton />);
-	mount($("hp_go_slot"), <HotPatchButton />);
+	// The Source panel at once: the links of every view open it, and its
+	// editor's textarea is wired when it mounts.
+	mount($("src_panel"), <SourceAside box={$("src_panel")} />);
 }
 
 export { mountShell };

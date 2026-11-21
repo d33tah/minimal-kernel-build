@@ -291,22 +291,23 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `index.html` (the element is there, empty: `#tabrow`, `#panel_settings`);
 `app.js` mounts it in `init()`, synchronously (`flushSync`), so the
 controls exist before the modules that are not components yet look them
-up. Mounted at once: the tab bar (`TabBar`, tabs.jsx). Mounted when the
-store's `tab` first names them (`mountOnTab`): the Settings tab
-(`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
-quests.jsx), the Events tab (`EventsPanel`, events.jsx), and A1's
-Snapshots tab (`SnapshotsPanel`, snapshotspanel.jsx), Page tab
-(`PagePanel`, pagepanel.jsx), Calls tab (`CallsPanel`, callspanel.jsx),
-Debugger tab (`DebuggerPanel`, debuggerpanel.jsx) and Source tab
-(`SourceTabPanel`, sourcepanel.jsx, with the Rebuild and boot box,
-`RebuildPanel` of rebuild.jsx, and the hot patch box, `HotPatchPanel` of
-hotpatch.jsx, inside): hidden at load, their first render is work the
-boot does not need (their controllers, `QUESTS`, `MEV`, `SNAP`,
-`PAGETAB`, `GV`, `COVV`, `EDV`..., run from the start; the panel shows
-their state when it mounts). The build log's `<pre>` is rebuild.jsx's
-own node (`RB.logEl`), written line by line as the build runs and shown
-by the box (`DomNodes`) once the Source tab was shown: a build started
-from the Source panel runs before that.
+up. Mounted at once: the tab bar (`TabBar`, tabs.jsx) and the Source
+panel (`SourceAside`, sourceaside.jsx, in the `#src_panel` aside beside
+every tab; below). Mounted when the store's `tab` first names them
+(`mountOnTab`): the Settings tab (`SettingsPanel`, settings.jsx), the
+Quests tab (`QuestsPanel`, quests.jsx), the Events tab (`EventsPanel`,
+events.jsx), and A1's Snapshots tab (`SnapshotsPanel`,
+snapshotspanel.jsx), Page tab (`PagePanel`, pagepanel.jsx), Calls tab
+(`CallsPanel`, callspanel.jsx), Debugger tab (`DebuggerPanel`,
+debuggerpanel.jsx) and Source tab (`SourceTabPanel`, sourcepanel.jsx,
+with the Rebuild and boot box, `RebuildPanel` of rebuild.jsx, and the hot
+patch box, `HotPatchPanel` of hotpatch.jsx, inside): hidden at load,
+their first render is work the boot does not need (their controllers,
+`QUESTS`, `MEV`, `SNAP`, `PAGETAB`, `GV`, `COVV`, `EDV`..., run from the
+start; the panel shows their state when it mounts). The build log's
+`<pre>` is rebuild.jsx's own node (`RB.logEl`), written line by line as
+the build runs and shown by the box (`DomNodes`) once the Source tab was
+shown: a build started from the Source panel runs before that.
 
 A1 turns the remaining tabs into such components, one tab per commit, in
 the same way (the Snapshots tab first):
@@ -380,6 +381,24 @@ the same way (the Snapshots tab first):
   and drawn by the component; Your edits is drawn from srcedit.js's
   overlay on `EDV` (its status line a field). The lcov line is
   `COVV.exportStatus`.
+- The Source panel (A1) is a component on srcview.js's `SRCV` (open, the
+  title's range, the line under the text), `SWV` (the file switcher; its
+  rows are srcswitch.js's `srcSw`) and `EDSTATE` (the editor bar's line,
+  its own `memo` component, drawn at every key typed). It is mounted at
+  load, in place of the two roots of its Rebuild and hot patch buttons
+  before A1: every view's file:line links open it and its editor's
+  textarea is wired when it mounts. The aside itself (`#src_panel`, the
+  mount element) is shown and marked `editing` / `diffing` by the
+  component (a layout effect), and its keys (Enter and Space on its
+  buttons before v86, Escape) are a listener the component adds to it.
+  The file's text (`#src_body`, a whole file is thousands of lines of
+  HTML, drawn again every second while stepping), the editor's textarea
+  with its line numbers (`#ed_text`, `#ed_gutter`) and the file's diff
+  (`#ed_pdiff`) are written by source.js and srcedit.js through their
+  refs (`SRCV.bodyEl`, `taEl`, `gutterEl`, `pdiffEl`), as the Page
+  listing is; the title, the outline, the switcher, the picked line's
+  addresses, the editor bar and the line under the text are React. Other
+  modules ask `srcOpen()` instead of reading the aside's `hidden`.
 - A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's
@@ -388,37 +407,39 @@ the same way (the Snapshots tab first):
   effect (`wireGraphCanvas`, the depth slider).
 
 Modules that still look up elements by id (`$("x")` or getElementById,
-A1's list, kept up to date by each chunk; besides canvases and the Source
-panel's editor textarea these go with the A1 chunk of their tab: Source
-tab, Machine; Memory, Events, bookmarks, nav and the run badge stay as
-they are for now):
+A1's list, kept up to date by each chunk; besides canvases these go with
+the A1 chunk of their tab: Machine; Memory, Events, bookmarks, nav and
+the run badge stay as they are for now):
 
 | module | elements of |
 |---|---|
 | app.js | Machine, Memory |
-| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Source panel |
+| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, the Source panel's aside (`src_panel`: whether the focus is in it) |
 | boot.js | Machine (screen, `cmdline`, `count`, `entry_info`), Memory |
 | runto.js, reverse.js, run.js, rebuild.jsx | Machine run controls (`dbg_step`, `dbg_back`, `dbg_speed`, ...), Memory (`pages`), Machine (`memory`, `screen_container`) |
 | calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
-| source.js, srcedit.js | Source panel, Machine (`src_tar`, `src_dir`) |
-| debugui.js, jumpview.js, symview.js | Machine (`dbg_state`, the overlay, counters, clock), run badge, Memory (`pages`, `footprint`), Source panel, `jump_pop` |
+| debugui.js, jumpview.js, symview.js | Machine (`dbg_state`, the overlay, counters, clock), run badge, Memory (`pages`, `footprint`), the Source panel's aside (`src_panel`: where it is on a phone), `jump_pop` |
 | genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
-| listing.js | Source panel (`src_panel`, where it covers the listing on a phone) |
+| listing.js | the Source panel's aside (`src_panel`, where it covers the listing on a phone) |
 | memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js, scan.js | Memory (`mm_map`, the grid: canvases), About's legend |
-| nav.js, source.js, srcswitch.js, tabs.jsx, tips.js | run badge, Source panel, the tab panels, popovers |
+| nav.js, tabs.jsx, tips.js | the top bar's history, the tab panels, popovers (tips.js watches the Source panel's aside for its marks) |
+| source.js | Machine (`src_tar`, `src_dir`: the source folder or .tar picked) |
 | replay.js | Machine (`guest_keys`, the boot settings a replay sets) |
 | snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
 | snapshots.js | Machine (`kernel`, `memory`) |
 
 No module looks up an element of the Snapshots, Page, Debugger or Source
-tab, or of the Calls tab besides its canvas.
+tab, of the Calls tab besides its canvas, or of the Source panel besides
+its aside (`#src_panel`, the element of index.html it is mounted in, read
+for its place on screen and for the focus): the file's text, the editor's
+textarea with its line numbers and the file's diff are written through
+the refs the component gives (above).
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
 Machine (machinepanel.jsx), Memory (memorypanel.jsx), About
-(about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
-Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
-(runbadge.jsx). These files name another JSX runtime in their first
+(about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there)
+and the menu toggle with the bookmarks (runbadge.jsx). These files name another JSX runtime in their first
 lines (`@jsxRuntime classic`, `@jsx h`): `markup/html.js`, whose `h()`
 makes HTML. `build.mjs` runs them at build time (`markup/static.js` maps
 element ids to components) and writes their HTML into `index.html`, so
@@ -430,10 +451,7 @@ about 20 ms of the way to the boot; put in with innerHTML by the bundle
 they still cost their layout after the bundle ran, measured in R3.) The
 props are React's (className, htmlFor, defaultValue, style objects), so
 such a file becomes a React component by dropping its pragmas and moving
-it out of `markup/`. The interactive parts inside them are React: the
-Source panel's Rebuild and hot patch buttons (`RebuildPanelButton`,
-`HotPatchButton`, in `#rb_go_slot` and `#hp_go_slot`, `display: contents`
-spans).
+it out of `markup/`.
 
 A view that draws when its tab is shown subscribes to the store's
 `tabShows` (`markTabShown()`, which `showTab` calls each time, also for

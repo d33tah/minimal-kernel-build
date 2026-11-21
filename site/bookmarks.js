@@ -50,6 +50,7 @@ import { hideTip } from "./tips.js";
 import { DBG, dbgFrames, dbgLineCode } from "./dbginfo.js";
 import { srcFile } from "./srctext.js";
 import { textKeep, buildFamily, recFamily, imageLabel, mapLine } from "./buildmap.js";
+import { srcOpen } from "./srcview.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog
@@ -338,7 +339,7 @@ function bmPressTarget(ev) {
 
 // What the tab's ☆ (and the B key with nothing under the pointer) adds.
 function bmDraftHere(where) {
-	if (where === "src" && srcPanel && !$("src_panel").hidden)
+	if (where === "src" && srcPanel && srcOpen())
 		return bmDraftLine(srcPanel.path, srcPanel.whole && !srcPanel.pick ? 0 : srcPanel.pick || srcPanel.line);
 	if (where === "eip" || (where === "tab" && tab === "debugger")) {
 		const pa = stepper && runState !== "off" && runState !== "jit" ? stepper.nextPhys() : -1;
@@ -884,7 +885,7 @@ function bmChanged() {
 		api.show.inspect();
 	if (tab === "debugger")
 		api.show.renderContext();
-	if (srcPanel && !$("src_panel").hidden)
+	if (srcPanel && srcOpen())
 		renderSourcePanel();
 	if (tab === "source")
 		api.source.covRender();

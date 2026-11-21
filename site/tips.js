@@ -214,9 +214,10 @@ function initTips() {
 	});
 	// The listings are drawn again while the CPU runs. The Page and the
 	// Debugger tab (their listings, Code at EIP and its source rows) are
-	// mounted when first shown: their panels are watched.
+	// mounted when first shown: their panels are watched, and the Source
+	// panel's aside.
 	const mo = new MutationObserver(tipReanchor);
-	for (const id of ["panel_page", "panel_debugger", "src_body"])
+	for (const id of ["panel_page", "panel_debugger", "src_panel"])
 		if ($(id))
 			mo.observe($(id), { childList: true, subtree: true });
 	const follow = () => {

@@ -26,6 +26,7 @@ import { bmCodeStar, bmFnStar } from "./bookmarks.js";
 import { scanBase } from "./scan.js";
 import { symbolsInPage, symbolAt, gridRam, pageLabel, drawGrid } from "./memview.js";
 import { controller } from "./ui.jsx";
+import { srcOpen } from "./srcview.js";
 
 const LIVE_MS = 500;
 let liveTimer = null;
@@ -289,7 +290,7 @@ function scrollListingTo(line) {
 // Source panel when the panel is open as a sheet (narrow screens), else null.
 function sheetBand(r) {
 	const sp = $("src_panel");
-	if (sp.hidden)
+	if (!srcOpen())
 		return null;
 	const pr = sp.getBoundingClientRect();
 	if (pr.left > 0 || pr.top <= 0)

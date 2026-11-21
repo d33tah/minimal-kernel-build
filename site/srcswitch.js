@@ -1,12 +1,13 @@
 "use strict";
 
 // The Source panel's other files: the recent ones, the file lists the
-// switcher offers and its moves (source.js opens a pick and draws it).
+// switcher offers and its moves (source.js opens a pick, sourceaside.jsx
+// draws the switcher from srcSw and SWV).
 
-import { $ } from "./util.js";
 import { stepper, image, runState, api } from "./page.js";
 import { dbgFrames, dbgFiles, DBG } from "./dbginfo.js";
 import { SRC } from "./srctext.js";
+import { SWV, SRCV } from "./srcview.js";
 
 // Recently opened files, per kernel, newest first (localStorage; without
 // it, until the page is reloaded).
@@ -141,13 +142,38 @@ const SRC_SW_ALL = 5000;  // rows of every file (Debian has about 2,600)
 const srcSw = { q: "", dir: null, rows: [], at: 0, known: null, knownKey: "" };
 
 function srcSwClose(focus = true) {
-	if ($("src_switch").hidden)
+	if (!SWV.open)
 		return;
-	$("src_switch").hidden = true;
-	$("src_files").setAttribute("aria-expanded", "false");
-	$("src_q").setAttribute("aria-expanded", "false");
+	SWV.open = false;
+	SWV.changed();
 	if (focus)
-		$("src_files").focus({ preventScroll: true });
+		SRCV.filesEl.focus({ preventScroll: true });
+}
+
+// Open the switcher: every file, or dir's files (a breadcrumb), the filter empty.
+function srcSwOpen(dir = null) {
+	srcSw.dir = dir;
+	srcSw.q = "";
+	srcSw.at = 0;
+	SWV.qEl.value = "";
+	SWV.open = true;
+	srcSwRender();
+	SWV.qEl.focus({ preventScroll: true });
+}
+
+// The rows again (another filter, the debug info or the source arrived).
+function srcSwRender() {
+	if (!SWV.open)
+		return;
+	srcSw.rows = srcSwRows();
+	srcSw.at = Math.min(srcSw.at, Math.max(0, srcSw.rows.length - 1));
+	SWV.changed();
+}
+
+function srcSwFilter(q) {
+	srcSw.q = q.trim();
+	srcSw.at = 0;
+	srcSwRender();
 }
 
 function srcSwRows() {
@@ -207,14 +233,11 @@ function srcSwMove(to) {
 	if (!srcSw.rows.length)
 		return;
 	srcSw.at = Math.min(Math.max(to, 0), srcSw.rows.length - 1);
-	for (const li of $("src_list").querySelectorAll(".srcopt")) {
-		const on = Number(li.dataset.i) === srcSw.at;
-		li.classList.toggle("active", on);
-		li.setAttribute("aria-selected", on);
-		if (on)
-			li.scrollIntoView({ block: "nearest" });
-	}
-	$("src_q").setAttribute("aria-activedescendant", "src_opt_" + srcSw.at);
+	SWV.changed();
+	const li = SWV.listEl.querySelector(".srcopt.active");
+	if (li)
+		li.scrollIntoView({ block: "nearest" });
 }
 
-export { srcKernelKey, srcRemember, srcFileCounts, srcSw, srcSwClose, srcSwRows, SRC_SW_GROUPS, srcSwMove };
+export { srcKernelKey, srcRemember, srcFileCounts, srcSw, srcSwOpen, srcSwClose, srcSwRender, srcSwFilter, srcSwRows, SRC_SW_GROUPS,
+	srcSwMove };

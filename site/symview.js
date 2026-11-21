@@ -24,6 +24,7 @@ import { inspect, listingFollow, setNavScrollWant, listingLineAt, scrollListingT
 import { fastStepping, updateDebugUi, renderContext } from "./debugui.js";
 import { writeHash, showTab } from "./tabs.jsx";
 import { navJump, NAV_SCROLL_MS, navAt, navDepth, setNavDepth } from "./nav.js";
+import { srcOpen } from "./srcview.js";
 
 // Live view while stepping: grid flashes, asm view follows EIP. Drawn
 // only when an instruction has executed since the last drawing, and after
@@ -158,7 +159,7 @@ function openFnSource(pa, name) {
 // instruction sit in the strip between the top bar and the sheet.
 function fnHeaderInView(pa) {
 	const sp = $("src_panel");
-	if (sp.hidden || tab !== "page")
+	if (!srcOpen() || tab !== "page")
 		return;
 	const pr = sp.getBoundingClientRect();
 	if (pr.left > 0 || pr.top <= 0)

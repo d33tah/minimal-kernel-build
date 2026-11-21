@@ -11,6 +11,7 @@ import { dbgOnChange } from "./dbginfo.js";
 import { bmLoad, bmExport, bmDialogSave, bmDialogClose, bmMenuFit, bmPendingTick, bmRender, bmAsk, bmDraftHere,
 	bmDraftPos, bmListOpen, BM, bmImport, bmDraftAt, bmPressTarget, BM_LONG_MS, BM_KEY,
 	bmChanged } from "./bookmarks.js";
+import { srcOpen } from "./srcview.js";
 
 // ---- init -------------------------------------------------------------------------
 
@@ -18,7 +19,6 @@ function initBookmarks() {
 	bmLoad();
 	// Every add action: a ☆ button, a right click or long press, the B key.
 	$("bm_add_mem").addEventListener("click", () => bmAsk(bmDraftHere("mem")));
-	$("bm_add_src").addEventListener("click", () => bmAsk(bmDraftHere("src")));
 	$("bm_here").addEventListener("click", () => bmAsk(bmDraftPos()));
 	$("bm_open").addEventListener("click", () => bmListOpen($("bm_box").hidden));
 	$("bm_filter").addEventListener("input", () => {
@@ -66,7 +66,7 @@ function initBookmarks() {
 			ev.stopImmediatePropagation();
 			const h = BM.hover;
 			const d = (h && h.el.isConnected && bmDraftAt(h.el, h.x, h.y)) || bmDraftAt(document.activeElement, 0, 0) ||
-				(srcPanel && !$("src_panel").hidden && $("src_panel").contains(document.activeElement) ? bmDraftHere("src") : bmDraftHere("tab"));
+				(srcPanel && srcOpen() && $("src_panel").contains(document.activeElement) ? bmDraftHere("src") : bmDraftHere("tab"));
 			bmAsk(d);
 		}
 	}, true);

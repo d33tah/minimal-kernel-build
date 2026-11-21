@@ -10,6 +10,7 @@ import { tab, selectedPage, setTab, setVmHasKeys, emulator, navBuilt, setSelecte
 import { srcPanel, srcShowFile } from "./source.js";
 import { bmFromHash } from "./bookmarks.js";
 import { useStore } from "./ui.jsx";
+import { srcOpen } from "./srcview.js";
 
 // ---- tabs -----------------------------------------------------------------
 
@@ -52,7 +53,7 @@ function TabBar() {
 const navHashNow = () => "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "") + srcHash();
 
 function srcHash() {
-	if (!srcPanel || $("src_panel").hidden)
+	if (!srcPanel || !srcOpen())
 		return "";
 	const l = srcPanel.pick || srcPanel.line;
 	return "~src=" + encodeURI(srcPanel.path) + (l ? ":" + l : "");
@@ -153,7 +154,7 @@ function readHash() {
 	}
 	showTab(name || "machine");
 	// The file of the hash, without a history entry (a reload, a link).
-	if (src && (!srcPanel || $("src_panel").hidden || srcPanel.path !== src[1] || (srcPanel.pick || srcPanel.line || 0) !== Number(src[2] || 0)))
+	if (src && (!srcPanel || !srcOpen() || srcPanel.path !== src[1] || (srcPanel.pick || srcPanel.line || 0) !== Number(src[2] || 0)))
 		srcShowFile(src[1], Number(src[2] || 0));
 }
 

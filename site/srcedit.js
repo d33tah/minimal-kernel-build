@@ -249,7 +249,10 @@ function edSync() {
 				"You changed this file (+" + s.add + " -" + s.del + "): the panel shows the text the " + (over.over ? "machine runs" : "kernel was built from") + "; Edit shows yours.");
 	} else if (ED.on && ED.cur)
 		edState();
-	// Drawn again only when what they show differs (a file opened, a save).
+	// Drawn again only when what they show differs (a file opened, a save),
+	// and not while the panel is closed (opening it calls this again).
+	if (!srcOpen())
+		return;
 	const can = edCan();
 	const key = [ED.on, !!ED.cur, ED.diffShown, ED.armed, !!e, can.ok, can.why].join("\0");
 	if (key !== ED.barKey) {

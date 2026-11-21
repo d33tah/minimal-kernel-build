@@ -161,6 +161,17 @@ ERRORS_JS = """async ({ sed, sedErrors, tampered, raw, flaky, grep }) => {
   res.notInKit = await err(() => MKB.kitBuild(cc, k1, mem, { edits: { 'b.c': 'int x;' } }));
   res.badCompile = await err(() => MKB.kitBuild(cc, k1, mem, { compile: 'some' }));
   res.noFile = await err(() => MKB.kitBuild(cc, kit({ steps: [step({ tool: 'cat', argv: ['cat', 'nothing.txt'] })] }), mem, {}));
+  // A generator (E9: the minified Linux's initramfs): gen_init_cpio's input
+  // lines made into the archive, run when every object is compiled; a line
+  // it cannot take and a file it cannot read fail as the C tool does.
+  const [hc, nc] = await put('abc');
+  const gk = (list) => kit({ files: [['c.txt', hc, nc, 0]], gen: [step({ tool: 'cpio', argv: ['usr/gen_init_cpio'], list, inputs: ['c.txt'],
+    outputs: [['out.cpio', '']] })], products: [['out.cpio', '', 0]] });
+  const r5 = await MKB.kitBuild(cc, gk(['file /x c.txt 644 0 0', 'dir /dev 755 0 0', 'nod /dev/console 600 0 0 c 5 1']), mem, { compile: 'all' });
+  res.cpio = r5.gen.map((g) => [g.out, g.sha256, g.size]).concat(r5.products.map((p) => [p[0], p[1], p[2]]));
+  res.cpioNotRun = (await MKB.kitBuild(cc, Object.assign(gk(['file /x c.txt 644 0 0']), { products: [] }), mem, {})).gen.length;
+  res.cpioBad = await err(() => MKB.kitBuild(cc, gk(['slink /a b 777 0 0']), mem, { compile: 'all' }));
+  res.cpioMissing = await err(() => MKB.kitBuild(cc, gk(['file /x none.txt 644 0 0']), mem, { compile: 'all' }));
   cc.terminate();
   return res;
 }"""
@@ -183,6 +194,20 @@ def b64(s):
     return base64.b64decode(s)
 
 
+def cpio_bytes(lines, files):
+    """gen-kit.py's newc() (the archive usr/gen_init_cpio writes) of lines
+    over files {path: bytes}."""
+    import importlib.util
+    import tempfile
+    spec = importlib.util.spec_from_file_location("gen_kit", SITE / "gen-kit.py")
+    gk = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gk)
+    with tempfile.TemporaryDirectory() as td:
+        for p, b in files.items():
+            (pathlib.Path(td) / p).write_bytes(b)
+        return gk.newc(lines, pathlib.Path(td))
+
+
 def check_errors(bname, res, sed_want, problems):
     want = {
         "missingKit": "HTTP 404", "format": "format 2, this page reads 1", "tampered": "its bytes have SHA-256",
@@ -190,6 +215,8 @@ def check_errors(bname, res, sed_want, problems):
         "noModule": "no module kallsyms", "badModule": "HTTP 404", "notInKit": "b.c is not a file of the kit",
         "badCompile": "compile is false", "noFile": "nothing.txt: no such file",
         "down": "always-503.gz: HTTP 503", "postBad": "x.o: llvm-objcopy exited with 1",
+        "cpioBad": "out.cpio: gen_init_cpio exited with 1: gen_init_cpio: unsupported line: slink",
+        "cpioMissing": "out.cpio: gen_init_cpio exited with 1: gen_init_cpio: cannot read: none.txt",
     }
     for k, w in want.items():
         if w not in str(res.get(k)):
@@ -218,6 +245,10 @@ def check_errors(bname, res, sed_want, problems):
         problems.append(f"{bname}: grep steps (a file, the previous step's output): {res['grep']}")
     if not res["post"]["size"] > res["post"]["plain"]:
         problems.append(f"{bname}: an object's post step did not rewrite it: {res['post']}")
+    want = cpio_bytes(["file /x c.txt 644 0 0", "dir /dev 755 0 0", "nod /dev/console 600 0 0 c 5 1"], {"c.txt": b"abc"})
+    w = [hashlib.sha256(want).hexdigest(), len(want)]
+    if res["cpio"] != [["out.cpio"] + w, ["out.cpio"] + w] or res["cpioNotRun"] != 0:
+        problems.append(f"{bname}: a cpio generator: {res['cpio']} (ran {res['cpioNotRun']} times without compiling), gen-kit.py's newc(): {w}")
     if not res["asm"]["size"] or res["asm"]["tmp"]:
         problems.append(f"{bname}: a .S compile: {res['asm']} (an object, no temporary file left)")
     print(f"  errors and synthetic kits: {len(want)} refusals, {len(res['sed'])} sed scripts, .S object "

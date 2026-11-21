@@ -54,13 +54,16 @@ their output).
 
 `gen-host-tools.py` builds the host tools of the kernel builds for
 wasm32-wasip1 (plan step E0d); CI builds them in the kernels and
-debian-clang jobs and the clang-worker job runs them in the browsers
-(they are test inputs, not deployed yet). Pinned in the script:
+debian-clang jobs and the clang-worker job runs them in the browsers.
+The page's rebuild fetches them from `kits/blobs/` (`SHA256.wasm`); nasm
+assembles hello's boot code and the minified Linux's /init (plan E9), and
+its licence is deployed as `kits/LICENSE.nasm`. Pinned in the script:
 
 | file | source | pin | licence |
 |---|---|---|---|
 | `nasm.wasm` | [NASM](https://www.nasm.us/) 2.16.03 release tarball `nasm-2.16.03.tar.xz` (SHA-256 `1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148`), configured for wasm32-wasip1, stripped, built by wasi-sdk 29 (pinned above) with SOURCE_DATE_EPOCH=0 (nasm -v prints __DATE__) | SHA-256 `0b0afa818c430f4914a8e9c3cc1067b5af4e74cf95219e123abad42707862447`, built in `debian:trixie` (the kernels job's container; the same bytes in CI and on d-claude; `--check`) | BSD-2-Clause, the tarball's `LICENSE` copied to `LICENSE.nasm` (SHA-256 `1563996c52e220e15ef2418e67d39488255aa8c28c89e617074d3afe3ee329e0`) |
 | `<elf.h>` used to compile the kernel tools | musl's `include/elf.h` in wasi-libc `ac020b86fd44` (the wasi-libc of wasi-sdk 29; wasi-libc does not install it) | SHA-256 `ebfb1791bae850a20dbd4ede3908365d63a38c3677f89397d36ea5a706ec6f4a` | MIT (`clang/LICENSE.wasi-libc-musl`) |
+| `kitcpio.js` (the page's gen_init_cpio) | a JavaScript port of this repository's `minified/usr/gen_init_cpio.c` | `test_kit.mjs --unit` compares its archives with the C tool's | GPL-2.0 (the Linux kernel) |
 | `kallsyms`, `sorttable`, `recordmcount`, `relocs`, `build`, `mkpiggy` | each kernel tree's own source (`scripts/`, `arch/x86/tools/`, `arch/x86/boot/`): this repository's `minified/` and `hello/`, and Debian's source package pinned below | the kernel source they are built from | GPL-2.0 (the Linux kernel) |
 
 Each module links wasi-libc and the compiler-rt builtins of wasi-sdk 29

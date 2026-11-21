@@ -36,6 +36,7 @@
 // Loaded by index.html (the page) and by test_kit.mjs (Node, require).
 
 import { realNow } from "./clock.js";
+import { kitCpioLine, kitCpio } from "./kitcpio.js";
 
 const KIT_FORMAT = 1;
 
@@ -531,17 +532,31 @@ async function kitBuild(cc, kit, src, opts = {}) {
 		if (!fileSha.has(p))
 			throw new Error("kit " + kit.name + ": " + p + " is not a file of the kit");
 	const users = kitUsers(kit);
+	if (compile && compile !== "all" && compile !== "changed")
+		throw new Error("kitBuild: compile is false, \"all\" or \"changed\"");
+	// The generators (kit.gen): files of the kit made from other files
+	// before the compiles (the minified Linux's /init by nasm -f bin, its
+	// initramfs by gen_init_cpio). One runs when every object is compiled,
+	// or when a file it reads is edited or made by a generator that runs;
+	// what it makes then counts as an edit (its users are compiled).
+	const gens = [], touched = new Set(edits.keys()), made = new Set();
+	for (const g of kit.gen || [])
+		if (compile === "all" || compile === "changed" && g.inputs.some((p) => touched.has(p))) {
+			gens.push(g);
+			for (const [p] of g.outputs) {
+				touched.add(p);
+				made.add(p);
+			}
+		}
 	let recompile = new Set();
 	if (compile === "all")
 		recompile = new Set(kit.objects.map((o) => o.out));
 	else if (compile === "changed")
-		for (const p of edits.keys())
+		for (const p of touched)
 			for (const o of users.get(p) || [])
 				recompile.add(o);
-	else if (compile)
-		throw new Error("kitBuild: compile is false, \"all\" or \"changed\"");
 	const objects = kit.objects.filter((o) => recompile.has(o.out));
-	const res = { name: kit.name, objects: [], steps: [], products: [], files: [], fetched: 0, fetchedBytes: 0, wasmPeak: 0 };
+	const res = { name: kit.name, gen: [], objects: [], steps: [], products: [], files: [], fetched: 0, fetchedBytes: 0, wasmPeak: 0 };
 	// The largest wasm memory of a run (bytes): the link's, for Debian.
 	const peak = (r) => { res.wasmPeak = Math.max(res.wasmPeak, r.mem || 0); };
 
@@ -555,9 +570,12 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	for (const o of objects)
 		for (const d of o.deps)
 			want.add(kit.files[d][0]);
+	for (const g of gens)
+		for (const p of g.inputs)
+			want.add(p);
 	const blobs = [];
 	for (const p of want)
-		if (!edits.has(p))
+		if (!edits.has(p) && !made.has(p))
 			blobs.push([abs(p), fileSha.get(p)]);
 	for (const o of kit.objects)
 		if (!recompile.has(o.out))
@@ -594,12 +612,51 @@ async function kitBuild(cc, kit, src, opts = {}) {
 	const dirs = new Set([env.TMPDIR]);
 	for (const o of objects)
 		dirs.add(abs(o.out).replace(/\/[^/]*$/, ""));
-	for (const s of kit.steps)
+	for (const s of kit.steps.concat(gens))
 		for (const d of s.mkdir)
 			dirs.add(abs(d));
 	await cc.mkdir([...dirs]);
+	const read = async (paths) => (await cc.read(paths.map(abs))).files.map(([p, b]) => {
+		if (!b)
+			throw new Error(p + ": no such file");
+		return b;
+	});
 
 	const t1 = kitNow();
+	for (const [i, g] of gens.entries()) {
+		say({ kind: "gen", out: g.outputs[0][0], tool: g.tool, done: i, of: gens.length });
+		say({ kind: "command", argv: g.argv, list: g.list });
+		const tg = kitNow();
+		let r, out;
+		if (g.tool === "cpio") {
+			// As the C tool: a line it cannot take or a file it cannot read
+			// is its exit code 1 and its message.
+			r = { code: 0 };
+			try {
+				const names = [...new Set(g.list.map(kitCpioLine).filter((e) => e.type === "file").map((e) => e.location))];
+				const got = (await cc.read(names.map(abs))).files;
+				out = [kitCpio(g.list, new Map(names.map((p, k) => [p, got[k][1]])))];
+			} catch (e) {
+				r = { code: 1, stderr: e.message };
+				out = [];
+			}
+		} else {
+			await load(g.tool);
+			r = await cc.run(g.argv, { cwd: dir, env, module: g.tool, outputs: g.outputs.map((o) => abs(o[0])) });
+			peak(r);
+			out = r.code === 0 ? r.files.map((f) => f[1]) : [];
+		}
+		say({ kind: "output", code: r.code, ms: kitNow() - tg, stdout: r.stdout || "", stderr: r.stderr || "",
+			to: g.tool === "cpio" ? g.outputs[0][0] : null, bytes: out.length ? out[0].length : 0 });
+		if (r.code !== 0)
+			fail(g.outputs[0][0] + ": " + (g.tool === "cpio" ? "gen_init_cpio" : g.argv[0]), r);
+		for (const [k, [p, h]] of g.outputs.entries()) {
+			edits.set(p, out[k]);
+			res.gen.push({ out: p, sha256: await kitHash(out[k]), want: h, size: out[k].length });
+		}
+		if (g.tool === "cpio")
+			await cc.write(g.outputs.map(([p], k) => [abs(p), out[k]]));
+	}
 	for (const o of objects) {
 		const tool = o.argv[0] === "nasm" ? "nasm" : "clang";
 		if (opts.onstep)
@@ -635,11 +692,6 @@ async function kitBuild(cc, kit, src, opts = {}) {
 
 	const t2 = kitNow();
 	const vars = new Map();
-	const read = async (paths) => (await cc.read(paths.map(abs))).files.map(([p, b]) => {
-		if (!b)
-			throw new Error(p + ": no such file");
-		return b;
-	});
 	for (const [i, s] of kit.steps.entries()) {
 		const ts = kitNow();
 		if (s.fresh.length)
@@ -703,4 +755,4 @@ async function kitBuild(cc, kit, src, opts = {}) {
 }
 
 export { KIT_FORMAT, kitNow, kitHash, kitLatin1, kitBytes, kitFetch, kitSource, kitSedArgs, kitSed, kitGrepArgs, kitGrep,
-	kitUsers, kitCompile, kitBuild };
+	kitCpioLine, kitCpio, kitUsers, kitCompile, kitBuild };

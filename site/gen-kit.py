@@ -47,7 +47,19 @@ fetches only what a build needs).
               ({file} or {var}), inputs (paths), outputs [[path, sha256]],
               fresh (paths deleted before the step), mkdir }],
     modules: { name: { sha256, size } }, products: [[path, sha256, size]],
-    shipped: { path, sha256, differs [[offset, length]] } }
+    shipped: { path, sha256, differs [[offset, length]] },
+    gen: [{ tool ("nasm", "cpio"), argv, list (cpio: gen_init_cpio's input
+            lines), inputs, outputs [[path, sha256]], fresh, mkdir }] }
+
+gen: the generators, files of the kit that kit.js makes again from other
+files before the compiles when one of their inputs is edited (plan E9):
+--gen-nasm OUT=SRC is `nasm -f bin -o OUT SRC` (the minified Linux's
+/init, elo/Makefile's command), --initramfs CPIO=DIR the archive
+usr/gen_initramfs.sh makes of DIR (CONFIG_INITRAMFS_SOURCE) with
+usr/gen_init_cpio, its input lines recorded (mode, owner from the tree as
+the script reads them). Both are checked here: nasm's output and the
+archive written from the lines (newc(), as kitcpio.js) must be the
+tree's bytes.
 
 Options:
   --kbuild                  objects from kbuild's .cmd files
@@ -77,6 +89,9 @@ Options:
                             command has FLAGS (CC_FLAGS_FTRACE) gets the post
                             step ./scripts/recordmcount OBJ (its module:
                             --module scripts/recordmcount=WASM)
+  --gen-nasm OUT=SRC        a generator: nasm -f bin -o OUT SRC (its module:
+                            --module nasm=WASM)
+  --initramfs CPIO=DIR      a generator: the initramfs CPIO of DIR
   --unstripped JSON         {object: SHA-256} of the objects before their
                             debug sections were stripped (strip-objects.py):
                             gsha256 of the object, what a compile in the
@@ -322,6 +337,76 @@ def capture(a, tree, make):
     return runs
 
 
+# --- the generators (plan E9) ---
+
+def newc(lines, tree):
+    """The archive usr/gen_init_cpio writes for its input lines (the same
+    as kitcpio.js kitCpio)."""
+    out = bytearray()
+    ino = 721
+
+    def pad(n):
+        out.extend(b"\0" * (-len(out) % n))
+
+    def header(i, mode, uid, gid, nlink, size, maj, mn, name):
+        name = name.lstrip("/")
+        f = [i, mode, uid, gid, nlink, 0, size, 3 if i else 0, 1 if i else 0, maj, mn, len(name) + 1, 0]
+        out.extend(("070701" + "".join(f"{x:08X}" for x in f) + name + "\0").encode())
+        pad(4)
+    for line in lines:
+        w = line.split()
+        if w[0] == "file":
+            b = (tree / w[2]).read_bytes()
+            header(ino, 0o100000 | int(w[3], 8), int(w[4]), int(w[5]), 1, len(b), 0, 0, w[1])
+            out.extend(b)
+            pad(4)
+        elif w[0] == "dir":
+            header(ino, 0o40000 | int(w[2], 8), int(w[3]), int(w[4]), 2, 0, 0, 0, w[1])
+        else:
+            header(ino, 0o20000 | int(w[2], 8), int(w[3]), int(w[4]), 1, 0, int(w[6]), int(w[7]), w[1])
+        ino += 1
+    header(0, 0, 0, 0, 1, 0, 0, 0, "TRAILER!!!")
+    pad(512)
+    return bytes(out)
+
+
+def gen_steps(a, tree):
+    """The generators of --gen-nasm and --initramfs, each checked against
+    the tree's bytes."""
+    gens = []
+    for e in a.gen_nasm:
+        out, src = e.split("=", 1)
+        want = (tree / out).read_bytes()
+        with tempfile.TemporaryDirectory() as td:
+            mine = os.path.join(td, "o")
+            subprocess.run(["nasm", "-f", "bin", "-o", mine, src], cwd=tree, check=True)
+            if pathlib.Path(mine).read_bytes() != want:
+                sys.exit(f"{a.name}: nasm -f bin {src} does not make the tree's {out}")
+        deps = depfile_paths(subprocess.run(["nasm", "-M", "-f", "bin", "-o", out, src], cwd=tree, stdout=subprocess.PIPE,
+                                            check=True).stdout.decode())
+        inputs = list(dict.fromkeys([src] + [rel(str(tree), str(tree), d) or d for d in deps]))
+        gens.append({"tool": "nasm", "argv": ["nasm", "-f", "bin", "-o", out, src], "inputs": inputs,
+                     "outputs": [[out, sha256(want)]], "fresh": [], "mkdir": [os.path.dirname(out)] if os.path.dirname(out) else []})
+    for e in a.initramfs:
+        cpio, d = e.split("=", 1)
+        d = d.rstrip("/")
+        # As usr/gen_initramfs.sh: every path under DIR (LC_ALL=C sort), only
+        # regular files, with stat's %a %u %g; then /dev and /dev/console.
+        lines = []
+        for f in sorted(str(x.relative_to(tree)) for x in (tree / d).rglob("*")):
+            st = os.lstat(tree / f)
+            if not os.path.isfile(tree / f) or os.path.islink(tree / f):
+                sys.exit(f"{a.name}: {f}: only regular files are supported in the initramfs")
+            lines.append(f"file /{f[len(d) + 1:]} {f} {st.st_mode & 0o7777:o} {st.st_uid} {st.st_gid}")
+        lines += ["dir /dev 755 0 0", "nod /dev/console 600 0 0 c 5 1"]
+        want = (tree / cpio).read_bytes()
+        if newc(lines, tree) != want:
+            sys.exit(f"{a.name}: the archive of {lines} is not the tree's {cpio}")
+        gens.append({"tool": "cpio", "argv": ["usr/gen_init_cpio"], "list": lines, "inputs": [x.split()[2] for x in lines if x.startswith("file ")],
+                     "outputs": [[cpio, sha256(want)]], "fresh": [], "mkdir": [os.path.dirname(cpio)]})
+    return gens
+
+
 # --- from the runs to the kit ---
 
 def kbuild_objects(tree):
@@ -509,6 +594,10 @@ def make_kit(a, tree, runs):
     for o, (argv, deps) in objects.items():
         for p in deps + extra.get(o, []):
             add(p)
+    gens = gen_steps(a, tree)
+    for g in gens:
+        for p in g["inputs"] + [x[0] for x in g["outputs"]]:
+            add(p)
     tracked = set()
     if a.sources_list:
         tracked = set(pathlib.Path(a.sources_list).read_text().splitlines())
@@ -578,6 +667,9 @@ def make_kit(a, tree, runs):
 
     for o in olist:
         module_of(o["argv"][0])
+    for g in gens:
+        if g["tool"] != "cpio":
+            module_of(g["tool"])
     out_steps = []
     for st in steps:
         tool = st["tool"]
@@ -600,6 +692,8 @@ def make_kit(a, tree, runs):
         products.append([p, sha256(b), len(b)])
     kit = {"format": 1, "name": a.name, "dir": t, "files": flist, "objects": olist, "steps": out_steps,
            "modules": modules, "products": products}
+    if gens:
+        kit["gen"] = gens
     for s in a.shipped:
         p, path = s.split("=", 1)
         b, c = (tree / p).read_bytes(), pathlib.Path(path).read_bytes()
@@ -619,6 +713,8 @@ def make_kit(a, tree, runs):
     print(f"{a.name}: {len(olist)} objects, {len(flist)} files ({len(gen)} generated), {len(out_steps)} steps, "
           f"modules {sorted(modules)}; kit.json {out.stat().st_size} B")
     print(f"  generated (as CI made them; the kit does not make them again): {' '.join(gen)}")
+    for g in gens:
+        print("   gen", g["tool"], " ".join(g["argv"]), "->", g["outputs"][0][0], "; ".join(g.get("list", [])))
     for st in out_steps:
         print("   ", st["tool"], " ".join(x if isinstance(x, str) else "$(" + x["var"] + ")" for x in st["argv"])[:160],
               "<" + st["stdin"] if "stdin" in st else "", ">" + json.dumps(st["stdout"]) if "stdout" in st else "")
@@ -745,6 +841,8 @@ def main():
     ap.add_argument("--tool-input", action="append", default=[])
     ap.add_argument("--no-touch", action="append", default=[])
     ap.add_argument("--unstripped")
+    ap.add_argument("--gen-nasm", action="append", default=[])
+    ap.add_argument("--initramfs", action="append", default=[])
     ap.add_argument("--log", help="keep the wrappers' records (JSON lines) here")
     ap.add_argument("make", nargs=argparse.REMAINDER)
     a = ap.parse_args()

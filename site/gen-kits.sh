@@ -33,12 +33,15 @@ minified() { # name, -g tree, module dir, plain tree, make args
 	kit --name "$n" --tree "$g/$t" --out "$k" --sources-from minified --kbuild --touch-objects \
 		--tool arch/x86/boot/tools/build="$m/$md/build.wasm" --tool arch/x86/boot/compressed/mkpiggy="$m/$md/mkpiggy.wasm" \
 		--extra-input usr/initramfs_data.o=usr/initramfs_data.cpio \
+		--gen-nasm elo/init=elo/init.nasm --initramfs usr/initramfs_data.cpio=elo --module nasm="$m/nasm/nasm.wasm" \
 		--product vmlinux --product arch/x86/boot/bzImage --shipped arch/x86/boot/bzImage="$p/arch/x86/boot/bzImage" \
 		-- make LLVM=1 "$@"
 }
 minified minified-linux minified minified "$o/minified" "KCFLAGS=-g -O0"
 minified minified-linux-os minified-os minified-os minified KCFLAGS=-g
 python3 site/gen-kit.py --index "$k"
+# nasm.wasm (hello's boot code, the minified Linux's /init) is in blobs/: its licence next to it.
+cp "$m/nasm/LICENSE.nasm" "$k/"
 
 node site/test_kit.mjs --unit
 node site/test_kit.mjs --build site/clang/clang.wasm "$k" hello hello-os minified-linux minified-linux-os

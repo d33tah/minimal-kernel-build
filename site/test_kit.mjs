@@ -10,7 +10,12 @@
 //       output, every compiled object and the products must be CI's
 //       bytes. Then one edit (the first object's source with a function
 //       added) compiled with compile "changed" must give another product.
+//       A kit with generators (the minified Linux: /init by nasm, the
+//       initramfs by kitcpio.js): every object compiled runs them to CI's
+//       bytes; /init's string edited reaches the bzImage; the unchanged text
+//       as an edit gives CI's products; an assembly error names its line.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { spawnSync } from 'node:child_process';
@@ -110,6 +115,50 @@ function unit() {
   if (JSON.stringify([...u]) !== JSON.stringify([['a.c', ['a.o']], ['x.h', ['a.o', 'b.o']], ['b.c', ['b.o']]]))
     fail('kitUsers: ' + JSON.stringify([...u]));
   console.log('kitUsers, kitSed errors checked');
+  cpioUnit();
+}
+
+// kitCpio against usr/gen_init_cpio (the minified Linux's, compiled with cc)
+// on the same input lines: the initramfs list of CI and edge cases.
+function cpioUnit() {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mkb-cpio-'));
+  try {
+    const tool = path.join(tmp, 'gen_init_cpio');
+    const cc = spawnSync('cc', ['-O2', '-o', tool, new URL('../minified/usr/gen_init_cpio.c', import.meta.url).pathname], { encoding: 'utf8' });
+    if (cc.status !== 0) throw new Error('cc gen_init_cpio.c: ' + cc.stderr);
+    const files = new Map([['elo/Makefile', enc.encode('all:\n')], ['elo/init', new Uint8Array(163).map((_, i) => i * 7)],
+                           ['e/odd', enc.encode('abc')], ['e/empty', new Uint8Array(0)], ['e/four', enc.encode('abcd')]]);
+    for (const [p, b] of files) {
+      fs.mkdirSync(path.join(tmp, path.dirname(p)), { recursive: true });
+      fs.writeFileSync(path.join(tmp, p), b);
+    }
+    const cases = [
+      ['file /Makefile elo/Makefile 644 0 0', 'file /init elo/init 755 0 0', 'dir /dev 755 0 0', 'nod /dev/console 600 0 0 c 5 1'],
+      ['file /a/odd-name e/odd 4755 1000 100', 'file /empty e/empty 600 0 0', 'file /x e/four 644 65534 65534', 'dir /a 700 1 2',
+       'nod /dev/tty1 620 0 5 c 4 1', 'file   /spaced\te/odd   644 0 0  '],
+      [],
+    ];
+    for (const list of cases) {
+      const want = spawnSync(tool, [], { cwd: tmp, input: list.map((l) => l + '\n').join('') });
+      const got = kit.kitCpio(list, files);
+      if (want.status !== 0) fail(`gen_init_cpio ${JSON.stringify(list)}: ${want.stderr}`);
+      else if (Buffer.compare(Buffer.from(got), want.stdout) !== 0)
+        fail(`kitCpio ${JSON.stringify(list)}: ${got.length} B, gen_init_cpio ${want.stdout.length} B, other bytes`);
+    }
+    // Refused by both (the C tool's sscanf takes some malformed numbers,
+    // which kitCpio refuses too).
+    for (const [list, msg, both] of [[['slink /a b 777 0 0'], 'unsupported line: slink', true], [['file /a e/none 644 0 0'], 'cannot read: e/none', true],
+                                     [[' file /a e/odd 644 0 0'], 'unsupported line', true], [['nod /a 600 0 0 b 1 1'], 'unsupported line', true],
+                                     [['file /a e/odd 698 0 0'], 'unsupported line', false]]) {
+      let e = null;
+      try { kit.kitCpio(list, files); } catch (x) { e = x.message; }
+      if (!e || !e.includes(msg)) fail(`kitCpio ${JSON.stringify(list)} must fail with "${msg}": ${e}`);
+      if (both && spawnSync(tool, [], { cwd: tmp, input: list[0] + '\n' }).status === 0) fail(`gen_init_cpio took ${JSON.stringify(list)}`);
+    }
+    console.log(`kitCpio: ${cases.length} lists equal to gen_init_cpio's archives, 5 refused lines`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 async function errors() {
@@ -140,7 +189,10 @@ async function build(clang, kits, names, compile) {
     await cc.load(clang);
     const r = await kit.kitBuild(cc, k, src, { compile });
     const badObj = r.objects.filter((o) => o.sha256 !== o.want);
-    const badStep = r.steps.flatMap((s, i) => (s.outputs || []).filter(([, h, w]) => h !== w).map(([p]) => `step ${i + 1} ${s.tool} ${p}`));
+    const badStep = r.steps.flatMap((s, i) => (s.outputs || []).filter(([, h, w]) => h !== w).map(([p]) => `step ${i + 1} ${s.tool} ${p}`))
+      .concat(r.gen.filter((g) => g.sha256 !== g.want).map((g) => `generator of ${g.out}`));
+    if (k.gen && (compile === 'all') !== (r.gen.length === k.gen.length))
+      fail(`${name}: compile ${compile} ran ${r.gen.length} of ${k.gen.length} generators`);
     const badProd = r.products.filter(([, h, , w]) => h !== w);
     console.log(`${name}: ${r.fetched} blobs (${r.fetchedBytes} B), ${r.objects.length} objects compiled ` +
                 `(${badObj.length} different) in ${Math.round(r.compileMs)} ms, ${r.steps.length} steps in ${Math.round(r.linkMs)} ms; ` +
@@ -165,6 +217,8 @@ async function build(clang, kits, names, compile) {
     const same = e.products.filter(([, h, , w]) => h === w).map((p) => p[0]);
     if (same.length) fail(`${name}: ${cpath} edited, still CI's ${same}`);
     console.log(`${name}: ${cpath} edited: ${e.objects.length} object compiled, products ${e.products.map(([p, , n]) => p + ' ' + n + ' B').join(', ')}, all different`);
+    if (k.gen)
+      await generators(clang, k, src, name);
     // A kit of stripped objects (Debian): the same source compiled again
     // (with recordmcount after it) is CI's object before the strip.
     if (first.gsha256) {
@@ -177,6 +231,53 @@ async function build(clang, kits, names, compile) {
                   `(post steps: ${first.post ? first.post.map((p) => p.argv[0]).join(', ') : 'none'})`);
     }
   }
+}
+
+// The minified Linux's /init (plan E9): elo/init.nasm edited, unchanged,
+// and with an error.
+async function generators(clang, k, src, name) {
+  const asm = k.gen.find((g) => g.tool === 'nasm');
+  const spath = asm.inputs[0];
+  const text = dec.decode(await src.get(k.files.find((f) => f[0] === spath)[1]));
+  const cpio = k.gen.find((g) => g.tool === 'cpio').outputs[0][0];
+  const users = kit.kitUsers(k).get(cpio);
+  const run = async (edit) => {
+    const cc = new NodeTools();
+    await cc.load(clang);
+    try {
+      return await kit.kitBuild(cc, k, src, { compile: 'changed', edits: { [spath]: edit }, keep: k.products.map((p) => p[0]) });
+    } catch (x) {
+      return { error: x.message };
+    }
+  };
+  const msg = 'Hello from an edited /init!';
+  const e = await run(text.replace("'Hello, World!'", `'${msg}'`));
+  if (e.error) {
+    fail(`${name}: ${spath} edited: ${e.error}`);
+  } else {
+    const img = e.files.find(([p]) => p === k.shipped.path)[1];
+    const has = Buffer.from(img).includes(Buffer.from(msg + '\n'));
+    if (e.gen.length !== k.gen.length || e.gen.some((g) => g.sha256 === g.want) || !has ||
+        JSON.stringify(e.objects.map((o) => o.out)) !== JSON.stringify(users) || e.products.some(([, h, , w]) => h === w))
+      fail(`${name}: ${spath} edited: generators ${JSON.stringify(e.gen)}, objects ${e.objects.map((o) => o.out)} (users of ${cpio}: ${users}), ` +
+           `string in the bzImage ${has}, products ${JSON.stringify(e.products)}`);
+    console.log(`${name}: ${spath} edited: ${e.gen.map((g) => g.out + ' ' + g.size + ' B').join(', ')} made again, ${e.objects.map((o) => o.out)} compiled, ` +
+                `the string in the bzImage, ${Math.round(e.ms)} ms`);
+  }
+  const u = await run(text);
+  if (u.error || u.gen.some((g) => g.sha256 !== g.want) || u.products.some(([, h, , w]) => h !== w))
+    fail(`${name}: ${spath} unchanged as an edit: ${u.error || JSON.stringify([u.gen, u.products])}`);
+  else
+    console.log(`${name}: ${spath} unchanged as an edit: /init, the initramfs, vmlinux and the bzImage are CI's bytes`);
+  const lines = text.split('\n');
+  const at = lines.findIndex((l) => l.includes('int 0x80')) + 1;
+  lines.splice(at, 0, '    mov eax, [nosuchlabel]');
+  const bad = await run(lines.join('\n'));
+  const want = `${spath}:${at + 1}: error:`;
+  if (!bad.error || !bad.error.includes(want) || !bad.error.includes('exited with 1'))
+    fail(`${name}: an assembly error must fail with "${want}": ${bad.error || 'it built'}`);
+  else
+    console.log(`${name}: assembly error: ${bad.error.slice(0, 160)}`);
 }
 
 const argv = process.argv.slice(2);

@@ -134,7 +134,8 @@ def nopath_case(browser, base, shots, name):
     # The tooltip of a mark left (padding after a ret or jmp, a function
     # nothing calls) says what it rests on, the run included.
     titles = [t for _, _, t in page.evaluate(NOPATH_MARKS_JS, "#listing")]
-    if page.get_attribute("#listing", "data-source") != "build":
+    # (No #listing when no page was opened: the Page tab is mounted when first shown.)
+    if page.evaluate("document.getElementById('listing')?.dataset.source") != "build":
         titles = []
     r["a ⊘ title"] = titles[0] if titles else None
     r["jit note"] = page.evaluate("MKB.jumpsJitNote()")

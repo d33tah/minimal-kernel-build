@@ -352,6 +352,7 @@ def rebuild_run(browser, base, shots, tmp):
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=hello")
     srcedit_ready(page, "hello")
+    src_tab_once(page)
     if not page.query_selector("#rb_go") or not wait_for(lambda: rb_state(page)["go"], 60):
         ctx.close()
         return ["no Rebuild and boot button to press for hello"], r

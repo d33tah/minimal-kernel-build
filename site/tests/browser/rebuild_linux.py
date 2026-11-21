@@ -9,7 +9,7 @@ import time
 
 from tests.browser.common import (
     ALIVE, gate_on_screen, HELLO, kernel_entries, report, show_tab, shown_tab, SITE, srcedit_overlay, srcedit_ready,
-    srcedit_state, wait_for,
+    src_tab_once, srcedit_state, wait_for,
 )
 from tests.browser.rebuild import (
     elf32_symbols, rb_buildlog, rb_buildlog_open, rb_debug, rb_debug_check, rb_download, rb_kit, RB_LINES_JS, rb_press,
@@ -101,6 +101,7 @@ def rbl_build(page, sel, phone, timeout=600, open_log=False):
     the edited string on the screen or None, the progress texts). open_log:
     open the build log in the Source tab as soon as it shows (the build
     then runs on with it open)."""
+    src_tab_once(page)
     page.evaluate(RB_WATCH_JS)
     # The string counts once the screen was without it (the kernel booted
     # before this build may have printed it); wall time, not the page's

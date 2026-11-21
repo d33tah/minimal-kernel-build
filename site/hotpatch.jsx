@@ -440,14 +440,14 @@ function HotPatchPanel() {
 	useSyncExternalStore(HP.subscribe, () => HP.rev);
 	const ps = hpPatches();
 	return (
-		<>
+		<div id="hp_box" className="rbbox">
 			<div className="scan"><button id="hp_go" type="button" className="rbgo" disabled={!HP.can.ok || HP.busy} title={HP.title}
 				onClick={hpRun}><span aria-hidden="true">⚡</span> Patch running kernel</button>{" "}<Tip text={HP_TIP} /></div>
 			<p id="hp_status" className="note" role="status" data-state={HP.state}>{HP.status}</p>
 			<ul id="hp_list" className="hplist" hidden={!ps.length}>{ps.map((p) => (
 				<li key={p.n} data-n={p.n}>{"Patch " + p.n + " at instruction " + p.at.toLocaleString("en") + ": " + p.path + ", " + p.funcs.map((f) => f.name).join(", ")}</li>
 			))}</ul>
-		</>
+		</div>
 	);
 }
 

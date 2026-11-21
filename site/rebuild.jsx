@@ -36,7 +36,7 @@ import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
 import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
-import { Tip } from "./ui.jsx";
+import { Tip, DomNodes } from "./ui.jsx";
 import { setStatus } from "./header.js";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
 
@@ -61,7 +61,11 @@ const RB = {
 	files: false,
 	all: false,      // "compile every object"
 	copied: "",      // "Copied", "Selected: copy it" for a moment
-	logEl: null,     // the build log's <pre>: written as the build runs (not drawn by React)
+	// The build log's <pre>: written as the build runs (not drawn by React);
+	// the module's own node, which the Source tab's box shows once it is
+	// mounted (a build started from the Source panel runs before that).
+	logEl: rbLogPre(),
+	boxEl: null,     // the box (#rb_box) once the Source tab was shown
 	rev: 0,
 	subs: new Set(),
 	subscribe(fn) {
@@ -145,6 +149,18 @@ function rbStepText(e) {
 // fills while the build runs, follows its end while it is scrolled to the
 // end (or closed), and stays until the next build. Written into its <pre>
 // as it comes (thousands of lines: no React drawing per line).
+
+// The log as DomNodes shows it (the same array at every render).
+const RB_LOG = [RB.logEl];
+
+function rbLogPre() {
+	const pre = document.createElement("pre");
+	pre.id = "rb_buildlog";
+	pre.className = "rbbuildlog";
+	pre.tabIndex = 0;
+	pre.setAttribute("aria-label", "Build log");
+	return pre;
+}
 
 // One argument as a POSIX shell word.
 function rbWord(a) {
@@ -401,7 +417,8 @@ function rbFailed(from, e) {
 	rbSync();
 	// Where it says why: the Source tab (also when the editor's button was pressed).
 	api.show.showTab("source");
-	$("rb_box").scrollIntoView({ block: "start" });
+	if (RB.boxEl)
+		RB.boxEl.scrollIntoView({ block: "start" });
 	if (ED.cur)
 		edState("not built, the Source tab says why");
 }
@@ -521,9 +538,9 @@ const rbBack = () => setTimeout(() => {
 // The Rebuild and boot box of the Source tab (#rb_box, under Your edits).
 function RebuildPanel() {
 	useSyncExternalStore(RB.subscribe, () => RB.rev);
-	const keepLog = useCallback((el) => { RB.logEl = el; }, []);
+	const keepBox = useCallback((el) => { RB.boxEl = el; }, []);
 	return (
-		<>
+		<div id="rb_box" className="rbbox" ref={keepBox}>
 			<div className="scan"><button id="rb_go" type="button" className="rbgo" disabled={!RB.can.ok} title={RB.title}
 				onClick={rbRun}><span aria-hidden="true">⟳</span> Rebuild and boot</button>{" "}<label className="rball"><input id="rb_all"
 				type="checkbox" checked={RB.all} onChange={(e) => { RB.all = e.target.checked; RB.changed(); }} /> compile every object</label>
@@ -535,10 +552,10 @@ function RebuildPanel() {
 			<details id="rb_buildlog_box" className="rblogbox" hidden={!RB.logShown}><summary id="rb_buildlog_sum">{RB.logSum}</summary>
 				<div className="scan"><button id="rb_buildlog_copy" type="button" onClick={rbLogCopy}>{RB.copied || "Copy the log"}</button>
 					<Tip text="Every command of the build as it runs: the compiles (clang.wasm) and the link steps (ld.lld, objcopy, the kernel's own tools as wasm, and sed and cat done by the page), each with its exit code, its time and what it printed. Lines starting with # are the page's own notes (fetching the kit, the phases' times). It stays after the build, also after an error, until the next build." /></div>
-				<pre id="rb_buildlog" className="rbbuildlog" tabIndex={0} aria-label="Build log" ref={keepLog}></pre></details>
+				<DomNodes nodes={RB_LOG} /></details>
 			<div id="rb_files" className="scan" hidden={!RB.files}><button id="rb_dl_image" type="button" onClick={() => rbDownload("image")}>Download bzImage</button>{" "}
 				<button id="rb_dl_elf" type="button" onClick={() => rbDownload("elf")}>{"Download " + (RB.last ? RB.last.elfName : "ELF")}</button></div>
-		</>
+		</div>
 	);
 }
 

@@ -11,20 +11,25 @@
 // address ranges, in any frame (the call line of inlined code too), the
 // way the Source panel counts it (dwarftables.js dwarfEachLine).
 
-import { $, num, hex } from "./util.js";
+import { num, hex } from "./util.js";
 import { stepper, image, api, provide, state, tab } from "./page.js";
+import { controller } from "./ui.jsx";
 import { download } from "./graph.js";
 import { dwarfEachLine } from "./dwarftables.js";
 import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js";
-import { openSourceFile, srcPanel, renderSourcePanel } from "./source.js";
+import { openSourceFile, srcPanel, srcOpen, renderSourcePanel } from "./source.js";
 import { fnDetailEl } from "./fnfacts.js";
-import { BM, bmMarks, bmStarEl, bmAddButton, bmDraftFn, bmDraftLine } from "./bookmarks.js";
+import { BM, bmMarks, bmDraftFn, bmDraftLine } from "./bookmarks.js";
 import { srcFile, SRC_OVER } from "./srctext.js";
 import { textHash, textKeep, textOf, lineMap, imageLabel, buildFamily } from "./buildmap.js";
 
 // prev: what ran in earlier builds of the kernels shown (E8, covKeep), the
 // newest last; cmp: the id of the one the tree is compared with ("": none).
 const COV = { open: new Set(), sort: "path", q: "", run: null, tree: null, key: "", exporting: false, prev: [], cmp: "", cmpState: null };
+// What the Source tab shows of it (A1, sourcepanel.jsx): view, the tree as
+// covRender computed it ({ state, why, rows, more, coverage, status, info,
+// cmp }); exportStatus, the lcov line.
+const COVV = controller({ view: null, exportStatus: "" });
 const COV_PREV_MAX = 8;
 const COV_MAX_ROWS = 1500;
 
@@ -216,27 +221,21 @@ function covDelta(prev, now) {
 	return { was: prev.size, plus, minus };
 }
 
-// The "compare with" picker: the earlier builds of this family recorded.
-function covCmpRender() {
+// The "compare with" picker: the earlier builds of this family recorded,
+// as { shown, options: [[value, text]], value, status }.
+function covCmpView() {
 	const fam = buildFamily();
 	const recs = COV.prev.filter((x) => x.fam === fam);
-	const box = $("cov_cmp_box"), sel = $("cov_cmp");
-	box.hidden = !recs.length;
 	if (COV.cmp && !recs.some((x) => x.id === COV.cmp))
 		COV.cmp = "";
-	const want = [["", "nothing"], ...recs.map((x) => [x.id, x.label + ", " + x.lines.toLocaleString("en") + " lines ran" + (x.partial ? " (incomplete)" : "")])];
-	if ([...sel.options].map((o) => o.value + "\t" + o.textContent).join("\n") !== want.map((w) => w.join("\t")).join("\n")) {
-		sel.textContent = "";
-		for (const [v, t] of want)
-			sel.add(new Option(t, v));
-	}
-	sel.value = COV.cmp;
+	const options = [["", "nothing"], ...recs.map((x) => [x.id, x.label + ", " + x.lines.toLocaleString("en") + " lines ran" + (x.partial ? " (incomplete)" : "")])];
 	const c = covCmpState();
-	$("cov_cmp_status").textContent = !c ? "" : c.waiting ? "Reading the text of " + c.waiting + " edited file" + (c.waiting === 1 ? "" : "s") + "…" :
+	const status = !c ? "" : c.waiting ? "Reading the text of " + c.waiting + " edited file" + (c.waiting === 1 ? "" : "s") + "…" :
 		"Lines that ran in " + c.rec.label + " next to this build's: there, + only here, − only there" +
 		(c.moved.length ? "; lines of " + c.moved.join(", ") + " moved to this build's text through the diff of the two texts" : "") + "." +
 		(c.rec.unread ? " Incomplete: the line tables of " + c.rec.unread + " of its 64 KiB pieces of code that ran were not read before the switch " +
 			"(the coverage tree reads them when shown), so their lines count as not run there." : "");
+	return { shown: recs.length > 0, options, value: COV.cmp, status };
 }
 
 // Totals of a node: { lines, linesRun, ins, insRun } (linesRun null while
@@ -304,32 +303,6 @@ function covClearSums(node) {
 
 const covPct = (run, total) => run === null || !total ? null : run / total;
 
-function covCell(run, total, what, cmp) {
-	const cell = document.createElement("span");
-	cell.className = "covcell";
-	const bar = document.createElement("span");
-	bar.className = "covbar";
-	const fill = document.createElement("span");
-	const p = covPct(run, total);
-	fill.style.width = p === null ? "0" : Math.max(p > 0 ? 2 : 0, Math.round(100 * p)) + "%";
-	bar.append(fill);
-	const text = document.createElement("span");
-	text.className = "mono";
-	text.textContent = (run === null ? "–" : run.toLocaleString("en")) + "/" + total.toLocaleString("en") +
-		(p === null ? "" : " " + (p > 0 && p < 0.01 ? "<1" : Math.floor(100 * p)) + "%");
-	cell.title = !total ? "no " + what : run === null ? total.toLocaleString("en") + " " + what + "; what ran is not known (see below)" :
-		run.toLocaleString("en") + " of " + total.toLocaleString("en") + " " + what + " have executed";
-	cell.append(bar, text);
-	if (cmp) {
-		const was = document.createElement("span");
-		was.className = "mono covwas";
-		was.textContent = "there " + cmp.was.toLocaleString("en") + " +" + cmp.plus + " −" + cmp.minus;
-		cell.title += "; in " + COV.cmpState.rec.label + " " + cmp.was + " ran, " + cmp.plus + " ran only here, " + cmp.minus + " only there";
-		cell.append(was);
-	}
-	return cell;
-}
-
 // Sort keys: children of a directory (directories first, then files) and
 // functions of a file.
 const COV_SORTS = {
@@ -340,19 +313,19 @@ const COV_SORTS = {
 	ins: (s) => -(covPct(s.insRun, s.ins) ?? -1),
 };
 
+// The tree's rows and lines (COVV.view), drawn by the Source tab's
+// component: each row { kind, path, depth, label, s (covSum), open, kids,
+// onName, title, bm (a draft for its ☆), stars (bookmark names),
+// detail (a function's facts, a node) }.
 function covRender() {
-	const box = $("cov_tree"), info = $("covtree_info");
 	const fl = dbgFiles();
-	box.dataset.state = fl.state;
-	$("cov_export").disabled = fl.state !== "ok";
 	if (fl.state !== "ok") {
-		box.textContent = "";
-		$("cov_status").textContent = fl.why;
-		info.textContent = "";
+		COVV.view = { state: fl.state, why: fl.why, rows: [], more: 0, status: fl.why, info: "", cmp: null };
+		COVV.changed();
 		return;
 	}
 	const F = fl.F, T = covTree(F), run = covRun(F);
-	covCmpRender();
+	const cmp = covCmpView();
 	covClearSums(T.root);
 	for (const n of covFileNodes.values())
 		n.sum = null;
@@ -364,55 +337,18 @@ function covRender() {
 	const order = (items, sum, name) => key ? items.sort((x, y) => key(sum(x)) - key(sum(y)) || name(x).localeCompare(name(y))) :
 		items.sort((x, y) => name(x).localeCompare(name(y)));
 
-	box.textContent = "";
-	const head = document.createElement("div");
-	head.className = "trow thead covrow";
-	head.innerHTML = '<span class="ttog"></span><span class="tname">file or function</span><span class="covcell">lines run</span><span class="covcell">instructions run</span><span class="covbm"></span>';
-	box.append(head);
-	let rows = 0, more = 0;
+	const rows = [];
+	let more = 0;
 	const marks = BM.list.length ? bmMarks() : null;
 	const row = (kind, path, depth, label, s, open, kids, onName, title, bm) => {
-		if (rows >= COV_MAX_ROWS) {
+		if (rows.length >= COV_MAX_ROWS) {
 			more++;
-			return;
+			return null;
 		}
-		rows++;
-		const r = document.createElement("div");
-		r.className = "trow covrow";
-		Object.assign(r.dataset, { kind, path, depth, lines: s.lines, linesRun: s.linesRun ?? "", ins: s.ins, insRun: s.insRun ?? "" },
-			s.cmp ? { was: s.cmp.was, plus: s.cmp.plus, minus: s.cmp.minus } : {});
-		const tog = document.createElement("button");
-		tog.type = "button";
-		tog.className = "ttog";
-		tog.textContent = kids ? (open ? "▾" : "▸") : "·";
-		tog.disabled = !kids;
-		tog.setAttribute("aria-label", (open ? "collapse " : "expand ") + (path || "all files"));
-		const toggle = () => {
-			if (COV.open.has(path)) COV.open.delete(path); else COV.open.add(path);
-			COV.key = "";
-			covRender();
-		};
-		tog.addEventListener("click", toggle);
-		const name = document.createElement("button");
-		name.type = "button";
-		name.className = "tname mono covname";
-		name.style.paddingLeft = Math.min(depth, 20) * 0.6 + "em";
-		name.textContent = label;
-		name.title = title;
-		name.addEventListener("click", onName || toggle);
-		r.append(tog, name, covCell(s.linesRun, s.lines, "lines with code", s.cmp), covCell(s.insRun, s.ins, "instructions"));
-		// A file or function: ★ once bookmarked, and its ☆ (K1).
-		const bmc = document.createElement("span");
-		bmc.className = "covbm";
-		if (bm) {
-			Object.assign(r.dataset, bm.kind === "fn" ? { pa: bm.t.pa, fn: bm.t.name } : {});
-			const names = marks && (bm.kind === "fn" ? marks.fn.get(bm.t.pa) : marks.file.get(bm.t.path));
-			if (names)
-				bmc.append(bmStarEl(names));
-			bmc.append(bmAddButton(() => bm, "Bookmark " + (bm.kind === "fn" ? bm.t.name + "()" : bm.t.path)));
-		}
-		r.append(bmc);
-		box.append(r);
+		const stars = bm && marks ? (bm.kind === "fn" ? marks.fn.get(bm.t.pa) : marks.file.get(bm.t.path)) : null;
+		const r = { kind, path, depth, label, s, open, kids, onName, title, bm, stars, detail: null };
+		rows.push(r);
+		return r;
 	};
 	const fnRows = (k, depth) => {
 		const fns = order(T.fileFns[k].filter((i) => !q || fnMatch(i) || F.files[k][0].toLowerCase().includes(q)),
@@ -421,17 +357,17 @@ function covRender() {
 			const fn = F.funcs[i];
 			const path = F.files[k][0] + ":" + fn[0];
 			const open = COV.open.has(path);
-			row("func", path, depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), open, true,
+			const r = row("func", path, depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), open, true,
 				() => api.show.jumpTo(fn[4]), fn[0] + " at " + hex(fn[4]) + " (" + (fn.length - 4) / 2 + (fn.length > 6 ? " parts" : " part") +
 				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab; the arrow shows its prototype, declaration, linkage, inlined copies and frame.",
 				bmDraftFn(fn[4], fn[0]));
 			// Its facts from DW_TAG_subprogram under the row.
-			if (open && rows <= COV_MAX_ROWS) {
+			if (open && r) {
 				const d = fnDetailEl(fn[0], fn[4], "cov");
 				d.classList.add("covfacts");
 				d.style.paddingLeft = Math.min(depth + 1, 20) * 0.6 + 2 + "em";
 				d.dataset.path = path;
-				box.append(d);
+				r.detail = [d];
 			}
 		}
 	};
@@ -462,27 +398,37 @@ function covRender() {
 	row("root", "", 0, "all " + all.files.toLocaleString("en") + " files", all, COV.open.has("") || !!q, true, null, "every source file the DWARF line table names");
 	if (COV.open.has("") || q)
 		dirRows(T.root, 1);
-	if (more) {
-		const m = document.createElement("p");
-		m.className = "note";
-		m.textContent = more.toLocaleString("en") + " more rows: narrow the filter or close some directories.";
-		box.append(m);
-	}
-	box.dataset.rows = rows;
-	box.dataset.coverage = !run.tint ? "none" : run.partial ? "partial" : "stepped";
 
-	$("cov_status").textContent = !run.tint ? "No execution coverage: " + run.why + ". Totals only." :
+	const status = !run.tint ? "No execution coverage: " + run.why + ". Totals only." :
 		run.waiting ? "Reading the line tables of " + run.waiting + " of the " + run.need + " shards (64 KiB of code each) with executed code…" :
 		run.failed.length ? "Lines run unknown: " + run.failed[0] :
 		run.partial ? "Incomplete: v86's JIT has run kernel code since the entry (full speed, or a Run to with the JIT) and records nothing, " +
 			"so code shown as not run may have run. Step, or run at a stepped speed (1k/s ... 10M/s), to record." : "";
 	const ins = F.insns;
-	info.textContent = "Lines: lines with code in the DWARF line table (a line inlined somewhere and the line of that call both count), " +
+	const info = "Lines: lines with code in the DWARF line table (a line inlined somewhere and the line of that call both count), " +
 		"run when an instruction started in one of their address ranges while stepping. Instructions: " +
 		(ins ? ins.tool + " of the -g build, " + num(ins.inFunctions) + " in DWARF functions, " + num(ins.total - ins.inFunctions) +
 			" outside them (assembly, padding) not in the tree" : "not counted (" + F.insnsWhy + ")") +
 		"; run = addresses where the stepper started an instruction (code that ran at the same address before the kernel was there counts too)." +
 		(run.tint && run.partial ? " v86's JIT has run since the kernel entry and records nothing, so code shown as not run may have run." : "");
+	COVV.view = { state: "ok", rows, more, coverage: !run.tint ? "none" : run.partial ? "partial" : "stepped", status, info, cmp,
+		cmpLabel: COV.cmpState ? COV.cmpState.rec.label : "" };
+	COVV.changed();
+}
+
+// A row's arrow (and a directory's name): open or close it.
+function covToggle(path) {
+	if (COV.open.has(path))
+		COV.open.delete(path);
+	else
+		COV.open.add(path);
+	COV.key = "";
+	covRender();
+}
+
+function covExportSaid(text) {
+	COVV.exportStatus = text;
+	COVV.changed();
 }
 
 // lcov tracefile of what ran: every file's lines with code (DA:line,1 ran
@@ -496,7 +442,7 @@ function covExport() {
 	const waiting = tables.filter(([, r]) => r.state === "loading").length;
 	if (waiting) {
 		COV.exporting = true;
-		$("cov_export_status").textContent = "lcov: reading " + waiting + " of " + shards.length + " shards…";
+		covExportSaid("lcov: reading " + waiting + " of " + shards.length + " shards…");
 		return;
 	}
 	COV.exporting = false;
@@ -519,19 +465,28 @@ function covExport() {
 		out.push("SF:" + p, ...ls.map(([l, ran]) => "DA:" + l + "," + (ran ? 1 : 0)), "LF:" + ls.length, "LH:" + ls.filter((x) => x[1]).length, "end_of_record");
 	});
 	download((image ? image.name : "kernel") + "-coverage.info", out.join("\n") + "\n", "text/plain");
-	$("cov_export_status").textContent = "lcov: " + F.files.length + " files" + (st ? "" : " (nothing recorded: every line 0)");
+	covExportSaid("lcov: " + F.files.length + " files" + (st ? "" : " (nothing recorded: every line 0)"));
+}
+
+// The filter, the sort and the comparison (the Source tab's controls).
+function covFilter(q) {
+	COV.q = q.trim();
+	covRender();
+}
+
+function covSortBy(sort) {
+	COV.sort = sort;
+	covRender();
+}
+
+function covCompare(id) {
+	COV.cmp = id;
+	covRender();
+	if (srcPanel && srcOpen())
+		renderSourcePanel();
 }
 
 function initCoverage() {
-	$("cov_filter").addEventListener("input", () => { COV.q = $("cov_filter").value.trim(); covRender(); });
-	$("cov_sort").addEventListener("change", () => { COV.sort = $("cov_sort").value; covRender(); });
-	$("cov_cmp").addEventListener("change", () => {
-		COV.cmp = $("cov_cmp").value;
-		covRender();
-		if (srcPanel && !$("src_panel").hidden)
-			renderSourcePanel();
-	});
-	$("cov_export").addEventListener("click", covExport);
 	// The tree is drawn when the Source tab is shown (showTab).
 	state.subscribe(() => {
 		if (tab === "source")
@@ -541,12 +496,12 @@ function initCoverage() {
 		COV.tree = COV.tree && DBG.files === COV.tree.F ? COV.tree : null;
 		if (COV.exporting)
 			covExport();
-		if (!$("panel_source").hidden)
+		if (tab === "source")
 			covRender();
 	});
 	// While the kernel is stepped, what ran grows.
 	setInterval(() => {
-		if ($("panel_source").hidden || !stepper)
+		if (tab !== "source" || !stepper)
 			return;
 		const k = stepper.unique + ":" + DBG.version;
 		if (k !== COV.key) {
@@ -557,4 +512,4 @@ function initCoverage() {
 }
 
 provide({ covRun, covRender, covWas });
-export { COV, covTree, covRender, covKeep, covWas, initCoverage };
+export { COV, COVV, covTree, covRender, covToggle, covFilter, covSortBy, covCompare, covExport, covKeep, covWas, covPct, initCoverage };

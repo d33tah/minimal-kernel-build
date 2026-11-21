@@ -9,7 +9,7 @@ import tempfile
 import time
 
 from tests.browser.common import (
-    kernel_entries, report, show_tab, SITE, srcedit_overlay, srcedit_ready, srcedit_state, wait_for,
+    kernel_entries, report, show_tab, SITE, src_tab_once, srcedit_overlay, srcedit_ready, srcedit_state, wait_for,
 )
 from tests.browser.rebuild import (
     elf32_symbols, rb_debug, rb_debug_check, rb_download, rb_kit, RB_LINES_JS, rb_press, rb_shipped_image, rb_shots,
@@ -103,6 +103,7 @@ def screen(page):
 def build(page, sel, msg, timeout=900):
     """Press sel, wait for the build's end: (state, seconds to the end,
     seconds to msg on the screen or None)."""
+    src_tab_once(page)
     page.evaluate(RB_WATCH_JS)
     page.evaluate(WATCH_JS, msg)
     # The machine's run state while the build runs (the page pauses it).

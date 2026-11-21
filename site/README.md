@@ -291,19 +291,22 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `index.html` (the element is there, empty: `#tabrow`, `#panel_settings`);
 `app.js` mounts it in `init()`, synchronously (`flushSync`), so the
 controls exist before the modules that are not components yet look them
-up. Mounted: the tab bar (`TabBar`, tabs.jsx) and the Source tab's Rebuild
-and boot box with its build log (`RebuildPanel`, rebuild.jsx, in
-`#rb_box`; the build log's `<pre>` is written line by line as the build
-runs, from a ref, not drawn by React per line) at once; the Settings tab
+up. Mounted at once: the tab bar (`TabBar`, tabs.jsx). Mounted when the
+store's `tab` first names them (`mountOnTab`): the Settings tab
 (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
 quests.jsx), the Events tab (`EventsPanel`, events.jsx), and A1's
 Snapshots tab (`SnapshotsPanel`, snapshotspanel.jsx), Page tab
-(`PagePanel`, pagepanel.jsx), Calls tab (`CallsPanel`, callspanel.jsx)
-and Debugger tab (`DebuggerPanel`, debuggerpanel.jsx) when the store's
-`tab` first names them (`mountOnTab`): hidden at load,
-their first render is work the boot does not need (their controllers,
-`QUESTS`, `MEV`, `SNAP`, `PAGETAB`, `GV`..., run from the start; the panel
-shows their state when it mounts).
+(`PagePanel`, pagepanel.jsx), Calls tab (`CallsPanel`, callspanel.jsx),
+Debugger tab (`DebuggerPanel`, debuggerpanel.jsx) and Source tab
+(`SourceTabPanel`, sourcepanel.jsx, with the Rebuild and boot box,
+`RebuildPanel` of rebuild.jsx, and the hot patch box, `HotPatchPanel` of
+hotpatch.jsx, inside): hidden at load, their first render is work the
+boot does not need (their controllers, `QUESTS`, `MEV`, `SNAP`,
+`PAGETAB`, `GV`, `COVV`, `EDV`..., run from the start; the panel shows
+their state when it mounts). The build log's `<pre>` is rebuild.jsx's
+own node (`RB.logEl`), written line by line as the build runs and shown
+by the box (`DomNodes`) once the Source tab was shown: a build started
+from the Source panel runs before that.
 
 A1 turns the remaining tabs into such components, one tab per commit, in
 the same way (the Snapshots tab first):
@@ -371,6 +374,12 @@ the same way (the Snapshots tab first):
   there when it is. The Step count and the Run to field are uncontrolled
   inputs (`runToText()` reads the element once it exists: a test sets
   its value directly, a build moves its target).
+- The Source tab (A1): the coverage tree is computed by coverage.js's
+  `covRender()` into `COVV.view` (its rows, at most 1,500, each with its
+  sums, its ★ and ☆, and an open function's facts as fnfacts.js's node)
+  and drawn by the component; Your edits is drawn from srcedit.js's
+  overlay on `EDV` (its status line a field). The lcov line is
+  `COVV.exportStatus`.
 - A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's
@@ -389,9 +398,9 @@ they are for now):
 | app.js | Machine, Memory |
 | bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Source panel |
 | boot.js | Machine (screen, `cmdline`, `count`, `entry_info`), Memory |
-| runto.js, reverse.js, run.js, rebuild.jsx | Machine run controls (`dbg_step`, `dbg_back`, `dbg_speed`, ...), Memory (`pages`), Source tab (`rb_box`) |
+| runto.js, reverse.js, run.js, rebuild.jsx | Machine run controls (`dbg_step`, `dbg_back`, `dbg_speed`, ...), Memory (`pages`), Machine (`memory`, `screen_container`) |
 | calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
-| coverage.js, srcedit.js | Source tab, Source panel (`ed_text`: the editor) |
+| source.js, srcedit.js | Source panel, Machine (`src_tar`, `src_dir`) |
 | debugui.js, jumpview.js, symview.js | Machine (`dbg_state`, the overlay, counters, clock), run badge, Memory (`pages`, `footprint`), Source panel, `jump_pop` |
 | genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
 | listing.js | Source panel (`src_panel`, where it covers the listing on a phone) |
@@ -401,13 +410,12 @@ they are for now):
 | snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
 | snapshots.js | Machine (`kernel`, `memory`) |
 
-No module looks up an element of the Snapshots, Page or Debugger tab, or
-of the Calls tab besides its canvas.
+No module looks up an element of the Snapshots, Page, Debugger or Source
+tab, or of the Calls tab besides its canvas.
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
-Machine (machinepanel.jsx), Memory (memorypanel.jsx), Source
-(sourcepanel.jsx), About
+Machine (machinepanel.jsx), Memory (memorypanel.jsx), About
 (about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first
@@ -423,9 +431,9 @@ they still cost their layout after the bundle ran, measured in R3.) The
 props are React's (className, htmlFor, defaultValue, style objects), so
 such a file becomes a React component by dropping its pragmas and moving
 it out of `markup/`. The interactive parts inside them are React: the
-Source tab's Rebuild and boot box (`#rb_box`) and the Source panel's
-Rebuild button (`RebuildPanelButton`, in `#rb_go_slot`, a `display:
-contents` span).
+Source panel's Rebuild and hot patch buttons (`RebuildPanelButton`,
+`HotPatchButton`, in `#rb_go_slot` and `#hp_go_slot`, `display: contents`
+spans).
 
 A view that draws when its tab is shown subscribes to the store's
 `tabShows` (`markTabShown()`, which `showTab` calls each time, also for

@@ -111,6 +111,25 @@ def dbg_shown_once(page):
         show_tab(page, back)
 
 
+def src_tab_once(page):
+    """The Source tab's elements (the coverage tree, Your edits, the Rebuild
+    and hot patch boxes) exist only once it has been shown (A1: mounted the
+    first time, then it stays): if it has not been shown since the page
+    loaded, show it as a user would and go back to the tab shown before."""
+    if page.locator("#ed_box").count():
+        return
+    back = shown_tab(page)
+    end = time.monotonic() + 30
+    while not page.locator("#ed_box").count() and time.monotonic() < end:
+        show_tab(page, "source")
+        try:
+            page.wait_for_selector("#ed_box", state="attached", timeout=2000)
+        except PlaywrightError:
+            pass
+    if back and back != "source":
+        show_tab(page, back)
+
+
 def machine_do(page, method, sel, *args, **kw):
     """Use a run control (U5: in the Machine tab) from any tab as a user
     would: open the Machine tab, use it, go back to the tab shown before."""
@@ -720,6 +739,7 @@ SRCEDIT_STATE_JS = """() => { const p = document.getElementById('src_panel'), ta
 
 
 def srcedit_state(page):
+    src_tab_once(page)
     return page.evaluate(SRCEDIT_STATE_JS)
 
 

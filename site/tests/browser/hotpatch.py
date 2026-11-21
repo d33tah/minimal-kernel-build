@@ -4,7 +4,7 @@ import os
 import time
 
 from tests.browser.common import (
-    report, run_to_wait, show_tab, SITE, snap_click, snap_rows, snap_save, srcedit_ready, srcedit_state,
+    report, run_to_wait, show_tab, SITE, snap_click, snap_rows, snap_save, src_tab_once, srcedit_ready, srcedit_state,
     wait_for,
 )
 from tests.browser.rebuild import rb_press, rb_shots
@@ -59,6 +59,7 @@ SYM_JS = "(n) => { const s = MKB.symbols.symbols.find((x) => x.name === n && !x.
 
 
 def hp_state(page):
+    src_tab_once(page)
     return page.evaluate(HP_STATE_JS)
 
 

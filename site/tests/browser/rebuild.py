@@ -10,7 +10,7 @@ import time
 
 from tests.browser.common import (
     ALIVE, cov_open_all, cov_rows, gate_on_screen, HELLO, kernel_entries, report, show_tab, shown_tab, SITE,
-    srcedit_overlay, srcedit_press, srcedit_ready, srcedit_state, wait_for,
+    src_tab_once, srcedit_overlay, srcedit_press, srcedit_ready, srcedit_state, wait_for,
 )
 from tests.browser.overlap import OVERLAP_PANEL_JS
 
@@ -64,6 +64,7 @@ RB_LOG_JS = """() => { const b = document.getElementById('rb_buildlog_box'), l =
 def rb_buildlog(page, tag, problems, r, must, key="log"):
     """The live build log of the build that just ended: lines came while it
     ran, it holds `must` (each a string), it stays shown and opens."""
+    src_tab_once(page)
     lg = page.evaluate(RB_LOG_JS)
     if not lg:
         problems.append(f"{tag}: no build log (#rb_buildlog_box, #rb_buildlog)")
@@ -202,6 +203,7 @@ def rb_debug_check(before, after, untouched, edited, problems, r, tag, shift=lam
 
 
 def rb_state(page):
+    src_tab_once(page)
     return page.evaluate(RB_STATE_JS)
 
 
@@ -371,6 +373,7 @@ def rebuild_run(browser, base, shots, tmp):
     st = rb_state(page)
     if not st["panelShown"] or not st["goPanel"]:
         problems.append(f"the editor bar has no Rebuild and boot to press: {st}")
+    src_tab_once(page)
     page.evaluate(RB_WATCH_JS)
     t0 = time.monotonic()
     rb_press(page, "#rb_go_panel", False)
@@ -501,6 +504,7 @@ def rebuild_run(browser, base, shots, tmp):
     page.locator("#ed_text").click()
     page.keyboard.press("Control+Home")
     page.keyboard.type("int broken = ;\n")
+    src_tab_once(page)
     page.evaluate(RB_WATCH_JS)
     rb_press(page, "#rb_go_panel", False)
     st = rb_wait(page, ("failed", "done"), 120)
@@ -575,6 +579,7 @@ def rebuild_phone_run(browser, base, shots, tmp):
     rb_shots(page, shots, "rebuild-390-editor", problems, "390 editor")
     page.emulate_media(color_scheme="dark")
     rb_cover(page, "390 editor open", problems, r)
+    src_tab_once(page)
     page.evaluate(RB_WATCH_JS)
     t0 = time.monotonic()
     rb_press(page, "#rb_go_panel", True)
@@ -683,6 +688,7 @@ def rebuild_edges_run(browser, base):
             or "boot/hello.c (deleted)" not in st["status"] or st["kernel"] != "hello":
         problems.append(f"edits the kit cannot build with: {st}")
     # The build log says why too; Copy without clipboard access selects it.
+    src_tab_once(page)
     lg = page.evaluate(RB_LOG_JS)
     if not lg or "# Failed: the build cannot use your edits of boot/e4_new.h" not in lg["text"] or "(0 commands)" not in lg["summary"]:
         problems.append(f"the refused build's log: {lg and (lg['summary'], lg['text'][:300])}")

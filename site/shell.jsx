@@ -5,9 +5,9 @@
 //
 // The tabs' static markup is in index.html already (markup/, written by
 // build.mjs); the React components go into its elements, some of them
-// inside that markup (the Source tab's Rebuild box, the Source panel's
-// Rebuild button). The Settings, Quests, Events, Snapshots, Page, Calls and
-// Debugger tabs are mounted when they are first shown: React's first
+// inside that markup (the Source panel's Rebuild and hot patch buttons).
+// The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and Source
+// tabs are mounted when they are first shown: React's first
 // render of them is work the boot does not need (they are hidden at load
 // unless the URL opens one).
 
@@ -22,8 +22,9 @@ import { SnapshotsPanel } from "./snapshotspanel.jsx";
 import { PagePanel } from "./pagepanel.jsx";
 import { CallsPanel } from "./callspanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
-import { RebuildPanel, RebuildPanelButton } from "./rebuild.jsx";
-import { HotPatchPanel, HotPatchButton } from "./hotpatch.jsx";
+import { SourceTabPanel } from "./sourcepanel.jsx";
+import { RebuildPanelButton } from "./rebuild.jsx";
+import { HotPatchButton } from "./hotpatch.jsx";
 
 // Mount a tab's component the first time the store's `tab` names it
 // (mountShell runs before init() reads the URL's tab: the Machine tab is
@@ -46,9 +47,8 @@ function mountShell() {
 	mountOnTab("page", "panel_page", <PagePanel />);
 	mountOnTab("calls", "panel_calls", <CallsPanel />);
 	mountOnTab("debugger", "panel_debugger", <DebuggerPanel />);
-	mount($("rb_box"), <RebuildPanel />);
+	mountOnTab("source", "panel_source", <SourceTabPanel />);
 	mount($("rb_go_slot"), <RebuildPanelButton />);
-	mount($("hp_box"), <HotPatchPanel />);
 	mount($("hp_go_slot"), <HotPatchButton />);
 }
 

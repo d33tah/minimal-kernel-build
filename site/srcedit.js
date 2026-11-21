@@ -28,6 +28,7 @@ import { srcFile, SRC } from "./srctext.js";
 import { srcKernelKey } from "./srcswitch.js";
 import { srcPanel, renderSourcePanel, openSourceFile } from "./source.js";
 import { edFilePatch, edParse, edApplyHunks, edLines } from "./edpatch.js";
+import { controller } from "./ui.jsx";
 
 const ED_DB = "mkb-srcedit";
 const ED_STORE = "edits";
@@ -48,6 +49,10 @@ const ED = {
 	armed: null,         // the revert waiting for its second press: "*", "panel" or "file:" + path
 	armTimer: 0,
 };
+
+// What the Source tab's Your edits shows (A1, sourcepanel.jsx draws it from
+// ED and the overlay): the status line (said counts the lines written).
+const EDV = controller({ status: "", statusState: undefined, said: 0 });
 
 const edKernel = () => srcKernelKey();
 
@@ -381,13 +386,16 @@ function edStats(path) {
 	return e.stats;
 }
 
+// A patch's line's colour (its class).
+const edLineClass = (l) => l.startsWith("@@") ? "edh" : /^(diff |--- |\+\+\+ |new file|deleted file)/.test(l) ? "edf" :
+	l[0] === "+" ? "eda" : l[0] === "-" ? "edd" : "";
+
 // A patch as coloured lines in pre.
 function edDiffInto(pre, patch) {
 	pre.textContent = "";
 	for (const l of edLines(patch)) {
 		const s = document.createElement("span");
-		s.className = l.startsWith("@@") ? "edh" : /^(diff |--- |\+\+\+ |new file|deleted file)/.test(l) ? "edf" :
-			l[0] === "+" ? "eda" : l[0] === "-" ? "edd" : "";
+		s.className = edLineClass(l);
 		s.textContent = l;
 		pre.append(s);
 	}
@@ -435,10 +443,8 @@ function edArmed(key, fn) {
 }
 
 function edArmLabels() {
-	$("ed_revert_all").textContent = ED.armed === "*" ? "Revert all? Press again" : "Revert all";
 	$("ed_revert").textContent = ED.armed === "panel" ? "Revert? Press again" : "Revert";
-	for (const b of $("ed_list").querySelectorAll("button.edrevert"))
-		b.textContent = ED.armed === "file:" + b.closest("li").dataset.path ? "Revert? Press again" : "Revert";
+	EDV.changed();
 }
 
 // The overlay in memory and the views change at once; the store after.
@@ -472,9 +478,10 @@ function edRevert(paths) {
 // ---- the Source tab: the changed files ----------------------------------
 
 function edStatus(text, state) {
-	const s = $("ed_status");
-	s.textContent = text;
-	s.dataset.state = state;
+	EDV.status = text;
+	EDV.statusState = state;
+	EDV.said++;
+	EDV.changed();
 }
 
 function edChanged() {
@@ -485,57 +492,18 @@ function edChanged() {
 		edSync();
 }
 
-function edRender() {
-	const m = edMap(), paths = [...m.keys()].sort();
-	const where = ED.db ? "kept in this browser" : "kept until a reload: " + (ED.why || "IndexedDB not open yet");
-	$("ed_count").textContent = paths.length ? paths.length + " changed file" + (paths.length === 1 ? "" : "s") + ", " + where :
-		"none for this kernel (Edit in the Source panel, or upload a patch)" + (ED.db ? "" : "; " + where);
-	$("ed_download").disabled = !paths.length;
-	$("ed_revert_all").disabled = !paths.length;
-	const ul = $("ed_list");
-	ul.textContent = "";
-	for (const p of paths) {
-		const e = m.get(p), s = edStats(p);
-		const li = document.createElement("li");
-		li.dataset.path = p;
-		li.dataset.add = s.add;
-		li.dataset.del = s.del;
-		const open = document.createElement("button");
-		open.type = "button";
-		open.className = "edopen";
-		open.textContent = p;
-		open.title = "Open " + p + " in the Source panel's editor";
-		open.disabled = e.text === null;
-		open.addEventListener("click", () => {
-			ED.on = true;
-			openSourceFile(p);
-		});
-		const n = document.createElement("span");
-		n.className = "note";
-		n.textContent = (e.base === null ? " new," : e.text === null ? " deleted," : "") + " +" + s.add + " -" + s.del + " ";
-		const diff = document.createElement("button");
-		diff.type = "button";
-		diff.className = "eddiffbtn";
-		diff.textContent = ED.listDiff === p ? "Hide diff" : "Diff";
-		diff.setAttribute("aria-pressed", ED.listDiff === p);
-		diff.addEventListener("click", () => {
-			ED.listDiff = ED.listDiff === p ? null : p;
-			edRender();
-		});
-		const rev = document.createElement("button");
-		rev.type = "button";
-		rev.className = "edrevert";
-		rev.textContent = "Revert";
-		rev.title = "Throw away your edits of " + p + " (press twice)";
-		rev.addEventListener("click", () => edArmed("file:" + p, () => edRevert([p])));
-		li.append(open, n, diff, " ", rev);
-		ul.append(li);
-	}
-	edArmLabels();
-	const pre = $("ed_diff");
-	pre.hidden = !ED.listDiff || !m.has(ED.listDiff);
-	if (!pre.hidden)
-		edDiffInto(pre, edFilePatch(ED.listDiff, m.get(ED.listDiff).base, m.get(ED.listDiff).text).patch);
+// The Source tab's list: drawn from the overlay (sourcepanel.jsx).
+const edRender = () => EDV.changed();
+
+// A list row's Open: the file in the panel's editor.
+function edOpen(path) {
+	ED.on = true;
+	openSourceFile(path);
+}
+
+function edListDiff(path) {
+	ED.listDiff = ED.listDiff === path ? null : path;
+	edRender();
 }
 
 function edDownload() {
@@ -552,8 +520,8 @@ function edDownload() {
 	edStatus("Downloaded " + a.download + ": " + n + " file" + (n === 1 ? "" : "s") + "; in the kernel's tree: git apply " + a.download, "downloaded");
 }
 
-async function edUpload() {
-	const inp = $("ed_upload"), f = inp.files[0];
+async function edUpload(ev) {
+	const inp = ev.target, f = inp.files[0];
 	if (!f)
 		return;
 	inp.value = "";
@@ -611,10 +579,6 @@ function initSrcEdit() {
 	ta.addEventListener("blur", edFlush);
 	for (const t of ["click", "keyup", "select"])
 		ta.addEventListener(t, () => edState());
-	$("ed_download").addEventListener("click", edDownload);
-	$("ed_upload_btn").addEventListener("click", () => $("ed_upload").click());
-	$("ed_upload").addEventListener("change", edUpload);
-	$("ed_revert_all").addEventListener("click", () => edArmed("*", () => edRevert(srcOverlay.paths())));
 	window.addEventListener("pagehide", edFlush);
 	dbgOnChange(() => {
 		edRender();
@@ -628,4 +592,5 @@ function initSrcEdit() {
 
 provide({ edPanelShown });
 
-export { ED, edState, edFlush, srcOverlay, initSrcEdit };
+export { ED, EDV, edMap, edLineClass, edStats, edArmed, edRevert, edOpen, edListDiff, edDownload, edUpload, edState, edFlush, srcOverlay,
+	initSrcEdit };

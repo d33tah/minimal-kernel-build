@@ -84,8 +84,11 @@ def firstlook_case(browser, base, shots, name):
         problems.append(f"{name}: the JIT ran but the symbol history has no gap for it: {r['path']!r}")
     if page.evaluate("MKB.stepper.jitAfterEntry") and "JIT ran here" not in r["path"]:
         problems.append(f"{name}: the JIT ran kernel code but the path does not say so: {r['path']!r}")
-    # The Page tab (its "C source" toggle) is there once shown (A1: mounted then), as a user would open it.
+    # The Page tab (its "C source" toggle) and the Source tab (the coverage
+    # tree's filter and lcov) are there once shown (A1: mounted then), as a
+    # user would open them.
     show_tab(page, "page")
+    show_tab(page, "source")
     show_tab(page, "debugger")
     help_bad = page.evaluate(FIRSTLOOK_HELP_JS)
     problems += [f"{name}: {b}" for b in help_bad]

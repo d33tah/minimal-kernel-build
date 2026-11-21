@@ -29,6 +29,8 @@ import { srcSwClose, srcRemember, srcSw, srcSwRows, SRC_SW_GROUPS, srcFileCounts
 
 let srcPanel = null;      // { pa, fn, path, line } shown in the side panel
 const setSrcPanel = (p) => { srcPanel = p; }; // for other modules (an imported binding is read-only)
+// The panel is open (shown beside the tab).
+const srcOpen = () => !$("src_panel").hidden;
 
 // Open the Source panel at path:line, highlighted and scrolled into view.
 // Where pa's inline chain has that line (pa's own line, or the call site
@@ -805,5 +807,5 @@ function initSource() {
 
 provide({ srcLinkHtml, srcLinkEl });
 
-export { srcPanel, setSrcPanel, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
+export { srcPanel, setSrcPanel, srcOpen, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
 	openSourceLine, fileLines, renderSourcePanel, renderSourceRows, closeSource, initSource, srcLineClick };

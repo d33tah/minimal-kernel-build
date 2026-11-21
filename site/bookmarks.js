@@ -913,5 +913,5 @@ function bmListOpen(open) {
 provide({ bmLineStar, bmFnNames, bmTip });
 
 export { BM_KEY, BM_LONG_MS, BM, bmLoad, bmDraftFn, bmDraftLine, bmDraftPos, bmDraftAt, bmPressTarget, bmDraftHere, bmPlace, bmGroup,
-	bmMarks, bmStarEl, bmCodeStar, bmFnStar, bmFnNames, bmAddButton, bmRenderPages, bmAsk, bmDialogClose,
+	bmMarks, bmTip, bmStarEl, bmCodeStar, bmFnStar, bmFnNames, bmAddButton, bmRenderPages, bmAsk, bmDialogClose,
 	bmDialogSave, bmPendingTick, bmFromHash, bmExport, bmImport, bmRender, bmChanged, bmMenuFit, bmListOpen };

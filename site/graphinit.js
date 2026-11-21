@@ -1,18 +1,18 @@
 "use strict";
 
-// The Calls tab's controls: initGraph wires the buttons, the canvas and
-// the keys to the views (graph.js and the modules below it).
+// The Calls tab's controls: wireGraphCanvas wires the canvas (callspanel.jsx
+// calls it when it mounts), the handlers of the buttons (its props) and
+// initGraph change the views (graph.js and the modules below it).
 
 import { realNow } from "./clock.js";
-import { $, num } from "./util.js";
+import { num } from "./util.js";
 import { tab, image, api, state } from "./page.js";
-import { G, MINI, runStart, recTo, taskNames, taskInfo } from "./graphdata.js";
+import { G, GV, MINI, runStart, recTo, taskNames, taskInfo } from "./graphdata.js";
 import { selectedNode, timelineFrameAt, graphOpen } from "./graphnav.js";
 import { renderGraphInfo, frameTitle, graphTick, timelineArrow, download, graphData, graphDot,
 	graphShow } from "./graph.js";
 
-function initGraph() {
-	const c = $("graph_canvas");
+function wireGraphCanvas(c) {
 	const local = (ev) => {
 		const r = c.getBoundingClientRect();
 		return [ev.clientX - r.left, ev.clientY - r.top];
@@ -61,7 +61,7 @@ function initGraph() {
 				G.press.moved = true;
 				if (G.follow) { // a manual pan stops following until "follow" is ticked again
 					G.follow = false;
-					$("graph_follow").checked = false;
+					GV.changed();
 				}
 			}
 			G.userMoved = true;
@@ -138,15 +138,6 @@ function initGraph() {
 		ev.preventDefault();
 		zoomAt(...local(ev), Math.exp(-ev.deltaY * 0.002));
 	}, { passive: false });
-	for (const v of ["timeline", "tree", "top"])
-		$("gview_" + v).addEventListener("click", () => {
-			G.view = v;
-			G.selected = -1;
-			G.dirty = true;
-			renderGraphInfo();
-			graphTick();
-		});
-	$("graph_fit").addEventListener("click", () => { G.userMoved = false; G.yOff = 0; G.xOff = 0; G.dirty = true; graphTick(); });
 	// Double click: open the box's function (G1); "Focus" re-roots.
 	c.addEventListener("dblclick", (ev) => {
 		const [x, y] = local(ev);
@@ -171,45 +162,85 @@ function initGraph() {
 				ev.preventDefault();
 		}
 	});
-	const toggle = (id, key) => $(id).addEventListener("click", () => {
-		G[key] = !G[key];
-		$(id).setAttribute("aria-pressed", G[key]);
-		G.userMoved = false;
-		G.yOff = 0;
-		G.xOff = 0;
-		G.dirty = true;
-		graphTick();
-	});
-	toggle("graph_transpose", "transpose");
-	toggle("graph_flame", "flame");
-	$("graph_chains").addEventListener("change", () => { G.chains = $("graph_chains").checked; G.dirty = true; graphTick(); });
-	$("graph_depth").addEventListener("input", () => {
-		G.maxDepth = Number($("graph_depth").value);
-		$("graph_depth_v").textContent = G.maxDepth ? String(G.maxDepth) : "all";
-		G.dirty = true;
-		graphTick();
-	});
-	$("graph_follow").addEventListener("change", () => { G.follow = $("graph_follow").checked; });
-	$("graph_search").addEventListener("input", () => { G.dirty = true; graphTick(); });
-	$("graph_json").addEventListener("click", () => {
-		if (G.stepper)
-			download((image ? image.name : "kernel") + "-calls.json", JSON.stringify(graphData()), "application/json");
-	});
-	$("graph_dot").addEventListener("click", () => {
-		if (G.stepper)
-			download((image ? image.name : "kernel") + "-symbol-graph.dot", graphDot(), "text/vnd.graphviz");
-	});
+}
+
+// ---- the controls (callspanel.jsx's handlers) ----------------------------------
+
+function graphView(v) {
+	G.view = v;
+	G.selected = -1;
+	G.dirty = true;
+	GV.changed();
+	renderGraphInfo();
+	graphTick();
+}
+
+function graphFit() {
+	G.userMoved = false;
+	G.yOff = 0;
+	G.xOff = 0;
+	G.dirty = true;
+	graphTick();
+}
+
+// Transpose and Flame: G.transpose, G.flame.
+function graphToggle(key) {
+	G[key] = !G[key];
+	GV.changed();
+	graphFit();
+}
+
+function graphChains(on) {
+	G.chains = on;
+	G.dirty = true;
+	GV.changed();
+	graphTick();
+}
+
+function graphDepth(n) {
+	G.maxDepth = n;
+	G.dirty = true;
+	GV.changed();
+	graphTick();
+}
+
+function graphFollow(on) {
+	G.follow = on;
+	GV.changed();
+}
+
+function graphSearch(q) {
+	G.q = q;
+	G.dirty = true;
+	GV.changed();
+	graphTick();
+}
+
+function graphFold(on) {
+	G.fold = on;
+	G.selected = -1;
+	G.dirty = true;
+	GV.changed();
+	graphTick();
+	renderGraphInfo();
+}
+
+function graphJson() {
+	if (G.stepper)
+		download((image ? image.name : "kernel") + "-calls.json", JSON.stringify(graphData()), "application/json");
+}
+
+function graphDotFile() {
+	if (G.stepper)
+		download((image ? image.name : "kernel") + "-symbol-graph.dot", graphDot(), "text/vnd.graphviz");
+}
+
+function initGraph() {
 	window.addEventListener("resize", () => { G.dirty = true; });
-	$("graph_fold").checked = G.fold;
-	$("graph_fold").addEventListener("change", () => {
-		G.fold = $("graph_fold").checked;
-		G.selected = -1;
-		G.dirty = true;
-		graphTick();
-		renderGraphInfo();
-	});
 	// Drawn (about 10 frames a second) while the Calls tab is shown (showTab).
 	state.subscribe(() => graphShow(tab === "calls"), ["tabShows"]);
 }
 
-export { initGraph };
+export { initGraph, wireGraphCanvas, graphView, graphFit, graphToggle, graphChains, graphDepth, graphFollow, graphSearch, graphFold,
+	graphJson, graphDotFile };
+

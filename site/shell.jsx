@@ -19,6 +19,7 @@ import { QuestsPanel } from "./quests.jsx";
 import { EventsPanel } from "./events.jsx";
 import { SnapshotsPanel } from "./snapshotspanel.jsx";
 import { PagePanel } from "./pagepanel.jsx";
+import { CallsPanel } from "./callspanel.jsx";
 import { RebuildPanel, RebuildPanelButton } from "./rebuild.jsx";
 import { HotPatchPanel, HotPatchButton } from "./hotpatch.jsx";
 
@@ -41,6 +42,7 @@ function mountShell() {
 	mountOnTab("events", "panel_events", <EventsPanel />);
 	mountOnTab("snapshots", "panel_snapshots", <SnapshotsPanel />);
 	mountOnTab("page", "panel_page", <PagePanel />);
+	mountOnTab("calls", "panel_calls", <CallsPanel />);
 	mount($("rb_box"), <RebuildPanel />);
 	mount($("rb_go_slot"), <RebuildPanelButton />);
 	mount($("hp_box"), <HotPatchPanel />);

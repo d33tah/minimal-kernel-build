@@ -8,6 +8,7 @@ import { frStartAt, frEndAt, frSmallAt } from "./frames.js";
 import { STEP_CONST } from "./stepper.js";
 import { DBG, dbgFrames, dbgHas, dbgTypes } from "./dbginfo.js";
 import { varsTasks } from "./vartasks.js";
+import { controller } from "./ui.jsx";
 
 // Private consts (the layout loops read them per frame; see stepper.js).
 const { FR_SIZE, FR_IRQ, FR_CONT } = STEP_CONST;
@@ -36,7 +37,13 @@ const G = {
 	xOff: 0,              // transposed: horizontal scroll in px
 	rects: [],            // timeline hit boxes of the last drawing
 	layout: null,
+	q: "",                // the search (timeline, call tree)
 };
+// The Calls tab's controls (callspanel.jsx, A1): they show G's view,
+// toggles, depth and search; a module that changes one of those, or the
+// focus's breadcrumb (crumbs: the frames from the root to G.focus), calls
+// GV.changed().
+const GV = controller({ crumbs: null });
 const ROW = 17, MINI = 26;
 const SWITCH = "#6a5acd"; // task switch lines: quiet slate blue
 const IRQ_COLOUR = "#b0b0b0"; // frames of interrupt and exception handlers
@@ -225,5 +232,5 @@ function taskGuesses(st) {
 	return names;
 }
 
-export { G, ROW, MINI, SWITCH, IRQ_COLOUR, PALETTE, runStart, fEnd, recTo, hiddenFrame, subsystem, frameColour,
+export { G, GV, ROW, MINI, SWITCH, IRQ_COLOUR, PALETTE, runStart, fEnd, recTo, hiddenFrame, subsystem, frameColour,
 	frameCounts, buildTree, taskInfo, taskNames, taskGuesses };

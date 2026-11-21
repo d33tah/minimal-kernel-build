@@ -296,11 +296,12 @@ and boot box with its build log (`RebuildPanel`, rebuild.jsx, in
 runs, from a ref, not drawn by React per line) at once; the Settings tab
 (`SettingsPanel`, settings.jsx), the Quests tab (`QuestsPanel`,
 quests.jsx), the Events tab (`EventsPanel`, events.jsx), and A1's
-Snapshots tab (`SnapshotsPanel`, snapshotspanel.jsx) and Page tab
-(`PagePanel`, pagepanel.jsx) when the store's `tab` first names them
-(`mountOnTab`): hidden at load, their first render is work the boot does
-not need (their controllers, `QUESTS`, `MEV`, `SNAP`, `PAGETAB`..., run
-from the start; the panel shows their state when it mounts).
+Snapshots tab (`SnapshotsPanel`, snapshotspanel.jsx), Page tab
+(`PagePanel`, pagepanel.jsx) and Calls tab (`CallsPanel`, callspanel.jsx)
+when the store's `tab` first names them (`mountOnTab`): hidden at load,
+their first render is work the boot does not need (their controllers,
+`QUESTS`, `MEV`, `SNAP`, `PAGETAB`, `GV`..., run from the start; the panel
+shows their state when it mounts).
 
 A1 turns the remaining tabs into such components, one tab per commit, in
 the same way (the Snapshots tab first):
@@ -329,7 +330,7 @@ the same way (the Snapshots tab first):
   (jitsnap and jitrev do this for the status lines they read).
 - A frequent update (the run box after each slice of a replay) changes
   the controller only when what it shows differs; a part of the tab that
-  changes often (the variable under the pointer)
+  changes often (the Calls status line, the variable under the pointer)
   is its own `memo` component on its own controller, so the rest of the
   tab is not drawn again with it.
 - A canvas stays a canvas: the component renders it and its module draws
@@ -340,23 +341,28 @@ the same way (the Snapshots tab first):
   notes, symbol index and controls around it are React. Code outside the
   tab reaches it through `listingEl()`, null until the tab is first shown.
 - DOM nodes a module's helper builds for several views (a variable's
-  declaration) are shown with ui.jsx's `DomNodes`.
+  declaration, a function's facts, a file:line chain) are shown with
+  ui.jsx's `DomNodes`.
 - A toggle another tab follows is a store value (`showSrc`, `liveDecode`:
   the Debugger's Code at EIP and the C links read them).
+- A listener React cannot give (a non-passive wheel, the canvas's
+  pointer and keys, an input event a script sends, which does not bubble
+  to React's root) is added by the component to its own element in an
+  effect (`wireGraphCanvas`, the depth slider).
 
 Modules that still look up elements by id (`$("x")` or getElementById,
 A1's list, kept up to date by each chunk; besides canvases and the Source
-panel's editor textarea these go with the A1 chunk of their tab: Calls
-controls, Debugger, Source tab, Machine; Memory, Events, bookmarks, nav
-and the run badge stay as they are for now):
+panel's editor textarea these go with the A1 chunk of their tab:
+Debugger, Source tab, Machine; Memory, Events, bookmarks, nav and the run
+badge stay as they are for now):
 
 | module | elements of |
 |---|---|
 | app.js | Machine, Memory |
-| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Debugger, Calls, Source panel |
+| bminit.js, bookmarks.js | run badge menu, bookmark dialog, Machine (`kernel`), Memory, Debugger, Source panel |
 | boot.js | Machine (screen, `cmdline`, `count`), Memory, Debugger (`dbg_status`) |
 | buildmap.js, runto.js, reverse.js, run.js, hotpatch.jsx, rebuild.jsx | Debugger (`dbg_status`, `dbg_addr`, ...), Machine run controls, Source tab (`rb_box`) |
-| calltree.js, graph.js, graphinit.js, graphnav.js | Calls (`graph_canvas` stays a canvas) |
+| calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
 | coverage.js, srcedit.js | Source tab, Source panel (`ed_text`: the editor) |
 | cpustate.js, debugui.js, vars.js, jumpview.js, symview.js | Debugger, Machine, Memory (`pages`, `footprint`), Source panel, run badge, `jump_pop` |
 | genimport.js, header.js, kernel.js, pwa.js, quests.jsx, settings.jsx, srctext.js, symimport.js | Machine |
@@ -367,12 +373,13 @@ and the run badge stay as they are for now):
 | snaprecord.js | Machine (`screen_text`, read for a snapshot's screen) |
 | snapshots.js | Debugger (`dbg_status`), Machine (`kernel`, `memory`) |
 
-No module looks up an element of the Snapshots or Page tab.
+No module looks up an element of the Snapshots or Page tab, or of the
+Calls tab besides its canvas.
 
 A tab whose views draw themselves into elements by id (tables, listings,
 canvases) is a component of its markup, written in JSX, in `markup/`:
 Machine (machinepanel.jsx), Memory (memorypanel.jsx), Debugger
-(debuggerpanel.jsx), Calls (callspanel.jsx), Source (sourcepanel.jsx), About
+(debuggerpanel.jsx), Source (sourcepanel.jsx), About
 (about.jsx with legend.jsx; `check-legend.py` reads the legend's samples there), the
 Source panel (sourceaside.jsx) and the menu toggle with the bookmarks
 (runbadge.jsx). These files name another JSX runtime in their first

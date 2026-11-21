@@ -8,14 +8,13 @@
 import { MachinePanel } from "./machinepanel.jsx";
 import { MemoryPanel } from "./memorypanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
-import { CallsPanel } from "./callspanel.jsx";
 import { SourceTabPanel } from "./sourcepanel.jsx";
 import { AboutPanel } from "./about.jsx";
 import { SourceAside } from "./sourceaside.jsx";
 import { RunBadgeMenu } from "./runbadge.jsx";
 
 const STATIC = { panel_machine: MachinePanel, panel_memory: MemoryPanel, panel_debugger: DebuggerPanel,
-	panel_calls: CallsPanel, panel_source: SourceTabPanel, panel_about: AboutPanel,
+	panel_source: SourceTabPanel, panel_about: AboutPanel,
 	src_panel: SourceAside, runbadge: RunBadgeMenu };
 
 // id -> the HTML of its component.

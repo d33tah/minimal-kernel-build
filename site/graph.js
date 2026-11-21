@@ -23,11 +23,12 @@ import { dbgHas, dbgTitle } from "./dbginfo.js";
 import { srcChainNodes } from "./source.js";
 import { ffInfo } from "./fastforward.js";
 import { fnDetailEl } from "./fnfacts.js";
-import { G, runStart, fEnd, recTo, MINI, frameColour, ROW, taskNames, SWITCH, taskInfo, frameCounts,
+import { G, GV, runStart, fEnd, recTo, MINI, frameColour, ROW, taskNames, SWITCH, taskInfo, frameCounts,
 	buildTree } from "./graphdata.js";
 import { canvasSize, timelineLayout, layoutDeepest, isUnder, frameLabel, fitLabel } from "./graphlayout.js";
 import { drawTree, drawTop } from "./calltree.js";
 import { sandwich } from "./graphnav.js";
+import { controller } from "./ui.jsx";
 
 // Private consts (the layout loops read them per frame; see stepper.js).
 const { FR_SIZE, FR_BIG, FR_BIG16 } = STEP_CONST;
@@ -77,7 +78,7 @@ function drawTimeline() {
 	const span = Math.max(1, G.x1 - G.x0);
 	const rowOff = focus >= 0 ? L.row[focus] : 0;
 	const cap = G.maxDepth > 0 ? G.maxDepth : Infinity;
-	const q = G.view === "timeline" ? $("graph_search").value.trim().toLowerCase() : "";
+	const q = G.view === "timeline" ? G.q.trim().toLowerCase() : "";
 	ctx.font = "11px system-ui, sans-serif";
 	ctx.textBaseline = "middle";
 	// Minimap strip: the whole run (or the focused frame), shallow rows.
@@ -420,33 +421,18 @@ function drawTimeline() {
 }
 
 // Breadcrumb from the root to the focused frame; each entry re-focuses.
+// (GV.crumbs: callspanel.jsx draws it, its key says when it changed).
 function renderCrumbs(st) {
-	const el = $("graph_crumbs");
 	const f = G.focus;
-	const key = f + "," + (st ? st.fr.n : 0);
-	if (el.dataset.key === key)
+	const key = st && f >= 0 ? f + "," + st.fr.n : "off"; // no focus: nothing to draw again as frames come
+	if (GV.crumbs && GV.crumbs.key === key)
 		return;
-	el.dataset.key = key;
-	el.textContent = "";
-	if (!st || f < 0) {
-		el.hidden = true;
-		return;
-	}
-	el.hidden = false;
 	const chain = [];
-	for (let p = f; p >= 0; p = st.fr.parent(p))
-		chain.unshift(p);
-	const btn = (text, k) => {
-		const b = document.createElement("button");
-		b.type = "button";
-		b.className = "symlink";
-		b.textContent = text;
-		b.addEventListener("click", () => focusFrame(k));
-		return b;
-	};
-	el.append(btn("root", -1));
-	for (const k of chain.slice(-8))
-		el.append(" › ", btn(st.nodeName(st.fr.node(k)), k));
+	if (st && f >= 0)
+		for (let p = f; p >= 0; p = st.fr.parent(p))
+			chain.unshift(p);
+	GV.crumbs = { key, on: !!st && f >= 0, items: chain.slice(-8).map((k) => [k, st.nodeName(st.fr.node(k))]) };
+	GV.changed();
 }
 
 function focusFrame(k) {
@@ -506,9 +492,7 @@ function graphRestore(v) {
 		return;
 	for (const k of ["view", "x0", "x1", "yOff", "xOff", "userMoved", "follow", "selected", "selSwitch", "focus", "flame", "transpose"])
 		G[k] = v[k];
-	$("graph_follow").checked = G.follow;
-	$("graph_flame").setAttribute("aria-pressed", G.flame);
-	$("graph_transpose").setAttribute("aria-pressed", G.transpose);
+	GV.changed();
 	G.dirty = true;
 	renderGraphInfo();
 	graphTick();
@@ -541,15 +525,15 @@ function timelineDepth(st) {
 	return G.depthVal;
 }
 
+// The status line (callspanel.jsx's GraphStatus draws GSTAT): drawn again
+// only when it says something else.
+const GSTAT = controller({ text: "", nodes: 0, edges: 0, frames: 0 });
+
 function graphStatus() {
 	const st = G.stepper;
-	const el = $("graph_status");
-	const nodes = st ? st.nodeOrder.length : 0, edges = st ? st.edges.size : 0;
-	el.dataset.nodes = nodes;
-	el.dataset.edges = edges;
-	el.dataset.frames = st ? st.fr.n : 0;
+	const nodes = st ? st.nodeOrder.length : 0, edges = st ? st.edges.size : 0, frames = st ? st.fr.n : 0;
 	const depth = st ? timelineDepth(st) : null;
-	el.textContent = !st ? "No stepper for this kernel." :
+	const text = !st ? "No stepper for this kernel." :
 		num(st.fr.n - st.contFrames) + " calls" +
 		(st.contFrames ? " (plus " + num(st.contFrames) + " continuations of calls resumed after a task switch, in " + st.taskCount + " tasks)" : "") +
 		", " + nodes + " symbols, " + edges + " transitions recorded" +
@@ -559,17 +543,16 @@ function graphStatus() {
 			" calls because the tab's JavaScript heap was 80% full (the counters keep counting)" : "") +
 		(ffInfo && ffInfo.reached && !ffInfo.runTo ?
 			"; the first " + num(ffInfo.steps) + " instructions (BIOS, setup, decompressor) were fast-forwarded with the JIT, the timeline starts at " + ffInfo.name : "") + ".";
+	const s = GSTAT;
+	if (s.text === text && s.nodes === nodes && s.edges === edges && s.frames === frames)
+		return;
+	Object.assign(s, { text, nodes, edges, frames });
+	s.changed();
 }
 
+// The canvas, the tree and the controls each view has are callspanel.jsx's
+// (G.view); here the view's drawing.
 function drawGraph() {
-	$("graph_canvas").hidden = G.view === "tree";
-	$("graph_tree").hidden = G.view !== "tree";
-	$("graph_search").hidden = G.view === "top";
-	for (const id of ["graph_tl_opts"])
-		$(id).hidden = G.view !== "timeline";
-	$("graph_follow_l").hidden = G.view !== "timeline";
-	for (const v of ["timeline", "tree", "top"])
-		$("gview_" + v).setAttribute("aria-pressed", v === G.view);
 	if (G.view === "timeline")
 		drawTimeline();
 	else if (G.view === "tree")
@@ -619,125 +602,77 @@ function frameTitle(st, k) {
 		(node < st.symName.length ? "\nentry " + hex(st.symStart[node]) + ": " + dbgTitle(st.symStart[node], name).replace(/\n/g, "\n  ") : "");
 }
 
+// The box under the canvas (callspanel.jsx's GraphInfo draws GINFO.m): the
+// selected box's counts, callers and callees, or a task switch, or a hint.
+// Its data attributes (node, switch, from, callers, callees) are the ones
+// the tests read; from, callers and callees stay from the last box that
+// had them.
+const GINFO = controller({ m: null, node: undefined, sw: undefined, from: undefined, callers: undefined, callees: undefined });
+
 function renderGraphInfo() {
-	const el = $("graph_info");
-	el.textContent = "";
-	const st = G.stepper;
+	const st = G.stepper, I = GINFO;
+	const done = (m, node, sw) => {
+		Object.assign(I, { m, node, sw });
+		I.changed();
+	};
 	if (st && G.selected < 0 && G.selSwitch >= 0 && G.view === "timeline") {
 		const i = G.selSwitch, info = taskInfo(st)[st.swTask[i]];
-		el.textContent = "Task switch " + num(st.swStep[i] - runStart()) + " instructions from the entry, to task " +
-			st.swTask[i] + ": " + info.name + (st.swIrq[i] ? " (preempted on an interrupt's return)" : "") + ". Name: " + info.how + ".";
-		el.dataset.switch = info.name;
-		delete el.dataset.node;
+		done({ text: "Task switch " + num(st.swStep[i] - runStart()) + " instructions from the entry, to task " +
+			st.swTask[i] + ": " + info.name + (st.swIrq[i] ? " (preempted on an interrupt's return)" : "") + ". Name: " + info.how + "." },
+		undefined, info.name);
 		return;
 	}
-	delete el.dataset.switch;
 	if (st && G.selected < 0 && G.mergedInfo && G.view === "timeline") {
-		el.textContent = G.mergedInfo + ".";
+		const text = G.mergedInfo + ".";
 		G.mergedInfo = "";
-		delete el.dataset.node;
+		done({ text });
 		return;
 	}
 	if (!st || G.selected < 0) {
-		el.textContent = G.view === "tree" ? "" : "Tap a box for its counts and callers.";
-		delete el.dataset.node;
+		done({ text: G.view === "tree" ? "" : "Tap a box for its counts and callers." });
 		return;
 	}
-	const head = document.createElement("div");
-	const b = document.createElement("b");
+	const m = { name: "", text: "", focus: -1, open: -1, fn: null, src: null, lists: null };
 	let node;
 	if (G.view === "timeline") {
 		const k = G.selected;
 		node = st.fr.node(k);
 		const c = frameCounts(st, k);
-		b.textContent = st.nodeName(node);
 		const path = [];
 		for (let p = st.fr.parent(k); p >= 0 && path.length < 8; p = st.fr.parent(p))
 			path.push(st.nodeName(st.fr.node(p)));
-		head.append(b, " inclusive " + num(c.incl) + ", self " + num(c.self) + " instructions; steps " +
-			num(st.fr.start(k) - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
+		m.text = " inclusive " + num(c.incl) + ", self " + num(c.self) + " instructions; steps " +
+			num(st.fr.start(k) - runStart()) + "–" + num(fEnd(st, k) - runStart()) + " from the entry" +
 			(st.fr.irq(k) ? "; in an interrupt" : "") +
 			(st.fr.cont(k) ? "; continues a call suspended by a task switch" : "") +
-			(st.taskCount > 1 ? "; task " + st.fr.task(k) + " (" + taskNames(st)[st.fr.task(k)] + ")" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
-		const fb = document.createElement("button");
-		fb.type = "button";
-		fb.id = "graph_focus";
-		fb.textContent = "Focus";
-		fb.title = "Re-root the timeline at this call";
-		fb.addEventListener("click", () => focusFrame(k));
-		head.append(fb, " ");
-		el.dataset.from = st.fr.from(k);
-	} else {
+			(st.taskCount > 1 ? "; task " + st.fr.task(k) + " (" + taskNames(st)[st.fr.task(k)] + ")" : "") + ". Called from: " +
+			(path.join(" ← ") || "(top)") + " ";
+		m.focus = k;
+		I.from = st.fr.from(k);
+	} else
 		node = G.selected;
-		b.textContent = st.nodeName(node);
-		head.append(b, " ");
-	}
-	if (node < st.symName.length) {
-		const open = document.createElement("button");
-		open.type = "button";
-		open.textContent = "Page tab";
-		open.addEventListener("click", () => api.show.jumpTo(st.symStart[node]));
-		head.append(open, " ");
-		const how = document.createElement("span");
-		how.className = "note";
-		how.id = "graph_open_how";
-		how.textContent = "Double-click the box (double tap, or Enter) to open " + st.nodeName(node) + " in the Page tab and the Source panel.";
-		head.append(how);
-	}
-	el.append(head);
-	el.dataset.node = st.nodeName(node);
+	m.name = st.nodeName(node);
+	if (node < st.symName.length)
+		m.open = st.symStart[node];
 	// What DW_TAG_subprogram says about the function of this symbol.
 	if (node < st.symName.length && dbgHas())
-		el.append(fnDetailEl(st.symName[node], st.symStart[node], "graph", "graph_fn"));
+		m.fn = [fnDetailEl(st.symName[node], st.symStart[node], "graph", "graph_fn")];
 	if (G.view === "timeline") {
 		// Where the call came from and where it starts, from the DWARF.
-		const k = G.selected;
-		const src = document.createElement("div");
-		src.className = "glist";
-		src.id = "graph_src";
-		const add = (label, pa, sym) => {
-			const t = document.createElement("b");
-			t.textContent = label;
-			const s = document.createElement("span");
-			s.className = "mono";
-			if (pa >= 0)
-				s.append(hex(pa) + " ", ...srcChainNodes(pa, sym));
-			else
-				s.textContent = "unknown";
-			src.append(t, " ", s, " ");
-		};
-		const parent = st.fr.parent(k);
-		add(st.fr.irq(k) && st.entryKind[node] ? "interrupted at" : "called from", st.fr.from(k),
-			parent >= 0 ? st.nodeName(st.fr.node(parent)) : null);
+		const k = G.selected, parent = st.fr.parent(k);
+		const at = (label, pa, sym) => ({ label, nodes: pa >= 0 ? [hex(pa) + " ", ...srcChainNodes(pa, sym)] : null });
+		m.src = [at(st.fr.irq(k) && st.entryKind[node] ? "interrupted at" : "called from", st.fr.from(k),
+			parent >= 0 ? st.nodeName(st.fr.node(parent)) : null)];
 		if (node < st.symName.length)
-			add("entry", st.symStart[node], st.symName[node]);
-		el.append(src);
-	}
-	if (G.view === "timeline") {
+			m.src.push(at("entry", st.symStart[node], st.symName[node]));
 		const sw = sandwich(st, node);
-		const list = (title, items) => {
-			const d = document.createElement("div");
-			d.className = "glist";
-			const t = document.createElement("b");
-			t.textContent = title + " ";
-			d.append(t);
-			for (const [id, v] of items.slice(0, 12)) {
-				const btn = document.createElement("span");
-				btn.className = "mono";
-				btn.textContent = st.nodeName(id) + " \u00d7" + v.count + " (" + num(v.incl) + ")  ";
-				d.append(btn);
-			}
-			if (!items.length)
-				d.append("none");
-			else if (items.length > 12)
-				d.append("and " + (items.length - 12) + " more");
-			el.append(d);
-		};
-		list("callers", sw.callers);
-		list("callees", sw.callees);
-		el.dataset.callers = sw.callers.length;
-		el.dataset.callees = sw.callees.length;
+		const list = (title, items) => ({ title, items: items.slice(0, 12).map(([id, v]) => st.nodeName(id) + " ×" + v.count + " (" +
+			num(v.incl) + ")  "), more: items.length > 12 ? items.length - 12 : 0 });
+		m.lists = [list("callers", sw.callers), list("callees", sw.callees)];
+		I.callers = sw.callers.length;
+		I.callees = sw.callees.length;
 	}
+	done(m, m.name);
 }
 
 function graphData() {
@@ -788,4 +723,4 @@ function download(name, text, type) {
 }
 
 export { graphReset, drawTimeline, timelineArrow, graphRestore, timelineDepth, graphTick, graphShow, frameTitle,
-	renderGraphInfo, graphData, graphDot, download };
+	renderGraphInfo, graphData, graphDot, download, GSTAT, GINFO, focusFrame };

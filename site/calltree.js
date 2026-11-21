@@ -9,20 +9,27 @@ import { STEP_CONST } from "./stepper.js";
 import { dbgTitle } from "./dbginfo.js";
 import { G, buildTree, runStart, recTo, PALETTE, subsystem } from "./graphdata.js";
 import { canvasSize, fitLabel } from "./graphlayout.js";
+import { controller } from "./ui.jsx";
 
 // Private consts (the layout loops read them per frame; see stepper.js).
 const { FR_SIZE, FR_IRQ, FR_CONT } = STEP_CONST;
 
 // ---- call tree ------------------------------------------------------------
 
+// The call tree's rows (callspanel.jsx's CallTree draws GTREE): each
+// { key, name, incl, depth, kids (has callees), open, nums, title, task,
+// how, node }; more: rows not drawn; rootIncl: the root's count.
+const GTREE = controller({ rows: null, more: false, rootIncl: undefined });
+
 function drawTree() {
-	const st = G.stepper;
-	const box = $("graph_tree");
-	box.textContent = "";
-	if (!st)
+	const st = G.stepper, T = GTREE;
+	if (!st) {
+		Object.assign(T, { rows: null, more: false });
+		T.changed();
 		return;
+	}
 	const root = buildTree(st);
-	box.dataset.rootIncl = root.incl;
+	T.rootIncl = root.incl;
 	const total = Math.max(1, root.incl);
 	if (!G.treeAuto) { // first look: open the paths that hold >= 5% of the run
 		G.treeAuto = true;
@@ -35,60 +42,41 @@ function drawTree() {
 		};
 		open(root, 0);
 	}
-	const q = $("graph_search").value.trim().toLowerCase();
+	const q = G.q.trim().toLowerCase();
 	// With a search, show matches and their ancestors, all expanded.
 	const matches = (t) => !q || t.name.toLowerCase().includes(q) || [...t.kids.values()].some(matches);
 	const pct = (v) => (100 * v / total).toFixed(v / total < 0.001 ? 3 : 1) + "%";
-	let rows = 0;
-	const head = document.createElement("div");
-	head.className = "trow thead";
-	head.innerHTML = '<span class="ttog"></span><span class="tnum mono">  incl   self calls</span><span class="tname">symbol (call path)</span>';
-	box.append(head);
+	const rows = [];
 	const add = (t, depth) => {
-		if (!matches(t) || rows > 2000)
+		if (!matches(t) || rows.length > 2000)
 			return;
-		rows++;
-		const row = document.createElement("div");
-		row.className = "trow";
-		row.dataset.name = t.name;
-		row.dataset.incl = t.incl;
 		const kids = [...t.kids.values()].sort((a, b) => b.incl - a.incl);
 		const open = q ? true : G.treeOpen.has(t.key);
-		const tog = document.createElement("button");
-		tog.type = "button";
-		tog.className = "ttog";
-		tog.textContent = kids.length ? (open ? "\u25be" : "\u25b8") : "\u00b7";
-		tog.disabled = !kids.length;
-		tog.addEventListener("click", () => {
-			if (G.treeOpen.has(t.key)) G.treeOpen.delete(t.key); else G.treeOpen.add(t.key);
-			drawTree();
-		});
-		const nums = document.createElement("span");
-		nums.className = "tnum mono";
-		nums.textContent = pct(t.incl).padStart(6) + " " + pct(t.self).padStart(6) + " " + String(t.calls).padStart(5);
-		nums.title = "inclusive " + t.incl.toLocaleString("en") + ", self " + t.self.toLocaleString("en") + " instructions, " + t.calls + " calls";
-		const name = document.createElement("span");
-		name.className = "tname mono";
-		name.style.paddingLeft = Math.min(depth, 30) * 0.7 + "em";
-		name.textContent = t.name;
-		if (t.task !== undefined) {
-			row.dataset.task = t.task;
-			name.title = "Task " + t.task + ": " + t.name.replace(/^task \d+: /, "") + "\n" + t.how;
-		}
-		if (t.node !== undefined && t.node < st.symName.length) {
-			name.addEventListener("click", () => api.show.jumpTo(st.symStart[t.node]));
-			name.addEventListener("mouseenter", () => { name.title = "entry " + hex(st.symStart[t.node]) + ": " + dbgTitle(st.symStart[t.node], t.name); });
-		}
-		row.append(tog, nums, name);
-		box.append(row);
+		rows.push({ key: t.key, name: t.name, incl: t.incl, depth, kids: kids.length > 0, open,
+			nums: pct(t.incl).padStart(6) + " " + pct(t.self).padStart(6) + " " + String(t.calls).padStart(5),
+			title: "inclusive " + t.incl.toLocaleString("en") + ", self " + t.self.toLocaleString("en") + " instructions, " + t.calls + " calls",
+			task: t.task, how: t.how, node: t.node !== undefined && t.node < st.symName.length ? t.node : -1 });
 		if (open)
 			for (const c of kids)
 				add(c, depth + 1);
 	};
 	add(root, 0);
-	if (rows > 2000)
-		box.append("(more rows not shown: search to narrow)");
+	Object.assign(T, { rows, more: rows.length > 2000 });
+	T.changed();
 }
+
+// A row's toggle: its callees shown or hidden.
+function treeToggle(key) {
+	if (G.treeOpen.has(key))
+		G.treeOpen.delete(key);
+	else
+		G.treeOpen.add(key);
+	drawTree();
+}
+
+// A row's name, pointed at: its entry and file:line (computed then, not
+// for every row).
+const treeNameTitle = (node, name) => "entry " + hex(G.stepper.symStart[node]) + ": " + dbgTitle(G.stepper.symStart[node], name);
 
 // ---- top N graph ----------------------------------------------------------
 
@@ -236,4 +224,4 @@ function drawTop() {
 
 const pct0 = (v, total) => (100 * v / Math.max(1, total)).toFixed(1) + "%";
 
-export { drawTree, drawTop };
+export { drawTree, drawTop, GTREE, treeToggle, treeNameTitle };

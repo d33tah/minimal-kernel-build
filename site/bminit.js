@@ -20,7 +20,6 @@ function initBookmarks() {
 	$("bm_add_eip").addEventListener("click", () => bmAsk(bmDraftHere("eip")));
 	$("bm_add_mem").addEventListener("click", () => bmAsk(bmDraftHere("mem")));
 	$("bm_add_src").addEventListener("click", () => bmAsk(bmDraftHere("src")));
-	$("bm_add_calls").addEventListener("click", () => bmAsk(bmDraftHere("calls")));
 	$("bm_here").addEventListener("click", () => bmAsk(bmDraftPos()));
 	$("bm_open").addEventListener("click", () => bmListOpen($("bm_box").hidden));
 	$("bm_filter").addEventListener("input", () => {

@@ -6,7 +6,7 @@
 // nothing per instruction writes the store, so the stepper never wakes
 // React (README.md, "Page state and API").
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { state } from "./page.js";
@@ -58,6 +58,17 @@ function mount(el, element) {
 	return root;
 }
 
+// DOM nodes a module's helper builds (a variable's declaration with its
+// links, a function's facts), shown by a component: they are put into a
+// span with display: contents after each render that made them anew.
+function DomNodes({ nodes }) {
+	const ref = useRef(null);
+	useLayoutEffect(() => {
+		ref.current.replaceChildren(...nodes);
+	}, [nodes]);
+	return <span ref={ref} className="domnodes" />;
+}
+
 // The "?" that explains (tips.js shows its text on hover, tap and focus).
 function Tip({ text }) {
 	return <span className="tip" tabIndex={0} role="button" data-tip={text} aria-expanded="false" aria-label="Explain"
@@ -71,4 +82,4 @@ function SrcLink({ file, line, text, pa = -1 }) {
 		data-pa={pa}>{text || srcName({ file, line })}</button>;
 }
 
-export { useStore, controller, useController, mount, Tip, SrcLink };
+export { useStore, controller, useController, mount, DomNodes, Tip, SrcLink };

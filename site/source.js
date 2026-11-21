@@ -725,6 +725,16 @@ function closeSource() {
 	srcOpener = null;
 }
 
+// A click (capture) on a listing's C line (Page listing, Code at EIP)
+// opens its function in the Source panel.
+function srcLineClick(ev) {
+	const line = ev.target.closest(".src");
+	if (line && !line.classList.contains("nol")) {
+		ev.stopPropagation();
+		openSource(Number(line.dataset.addr));
+	}
+}
+
 function initSource() {
 	// Every .srclink (srcLinkEl, srcLinkHtml) in any view; before the
 	// listings' own handlers. A keyboard click (detail 0) moves the focus
@@ -770,18 +780,7 @@ function initSource() {
 		api.show.writeHash();
 		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
 	});
-	for (const id of ["listing", "context"])
-		$(id).addEventListener("click", (ev) => {
-			const line = ev.target.closest(".src");
-			if (line && !line.classList.contains("nol")) {
-				ev.stopPropagation();
-				openSource(Number(line.dataset.addr));
-			}
-		}, true);
-	$("show_src").addEventListener("change", () => {
-		api.show.inspect();
-		api.show.renderContext();
-	});
+	$("context").addEventListener("click", srcLineClick, true);
 	$("src_tar").addEventListener("change", () => {
 		const f = $("src_tar").files[0];
 		if (f)
@@ -808,4 +807,4 @@ function initSource() {
 provide({ srcLinkHtml, srcLinkEl });
 
 export { srcPanel, setSrcPanel, srcChainNodes, srcLineHtml, openSource, openSourceFile, srcShowFile,
-	openSourceLine, fileLines, renderSourcePanel, renderSourceRows, closeSource, initSource };
+	openSourceLine, fileLines, renderSourcePanel, renderSourceRows, closeSource, initSource, srcLineClick };

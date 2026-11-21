@@ -16,10 +16,11 @@ import { stepper, image, tab, runState, api } from "./page.js";
 import { dwTypeName, dwWhere } from "./dwarflocals.js";
 import { dbgTypes, dbgHas, DBG, dbgLocals, dbgFrames, dbgOnChange } from "./dbginfo.js";
 import { varsByName, varsReady, varsNotStarted, VARS_NOT_STARTED, varsEval, varsRow, varsDeclNotes, setVarsCells,
-	varsOffset, varsScalar, varsSection, varsNote, varDeclEl } from "./varseval.js";
+	varsOffset, varsScalar, varsSection, varsNote } from "./varseval.js";
 import { varsTaskLayout, varsCurrentTask } from "./vartasks.js";
 import { localsOpen, localsCtx, localsGroup } from "./varlocals.js";
 import { brtTitle } from "./varops.js";
+import { controller } from "./ui.jsx";
 
 const WATCH_KEY = "mkb-watch:";
 // Shown as one-tap suggestions when the kernel has them.
@@ -314,30 +315,55 @@ function varInfoAt(pa) {
 
 let varPinned = -1;
 
-function showVarInfo(pa, pinned) {
-	const el = $("var_info");
-	el.textContent = "";
-	el.dataset.state = "";
-	if (pa < 0)
+// The Page tab's line on the byte under the pointer (A1: pagepanel.jsx's
+// VarInfo draws it): pa, the byte shown (-1: none), pinned (a tap holds
+// it), r its varInfoAt, the last byte shown and its path (kept after the
+// pointer leaves). The same byte again draws nothing new unless forced
+// (the DWARF changed).
+const VARINFO = controller({ pa: -1, pinned: false, r: null, addr: "", path: "" });
+
+function showVarInfo(pa, pinned, force = false) {
+	const v = VARINFO;
+	if (!force && pa === v.pa && !!pinned === v.pinned)
 		return;
-	const r = varInfoAt(pa);
-	el.dataset.state = r.state;
-	el.dataset.path = r.path || "";
-	el.dataset.addr = pa;
-	el.append(r.text);
-	if (r.v)
-		el.append(varDeclEl(r.T, r.v), r.after);
-	if (pinned && r.state === "ok") {
-		const b = document.createElement("button");
-		b.type = "button";
-		b.id = "var_watch";
-		b.textContent = "Watch " + r.path;
-		b.addEventListener("click", () => {
-			watchAdd(r.path);
-			api.show.navJump(() => api.show.showTab("debugger"));
-		});
-		el.append(" ", b);
+	v.pa = pa;
+	v.pinned = !!pinned;
+	v.r = pa >= 0 ? varInfoAt(pa) : null;
+	if (v.r) {
+		v.addr = pa;
+		v.path = v.r.path || "";
 	}
+	v.changed();
+}
+
+// The watch of a pinned byte's variable, from its line.
+function varWatch(path) {
+	watchAdd(path);
+	api.show.navJump(() => api.show.showTab("debugger"));
+}
+
+// The listing's pointer events (the Page tab's component passes them).
+function varsListingMove(ev) {
+	if (varPinned < 0)
+		showVarInfo(listingByte(ev), false);
+}
+
+function varsListingLeave() {
+	if (varPinned < 0)
+		showVarInfo(-1);
+}
+
+function varsListingClick(ev) {
+	const b = listingByte(ev);
+	if (b < 0) {
+		if (ev.target.closest && ev.target.closest("#listing .hex")) {
+			varPinned = -1;
+			showVarInfo(-1);
+		}
+		return;
+	}
+	varPinned = b === varPinned ? -1 : b;
+	showVarInfo(b, varPinned >= 0);
 }
 
 // The DWARF type of a data symbol for its label line in the listing ("" if
@@ -374,28 +400,6 @@ function setupVars() {
 			api.show.jumpTo(Number(b.dataset.pa));
 		}
 	}, true);
-	const listing = $("listing");
-	listing.addEventListener("mousemove", (ev) => {
-		if (varPinned >= 0)
-			return;
-		showVarInfo(listingByte(ev), false);
-	});
-	listing.addEventListener("mouseleave", () => {
-		if (varPinned < 0)
-			showVarInfo(-1);
-	});
-	listing.addEventListener("click", (ev) => {
-		const b = listingByte(ev);
-		if (b < 0) {
-			if (ev.target.closest && ev.target.closest("#listing .hex")) {
-				varPinned = -1;
-				showVarInfo(-1);
-			}
-			return;
-		}
-		varPinned = b === varPinned ? -1 : b;
-		showVarInfo(b, varPinned >= 0);
-	});
 	$("watch_add").addEventListener("click", () => {
 		watchAdd($("watch_expr").value);
 		$("watch_expr").value = "";
@@ -408,10 +412,10 @@ function setupVars() {
 	$("watch_refresh").addEventListener("click", renderWatches);
 	dbgOnChange(() => {
 		renderWatches();
-		if (varPinned >= 0 || $("var_info").dataset.addr)
-			showVarInfo(Number($("var_info").dataset.addr), varPinned >= 0);
+		if (varPinned >= 0 || VARINFO.addr !== "")
+			showVarInfo(Number(VARINFO.addr), varPinned >= 0, true);
 	});
 }
 
 export { WATCH_KEY, watchList, watchKernel, setWatchKernel, watchLoad, renderWatches, renderLocals, renderTaskRow,
-	varTypeOf, setupVars };
+	varTypeOf, setupVars, VARINFO, varWatch, varsListingMove, varsListingLeave, varsListingClick };

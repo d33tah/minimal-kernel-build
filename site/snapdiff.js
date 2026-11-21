@@ -4,7 +4,7 @@
 // registers, the pages and the hex of a page.
 
 import { realNow } from "./clock.js";
-import { kib, hex, $, h4, h8, PAGE, esc, asciiOf } from "./util.js";
+import { kib, hex, h4, h8, PAGE, esc, asciiOf } from "./util.js";
 import { emulator, emuRam, setSelectedPage, api } from "./page.js";
 import { snapById, snapBlob, snapMeta, snapWorker, snapCount } from "./snaprecord.js";
 import { controller } from "./ui.jsx";
@@ -216,13 +216,4 @@ async function snapOpenPage(p, which) {
 	});
 }
 
-function pageSnapBanner(on) {
-	const el = $("page_snap");
-	el.hidden = !on;
-	if (on)
-		$("page_snap_text").textContent = "Showing snapshot " + pageSnapView.name + "; yellow bytes differ from " +
-			pageSnapView.against + ". ";
-}
-
-export { snapDiff, pageSnapView, setSnapDiff, setPageSnapView, snapRunDiff, renderSnapDiff, snapPages,
-	pageSnapBanner, DIFF, snapDiffView, snapPageGroups, snapSideTag, snapShowHex, snapHexAll, snapHexView, snapOpenPage };
+export { snapDiff, pageSnapView, setSnapDiff, setPageSnapView, snapRunDiff, renderSnapDiff, snapPages, DIFF, snapDiffView, snapPageGroups, snapSideTag, snapShowHex, snapHexAll, snapHexView, snapOpenPage };

@@ -16,7 +16,7 @@ import { srcPanel, setSrcPanel, renderSourcePanel } from "./source.js";
 import { kernelSymLookup } from "./livedis.js";
 import { pageSnapView, setPageSnapView } from "./snapdiff.js";
 import { drawGrid } from "./memview.js";
-import { navScrollWant, listingLineAt, setNavScrollWant, setLive } from "./listing.js";
+import { navScrollWant, listingLineAt, setNavScrollWant, setLive, listingEl } from "./listing.js";
 import { TAB_LOOK, navHashNow, setHashOwn, showTab, writeHash } from "./tabs.jsx";
 
 // ---- jump history ---------------------------------------------------------
@@ -41,7 +41,7 @@ let navDepth = 0;          // inside navJump: nested jumps (jumpGo -> jumpTo) ar
 // The instruction near the top third of the Page listing (where a jump
 // puts its target), else -1.
 function navListingAnchor() {
-	const box = $("listing");
+	const box = listingEl();
 	const y = box.getBoundingClientRect().top + box.clientHeight / 3;
 	let at = -1;
 	for (const el of box.querySelectorAll(".ins[data-addr]")) {
@@ -65,7 +65,7 @@ function listingHold() {
 	if (w && w.page === selectedPage && realNow() < w.until)
 		return w;
 	const at = navListingAnchor(), line = at >= 0 ? listingLineAt(at) : null;
-	return line ? { page: selectedPage, addr: at, off: line.getBoundingClientRect().top - $("listing").getBoundingClientRect().top } : null;
+	return line ? { page: selectedPage, addr: at, off: line.getBoundingClientRect().top - listingEl().getBoundingClientRect().top } : null;
 }
 
 function listingKeep(h) {
@@ -91,7 +91,7 @@ function navLabel(v) {
 
 function navCapture() {
 	const open = !!srcPanel && !$("src_panel").hidden;
-	const v = { tab, page: selectedPage, top: $("listing").scrollTop, hit: jumpHit, y: window.scrollY,
+	const v = { tab, page: selectedPage, top: listingEl() ? listingEl().scrollTop : 0, hit: jumpHit, y: window.scrollY,
 		src: open ? { pa: srcPanel.pa, fn: srcPanel.fn, path: srcPanel.path, line: srcPanel.line, pick: srcPanel.pick, whole: srcPanel.whole } : null,
 		srcTop: open ? $("src_body").scrollTop : 0, graph: tab === "calls" ? graphCapture() : null,
 		snap: tab === "page" && pageSnapView && pageSnapView.page === selectedPage ? pageSnapView : null };
@@ -152,7 +152,7 @@ function navRestore(v) {
 		graphRestore(v.graph);
 	showTab(v.tab);
 	if (v.tab === "page")
-		$("listing").scrollTop = v.top;
+		listingEl().scrollTop = v.top;
 	srcSwClose(false);
 	if (v.src) {
 		// Its scroll once the file is drawn (now, or when the file or DWARF arrives).

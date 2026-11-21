@@ -19,7 +19,7 @@ import { bmFnNames, bmStarEl, bmAddButton, bmDraftFn } from "./bookmarks.js";
 import { scan } from "./scan.js";
 import { drawGrid, symDesc } from "./memview.js";
 import { inspect, listingFollow, setNavScrollWant, listingLineAt, scrollListingTo, sheetBand,
-	insnIndex } from "./listing.js";
+	insnIndex, listingEl } from "./listing.js";
 import { fastStepping, updateDebugUi, renderContext } from "./debugui.js";
 import { writeHash, showTab } from "./tabs.jsx";
 import { navJump, NAV_SCROLL_MS, navAt, navDepth, setNavDepth } from "./nav.js";
@@ -57,7 +57,8 @@ function listingStale() {
 		inspect();
 		return;
 	}
-	$("listing")._drawn = null;
+	if (listingEl())
+		listingEl()._drawn = null;
 	viewSteps = -1;
 }
 
@@ -164,14 +165,15 @@ function fnHeaderInView(pa) {
 	// The listing's top under the top bar (as far as the page scrolls),
 	// then the line a third of the way down the strip.
 	const top = document.querySelector(".top").getBoundingClientRect().bottom;
-	window.scrollBy(0, $("listing").getBoundingClientRect().top - top - 4);
+	const box = listingEl();
+	window.scrollBy(0, box.getBoundingClientRect().top - top - 4);
 	const line = listingLineAt(pa);
 	if (line)
 		scrollListingTo(line);
 	// The symbol's header line (two rows when it wraps) stays in view too.
-	const hdr = $("listing").querySelector('.lbl[data-addr="' + pa + '"]'), band = sheetBand($("listing").getBoundingClientRect());
+	const hdr = box.querySelector('.lbl[data-addr="' + pa + '"]'), band = sheetBand(box.getBoundingClientRect());
 	if (hdr && band && hdr.getBoundingClientRect().top < band[0])
-		$("listing").scrollTop -= band[0] - hdr.getBoundingClientRect().top + 4;
+		box.scrollTop -= band[0] - hdr.getBoundingClientRect().top + 4;
 }
 
 // outline: the first instruction gets the jump outline (a bookmark, K1).

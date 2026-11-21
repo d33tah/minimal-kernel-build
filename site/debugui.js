@@ -26,7 +26,7 @@ import { PWA, pwaReload } from "./pwa.js";
 import { STEP_CONST } from "./stepper.js";
 import { kernelEnd } from "./header.js";
 import { symbolAt } from "./memview.js";
-import { insnIndex, diffTip, diffBytesHtml } from "./listing.js";
+import { insnIndex, diffTip, diffBytesHtml, PAGETAB } from "./listing.js";
 
 const { TEXT_PROMPT, TEXT_END } = STEP_CONST;
 
@@ -54,9 +54,10 @@ function countDone() {
 // stepping, limited by the step credit, and redraw at most 10 times a second.
 const highRate = () => !fastStepping() && Number(speed()) >= 1e6;
 
-// The "C source" toggle is there when the kernel has DWARF.
+// The Page tab's "C source" toggle is there when the kernel has DWARF
+// (pagepanel.jsx reads dbgHas()).
 function syncSrcToggle() {
-	$("src_toggle").hidden = !dbgHas();
+	PAGETAB.changed();
 }
 
 // The Debugger tab drawn again (its file:line links keep the keyboard focus).

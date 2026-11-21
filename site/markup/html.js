@@ -1,5 +1,5 @@
 // A JSX runtime that writes HTML (R3): the tabs' static markup is written
-// in JSX (markup/pagepanel.jsx, markup/about.jsx, ...: a file with the
+// in JSX (markup/machinepanel.jsx, markup/about.jsx, ...: a file with the
 // pragmas `@jsxRuntime classic`, `@jsx h`, `@jsxFrag Fragment`), and h()
 // turns it into an HTML string. build.mjs runs it at build time and writes
 // the strings into index.html (from index.src.html, markup/static.js

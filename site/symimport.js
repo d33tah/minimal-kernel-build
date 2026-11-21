@@ -315,7 +315,6 @@ function applySymbols(map) {
 	if (map.source !== "ELF")
 		dbgFresh(null, "a System.map has no debug info: import the unstripped vmlinux for file:line");
 	api.source.syncSrcToggle();
-	$("symbol_index").dataset.page = "";
 	showImported();
 }
 

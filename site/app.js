@@ -21,7 +21,6 @@ import { initSource } from "./source.js";
 import { initSrcEdit } from "./srcedit.js";
 import { initCoverage } from "./coverage.js";
 import { initImport, initInitrd, setCmdlineFromUrl, showImported, restoreImported, restoreCmdline } from "./symimport.js";
-import { liveDecode, loadIced } from "./livedis.js";
 import { MEV } from "./memevents.js";
 import { MMAP } from "./memmap.js";
 import { QUESTS } from "./quests.jsx";
@@ -34,8 +33,8 @@ import { initRebuild } from "./rebuild.jsx";
 import { initHotPatch } from "./hotpatch.jsx";
 import { showHeader, setStatus } from "./header.js";
 import { setAutoscan, scan } from "./scan.js";
-import { initLegend, drawMaps, gridRam, pageAt, showHover } from "./memview.js";
-import { inspect, setLive, selectPage } from "./listing.js";
+import { initLegend, drawMaps, pageAt, showHover } from "./memview.js";
+import { selectPage } from "./listing.js";
 import { watchPanicText, watchJitEnd, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, updateDebugUi, initRunBadge,
 	SPEED_KEY, MIPS_KEY, renderContext, COUNT_KEY, syncSrcToggle } from "./debugui.js";
 import { initCompactTabs, readHash } from "./tabs.jsx";
@@ -90,7 +89,6 @@ async function init() {
 	initReverse();
 	initGraph();
 	initImport();
-	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });
 	initInitrd();
 	setInterval(watchPanicText, 250);
 	setInterval(watchJitEnd, 250);
@@ -131,23 +129,10 @@ async function init() {
 	window.addEventListener("hashchange", readHash);
 	readHash();
 	initNav();
-	$("page_prev").addEventListener("click", () => selectedPage > 0 && selectPage(selectedPage - 1));
-	$("page_next").addEventListener("click", () => selectedPage >= 0 && selectedPage + 1 < gridRam() / PAGE && selectPage(selectedPage + 1));
-	$("reread").addEventListener("click", inspect);
 	$("memory").addEventListener("change", () => { showHeader(); drawMaps(); });
 	$("boot").addEventListener("click", boot);
 	$("scan").addEventListener("click", () => scan());
 	$("autoscan").addEventListener("change", setAutoscan);
-	$("live").addEventListener("change", setLive);
-	// Bytes per row and columns follow the listing's width.
-	let dumpWidth = 0;
-	new ResizeObserver(() => {
-		const w = $("listing").clientWidth;
-		if (w !== dumpWidth) {
-			dumpWidth = w;
-			requestAnimationFrame(inspect);
-		}
-	}).observe($("listing"));
 	initSnapshots();
 	initReplay();
 	const canvas = $("pages");

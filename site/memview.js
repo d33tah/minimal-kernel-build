@@ -434,6 +434,18 @@ function drawGridLegend() {
 	add("", "selected", { outline: "2px solid var(--fg)", outlineOffset: "-2px" });
 }
 
+// A Legend link (Code at EIP, the Page tab's component): the About tab's
+// legend.
+function openLegend() {
+	api.show.navJump(() => {
+		api.show.showTab("about");
+		// Below the header, which stays on top on a wide screen.
+		const top = document.querySelector("header.top");
+		const over = getComputedStyle(top).position === "sticky" ? top.getBoundingClientRect().height : 0;
+		window.scrollTo(0, window.scrollY + $("about_legend").getBoundingClientRect().top - over - 8);
+	});
+}
+
 // The About tab's legend: the swatches drawn from the page's own tables
 // (memory regions and sections as in the Memory tab, the Graph's
 // subsystems), and the Legend links of Code at EIP and the Page listing.
@@ -461,13 +473,7 @@ function initLegend() {
 	graph.append(item("irq", "interrupt and exception handlers (timeline)", { background: IRQ_COLOUR }),
 		item("switch", "task switch (timeline line)", { background: SWITCH, height: "2px" }));
 	for (const b of document.querySelectorAll(".legendlink"))
-		b.addEventListener("click", () => api.show.navJump(() => {
-			api.show.showTab("about");
-			// Below the header, which stays on top on a wide screen.
-			const top = document.querySelector("header.top");
-			const over = getComputedStyle(top).position === "sticky" ? top.getBoundingClientRect().height : 0;
-			window.scrollTo(0, window.scrollY + $("about_legend").getBoundingClientRect().top - over - 8);
-		}));
+		b.addEventListener("click", openLegend);
 	// The EIP's page in the map and the grid, drawn with the Debugger.
 	state.subscribe(renderMemEip, ["machine"]);
 	// The grid (and the bars, when they changed while the tab was hidden)
@@ -553,5 +559,5 @@ const symDesc = (st, i, a) => {
 // The page API's entries of this module (page.js).
 provide({ drawGrid, symbolAt, drawMaps, pageLabel, symbolsInPage, pageAt, memCellStyle });
 
-export { symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid, computePageClasses, symDesc, drawMaps,
+export { openLegend, symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid, computePageClasses, symDesc, drawMaps,
 	initLegend, pageAt, showHover, REGION_NAMES, SECTION_NAMES };

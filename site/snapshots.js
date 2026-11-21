@@ -48,7 +48,7 @@ import { setStatus } from "./header.js";
 import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snapKernelName, snapCount, snapById,
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
 	SNAP_EXT, snapCodec, setSnapshots, snapHow } from "./snaprecord.js";
-import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff, setPageSnapView } from "./snapdiff.js";
+import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
@@ -608,11 +608,6 @@ function snapPicker(pickA, pickB) {
 }
 
 function initSnapshots() {
-	// The Page tab's "Show live memory" of a snapshot's page (Page tab, A1: goes with its component).
-	$("page_snap_live").addEventListener("click", () => api.show.navJump(() => {
-		setPageSnapView(null);
-		api.show.inspect();
-	}));
 	snapLoad();
 }
 

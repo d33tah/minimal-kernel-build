@@ -3,10 +3,12 @@
 // C locations as links (file:line) for every view, and keeping the
 // keyboard focus on one when a view is drawn again (source.js opens them).
 
-import { $, escHtml } from "./util.js";
+import { escHtml } from "./util.js";
+import { state } from "./page.js";
 import { dbgHas } from "./dbginfo.js";
 
-const showSource = () => dbgHas() && $("show_src").checked;
+// The Page tab's "C source" toggle (the store's showSrc).
+const showSource = () => dbgHas() && state.get("showSrc");
 
 const srcName = (f) => f.file && f.line ? f.file.replace(/^.*\//, "") + ":" + f.line : "no line information";
 

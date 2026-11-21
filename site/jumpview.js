@@ -461,17 +461,23 @@ function initJumps() {
 			jumpPopClose(true);
 		}
 	}, true);
-	// Lines wrap differently at another width: draw the arcs again.
-	if (typeof ResizeObserver === "function") {
-		const ro = new ResizeObserver((entries) => {
+	jumpArcsObserve($("context"));
+}
+
+// Lines wrap differently at another width: the arcs of a listing (Code at
+// EIP; the Page listing when its component mounts) are drawn again.
+let arcsRo = null;
+function jumpArcsObserve(box) {
+	if (typeof ResizeObserver !== "function")
+		return;
+	if (!arcsRo)
+		arcsRo = new ResizeObserver((entries) => {
 			for (const en of entries)
 				if (en.target._jarcs)
 					drawJumpArcs(en.target, en.target._jarcs);
 		});
-		for (const id of ["listing", "context"])
-			ro.observe($(id));
-	}
+	arcsRo.observe(box);
 }
 
 export { jumpInlineMax, jumpInlineHtml, jumpStubAttrs, drawJumpArcs, jumpsDrawn, jumpPopClose, jumpGo,
-	renderEipJumps, initJumps };
+	renderEipJumps, initJumps, jumpArcsObserve };

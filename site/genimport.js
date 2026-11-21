@@ -133,7 +133,6 @@ function genApply() {
 		(GEN.why && GEN.why.disasm ? " No disasm.json: " + GEN.why.disasm + "." : "") +
 		(GEN.why && GEN.why.dwarf ? " " + GEN.why.dwarf + "." : "");
 	genStatus();
-	$("symbol_index").dataset.page = "";
 	api.source.syncSrcToggle();
 	showImported();
 	api.memory.drawMaps();

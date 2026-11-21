@@ -20,7 +20,7 @@ from tests.browser.common import (
 NAV_VIEW_JS = """() => {
   const tab = [...document.querySelectorAll('.tabbar [role=tab]')].find((t) => t.getAttribute('aria-selected') === 'true').dataset.tab;
   const l = document.getElementById('listing'), sp = document.getElementById('src_panel'), sb = document.getElementById('src_body');
-  const hit = l.querySelector('.jhit'), pick = sb.querySelector('.pick');
+  const hit = l && l.querySelector('.jhit'), pick = sb.querySelector('.pick'); // no #listing before the Page tab is first shown
   return { tab, hash: location.hash, page: tab === 'page' ? l.dataset.page : null, top: tab === 'page' ? Math.round(l.scrollTop) : 0,
            hit: tab === 'page' && hit ? hit.dataset.addr : null, y: Math.round(window.scrollY),
            src: sp.hidden ? null : { file: sb.dataset.file, pick: pick ? pick.dataset.line : null,

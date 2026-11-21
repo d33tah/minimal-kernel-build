@@ -18,7 +18,6 @@ function initBookmarks() {
 	bmLoad();
 	// Every add action: a ☆ button, a right click or long press, the B key.
 	$("bm_add_eip").addEventListener("click", () => bmAsk(bmDraftHere("eip")));
-	$("bm_add_page").addEventListener("click", () => bmAsk(bmDraftHere("page")));
 	$("bm_add_mem").addEventListener("click", () => bmAsk(bmDraftHere("mem")));
 	$("bm_add_src").addEventListener("click", () => bmAsk(bmDraftHere("src")));
 	$("bm_add_calls").addEventListener("click", () => bmAsk(bmDraftHere("calls")));

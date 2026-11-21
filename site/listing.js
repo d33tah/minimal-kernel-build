@@ -2,7 +2,11 @@
 
 // Page tab: the listing of one page (disassembly or hex dump, symbols,
 // jump arcs, coverage), the yellow lines where guest memory differs from
-// the build, and the selected page.
+// the build, and the selected page. pagepanel.jsx draws the tab from
+// PAGETAB (A1); the listing itself is drawn here into the component's
+// <pre> (its ref, PAGETAB.el) as into a canvas: ~1,400 lines of HTML that
+// slow motion changes in place (listingFollow) and jumpview.js draws the
+// arcs over.
 
 import { realNow } from "./clock.js";
 import { PAGE, $, escHtml, esc, asciiOf, hex, V86_KERNEL_ADDR } from "./util.js";
@@ -17,13 +21,28 @@ import { ffBreaks } from "./fastforward.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { varTypeOf } from "./vars.js";
 import { fnLabelOf } from "./fnfacts.js";
-import { pageSnapView, pageSnapBanner } from "./snapdiff.js";
+import { pageSnapView } from "./snapdiff.js";
 import { bmCodeStar, bmFnStar } from "./bookmarks.js";
 import { scanBase } from "./scan.js";
-import { symbolsInPage, symbolAt, symRange, gridRam, pageLabel, drawGrid } from "./memview.js";
+import { symbolsInPage, symbolAt, gridRam, pageLabel, drawGrid } from "./memview.js";
+import { controller } from "./ui.jsx";
 
 const LIVE_MS = 500;
 let liveTimer = null;
+
+// The Page tab's view (pagepanel.jsx): el, the listing's <pre> once the
+// tab is mounted (null before); title; page, the page listed (its symbol
+// index); snap, the snapshot shown instead of live memory; live, re-read
+// every LIVE_MS; dump, cov and jump, the notes on the listing.
+const PAGETAB = controller({ el: null, title: "No page selected", page: -1, snap: null, live: false, dump: "", cov: null,
+	jump: "" });
+
+// The component's <pre> mounted: the hint until a page is listed.
+function listingMount(el) {
+	PAGETAB.el = el;
+	if (el)
+		el.textContent = "Click a page in the Memory tab.";
+}
 
 // ---- page listing ---------------------------------------------------------
 
@@ -108,7 +127,7 @@ function listPage(p, bytes, base, cur, chars, how) {
 	// Jump paths: the build's (whole kernel) or, decoded live, this page's.
 	const jS = !insns.size ? null : source === "build" ? jumpsFor(disasm.insns) : jumpsFor([...insns.values()].sort((x, y) => x[0] - y[0]));
 	const paths = new Map();
-	const inView = (x) => insns.has(x), imax = jumpInlineMax($("listing"));
+	const inView = (x) => insns.has(x), imax = jumpInlineMax(PAGETAB.el);
 	const out = [];
 	let si = 0, nIns = 0, nBad = 0, nNx = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
@@ -244,36 +263,16 @@ function listPage(p, bytes, base, cur, chars, how) {
 		opsNamed: opStat.named || 0, opsWhy: !ops ? "" : ops.loading ? "operand names: " + ops.loading : !ops.T ? "operands named from ELF symbols only (no DWARF variables)" : "" };
 }
 
-function renderSymbolIndex(p) {
-	const el = $("symbol_index");
-	el.textContent = "";
-	const syms = symbolsInPage(p);
-	el.dataset.count = syms.length;
-	if (!symbols) {
-		el.textContent = "No symbols.json for this kernel.";
-		return;
-	}
-	if (!syms.length) {
-		el.textContent = "No symbols in this page.";
-		return;
-	}
-	for (const s of syms) {
-		const b = document.createElement("button");
-		b.type = "button";
-		b.textContent = s.name;
-		b.title = symRange(s) + (s.size ? ", " + s.size + " bytes" : "") + ", " + s.section +
-			" (" + s.type + "), virtual " + hex(s.vaddr) + (s.paddr < p * PAGE ? ", starts in an earlier page" : "");
-		b.addEventListener("click", () => {
-			const target = $("listing").querySelector('[data-addr="' + Math.max(s.paddr, p * PAGE) + '"]');
-			if (target)
-				api.show.navJump(() => scrollListingTo(target));
-		});
-		el.append(b);
-	}
+// A button of the symbol index (pagepanel.jsx): the listing's line of
+// symbol s in page p comes into view.
+function symbolIndexGo(s, p) {
+	const target = PAGETAB.el && PAGETAB.el.querySelector('[data-addr="' + Math.max(s.paddr, p * PAGE) + '"]');
+	if (target)
+		api.show.navJump(() => scrollListingTo(target));
 }
 
 function scrollListingTo(line) {
-	const box = $("listing");
+	const box = PAGETAB.el;
 	// An instruction's sources line above it comes into view with it.
 	const prev = line.previousElementSibling;
 	if (prev && prev.matches(".jsrc"))
@@ -302,9 +301,8 @@ function sheetBand(r) {
 
 // The Page tab's line on the jump paths of the listing.
 function renderJumpInfo(r, dropped) {
-	const el = $("jump_info");
 	if (!r.nIns) {
-		el.textContent = "";
+		PAGETAB.jump = "";
 		return;
 	}
 	let arcs = 0, none = 0, into = 0, outs = 0, seen = 0;
@@ -318,9 +316,9 @@ function renderJumpInfo(r, dropped) {
 		for (const e of P.out)
 			seen += e.count;
 	}
-	arcs = Number($("listing").dataset.arcs || 0);
+	arcs = Number(PAGETAB.el.dataset.arcs || 0);
 	const jit = jumpsJitNote();
-	el.textContent = "Jump paths: " + arcs + " jumps inside the page drawn as arcs" + (dropped ? " (" + dropped + " more not drawn: the gutter is full)" : "") +
+	PAGETAB.jump = "Jump paths: " + arcs + " jumps inside the page drawn as arcs" + (dropped ? " (" + dropped + " more not drawn: the gutter is full)" : "") +
 		"; " + into + " instructions with paths in (\u2190), " + outs + " with paths out (\u2192), " + seen.toLocaleString("en") +
 		" transfers from here observed while stepping, the sources named above each instruction and targets out of view after it; " + none + " without a direct path in (\u2298)" +
 		(r.source === "live" ? " from this page's live decode (static paths only from the " + r.jS.local.toLocaleString("en") +
@@ -333,7 +331,7 @@ function renderPage(p, bytes, base, how, curAt) {
 	// A wanted scroll counts from the start of the drawing: a large page
 	// on a slow host takes longer to draw than the want lasts.
 	const back = navScrollWant && navScrollWant.page === p && t0 < navScrollWant.until ? navScrollWant : null;
-	const box = $("listing");
+	const box = PAGETAB.el;
 	const cur = curAt === undefined ? api.machine.currentPhys() : curAt;
 	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box), how);
 	box.innerHTML = r.html;
@@ -361,8 +359,8 @@ function renderPage(p, bytes, base, how, curAt) {
 	box.dataset.source = r.source;
 	box.dataset.opsNamed = r.opsNamed;
 	box.dataset.coverage = !r.nIns ? "" : r.cov.tint ? (r.cov.partial ? "partial" : "stepped") : "none";
-	renderCovInfo(r);
-	$("dump_info").textContent = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
+	renderCovInfo(r, false);
+	PAGETAB.dump = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
 		r.source === "live" ? r.nIns + " instructions decoded live from guest memory (iced-x86, " + r.bits + "-bit" +
 			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
 		icedError ? "hex only: no disassembler (" + icedError + ")" : !iced ? "loading the disassembler..." : "no code in this page") +
@@ -372,26 +370,20 @@ function renderPage(p, bytes, base, how, curAt) {
 		", read " + new Date().toLocaleTimeString("en-GB");
 	box._drawn = { page: p, stepper, bytes: bytes.slice(), base: base ? base.slice() : null, r, lines: null,
 		at: realNow(), cost: realNow() - t0 };
+	PAGETAB.changed();
 }
 
-// The listing's coverage key: how many of its instructions are tinted.
-function renderCovInfo(r) {
-	$("listing").dataset.unexecuted = r.cov.tint ? r.nNx : "";
-	const key = $("cov_info");
-	key.textContent = "";
-	if (r.nIns && r.cov.tint) {
-		const sw = document.createElement("span");
-		sw.className = "nxkey tipmark";
-		sw.textContent = "tinted";
-		sw.tabIndex = 0;
-		sw.setAttribute("role", "button");
-		sw.dataset.tip = "Tinted lines: instructions that have not executed in this boot. The page records the address of every " +
-			"instruction it steps; lines without the tint have executed. Code v86's JIT runs (the fast-forward to the kernel entry, " +
-			"full speed) is not recorded" + (r.cov.partial ? ", and the JIT has run since the kernel entry, so tinted code may have run." : ".");
-		key.append(sw, ": " + r.nNx + " of " + r.nIns + " instructions have not executed in this boot (recorded while stepping)" +
-			(r.cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so tinted code may have run" : ""));
-	} else if (r.nIns)
-		key.textContent = "No execution coverage: " + r.cov.why + ".";
+// The listing's coverage key (pagepanel.jsx's CovInfo): how many of its
+// instructions are tinted. draw: tell the component now (slow motion
+// untints lines between two drawings of the listing).
+function renderCovInfo(r, draw) {
+	PAGETAB.el.dataset.unexecuted = r.cov.tint ? r.nNx : "";
+	const c = { nIns: r.nIns, tint: r.cov.tint, partial: !!r.cov.partial, why: r.cov.why, nNx: r.nNx }, o = PAGETAB.cov;
+	if (o && Object.keys(c).every((k) => o[k] === c[k]))
+		return;
+	PAGETAB.cov = c;
+	if (draw)
+		PAGETAB.changed();
 }
 
 // ---- yellow lines: guest memory that differs from the build ---------------
@@ -476,7 +468,7 @@ const midTitle = (cur) => "EIP " + hex(cur) + " is inside this instruction of th
 // as long as its drawing took), and whenever the page or its bytes change.
 const LISTING_REFRESH_MS = 4000;
 function listingFollow() {
-	const box = $("listing"), d = box._drawn, p = selectedPage, cur = api.machine.currentPhys();
+	const box = PAGETAB.el, d = box && box._drawn, p = selectedPage, cur = api.machine.currentPhys();
 	if (!d || d.page !== p || d.stepper !== stepper || !emuReady || jumpHitScroll || cur < p * PAGE || cur >= p * PAGE + PAGE ||
 		realNow() - d.at >= Math.max(LISTING_REFRESH_MS, 6 * d.cost))
 		return false;
@@ -520,7 +512,7 @@ function listingFollow() {
 				el.classList.remove("nx");
 				d.r.nNx--;
 			}
-		renderCovInfo(d.r);
+		renderCovInfo(d.r, true);
 	}
 	// .ins.cur is a little taller: the arcs are measured again.
 	drawJumpArcs(box, box._jarcs || []);
@@ -538,24 +530,19 @@ function inspect() {
 		setSelectedPage(-1);
 		return;
 	}
-	$("page_title").textContent = "Page " + hex(p * PAGE) + "–" + hex(p * PAGE + PAGE - 1) +
-		" (" + pageLabel(p) + ")";
-	if ($("symbol_index").dataset.page !== String(p) || $("symbol_index").dataset.kernel !== (image && image.name)) {
-		renderSymbolIndex(p);
-		$("symbol_index").dataset.page = p;
-		$("symbol_index").dataset.kernel = image && image.name;
-	}
+	PAGETAB.title = "Page " + hex(p * PAGE) + "–" + hex(p * PAGE + PAGE - 1) + " (" + pageLabel(p) + ")";
+	PAGETAB.page = p;
 	const snap = pageSnapView && pageSnapView.page === p ? pageSnapView : null;
-	pageSnapBanner(!!snap);
-	if (snap) {
+	PAGETAB.snap = snap;
+	if (snap && PAGETAB.el)
 		renderPage(p, snap.bytes, snap.base, "against " + snap.against, snap.cur);
-		return;
+	else if (emulator && emuReady && PAGETAB.el)
+		renderPage(p, readPage(p), scanBase(p), "since the last scan");
+	else {
+		if (PAGETAB.el && !snap)
+			PAGETAB.el.textContent = emulator ? "Booting..." : "Boot a kernel to read this page.";
+		PAGETAB.changed();
 	}
-	if (!emulator || !emuReady) {
-		$("listing").textContent = emulator ? "Booting..." : "Boot a kernel to read this page.";
-		return;
-	}
-	renderPage(p, readPage(p), scanBase(p), "since the last scan");
 }
 
 function selectPage(p) {
@@ -571,7 +558,7 @@ function selectPage(p) {
 function setLive() {
 	clearInterval(liveTimer);
 	liveTimer = null;
-	if ($("live").checked && emulator && selectedPage >= 0)
+	if (PAGETAB.live && emulator && selectedPage >= 0)
 		liveTimer = setInterval(() => {
 			if (emulator && (runState === "jit" || runState === "stepped"))
 				inspect();
@@ -582,7 +569,7 @@ let navScrollWant = null;  // { page, top or addr, until }: the listing's scroll
 // The listing's last line at or before address a.
 function listingLineAt(a) {
 	let best = null;
-	for (const line of $("listing").querySelectorAll("[data-addr]"))
+	for (const line of PAGETAB.el ? PAGETAB.el.querySelectorAll("[data-addr]") : []) // none before the tab is shown
 		if (Number(line.dataset.addr) <= a)
 			best = line;
 	return best;
@@ -600,5 +587,8 @@ state.subscribe(() => {
 // The page API's entries of this module (page.js).
 provide({ renderPage, coverageFor, inspect, selectPage, insnIndex, setLive });
 
+// The listing's <pre> (null until the Page tab is first shown).
+const listingEl = () => PAGETAB.el;
+
 export { inspect, navScrollWant, listingLineAt, setLive, insnIndex, listingFollow, scrollListingTo, sheetBand,
-	diffTip, diffBytesHtml, selectPage, setNavScrollWant };
+	diffTip, diffBytesHtml, selectPage, setNavScrollWant, PAGETAB, listingMount, listingEl, symbolIndexGo };

@@ -291,9 +291,10 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `index.html` (the element is there, empty: `#tabrow`, `#panel_settings`);
 `app.js` mounts it in `init()`, synchronously (`flushSync`), so the
 controls exist before the modules that are not components yet look them
-up. Mounted at once: the tab bar (`TabBar`, tabs.jsx) and the Source
-panel (`SourceAside`, sourceaside.jsx, in the `#src_panel` aside beside
-every tab; below). Mounted when the store's `tab` first names them
+up. Mounted at once: the tab bar (`TabBar`, tabs.jsx), the Machine tab
+(`MachinePanel`, machinepanel.jsx: the tab shown at load; below) and the
+Source panel (`SourceAside`, sourceaside.jsx, in the `#src_panel` aside
+beside every tab; below). Mounted when the store's `tab` first names them
 (`mountOnTab`): the Settings tab (`SettingsPanel`, settings.jsx), the
 Quests tab (`QuestsPanel`, quests.jsx), the Events tab (`EventsPanel`,
 events.jsx), and A1's Snapshots tab (`SnapshotsPanel`,
@@ -419,6 +420,37 @@ the same way (the Snapshots tab first):
   3.40 / 3.30 / 3.42 ms per key (+0.6%), tab switch 52.88 / 55.20 /
   54.53 ms (+3.1%); boottime 12 runs, 43308392f / c032a29cc / this: hello
   654 / 663 / 681 ms (+4.1%), minified 1029 / 1015 / 1025 ms (-0.4%).
+- The Machine tab (A1) is shown at load and holds the VGA screen, which
+  v86 needs before the page's init: the screen (`#screen_container` with
+  its text rows and canvas) is index.html's own, and `MachinePanel` is
+  mounted at once into the `.run` box beside it (`#machine_run`), with
+  portals into the box above the screen (`#machine_top`: status line,
+  the header check's problems, the offline notes), the screen's box
+  (`#screen_wrap`: the "VM paused" overlay) and the kernel and boot
+  section (`#machine_ctl`). What it shows is machtab.js's: `MSET` (the
+  kernel, RAM, speed and clock menus and the count box, controlled; the
+  command line and the symbol offset are uncontrolled inputs read through
+  their refs, a test sets the offset directly), `MHEAD` (status, problems,
+  header line, offline notes: header.js, pwa.js), `MIMP` (the import
+  statuses: symimport.js, genimport.js, srctext.js; the deployed build)
+  and `MV`, the run part: drawDebugUi (at most once per drawn frame) and
+  renderClock (four times a second) put each part (the state line, the
+  buttons, the overlay, the clock, the counters, the end banner, the
+  entry line, Step back) only when its text differs (`mvPut`), and each
+  part is a `memo` component on its own field (ui.jsx `useField`), so a
+  frame renders only what changed. Modules choose through functions
+  (`setSettings`, `chooseSpeed`, `chooseKernel`, `setStatus`), and the
+  Settings tab's speed, clock and count call the same ones. Measured on
+  d-claude (hello and the minified Linux at full speed, the page's own
+  clock): the mount takes 6.5-6.9 ms and the tab's renders until Hello
+  is on the screen 8.8-9.9 ms in 36-38 renders (before the parts had
+  their own fields, 12.5-14.1 ms in 47-50). boottime 16 runs,
+  43308392f / 10e0bc7fb / this: hello 644 / 639 / 670 ms
+  (+4.0%), minified 971 / 989 / 1001 ms (+3.1%); the static markup it
+  replaces cost no script at all.
+  The menu toggle stays markup (markup/runbadge.jsx): its menu holds the
+  bookmarks and Back and Forward, which bookmarks.js and nav.js fill by
+  id; debugui.js draws its face and state from `MV`.
 - A toggle another tab follows is a store value (`showSrc`, `liveDecodeOn`:
   the Debugger's Code at EIP and the C links read them).
 - A listener React cannot give (a non-passive wheel, the canvas's

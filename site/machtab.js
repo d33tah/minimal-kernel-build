@@ -79,12 +79,13 @@ function setStatus(text) {
 	MHEAD.changed();
 }
 
+// (No data attribute until a module sets one: a test waits for its first value.)
 const MIMP = controller({
-	sym: { state: "", text: "", dwarf: "" },
+	sym: { state: undefined, text: "", dwarf: undefined },
 	forget: false,
-	gen: { state: "", text: "" },
-	src: { show: false, state: "", text: "" },
-	initrd: { text: "", clear: false, mismatch: "" },
+	gen: { state: undefined, text: "" },
+	src: { show: false, state: undefined, text: "" },
+	initrd: { text: "", clear: false, mismatch: undefined },
 	build: null, // { local } or { sha, url, when, runUrl, run }
 });
 

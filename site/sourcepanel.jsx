@@ -155,7 +155,7 @@ function CovRow({ r, cmpLabel }) {
 					onClick={toggle}>{r.kids ? (r.open ? "▾" : "▸") : "·"}</button>
 				<button type="button" className="tname mono covname" style={{ paddingLeft: Math.min(r.depth, 20) * 0.6 + "em" }} title={r.title}
 					onClick={r.onName || toggle}>{r.label}</button>
-				{r.nocode ? <span className="covcell covnone">no code</span> :
+				{r.nocode ? <span className="covcell">no code</span> :
 					<CovCell run={s.linesRun} total={s.lines} what="lines with code" cmp={s.cmp} cmpLabel={cmpLabel} />}
 				{r.nocode ? <span className="covcell" /> : <CovCell run={s.insRun} total={s.ins} what="instructions" />}
 				<span className="covbm">

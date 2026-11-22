@@ -415,11 +415,8 @@ the same way (the Snapshots tab first):
   loads): the text written as HTML took 23-25 ms each time; drawn as
   React elements (an experiment build) 37-42 ms the first time and 4-6 ms
   again for the same text: opening a file, the panel's critical path,
-  stays HTML. bench_ui 12 runs (busy host), 27c798f20 / c032a29cc / this:
-  Source panel open 16.62 / 16.63 / 16.81 ms of work (+1.1%), typing
-  3.40 / 3.30 / 3.42 ms per key (+0.6%), tab switch 52.88 / 55.20 /
-  54.53 ms (+3.1%); boottime 12 runs, 43308392f / c032a29cc / this: hello
-  654 / 663 / 681 ms (+4.1%), minified 1029 / 1015 / 1025 ms (-0.4%).
+  stays HTML. The panel's open and typing speed after A1 are in "A1's
+  measurements" below.
 - The Machine tab (A1) is shown at load and holds the VGA screen, which
   v86 needs before the page's init: the screen (`#screen_container` with
   its text rows and canvas) is index.html's own, and `MachinePanel` is
@@ -444,10 +441,8 @@ the same way (the Snapshots tab first):
   d-claude (hello and the minified Linux at full speed, the page's own
   clock): the mount takes 6.5-6.9 ms and the tab's renders until Hello
   is on the screen 8.8-9.9 ms in 36-38 renders (before the parts had
-  their own fields, 12.5-14.1 ms in 47-50). boottime 16 runs,
-  43308392f / 10e0bc7fb / this: hello 644 / 639 / 670 ms
-  (+4.0%), minified 971 / 989 / 1001 ms (+3.1%); the static markup it
-  replaces cost no script at all.
+  their own fields, 12.5-14.1 ms in 47-50). What the mount costs the
+  boot is in "A1's measurements" below.
   The menu toggle stays markup (markup/runbadge.jsx): its menu holds the
   bookmarks and Back and Forward, which bookmarks.js and nav.js fill by
   id; debugui.js draws its face and state from `MV`.
@@ -458,9 +453,46 @@ the same way (the Snapshots tab first):
   to React's root) is added by the component to its own element in an
   effect (`wireGraphCanvas`, the depth slider).
 
+A1's measurements, at its close (0d88212ed, d-claude with no other load:
+another agent's Android emulator was checked to use under 5% of a core
+during each kept run; boottime.py and rate.py runs interleaved, the sites
+stamped as the deploy does). Boot to Hello (boottime.py, cold: a new
+browser context per load), the medians of 88 runs per site pooled from
+5 runs of 16-24 reps (each run alone gave the same picture):
+
+| kernel | 43308392f (bound's base) | 5d0bd7521 (before A1) | 0d88212ed (A1) |
+| --- | --- | --- | --- |
+| minified Linux | 925 ms | 946 ms (+2.2%) | 970 ms (+4.9%) |
+| hello | 622 ms | 637 ms (+2.5%) | 657 ms (+5.7%) |
+
+The difference is the Machine tab's mount: a build without it
+(experiment, the tab left empty) boots in 907-929 / 585-618 ms, as
+43308392f does; without its run box 930-950 / 605-624 ms, without its
+kernel and boot section 947 / 637 ms. Its updates while the boot runs
+cost nothing measurable (a build that never draws them: hello 641 ms
+against 645). Loads with a warm cache (the same context, the third
+load) take as long as 5d0bd7521's (minified 711 / 713 ms, hello 417 /
+422 ms, this / 5d0bd7521), and with V8 single-threaded the cold
+difference stays (hello 809 against 767 ms): it is a cost of the first
+load, on the main thread. Which part of the mount's first run it is
+(React's code run for the first time, the layout of the tab done after
+the bundle instead of while it downloads) is not pinned down. Not
+reduced: deferring the mount (createRoot without flushSync) and V8's
+compile hints (`allFunctionsCalledOnLoad`) gained nothing; rendering the
+tab's markup at build time and hydrating it is the next thing to try.
+Step rate
+(rate.py, 8 reps, the Debugger shown): Debian 6.409 / 6.257 M/s (-2.4%),
+minified 4.005 / 3.816 M/s (-4.7%), 43308392f / this; the minified
+Linux's timed loop is 0.55 s and a garbage collection of the heap the
+mounted tabs left lands in it: with `gc()` before the loop on both sides
+(rate_gc.py) 4.010 / 4.103 M/s (+2.3%), with 5 s of waiting before it
+instead of 1 s 4.033 / 3.858 (-4.3%, no collection while paused). The
+UI's interaction speed is in "UI interaction speed" below.
+
 Modules that still look up elements by id (`$("x")` or getElementById,
-A1's list, kept up to date by each chunk). Of A1's six tabs only canvases
-and the VGA screen are left; Memory, Events, the bookmarks, nav, the menu
+A1's list, checked again against the code at A1's close). Of A1's six
+tabs only canvases, the VGA screen, the panels and mount boxes and the
+popover's box are left; Memory, Events, the bookmarks, nav, the menu
 toggle and About stay as they are (outside A1):
 
 | module | elements of |
@@ -470,16 +502,18 @@ toggle and About stay as they are (outside A1):
 | bminit.js, bookmarks.js | the bookmarks in the menu toggle (`bm_*`), the bookmark dialog, the menu (`runbadge_menu`, `runbadge_toggle`: its height and its toggle), Memory (`pages_box`), the Source panel's aside (`src_panel`: whether the focus is in it) |
 | calltree.js, graph.js, graphnav.js | Calls (`graph_canvas`: a canvas) |
 | debugui.js | the menu toggle (`runbadge*`: its face, state, Pause or Continue and new version notice; its menu holds the bookmarks and nav, which fill it by id), About (`build_subject`) |
-| jumpview.js, tips.js | the popovers (`jump_pop`, `tip_pop`; tips.js watches the Page and Debugger panels and the Source panel's aside for its marks) |
+| jumpview.js, tips.js | the popovers (`jump_pop`, `tip_pop`; tips.js watches the Page and Debugger panels and the Source panel's aside for its marks, and after a box with an open popover's mark is drawn again it finds that box by its id, any tab's, to put the popover on the new mark and mark it `aria-expanded`) |
 | listing.js, symview.js | the Source panel's aside (`src_panel`: where it covers the listing on a phone) |
-| memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js | Memory (`mm_map`, the grid: canvases, and the tab's lines), About's legend |
+| memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js | Memory (`mm_map`, the grid: canvases, and the tab's lines), About's legend; memmap.js watches the Memory and Quests panels' `hidden` (the live map is in one of them) |
 | nav.js | the menu toggle's Back and Forward (`nav_*`) |
 | shell.jsx | the elements it mounts components into (`tabrow`, `src_panel`, the Machine tab's `machine_run`, `machine_top`, `screen_wrap`, `machine_ctl`) |
+| tabs.jsx | every tab's panel (`panel_<tab>`: index.html's element a tab's component is mounted in, or its build-time markup; `showTab` shows one and hides the others before the views that follow the tab draw) |
 
-No module looks up an element of the Machine, Snapshots, Page, Debugger
-or Source tab besides the VGA screen and the boxes shell.jsx mounts into,
-of the Calls tab besides its canvas, or of the Source panel besides its
-aside (`#src_panel`, the element of index.html it is mounted in, read
+No module looks up an element of the Machine, Snapshots, Page, Debugger,
+Calls or Source tab besides the tab's panel (tabs.jsx shows it, tips.js
+watches the Page and Debugger panels), the VGA screen, the Calls canvas,
+the boxes shell.jsx mounts into and the box of an open popover (tips.js),
+or of the Source panel besides its aside (`#src_panel`, the element of index.html it is mounted in, read
 for its place on screen and for the focus): the file's text, the editor's
 textarea with its line numbers and the file's diff are written through
 the refs the component gives (above).
@@ -562,6 +596,21 @@ a measuring window. Measured on d-claude (R5, 2026-11-17, idle host),
 | Calls zoom + redraw (`--redraw`) | 1.775 ms | 1.764 ms (-0.6%) | | |
 | Source panel open | 16.22 ms | 15.91 ms (-1.9%) | 17.4 ms | 17.2 ms (-1.1%) |
 | typing, per key | 3.21 ms | 3.26 ms (+1.4%) | 11.9 ms | 12.0 ms (+0.8%) |
+
+At A1's close (2026-11-22, idle host, 27c798f20 against 0d88212ed, 12
+alternating runs; `--redraw` 12 runs):
+
+| action | work 27c798f20 | work 0d88212ed | next frame 27c798f20 | next frame 0d88212ed |
+| --- | --- | --- | --- | --- |
+| tab switch (8 tabs) | 55.19 ms | 54.36 ms (-1.5%) | 34.4 ms | 33.9 ms (-1.4%) |
+| Events filter chip | 11.88 ms | 11.56 ms (-2.7%) | 12.1 ms | 10.9 ms (-9.8%) |
+| Calls zoom (window) | 4.77 ms | 4.12 ms (-13.5%) | | |
+| Calls zoom + redraw (`--redraw`) | 1.749 ms | 1.651 ms (-5.6%) | | |
+| Source panel open | 15.77 ms | 16.11 ms (+2.2%) | 17.6 ms | 17.4 ms (-1.4%) |
+| typing, per key | 3.18 ms | 3.29 ms (+3.5%) | 12.4 ms | 12.2 ms (-1.6%) |
+
+The chunks' own runs on a loaded host (Source panel open next frame
++9.1%, typing +5.8%, Events chip +6.0%) did not repeat on the idle one.
 
 An earlier run of the same 12 pairs gave tab -3.8% / +2.8%, chip -21.2% /
 -18.3%, Source panel -1.4% / -0.3%, typing -0.8% / -0.8% and the windowed

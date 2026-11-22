@@ -225,11 +225,11 @@ hpelf.js	404-405	230158c5	a reference into code outside any function: compiler-g
 hpelf.js	409-413	8b69ad2e	a reference to a variable from the placed code: the suite's new code uses kernel functions, strings and the VGA address (a constant), no variables
 hpelf.js	427	9fc658f8	a changed function the running kernel lacks: no suite case
 hpelf.js	429	48814ea8	a replaced function shorter than the 5-byte jump: no such function in the suite's edits
-hpelf.js	433	7c4a705e	hpVerify refusing a replaced function: in the suite the minified Linux's LTO case is refused earlier, by the new call (ltoCall)
-hpelf.js	460	d04a9602	hpVerify without the running kernel's bytes (opts.read null): the page's read always returns them; test_hotpatch.mjs (Node) passes none for its refusals
+hpelf.js	433	7c4a705e	sometimes: hpVerify refusing a replaced function: the background check of an edit while a replay of Debian is paused before its kernel is in memory (suite hotpatch); it runs only if that pause lasts past the check's 300 ms delay
+hpelf.js	459	4d8f33fa	hpVerify without the running kernel's bytes (opts.read null): the page's read always returns them; test_hotpatch.mjs (Node) passes none for its refusals
 hpelf.js	474	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
 hpelf.js	477	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
-hpelf.js	479-480	1fadc6c8	the running code differing from the compile: see the hpVerify row above
+hpelf.js	479-480	1fadc6c8	sometimes: the running code differing from the compile: see the hpVerify row above
 hpelf.js	493	aa216095	an object without .debug_line: the kits compile with -g
 hpelf.js	508	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
 hpelf.js	510	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
@@ -339,7 +339,6 @@ reverse.js	485	1d380376	a reverse button while one runs or without a machine: th
 reverse.js	489-492	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
 reverse.js	505-507	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
 reverse.js	527	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
-reverse.js	555	16a8cec9	a re-run partly by the JIT and partly stepped: re-runs in the tests go by the JIT to the target (jitrev); the stepped remainder needs a JIT stretch ending inside the re-run
 reverse.js	565	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
 reverse.js	678	1d380376	Back to without a machine or while busy: the button is disabled then
 run.js	67	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot

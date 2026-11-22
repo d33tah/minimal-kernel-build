@@ -321,27 +321,27 @@ replay.js	447	cc309c5d	replayFinish with no replay or one already done: its call
 replay.js	474	2e745bf3	replayStop with no replay running: its callers check replayActive() first
 replay.js	552	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
 replay.js	572	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
-reverse.js	159	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
-reverse.js	179-182	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
-reverse.js	204-206	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
-reverse.js	243	6c521c2c	stepping at a slow-motion speed (Continue at a stepping speed) while stepped back into a JIT stretch: Step uses revStepTo there; the tests go on from a step back with Step (jitrev) or the JIT (reverse jit)
-reverse.js	251-256	34884b8b	a JIT stretch and a stepped one starting at the same count: needs a mode switch with no instruction between
-reverse.js	286-289	7549b6f3	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
-reverse.js	327	1887fa36	revJitTick's branch: revJit, earlier in the same slice, already branched, so behind() is false here
-reverse.js	339	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
-reverse.js	343	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group
-reverse.js	367	8d29e6bc	a delta checkpoint whose base was trimmed: revTrim drops whole groups up to the next full one, so bases go with their deltas
-reverse.js	381	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
-reverse.js	446	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
-reverse.js	463-464	c8794090	as 434 for a stepped re-run
-reverse.js	470	97d6f6d3	a boot during a long reverse operation's yield: a race
-reverse.js	484	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
-reverse.js	488-491	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
-reverse.js	504-506	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
-reverse.js	526	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
-reverse.js	554	16a8cec9	a re-run partly by the JIT and partly stepped: re-runs in the tests go by the JIT to the target (jitrev); the stepped remainder needs a JIT stretch ending inside the re-run
-reverse.js	564	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
-reverse.js	669	1d380376	Back to without a machine or while busy: the button is disabled then
+reverse.js	160	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
+reverse.js	180-183	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
+reverse.js	205-207	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
+reverse.js	244	6c521c2c	stepping at a slow-motion speed (Continue at a stepping speed) while stepped back into a JIT stretch: Step uses revStepTo there; the tests go on from a step back with Step (jitrev) or the JIT (reverse jit)
+reverse.js	252-257	34884b8b	a JIT stretch and a stepped one starting at the same count: needs a mode switch with no instruction between
+reverse.js	287-290	7549b6f3	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
+reverse.js	328	1887fa36	revJitTick's branch: revJit, earlier in the same slice, already branched, so behind() is false here
+reverse.js	340	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
+reverse.js	344	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group
+reverse.js	368	8d29e6bc	a delta checkpoint whose base was trimmed: revTrim drops whole groups up to the next full one, so bases go with their deltas
+reverse.js	382	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
+reverse.js	447	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
+reverse.js	464-465	c8794090	as 434 for a stepped re-run
+reverse.js	471	97d6f6d3	a boot during a long reverse operation's yield: a race
+reverse.js	485	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
+reverse.js	489-492	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
+reverse.js	505-507	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
+reverse.js	527	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
+reverse.js	555	16a8cec9	a re-run partly by the JIT and partly stepped: re-runs in the tests go by the JIT to the target (jitrev); the stepped remainder needs a JIT stretch ending inside the re-run
+reverse.js	565	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
+reverse.js	678	1d380376	Back to without a machine or while busy: the button is disabled then
 run.js	67	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
 run.js	72-75	9354bbed	sometimes: Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead; ran in run 43703770298 only (not in 43697771460 nor the runs before), where a Continue came while the stepper was behind the JIT's run, a timing of the run state
 run.js	81-83	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue

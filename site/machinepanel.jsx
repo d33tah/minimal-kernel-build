@@ -13,10 +13,10 @@
 
 import { memo, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useController, useField, Tip, SrcLink, DomNodes } from "./ui.jsx";
+import { useField, Tip, SrcLink, DomNodes } from "./ui.jsx";
 import { MSET, SPEEDS, CLOCKS, DEFAULT_CMDLINE, MHEAD, MIMP, MV } from "./machtab.js";
 import { machPause, machContinue, doStep, chooseSpeed, chooseClock, chooseCount } from "./runto.js";
-import { REVV, revView, revStepBack } from "./reverse.js";
+import { revStepBack } from "./reverse.js";
 import { chooseKernel, chooseRam, bootFromDisk } from "./kernel.js";
 import { symfilePicked, forgetImported, initrdPicked, initrdClear, cmdlineInput, saveCmdline, cmdlineKey } from "./symimport.js";
 import { srcPickTar, srcPickFolder } from "./srctext.js";
@@ -41,35 +41,52 @@ const OFFSET_TIP = "Physical address = virtual address - offset, for imported sy
 
 // ---- above the screen -------------------------------------------------------
 
-const Status = memo(function Status() {
-	useController(MHEAD);
+const StatusLine = memo(function StatusLine() {
+	return <span id="status" role="status">{useField(MHEAD, "status")}</span>;
+});
+
+const Problems = memo(function Problems() {
+	const problems = useField(MHEAD, "problems");
+	return (
+		<div id="problems" className="problems">
+			{problems.map(([level, text], i) => <div key={i} className={level}>{text}</div>)}
+		</div>
+	);
+});
+
+const PwaNotes = memo(function PwaNotes() {
+	const newer = useField(MHEAD, "pwaNewer"), misses = useField(MHEAD, "pwaMisses");
+	return (
+		<div id="pwa_notes" className="problems" role="status">
+			{newer && (
+				<div id="pwa_update" className="warn">
+					{"A new version of this page is deployed (" + newer + "). "}
+					<button type="button" onClick={pwaReload}>Reload</button>
+				</div>
+			)}
+			{misses.length > 0 && (
+				<div className="warn">
+					{"Offline: " + misses.join(", ") + (misses.length > 1 ? " are" : " is") +
+						" not available offline yet (a file is kept for offline use once the page has fetched it online)."}
+				</div>
+			)}
+		</div>
+	);
+});
+
+function Status() {
 	return (
 		<>
 			<div className="mstatus">
-				<span id="status" role="status">{MHEAD.status}</span>
+				<StatusLine />
 			</div>
 			{" "}
-			<div id="problems" className="problems">
-				{MHEAD.problems.map(([level, text], i) => <div key={i} className={level}>{text}</div>)}
-			</div>
+			<Problems />
 			{" "}
-			<div id="pwa_notes" className="problems" role="status">
-				{MHEAD.pwaNewer && (
-					<div id="pwa_update" className="warn">
-						{"A new version of this page is deployed (" + MHEAD.pwaNewer + "). "}
-						<button type="button" onClick={pwaReload}>Reload</button>
-					</div>
-				)}
-				{MHEAD.pwaMisses.length > 0 && (
-					<div className="warn">
-						{"Offline: " + MHEAD.pwaMisses.join(", ") + (MHEAD.pwaMisses.length > 1 ? " are" : " is") +
-							" not available offline yet (a file is kept for offline use once the page has fetched it online)."}
-					</div>
-				)}
-			</div>
+			<PwaNotes />
 		</>
 	);
-});
+}
 
 // "VM paused" over the screen, with why (the debugger's last note, its
 // file:line links copied, or the end of the run) and Continue unless the
@@ -90,8 +107,7 @@ const Overlay = memo(function Overlay() {
 
 const RunButtons = memo(function RunButtons() {
 	const b = useField(MV, "btns");
-	useController(REVV);
-	const rv = revView();
+	const rv = useField(MV, "back");
 	return (
 		<>
 			<button id="dbg_pause" type="button" disabled={b.pause} title="Stop the CPU" onClick={machPause}>Pause</button>
@@ -107,32 +123,47 @@ const RunButtons = memo(function RunButtons() {
 	);
 });
 
-const RunSettings = memo(function RunSettings() {
-	useController(MSET);
+const SpeedSel = memo(function SpeedSel() {
+	return (
+		<select id="dbg_speed" value={useField(MSET, "speed")} onChange={(e) => chooseSpeed(e.target.value)}>
+			{SPEEDS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+		</select>
+	);
+});
+
+const ClockSel = memo(function ClockSel() {
+	return (
+		<select id="clock_mips" value={useField(MSET, "clock")} onChange={(e) => chooseClock(e.target.value)}>
+			{CLOCKS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+		</select>
+	);
+});
+
+const CountBox = memo(function CountBox() {
+	return <input type="checkbox" id="count" checked={useField(MSET, "count")} onChange={(e) => chooseCount(e.target.checked)} />;
+});
+
+function RunSettings() {
 	return (
 		<>
 			<label>
 				<span>speed<Tip text={SPEED_TIP} /></span>
-				<select id="dbg_speed" value={MSET.speed} onChange={(e) => chooseSpeed(e.target.value)}>
-					{SPEEDS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-				</select>
+				<SpeedSel />
 			</label>
 			{" "}
 			<label>
 				<span>clock<Tip text={CLOCK_TIP} /></span>
-				<select id="clock_mips" value={MSET.clock} onChange={(e) => chooseClock(e.target.value)}>
-					{CLOCKS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-				</select>
+				<ClockSel />
 			</label>
 			{" "}
 			<label>
-				<input type="checkbox" id="count" checked={MSET.count} onChange={(e) => chooseCount(e.target.checked)} />
+				<CountBox />
 				{" count"}
 				<Tip text={COUNT_TIP} />
 			</label>
 		</>
 	);
-});
+}
 
 // What the CPU does: the text is cut with an ellipsis, the file:line link
 // after it stays whole (style.css #dbg_state).
@@ -241,7 +272,8 @@ function RunBox() {
 // ---- the kernel and boot controls ---------------------------------------------
 
 // The deployed build (version.json), or "local build".
-const BuildInfo = memo(function BuildInfo({ b }) {
+const BuildInfo = memo(function BuildInfo() {
+	const b = useField(MIMP, "build");
 	const deployed = !!b && !b.local;
 	return (
 		<span id="build_info" className="note mono" data-sha={deployed ? b.sha : undefined}>
@@ -251,26 +283,39 @@ const BuildInfo = memo(function BuildInfo({ b }) {
 	);
 });
 
-const Settings = memo(function Settings() {
-	useController(MSET);
+const KernelSel = memo(function KernelSel() {
+	const kernels = useField(MSET, "kernels");
+	return (
+		<select id="kernel" value={useField(MSET, "kernel")} onChange={(e) => chooseKernel(e.target.value)}>
+			{kernels.map(([name, label]) => <option key={name} value={name}>{label}</option>)}
+		</select>
+	);
+});
+
+const RamSel = memo(function RamSel() {
+	const rams = useField(MSET, "rams");
+	return (
+		<select id="memory" value={useField(MSET, "ram")} onChange={(e) => chooseRam(e.target.value)}>
+			{rams.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+		</select>
+	);
+});
+
+function Settings() {
 	return (
 		<>
 			<label>
 				Kernel
-				<select id="kernel" value={MSET.kernel} onChange={(e) => chooseKernel(e.target.value)}>
-					{MSET.kernels.map(([name, label]) => <option key={name} value={name}>{label}</option>)}
-				</select>
+				<KernelSel />
 			</label>
 			{" "}
 			<label>
 				RAM
-				<select id="memory" value={MSET.ram} onChange={(e) => chooseRam(e.target.value)}>
-					{MSET.rams.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-				</select>
+				<RamSel />
 			</label>
 		</>
 	);
-});
+}
 
 // A file input: its file goes to pick, then the input is emptied (the same
 // file picked again is a change again).
@@ -284,10 +329,59 @@ function onFile(pick, clear = true) {
 	};
 }
 
-const Imports = memo(function Imports() {
-	useController(MIMP);
+// The import statuses and buttons, each on its own field of MIMP.
+const SymStatus = memo(function SymStatus() {
+	const sym = useField(MIMP, "sym");
+	return <span id="sym_status" className="note" role="status" data-state={sym.state} data-dwarf={sym.dwarf}>{sym.text}</span>;
+});
+
+const GenStatus = memo(function GenStatus() {
+	const gen = useField(MIMP, "gen");
+	return <span id="gen_status" className="note" role="status" data-state={gen.state}>{gen.text}</span>;
+});
+
+const SrcStatus = memo(function SrcStatus() {
+	const src = useField(MIMP, "src");
+	return <span id="src_status" className="note" role="status" data-state={src.state}>{src.text}</span>;
+});
+
+const InitrdStatus = memo(function InitrdStatus() {
+	const initrd = useField(MIMP, "initrd");
+	return (
+		<>
+			<span id="initrd_status" className="note" data-mismatch={initrd.mismatch}>{initrd.text}</span>
+			{" "}
+			<button id="initrd_clear" type="button" hidden={!initrd.clear} onClick={initrdClear}>no initrd</button>
+		</>
+	);
+});
+
+const Forget = memo(function Forget() {
+	return (
+		<button id="sym_forget" type="button" hidden={!useField(MIMP, "forget")} title="Forget the imported symbols and use the kernel's own"
+			onClick={forgetImported}>forget symbols</button>
+	);
+});
+
+// The C source picker, shown when there is DWARF but no shipped source.
+const SrcPick = memo(function SrcPick() {
 	const dir = useRef(null);
-	const { sym, gen, src, initrd } = MIMP;
+	return (
+		<span id="src_pick" className="srcpick" hidden={!useField(MIMP, "src").show}>
+			<span>C source<Tip text={SOURCE_TIP} /></span>
+			<span className="row">
+				<input type="file" id="src_tar" accept=".tar,application/x-tar" aria-label="kernel source .tar"
+					onChange={(e) => { if (e.target.files[0]) srcPickTar(e.target.files[0]); }} />
+				{" "}
+				<button id="src_dir_btn" type="button" onClick={() => dir.current.click()}>folder…</button>
+			</span>
+			<input type="file" id="src_dir" ref={dir} webkitdirectory="" hidden
+				onChange={(e) => { if (e.target.files.length) srcPickFolder(e.target.files); }} />
+		</span>
+	);
+});
+
+function Imports() {
 	return (
 		<>
 			<label>
@@ -300,17 +394,7 @@ const Imports = memo(function Imports() {
 				<input type="file" id="symfile" onChange={onFile(symfilePicked)} />
 			</label>
 			{" "}
-			<span id="src_pick" className="srcpick" hidden={!src.show}>
-				<span>C source<Tip text={SOURCE_TIP} /></span>
-				<span className="row">
-					<input type="file" id="src_tar" accept=".tar,application/x-tar" aria-label="kernel source .tar"
-						onChange={(e) => { if (e.target.files[0]) srcPickTar(e.target.files[0]); }} />
-					{" "}
-					<button id="src_dir_btn" type="button" onClick={() => dir.current.click()}>folder…</button>
-				</span>
-				<input type="file" id="src_dir" ref={dir} webkitdirectory="" hidden
-					onChange={(e) => { if (e.target.files.length) srcPickFolder(e.target.files); }} />
-			</span>
+			<SrcPick />
 			{" "}
 			<label>
 				<span>initrd<Tip text={INITRD_TIP} /></span>
@@ -328,23 +412,20 @@ const Imports = memo(function Imports() {
 			{" "}
 			<Kinfo />
 			{" "}
-			<BuildInfo b={MIMP.build} />
+			<BuildInfo />
 			{" "}
-			<span id="sym_status" className="note" role="status" data-state={sym.state} data-dwarf={sym.dwarf}>{sym.text}</span>
+			<SymStatus />
 			{" "}
-			<span id="gen_status" className="note" role="status" data-state={gen.state}>{gen.text}</span>
+			<GenStatus />
 			{" "}
-			<span id="src_status" className="note" role="status" data-state={src.state}>{src.text}</span>
+			<SrcStatus />
 			{" "}
-			<span id="initrd_status" className="note" data-mismatch={initrd.mismatch}>{initrd.text}</span>
+			<InitrdStatus />
 			{" "}
-			<button id="initrd_clear" type="button" hidden={!initrd.clear} onClick={initrdClear}>no initrd</button>
-			{" "}
-			<button id="sym_forget" type="button" hidden={!MIMP.forget} title="Forget the imported symbols and use the kernel's own"
-				onClick={forgetImported}>forget symbols</button>
+			<Forget />
 		</>
 	);
-});
+}
 
 // The command line: an uncontrolled input (read by cmdline()); its native
 // change (the field left after an edit) remembers it, which React's
@@ -367,8 +448,7 @@ function Cmdline() {
 }
 
 const Kinfo = memo(function Kinfo() {
-	useController(MHEAD);
-	return <span id="kinfo" className="note mono">{MHEAD.kinfo}</span>;
+	return <span id="kinfo" className="note mono">{useField(MHEAD, "kinfo")}</span>;
 });
 
 // The tab: the run box here, the rest through portals into index.html's

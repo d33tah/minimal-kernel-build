@@ -20,7 +20,7 @@ import { ffActive, ffInfo } from "./fastforward.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { renderWatches, renderLocals } from "./vars.js";
 import { replayActive, replayAfterStop } from "./replay.js";
-import { REV, revRender } from "./reverse.js";
+import { REV, REVV, revBackPart } from "./reverse.js";
 import { DBGSTATUS, DBGCODE, dbgStatus, dbgStatusText } from "./dbgtab.js";
 import { bmCodeStar, bmMenuFit } from "./bookmarks.js";
 import { PWA, pwaReload } from "./pwa.js";
@@ -660,10 +660,11 @@ function drawDebugUi() {
 	let changed = renderEnd();
 	changed = clockPart() || changed;
 	changed = runPart() || changed;
-	revRender();
+	changed = revBackPart() || changed;
 	changed = countersPart() || changed;
 	if (changed)
 		MV.changed();
+	REVV.changed(); // the Debugger's reverse controls, once it was shown
 	// The views subscribed to "machine" draw now: the run badge
 	// (initRunBadge), the EIP's page in the Memory tab (initLegend), the
 	// Debugger's registers, CPU state and buttons once it was shown.

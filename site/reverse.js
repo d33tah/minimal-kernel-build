@@ -49,6 +49,7 @@
 
 import { CLOCK, realNow, GUEST } from "./clock.js";
 import { num, hex, kib } from "./util.js";
+import { MV, mvPut } from "./machtab.js";
 import { stepper, emulator, emuReady, runState, api, provide } from "./page.js";
 import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
@@ -658,8 +659,16 @@ function revView() {
 	return { back, text, tip, cps: on ? REV.cps.length : 0, start: on ? REV.cps[0].steps : "", ahead: st && st.behind() ? st.ahead : "" };
 }
 
+// The Machine tab's Step back (MV.back): true when it changed.
+function revBackPart() {
+	const v = revView();
+	return mvPut("back", { back: v.back, tip: v.tip });
+}
+
 // Step back (Machine tab) and the Debugger's reverse controls, drawn again.
 function revRender() {
+	if (revBackPart())
+		MV.changed();
 	REVV.changed();
 }
 
@@ -682,4 +691,4 @@ function initReverse() {
 
 provide({ revMark, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
 export { REV, REVV, revView, revBackToField, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
-	revStepTo, revNeedsJit, revBranch, revRender, initReverse };
+	revStepTo, revNeedsJit, revBranch, revRender, revBackPart, initReverse };

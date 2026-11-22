@@ -13,7 +13,7 @@
 //     header line (header.js), the offline and new version notes (pwa.js).
 //   MIMP: the import statuses (symimport.js, genimport.js, srctext.js) and
 //     the deployed build (debugui.js loadVersion).
-//   MV: what the run part shows (debugui.js drawDebugUi, at most once per
+//   MV: what the run part shows (Step back: reverse.js revBackPart) (debugui.js drawDebugUi, at most once per
 //     drawn frame, and renderClock four times a second): each part is a
 //     field the module replaces only when what it shows differs (mvPut), and
 //     each component reads its own field (useField), so a frame redraws only
@@ -96,6 +96,7 @@ function setImp(fields) {
 const MV = controller({
 	state: { text: "", kind: "off", loc: null },
 	btns: { pause: true, cont: true, step: true },
+	back: { back: false, tip: "" },
 	overlay: { paused: false },
 	clock: { text: "" },
 	guestIn: "",

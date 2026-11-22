@@ -16,7 +16,7 @@
 //
 // index.html is made here too: index.src.html with the tabs' static markup
 // (markup/static.js: JSX through markup/html.js, run at build time) and the
-// Machine tab's build-time render (prerender.jsx: its React components
+// Machine tab's build-time render (markup/prerender.jsx: its React components
 // through react-dom/server, hydrated at load) written into its empty
 // elements, so the browser parses and lays it out while the bundle
 // downloads.
@@ -80,12 +80,12 @@ const sha = (b) => createHash("sha256").update(b).digest("hex").slice(0, 16);
 // (empty there) filled with its component's HTML.
 const PAGE_SRC = "index.src.html", PAGE = "index.html";
 
-// prerender.jsx renders the Machine tab's components in node: the page's
+// markup/prerender.jsx renders the Machine tab's components in node: the page's
 // modules they import for their handlers (runto.js, kernel.js, ...) would
 // start the page (window, document, v86) when loaded, so each one but
 // these is replaced by a module exporting the same names as functions that
 // do nothing (a render calls none of them).
-const PRERENDER_REAL = new Set(["prerender.jsx", "machinepanel.jsx", "machtab.js", "ui.jsx", "util.js"]);
+const PRERENDER_REAL = new Set(["markup/prerender.jsx", "machinepanel.jsx", "machtab.js", "ui.jsx", "util.js"]);
 const stubPageModules = {
 	name: "mkb-stub-page-modules",
 	setup(build) {
@@ -121,12 +121,12 @@ async function runInNode(entry, plugins = []) {
 
 async function pageHtml() {
 	const { staticHtml } = await runInNode("markup/static.js");
-	const { prerenderHtml } = await runInNode("prerender.jsx", [stubPageModules]);
+	const { prerenderHtml } = await runInNode("markup/prerender.jsx", [stubPageModules]);
 	let html = readFileSync(path.join(SITE, PAGE_SRC), "utf8");
 	for (const [id, markup] of Object.entries({ ...staticHtml(), ...prerenderHtml() })) {
 		const re = new RegExp(`(<(section|aside|div)\\b[^>]*\\bid="${id}"[^>]*>)(</\\2>)`);
 		if (!re.test(html))
-			throw new Error(`${PAGE_SRC}: no empty element with id="${id}" for markup/static.js or prerender.jsx`);
+			throw new Error(`${PAGE_SRC}: no empty element with id="${id}" for markup/static.js or markup/prerender.jsx`);
 		html = html.replace(re, (m, open, tag, close) => open + markup + close);
 	}
 	return html;

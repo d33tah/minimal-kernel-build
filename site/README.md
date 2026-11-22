@@ -49,7 +49,7 @@ Three kinds of markup:
   `index.html` (from `index.src.html`); the page does not load these files.
   The views fill those elements by id.
 - The Machine tab's components are rendered at build time as well
-  (`prerender.jsx`, react-dom/server in node) and hydrated at load: React
+  (`markup/prerender.jsx`, react-dom/server in node) and hydrated at load: React
   takes over the elements index.html has (below, "React shell").
 - Canvases: the VGA screen (v86), the Memory grid and live map, the Calls
   timeline, minimap and top graph, drawn by their modules.
@@ -429,7 +429,7 @@ the same way (the Snapshots tab first):
   screen (`#machine_overlay`: the "VM paused" overlay), the `.run` box
   beside it (`#machine_run`) and the kernel and boot section
   (`#machine_ctl`). build.mjs renders the parts at build time
-  (prerender.jsx: react-dom/server's renderToString in node, the modules
+  (markup/prerender.jsx: react-dom/server's renderToString in node, the modules
   the parts take their handlers from replaced by stubs, since a render
   calls none of them) and writes their HTML into those elements, so the
   browser lays the tab out while the bundle downloads; shell.jsx then

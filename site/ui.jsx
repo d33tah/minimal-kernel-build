@@ -69,7 +69,7 @@ function mount(el, element) {
 }
 
 // Take over an element whose markup build.mjs rendered from the same
-// component (prerender.jsx). React renders it in the background (not at
+// component (markup/prerender.jsx). React renders it in the background (not at
 // once: the page's init goes on meanwhile) and attaches to the elements
 // that are there instead of making them.
 function hydrate(el, element) {

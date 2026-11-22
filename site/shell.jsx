@@ -6,7 +6,7 @@
 // The static markup of the Memory and About tabs and of the menu toggle is
 // in index.html already (markup/, written by build.mjs); the React
 // components go into other elements. The Machine tab (shown at load; its
-// screen is index.html's) is rendered at build time too (prerender.jsx)
+// screen is index.html's) is rendered at build time too (markup/prerender.jsx)
 // and hydrated at load; the Source panel (beside every tab) is mounted at
 // load. The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and
 // Source tabs are mounted when they are first shown: React's first
@@ -44,7 +44,7 @@ function mountShell() {
 	mount($("tabrow"), <TabBar />);
 	// The Machine tab at once: it is the tab shown at load (its screen,
 	// which v86 draws into, is index.html's); its parts' markup is in
-	// index.html already (build.mjs, prerender.jsx).
+	// index.html already (build.mjs, markup/prerender.jsx).
 	for (const [id, Part] of Object.entries(MACHINE_PARTS))
 		hydrate($(id), <Part />);
 	mountOnTab("settings", "panel_settings", <SettingsPanel />);

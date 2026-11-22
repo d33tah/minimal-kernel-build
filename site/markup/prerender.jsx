@@ -7,7 +7,7 @@
 // they come from).
 
 import { renderToString } from "react-dom/server";
-import { MACHINE_PARTS } from "./machinepanel.jsx";
+import { MACHINE_PARTS } from "../machinepanel.jsx";
 
 // id -> the HTML of its part.
 function prerenderHtml() {

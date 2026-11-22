@@ -1,7 +1,7 @@
 // The Machine tab (A1): the run controls, the counters and the clock, the
 // end banner, the status line and the kernel and boot controls, as React
 // components on machtab.js's controllers. The tab is shown at load: its
-// four parts are rendered at build time too (prerender.jsx, written into
+// four parts are rendered at build time too (markup/prerender.jsx, written into
 // index.html by build.mjs), so the browser lays them out while the bundle
 // downloads, and shell.jsx hydrates them (React takes over the elements
 // that are there): the status box above the screen (#machine_top), the
@@ -456,7 +456,7 @@ const Kinfo = memo(function Kinfo() {
 });
 
 // The tab's parts: the element of index.html each one takes over -> its
-// component (shell.jsx hydrates them, prerender.jsx renders them at build
+// component (shell.jsx hydrates them, markup/prerender.jsx renders them at build
 // time).
 const MACHINE_PARTS = {
 	machine_top: Status,

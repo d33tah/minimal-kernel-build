@@ -1,18 +1,21 @@
 // The Machine tab (A1): the run controls, the counters and the clock, the
 // end banner, the status line and the kernel and boot controls, as React
-// components on machtab.js's controllers. The tab is shown at load, so
-// shell.jsx mounts it at once, into the `.run` box (#machine_run), with
-// portals into the status box above the screen (#machine_top), the screen's
-// box for the "VM paused" overlay (#screen_wrap) and the kernel and boot
-// section (#machine_ctl). The screen itself (#screen_container, its text
-// rows and canvas) is index.html's: v86 needs it before init and draws into
-// it, never React. Each part is a memo component on its own field of a
-// controller (useField), so a drawn frame of a running machine renders only
-// the parts whose text changed. Element ids and data attributes are the
-// ones the tests and other modules read.
+// components on machtab.js's controllers. The tab is shown at load: its
+// four parts are rendered at build time too (prerender.jsx, written into
+// index.html by build.mjs), so the browser lays them out while the bundle
+// downloads, and shell.jsx hydrates them (React takes over the elements
+// that are there): the status box above the screen (#machine_top), the
+// "VM paused" overlay over it (#machine_overlay), the `.run` box beside it
+// (#machine_run) and the kernel and boot section (#machine_ctl). While
+// hydrating, every part renders what it had at build time (useField's
+// first value), then what the modules have set since. The screen itself
+// (#screen_container, its text rows and canvas) is index.html's: v86 needs
+// it before init and draws into it, never React. Each part is a memo
+// component on its own field of a controller (useField), so a drawn frame
+// of a running machine renders only the parts whose text changed. Element
+// ids and data attributes are the ones the tests and other modules read.
 
 import { memo, useLayoutEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useField, Tip, SrcLink, DomNodes } from "./ui.jsx";
 import { MSET, SPEEDS, CLOCKS, DEFAULT_CMDLINE, MHEAD, MIMP, MV } from "./machtab.js";
 import { machPause, machContinue, doStep, chooseSpeed, chooseClock, chooseCount } from "./runto.js";
@@ -435,6 +438,7 @@ function Cmdline() {
 	useLayoutEffect(() => {
 		const el = ref.current;
 		MSET.cmdlineEl = el;
+		el.value = MSET.cmdlineSet ?? el.value; // set before React hydrated it
 		el.addEventListener("change", saveCmdline);
 		return () => el.removeEventListener("change", saveCmdline);
 	}, []);
@@ -451,17 +455,16 @@ const Kinfo = memo(function Kinfo() {
 	return <span id="kinfo" className="note mono">{useField(MHEAD, "kinfo")}</span>;
 });
 
-// The tab: the run box here, the rest through portals into index.html's
-// boxes around the screen.
-function MachinePanel({ top, wrap, ctl }) {
-	return (
-		<>
-			<RunBox />
-			{createPortal(<Status />, top)}
-			{createPortal(<Overlay />, wrap)}
-			{createPortal(<><Settings />{" "}<Imports /></>, ctl)}
-		</>
-	);
-}
+// The tab's parts: the element of index.html each one takes over -> its
+// component (shell.jsx hydrates them, prerender.jsx renders them at build
+// time).
+const MACHINE_PARTS = {
+	machine_top: Status,
+	machine_overlay: Overlay,
+	machine_run: RunBox,
+	machine_ctl: function Controls() {
+		return <><Settings />{" "}<Imports /></>;
+	},
+};
 
-export { MachinePanel };
+export { MACHINE_PARTS };

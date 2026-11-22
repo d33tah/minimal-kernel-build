@@ -39,6 +39,7 @@ const MSET = controller({
 	clock: CLOCKS[0][0],
 	count: true,
 	cmdlineEl: null,
+	cmdlineSet: null, // the last one set: setCmdline before React has hydrated the input
 	offsetEl: null,
 	cmdlineTyped: false,
 });
@@ -63,9 +64,10 @@ const ramSizes = () => MSET.rams.map(([v]) => Number(v));
 const speedText = () => (SPEEDS.find(([v]) => v === MSET.speed) || ["", MSET.speed])[1];
 const clockText = () => (CLOCKS.find(([v]) => v === MSET.clock) || ["", MSET.clock])[1];
 
-const cmdline = () => (MSET.cmdlineEl ? MSET.cmdlineEl.value : DEFAULT_CMDLINE);
+const cmdline = () => (MSET.cmdlineEl ? MSET.cmdlineEl.value : MSET.cmdlineSet ?? DEFAULT_CMDLINE);
 
 function setCmdline(v) {
+	MSET.cmdlineSet = v;
 	if (MSET.cmdlineEl)
 		MSET.cmdlineEl.value = v;
 }

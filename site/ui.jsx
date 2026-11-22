@@ -8,7 +8,7 @@
 
 import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { state } from "./page.js";
 import { srcName, srcLinkTitle } from "./srclinks.js";
 
@@ -29,6 +29,7 @@ function controller(fields) {
 	const subs = new Set();
 	const c = {
 		...fields,
+		atLoad: { ...fields }, // what a build-time render saw (useField)
 		rev: 0,
 		subscribe(fn) {
 			subs.add(fn);
@@ -53,8 +54,10 @@ function useController(c) {
 // One field of a controller: the component renders again only when the
 // module put another value there (===), not at every changed() (the
 // Machine tab's parts, drawn with every frame while the machine runs).
+// Hydrating, it renders the field's first value (what the build-time
+// render saw), then the one the module has set since.
 function useField(c, key) {
-	return useSyncExternalStore(c.subscribe, () => c[key]);
+	return useSyncExternalStore(c.subscribe, () => c[key], () => c.atLoad[key]);
 }
 
 // Render a component into an element at once: app.js mounts the shell
@@ -63,6 +66,14 @@ function mount(el, element) {
 	const root = createRoot(el);
 	flushSync(() => root.render(element));
 	return root;
+}
+
+// Take over an element whose markup build.mjs rendered from the same
+// component (prerender.jsx). React renders it in the background (not at
+// once: the page's init goes on meanwhile) and attaches to the elements
+// that are there instead of making them.
+function hydrate(el, element) {
+	return hydrateRoot(el, element);
 }
 
 // DOM nodes a module's helper builds (a variable's declaration with its
@@ -89,4 +100,4 @@ function SrcLink({ file, line, text, pa = -1 }) {
 		data-pa={pa}>{text || srcName({ file, line })}</button>;
 }
 
-export { useStore, controller, useController, useField, mount, DomNodes, Tip, SrcLink };
+export { useStore, controller, useController, useField, mount, hydrate, DomNodes, Tip, SrcLink };

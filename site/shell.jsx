@@ -6,15 +6,16 @@
 // The static markup of the Memory and About tabs and of the menu toggle is
 // in index.html already (markup/, written by build.mjs); the React
 // components go into other elements. The Machine tab (shown at load; its
-// screen is index.html's) and the Source panel (beside every tab) are
-// mounted at load. The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and Source
-// tabs are mounted when they are first shown: React's first
+// screen is index.html's) is rendered at build time too (prerender.jsx)
+// and hydrated at load; the Source panel (beside every tab) is mounted at
+// load. The Settings, Quests, Events, Snapshots, Page, Calls, Debugger and
+// Source tabs are mounted when they are first shown: React's first
 // render of them is work the boot does not need (they are hidden at load
 // unless the URL opens one).
 
 import { $ } from "./util.js";
 import { state } from "./page.js";
-import { mount } from "./ui.jsx";
+import { mount, hydrate } from "./ui.jsx";
 import { TabBar } from "./tabs.jsx";
 import { SettingsPanel } from "./settings.jsx";
 import { QuestsPanel } from "./quests.jsx";
@@ -25,7 +26,7 @@ import { CallsPanel } from "./callspanel.jsx";
 import { DebuggerPanel } from "./debuggerpanel.jsx";
 import { SourceTabPanel } from "./sourcepanel.jsx";
 import { SourceAside } from "./sourceaside.jsx";
-import { MachinePanel } from "./machinepanel.jsx";
+import { MACHINE_PARTS } from "./machinepanel.jsx";
 
 // Mount a tab's component the first time the store's `tab` names it
 // (mountShell runs before init() reads the URL's tab: the Machine tab is
@@ -42,8 +43,10 @@ function mountOnTab(name, id, element) {
 function mountShell() {
 	mount($("tabrow"), <TabBar />);
 	// The Machine tab at once: it is the tab shown at load (its screen,
-	// which v86 draws into, is index.html's).
-	mount($("machine_run"), <MachinePanel top={$("machine_top")} wrap={$("screen_wrap")} ctl={$("machine_ctl")} />);
+	// which v86 draws into, is index.html's); its parts' markup is in
+	// index.html already (build.mjs, prerender.jsx).
+	for (const [id, Part] of Object.entries(MACHINE_PARTS))
+		hydrate($(id), <Part />);
 	mountOnTab("settings", "panel_settings", <SettingsPanel />);
 	mountOnTab("quests", "panel_quests", <QuestsPanel />);
 	mountOnTab("events", "panel_events", <EventsPanel />);

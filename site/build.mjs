@@ -15,9 +15,11 @@
 // and compares with the files on disk.
 //
 // index.html is made here too: index.src.html with the tabs' static markup
-// (markup/static.js: JSX through markup/html.js, run at build time) written
-// into its empty elements, so the browser parses and lays it out while the
-// bundle downloads.
+// (markup/static.js: JSX through markup/html.js, run at build time) and the
+// Machine tab's build-time render (prerender.jsx: its React components
+// through react-dom/server, hydrated at load) written into its empty
+// elements, so the browser parses and lays it out while the bundle
+// downloads.
 //
 // Usage: cd site && npm ci && node build.mjs [--check]
 import * as esbuild from "esbuild";
@@ -78,15 +80,53 @@ const sha = (b) => createHash("sha256").update(b).digest("hex").slice(0, 16);
 // (empty there) filled with its component's HTML.
 const PAGE_SRC = "index.src.html", PAGE = "index.html";
 
+// prerender.jsx renders the Machine tab's components in node: the page's
+// modules they import for their handlers (runto.js, kernel.js, ...) would
+// start the page (window, document, v86) when loaded, so each one but
+// these is replaced by a module exporting the same names as functions that
+// do nothing (a render calls none of them).
+const PRERENDER_REAL = new Set(["prerender.jsx", "machinepanel.jsx", "machtab.js", "ui.jsx", "util.js"]);
+const stubPageModules = {
+	name: "mkb-stub-page-modules",
+	setup(build) {
+		build.onResolve({ filter: /^\.\.?\// }, (args) => {
+			const file = path.join(args.resolveDir, args.path);
+			if (args.importer.includes("node_modules") || PRERENDER_REAL.has(path.relative(SITE, file)))
+				return null;
+			return { path: file, namespace: "mkb-stub" };
+		});
+		build.onLoad({ filter: /.*/, namespace: "mkb-stub" }, (args) => {
+			const src = readFileSync(args.path, "utf8");
+			const names = new Set();
+			for (const m of src.matchAll(/^export\s*\{([^}]*)\}/gm))
+				for (const n of m[1].split(","))
+					if (n.trim())
+						names.add(n.trim().split(/\s+as\s+/).pop());
+			for (const m of src.matchAll(/^export\s+(?:async\s+)?(?:function\*?|const|let|var|class)\s+([\w$]+)/gm))
+				names.add(m[1]);
+			return { contents: [...names].map((n) => `export const ${n} = () => {};`).join("\n"), loader: "js" };
+		});
+	},
+};
+
+// A module built for node and loaded: its exports. (react-dom/server's
+// CommonJS files require node's modules: the banner gives them require.)
+async function runInNode(entry, plugins = []) {
+	const r = await esbuild.build({ absWorkingDir: SITE, entryPoints: [entry], bundle: true, format: "esm", platform: "node",
+		write: false, charset: "utf8", jsx: "automatic", logLevel: "warning", define: { "process.env.NODE_ENV": '"production"' },
+		banner: { js: `import { createRequire } from "node:module"; const require = createRequire(${JSON.stringify(SITE + "/")});` },
+		plugins });
+	return import("data:text/javascript;base64," + Buffer.from(r.outputFiles[0].contents).toString("base64"));
+}
+
 async function pageHtml() {
-	const r = await esbuild.build({ absWorkingDir: SITE, entryPoints: ["markup/static.js"], bundle: true, format: "esm",
-		platform: "node", write: false, charset: "utf8", logLevel: "warning" });
-	const { staticHtml } = await import("data:text/javascript;base64," + Buffer.from(r.outputFiles[0].contents).toString("base64"));
+	const { staticHtml } = await runInNode("markup/static.js");
+	const { prerenderHtml } = await runInNode("prerender.jsx", [stubPageModules]);
 	let html = readFileSync(path.join(SITE, PAGE_SRC), "utf8");
-	for (const [id, markup] of Object.entries(staticHtml())) {
+	for (const [id, markup] of Object.entries({ ...staticHtml(), ...prerenderHtml() })) {
 		const re = new RegExp(`(<(section|aside|div)\\b[^>]*\\bid="${id}"[^>]*>)(</\\2>)`);
 		if (!re.test(html))
-			throw new Error(`${PAGE_SRC}: no empty element with id="${id}" for markup/static.js`);
+			throw new Error(`${PAGE_SRC}: no empty element with id="${id}" for markup/static.js or prerender.jsx`);
 		html = html.replace(re, (m, open, tag, close) => open + markup + close);
 	}
 	return html;

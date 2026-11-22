@@ -387,7 +387,16 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
+    # A hydration mismatch (the Machine tab's build-time markup differs from
+    # its first render) is reported by React as a recoverable error: a page
+    # error, or a console error naming React's error number.
+    page.on("console", lambda m: errors.append("console: " + m.text) if m.type == "error" and (
+        "react.dev/errors" in m.text or "ydrat" in m.text) else None)
     url = f"{base}/index.html?kernel={name}" + (f"&mem={mem}" if mem else "") + (f"&speed={speed}" if speed else "")
+    # The Machine tab's controls are in the served page (build.mjs writes
+    # their build-time render, shell.jsx hydrates them).
+    served = page.request.get(f"{base}/index.html").text()
+    built = [i for i in ("status", "dbg_pause", "counters", "vm_overlay", "kernel", "cmdline") if f'id="{i}"' not in served]
     page.goto(url)
     start = time.monotonic()
     ok = wait_for(lambda: gate_on_screen(page), timeout, 0.5)
@@ -398,6 +407,8 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
     problems = page.inner_text("#problems")
     nonzero = total = None
     lab, lab_problems, count = {}, [], {}
+    if built:
+        lab_problems.append("not in the served index.html (no build-time render): " + ", ".join(built))
     tag = f"{name}-{ram // 1024}k"
     if ok:
         count = check_counters(page, lab_problems, timeout)

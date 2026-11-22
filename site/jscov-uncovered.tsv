@@ -226,24 +226,24 @@ hpelf.js	409-413	8b69ad2e	a reference to a variable from the placed code: the su
 hpelf.js	427	9fc658f8	a changed function the running kernel lacks: no suite case
 hpelf.js	429	48814ea8	a replaced function shorter than the 5-byte jump: no such function in the suite's edits
 hpelf.js	433	7c4a705e	hpVerify refusing a replaced function: in the suite the minified Linux's LTO case is refused earlier, by the new call (ltoCall)
-hpelf.js	457	07a4b4e5	hpVerify without a way to read the kernel (opts.read): the page always passes one; test_hotpatch.mjs (Node) has none
-hpelf.js	471	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
-hpelf.js	474	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
-hpelf.js	476-477	1fadc6c8	the running code differing from the compile: see the hpVerify row above
-hpelf.js	490	aa216095	an object without .debug_line: the kits compile with -g
-hpelf.js	505	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
-hpelf.js	507	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
-hpelf.js	509-512	0fa890b5	DW_FORM_data1/data2/data4/data8 in a line table header: clang 22 writes udata indices and data16 MD5s
-hpelf.js	514-515	0df6d192	DW_FORM_block or an unknown form in a line table header: not in clang's tables
-hpelf.js	556-566	94b181a0	a DWARF 4 line table header: clang 22 writes DWARF 5 for the three kernels
-hpelf.js	570	0e3dd80d	a line row naming a file index outside the table: malformed DWARF only
-hpelf.js	615-616	a5916579	DW_LNS_const_add_pc after an address: clang's line programs for these small functions do not use it
-hpelf.js	652-655	29d5e71e	a variable missing from symbols.json, looked up in types.json (Debian's trimmed symbols): the suite's new code references no variable
-hpelf.js	657	a49e977d	several kernel symbols of one name, told apart by size: no name the suite's patches reference is duplicated
-hpelf.js	659	200faad4	the same, told apart by binding
-hpelf.js	661	b0ccabb7	the same, told apart by the unit's file (types.json)
-hpelf.js	663	2ec36e6c	a name still ambiguous after those: no suite case
-hpelf.js	676	e52b096c	a kit compile command without -o: every kit object's command has one
+hpelf.js	460	d04a9602	hpVerify without the running kernel's bytes (opts.read null): the page's read always returns them; test_hotpatch.mjs (Node) passes none for its refusals
+hpelf.js	474	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
+hpelf.js	477	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
+hpelf.js	479-480	1fadc6c8	the running code differing from the compile: see the hpVerify row above
+hpelf.js	493	aa216095	an object without .debug_line: the kits compile with -g
+hpelf.js	508	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
+hpelf.js	510	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
+hpelf.js	512-515	0fa890b5	DW_FORM_data1/data2/data4/data8 in a line table header: clang 22 writes udata indices and data16 MD5s
+hpelf.js	517-518	0df6d192	DW_FORM_block or an unknown form in a line table header: not in clang's tables
+hpelf.js	559-569	94b181a0	a DWARF 4 line table header: clang 22 writes DWARF 5 for the three kernels
+hpelf.js	573	0e3dd80d	a line row naming a file index outside the table: malformed DWARF only
+hpelf.js	618-619	a5916579	DW_LNS_const_add_pc after an address: clang's line programs for these small functions do not use it
+hpelf.js	655-658	29d5e71e	a variable missing from symbols.json, looked up in types.json (Debian's trimmed symbols): the suite's new code references no variable
+hpelf.js	660	a49e977d	several kernel symbols of one name, told apart by size: no name the suite's patches reference is duplicated
+hpelf.js	662	200faad4	the same, told apart by binding
+hpelf.js	664	b0ccabb7	the same, told apart by the unit's file (types.json)
+hpelf.js	666	2ec36e6c	a name still ambiguous after those: no suite case
+hpelf.js	679	e52b096c	a kit compile command without -o: every kit object's command has one
 jumps.js	151	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
 jumps.js	318	925c71a0	jumpsJitNote before a stepper exists: its callers draw a listing with instructions (the Page tab's jump line, Code at EIP, the path lists), and since the Page tab is mounted when first shown (A1) no suite shows one before boot makes the stepper; before A1 the hidden Page listing was drawn too
 jumpview.js	215	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)

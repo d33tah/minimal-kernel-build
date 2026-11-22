@@ -97,8 +97,26 @@ async function kernel(cc, kits, kernels, name) {
       objs.push(r.bytes);
     }
     if (objs.length < 2) continue;
-    const plan = hpPlan(objs[0], objs[1], { base, room: want.room || 0x20000, lookup: hpLookup(S.symbols, null, file), src: [shipped, edited], lto: !!want.lto });
+    // The running kernel's code as the page reads it (emulator.read_memory:
+    // a view of guest RAM, not a copy): here the before object's bytes of
+    // each function at its address. The check compares them and must leave
+    // them as they were (it blanked the relocated places in the guest's RAM).
+    const A = hpIndex(hpElf(objs[0])), views = [];
+    const read = (va, n) => {
+      const s = S.symbols.find((x) => x.vaddr === va);
+      const f = s && A.funcs.get(s.name);
+      if (!f || f.size !== n) return null;
+      const ram = f.sec.data.slice(f.value, f.value + n);
+      views.push([s.name, ram, ram.slice()]);
+      return ram;
+    };
+    const plan = hpPlan(objs[0], objs[1], { base, room: want.room || 0x20000, lookup: hpLookup(S.symbols, null, file), src: [shipped, edited], lto: !!want.lto,
+      ...(want.why ? {} : { read }) });
     const ms = Date.now() - t0;
+    if (!want.why && !views.length) fail(`${name} ${what}: the check read no running code`);
+    for (const [n, ram, was] of views)
+      if (ram.some((b, i) => b !== was[i]))
+        fail(`${name} ${what}: checking ${n} changed the running kernel's bytes it read: ${Buffer.from(was).toString('hex')} -> ${Buffer.from(ram).toString('hex')}`);
     if (want.why) {
       if (plan.ok || !want.why.test(plan.why)) fail(`${name} ${what}: want a refusal ${want.why}, got ${plan.ok ? 'a plan of ' + plan.changed : plan.why}`);
       else console.log(`ok ${name} ${what}: refused: ${plan.why} (${ms} ms)`);

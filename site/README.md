@@ -3632,7 +3632,10 @@ without it and one taken after gives the patch. The page derives the
 patches the machine has from its log (`hpSync`): the list under the
 button, the reserved bytes in use, the text each file now runs, and the
 symbols of the copies (`put_line (patch 1)`) for the listings, the Calls
-and the Debugger.
+and the Debugger. Suite `hotpatch` checks each of these on hello, the
+minified Linux and Debian rebuilt from source: the patch in the run's log
+at its count, Step back and Step over it, the two snapshots restored, and
+a replay of the patched run from boot that matches.
 
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's

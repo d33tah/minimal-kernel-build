@@ -34,6 +34,12 @@ from tests.browser.rebuild_linux import rbl_open
 # patch and holds the patch's bytes after the new code ran; the old entry
 # starts with the jump; the copies are in the symbols; edit-to-effect
 # times (edit saved -> ready, press -> patched, Continue -> on the screen).
+# hello, the minified Linux and Debian (plan A3) also: the patch is in the
+# run's log at the count it was made; Step back from there gives the
+# replaced function's shipped bytes and no patch, Step on to one past the
+# count makes it again; snapshots before and after the patch restore the
+# machine without and with it; Replay of the run from boot makes the patch
+# at the same count and matches, the new text on the screen.
 HP_PA, HP_SIZE = 0x60000, 0x20000
 # The minified Linux's do_exit, edited: a line into the VGA text memory
 # (mapped at PAGE_OFFSET + 0xb8000) before it panics (printk prints
@@ -107,17 +113,29 @@ def hp_continue(page):
     page.click("#dbg_continue")
 
 
-def hp_apply(page, r, key, problems, tag, phone=False, sel="#hp_go_panel"):
-    """Press the button once the check says ready; the patch's state."""
+def hp_code(page, name):
+    """name's code in the running kernel: (name, physical address, bytes)."""
+    s = page.evaluate(SYM_JS, name)
+    return name, s[1], hp_mem(page, s[1], s[2])
+
+
+def hp_apply(page, r, key, problems, tag, phone=False, sel="#hp_go_panel", code=None):
+    """Press the button once the check says ready; the patch's state. code
+    (hp_code before the edit): the check leaves those bytes as they were
+    (it compares them with its compile)."""
     t0 = time.monotonic()
     hp_why_shown(hp_state(page), tag + " checking", problems)
     st = hp_wait(page, ("ready", "refused", ""), 600)
     r[key + " check s"] = round(time.monotonic() - t0, 1)
     hp_why_shown(st, tag + " " + (st["state"] or "no state"), problems)
+    if code and hp_mem(page, code[1], len(code[2])) != code[2]:
+        problems.append(f"{tag}: checking the edit changed the running kernel's code of {code[0]}: "
+                        f"{bytes(code[2]).hex()} -> {bytes(hp_mem(page, code[1], len(code[2]))).hex()}")
     if st["state"] != "ready" or not st["go"]:
         problems.append(f"{tag}: the edit is not ready to patch: {st['state']} {st['status']!r}")
         return None
     t1 = time.monotonic()
+    at = page.evaluate("MKB.stepper.steps")
     rb_press(page, sel, phone)
     st = hp_wait(page, ("done", "failed"), 120)
     r[key + " press to patched s"] = round(time.monotonic() - t1, 2)
@@ -125,6 +143,7 @@ def hp_apply(page, r, key, problems, tag, phone=False, sel="#hp_go_panel"):
     if st["state"] != "done" or not st["patches"]:
         problems.append(f"{tag}: the patch: {st['state']} {st['status']!r}")
         return None
+    hp_logged(page, st, at, problems, tag, r)
     return st
 
 
@@ -153,6 +172,94 @@ def hp_reserved_zero(page, problems, tag, r):
     r["reserved memory nonzero bytes before the patch"] = len(nz)
     if nz:
         problems.append(f"{tag}: the reserved memory is not zero after the boot: {len(nz)} bytes, first at {HP_PA + nz[0]:#x}")
+
+
+# ---- Determinism of a patched run (plan A3), the same checks on every kernel ----
+# The patches in the run's log: [count, patch number].
+LOG_JS = "() => { const run = MKB.runNow(); return run ? run.log.filter((e) => e.patch).map((e) => [e.at, e.patch.n]) : null; }"
+STILL_JS = "() => MKB.runState === 'paused' && !(MKB.REV && MKB.REV.busy)"
+
+
+def hp_logged(page, st, at, problems, tag, r):
+    """The patch is in the run's log at the count it was made."""
+    log = page.evaluate(LOG_JS)
+    r["patches in the run's log"] = log
+    n = st["patches"][-1]["n"]
+    if not log or log[-1] != [at, n] or st["patches"][-1]["at"] != at:
+        problems.append(f"{tag}: patch {n} made at instruction {at}: the run's log has {log}, the page says {st['patches'][-1]['at']}")
+
+
+def hp_step_over(page, st, code, problems, tag, r):
+    """Step back from the patch's count: the replaced function (code:
+    hp_code before the edit) has its shipped bytes and the page has no
+    patch; Step on to one past the count: the patch is made again before
+    the instruction at its count runs (replay.js inputRedo), the jump and
+    the function's other bytes as shipped."""
+    name, pa, shipped = code
+    show_tab(page, "machine")
+    at = page.evaluate("MKB.stepper.steps")
+    page.click("#dbg_back")
+    if not wait_for(lambda: page.evaluate("MKB.stepper.steps") < at and page.evaluate(STILL_JS), 300, 0.1):
+        problems.append(f"{tag}: Step back from {at} did not stop: {page.inner_text('#dbg_status')[:200]!r}")
+        return
+    back_at = page.evaluate("MKB.stepper.steps")
+    back = [bytes(hp_mem(page, pa, len(shipped))).hex(), len(hp_state(page)["patches"])]
+    # A Step back from a hlt after an sti lands on the sti (jitrev): Step
+    # until one past the patch's count.
+    for _ in range(4):
+        k = page.evaluate("MKB.stepper.steps")
+        if k > at:
+            break
+        page.click("#dbg_step")
+        wait_for(lambda: page.evaluate("MKB.stepper.steps") > k and page.evaluate(STILL_JS), 300, 0.1)
+    fwd_at = page.evaluate("MKB.stepper.steps")
+    fwd = [bytes(hp_mem(page, pa, len(shipped))).hex(), len(hp_state(page)["patches"])]
+    r["step back / step over the patch"] = [at, back_at, back, fwd_at, fwd]
+    if back != [bytes(shipped).hex(), 0] or back_at not in (at - 1, at - 2) or fwd[0][:2] != "e9" or fwd[0][10:] != bytes(shipped[5:]).hex() or \
+            fwd[1] != len(st["patches"]) or fwd_at != at + 1:
+        problems.append(f"{tag}: {name}'s bytes and the patches after Step back to {back_at} {back}, after Step to {fwd_at} {fwd}: "
+                        f"want [{bytes(shipped).hex()}, 0] and [e9 + 4 bytes + the rest as shipped, {len(st['patches'])}] at {at + 1}")
+
+
+def hp_restore_snaps(page, name, problems, tag, r, timeout=30):
+    """Snapshots 1 (before the patch) and 2 (after it) restore the machine
+    without and with it: the jump, the patch list, the copies' symbols."""
+    show_tab(page, "snapshots")
+    rows = snap_rows(page)["rows"]
+    for i, want in ((0, False), (1, True)):
+        snap_click(page, f"#snapshots tr[data-id='{rows[i]['id']}'] button.restore", False)
+        wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == rows[i]["id"], timeout)
+        wait_for(lambda: bool(hp_state(page)["patches"]) == want, 10)
+        st = hp_state(page)
+        b = hp_mem(page, page.evaluate(SYM_JS, name)[1], 1)[0]
+        r[f"restored snapshot {i + 1}"] = [st["patches"] and st["patches"][0]["n"], hex(b), st["list"], len(st["syms"])]
+        if bool(st["patches"]) != want or (b == 0xE9) != want or bool(st["syms"]) != want or bool(st["list"]) != want:
+            problems.append(f"{tag}: restoring snapshot {i + 1} ({'after' if want else 'before'} the patch): patches {st['patches']}, "
+                            f"{name} starts {b:#x}, symbols {st['syms']}, list {st['list']}")
+
+
+def hp_replay(page, seen, problems, tag, r, timeout=600):
+    """Replay of the run from boot: the patch made at the same count, the
+    page's verdict match, and seen(screen) true at its end."""
+    want = [(p["n"], p["at"]) for p in hp_state(page)["patches"]]
+    show_tab(page, "snapshots")
+    page.click("#run_replay")
+    t0 = time.monotonic()
+    while time.monotonic() - t0 < timeout:
+        v = page.get_attribute("#run_status", "data-replay")
+        if v in ("match", "differ", "stopped", "error"):
+            break
+        if page.evaluate("MKB.runState") == "paused" and page.evaluate("MKB.replayActive()"):
+            show_tab(page, "machine")
+            if page.is_enabled("#dbg_continue"):
+                page.click("#dbg_continue")
+        time.sleep(0.5)
+    st = hp_state(page)
+    got = [(p["n"], p["at"]) for p in st["patches"]]
+    r["replay"] = [page.get_attribute("#run_status", "data-replay"), page.inner_text("#run_status"), got,
+                   round(time.monotonic() - t0)]
+    if page.get_attribute("#run_status", "data-replay") != "match" or not want or got != want or not seen(screen(page)):
+        problems.append(f"{tag}: the replay: {r['replay']}, screen {screen(page)[-200:]!r}, want the patches {want}")
 
 
 def hp_hello(browser, base, shots, problems, r):
@@ -195,8 +302,9 @@ def hp_hello(browser, base, shots, problems, r):
         if st["state"] != "refused" or st["go"] or "does not compile" not in st["status"] or "expected expression" not in st["status"]:
             problems.append(f"{tag}: a compile error: {st['state']} {st['status'][:300]!r}")
         # The edit: put_line swaps the letters' case.
+        pl_shipped = hp_code(page, "put_line")
         t_edit = hp_edit(page, shipped.replace("(unsigned char)*s++;", "(unsigned char)(*s++ ^ 0x20);"))
-        st = hp_apply(page, r, "patch", problems, tag)
+        st = hp_apply(page, r, "patch", problems, tag, code=pl_shipped)
         if not st:
             return
         r["edit saved to patched s"] = round(time.monotonic() - t_edit, 2)
@@ -204,22 +312,7 @@ def hp_hello(browser, base, shots, problems, r):
         if [p["funcs"][0][0] for p in st["patches"]] != ["put_line"] or not st["list"] or "put_line" not in st["list"][0]:
             problems.append(f"{tag}: the patch list: {st['patches']} {st['list']}")
         code = hp_mem(page, HP_PA, 16)
-        # Step back past the patch's count: the memory without it; Step
-        # again: the patch made again at its count (replay.js inputRedo).
-        pl = page.evaluate(SYM_JS, "put_line")
-        show_tab(page, "machine")
-        at = page.evaluate("MKB.stepper.steps")
-        page.click("#dbg_back")
-        wait_for(lambda: page.evaluate("MKB.stepper.steps") == at - 1 and page.evaluate("MKB.runState") == "paused", 60)
-        back = [hp_mem(page, pl[1], 1)[0], len(hp_state(page)["patches"])]
-        # Two Steps: the patch goes in before the instruction at its count runs.
-        for k in (at, at + 1):
-            page.click("#dbg_step")
-            wait_for(lambda: page.evaluate("MKB.stepper.steps") == k and page.evaluate("MKB.runState") == "paused", 60)
-        fwd = [hp_mem(page, pl[1], 1)[0], len(hp_state(page)["patches"])]
-        r["step back / step over the patch"] = [back, fwd]
-        if back != [0x55, 0] or fwd != [0xE9, 1]:
-            problems.append(f"{tag}: put_line's first byte and patches after Step back {back}, after Step {fwd}: want [0x55, 0], [0xe9, 1]")
+        hp_step_over(page, st, pl_shipped, problems, tag, r)
         # The copy's debug info: frames at its addresses name put_line and
         # the edited file's line of the changed statement.
         frames = page.evaluate(FRAMES_JS, [HP_PA, 83])
@@ -241,40 +334,12 @@ def hp_hello(browser, base, shots, problems, r):
         rb_shots(page, shots, "hotpatch-hello-1280-source", problems, tag)
         page.emulate_media(color_scheme="light")
         # Snapshots: before the patch (no jump, no copies), after (both).
-        show_tab(page, "snapshots")
-        rows = snap_rows(page)["rows"]
-        for i, want in ((0, False), (1, True)):
-            snap_click(page, f"#snapshots tr[data-id='{rows[i]['id']}'] button.restore", False)
-            wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == rows[i]["id"], 30)
-            wait_for(lambda: bool(hp_state(page)["patches"]) == want, 10)
-            st = hp_state(page)
-            b = hp_mem(page, page.evaluate(SYM_JS, "put_line")[1], 1)[0]
-            r[f"restored snapshot {i + 1}"] = [st["patches"] and st["patches"][0]["n"], hex(b), st["list"], len(st["syms"])]
-            if bool(st["patches"]) != want or (b == 0xE9) != want or bool(st["syms"]) != want or bool(st["list"]) != want:
-                problems.append(f"{tag}: restoring snapshot {i + 1} ({'after' if want else 'before'} the patch): patches {st['patches']}, "
-                                f"put_line starts {b:#x}, symbols {st['syms']}, list {st['list']}")
+        hp_restore_snaps(page, "put_line", problems, tag, r)
         # Replay: the patch at the same instruction, the same end.
         hp_continue(page)
         if not wait_for(lambda: swapped(screen(page)) and page.evaluate("MKB.runState") == "paused", 120):
             problems.append(f"{tag}: after restoring the snapshot with the patch, Continue: {screen(page)[-200:]!r}")
-        want_at = hp_state(page)["patches"][0]["at"]
-        show_tab(page, "snapshots")
-        page.click("#run_replay")
-        t0 = time.monotonic()
-        while time.monotonic() - t0 < 600:
-            v = page.get_attribute("#run_status", "data-replay")
-            if v in ("match", "differ", "stopped", "error"):
-                break
-            if page.evaluate("MKB.runState") == "paused" and page.evaluate("MKB.replayActive()"):
-                show_tab(page, "machine")
-                if page.is_enabled("#dbg_continue"):
-                    page.click("#dbg_continue")
-            time.sleep(0.5)
-        st = hp_state(page)
-        r["replay"] = [page.get_attribute("#run_status", "data-replay"), page.inner_text("#run_status"), st["patches"]]
-        if page.get_attribute("#run_status", "data-replay") != "match" or not st["patches"] or st["patches"][0]["at"] != want_at or \
-                not swapped(screen(page)):
-            problems.append(f"{tag}: the replay: {r['replay']}, screen {screen(page)[-200:]!r}, want the patch at {want_at}")
+        hp_replay(page, swapped, problems, tag, r)
     finally:
         if errors:
             problems.append(f"{tag}: page errors {errors[:3]}")
@@ -337,6 +402,7 @@ def hp_minified(browser, base, shots, problems, r):
             problems.append(f"{tag}: Run to start_kernel stopped at {at:#x}: {why!r} {last[0]}")
             return
         hp_reserved_zero(page, problems, tag, r)
+        snap_save(page, 1, False)
         # Refused: the kernel is linked with LTO, which changed how
         # console_on_rootfs calls IS_ERR (fastcc: ECX).
         if not rbl_open(page, "init/main.c", False):
@@ -369,14 +435,17 @@ def hp_minified(browser, base, shots, problems, r):
             problems.append(f"{tag}: Edit did not open kernel/exit.c")
             return
         text = page.input_value("#ed_text")
+        de_shipped = hp_code(page, "do_exit")
         t_edit = hp_edit(page, text.replace("\tpanic(\"Attempted to kill init!", HP_DO_EXIT + "\tpanic(\"Attempted to kill init!", 1))
-        st = hp_apply(page, r, "patch", problems, tag)
+        st = hp_apply(page, r, "patch", problems, tag, code=de_shipped)
         if not st:
             return
         hp_check_jumps(page, st, problems, tag)
         if [f[0] for f in st["patches"][0]["funcs"]] != ["do_exit"]:
             problems.append(f"{tag}: the patch replaces {st['patches'][0]['funcs']}, want do_exit")
         code = hp_mem(page, HP_PA, 64)
+        hp_step_over(page, st, de_shipped, problems, tag, r)
+        snap_save(page, 2, False)
         t_go = time.monotonic()
         hp_continue(page)
         # Running: the button says to pause first.
@@ -391,6 +460,12 @@ def hp_minified(browser, base, shots, problems, r):
         if hp_mem(page, HP_PA, 64) != code:
             problems.append(f"{tag}: the reserved memory changed after the run")
         rb_shots(page, shots, "hotpatch-minified-1280-machine", problems, tag)
+        # The panic stops the machine (its end); the run replayed from
+        # boot, then the snapshots before and after the patch.
+        if not wait_for(lambda: page.evaluate("MKB.runState") == "paused", 120):
+            problems.append(f"{tag}: no stop at the panic after do_exit: {page.evaluate('MKB.runState')}")
+        hp_replay(page, lambda s: "Hot patched do_exit" in s and "Still alive" in s, problems, tag, r)
+        hp_restore_snaps(page, "do_exit", problems, tag, r)
     finally:
         if errors:
             problems.append(f"{tag}: page errors {errors[:3]}")
@@ -405,7 +480,9 @@ def hp_debian(browser, base, shots, problems, r):
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     try:
         t0 = time.monotonic()
-        page.goto(f"{base}/index.html?kernel={tag}&speed=full")
+        # count=0: the JIT from the reset vector on the virtual clock keeps
+        # the reverse history (the background count's stepping keeps none).
+        page.goto(f"{base}/index.html?kernel={tag}&speed=full&count=0&mips=10")
         srcedit_ready(page, tag)
         if not wait_for(lambda: "(initramfs)" in screen(page), 1500, 1):
             problems.append(f"{tag}: no (initramfs) prompt: {screen(page)[-300:]!r}")
@@ -418,6 +495,7 @@ def hp_debian(browser, base, shots, problems, r):
         wait_for(lambda: page.evaluate("MKB.runState") == "paused", 60)
         r["paused at"] = page.evaluate("MKB.stepper.steps")
         hp_reserved_zero(page, problems, tag, r)
+        snap_save(page, 1, False)
         # Refused: pr_debug's static keys in run_init_process.
         if not rbl_open(page, "init/main.c", False):
             problems.append(f"{tag}: Edit did not open init/main.c")
@@ -435,12 +513,15 @@ def hp_debian(browser, base, shots, problems, r):
             problems.append(f"{tag}: Edit did not open fs/proc/version.c")
             return
         text = page.input_value("#ed_text")
+        vp_shipped = hp_code(page, "version_proc_show")
         t_edit = hp_edit(page, text.replace("\tseq_printf(m, linux_proc_banner,", '\tseq_puts(m, "Hot patched /proc/version\\n");\n\tseq_printf(m, linux_proc_banner,'))
-        st = hp_apply(page, r, "patch", problems, tag)
+        st = hp_apply(page, r, "patch", problems, tag, code=vp_shipped)
         if not st:
             return
         hp_check_jumps(page, st, problems, tag)
         code = hp_mem(page, HP_PA, 64)
+        hp_step_over(page, st, vp_shipped, problems, tag, r)
+        snap_save(page, 2, False)
         t_go = time.monotonic()
         hp_continue(page)
         page.click("#screen_container")
@@ -452,6 +533,15 @@ def hp_debian(browser, base, shots, problems, r):
         if hp_mem(page, HP_PA, 64) != code:
             problems.append(f"{tag}: the reserved memory changed after the run")
         rb_shots(page, shots, "hotpatch-debian-1280-machine", problems, tag)
+        # Paused at the prompt again (the page may stop there itself); the
+        # run replayed from boot with its keys, then the snapshots before
+        # and after the patch.
+        show_tab(page, "machine")
+        if page.evaluate("MKB.runState") != "paused" and page.is_enabled("#dbg_pause"):
+            page.click("#dbg_pause")
+        wait_for(lambda: page.evaluate("MKB.runState") == "paused", 60)
+        hp_replay(page, lambda s: "Hot patched /proc/version" in s, problems, tag, r, 1800)
+        hp_restore_snaps(page, "version_proc_show", problems, tag, r, 120)
     finally:
         if errors:
             problems.append(f"{tag}: page errors {errors[:3]}")

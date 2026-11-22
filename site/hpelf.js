@@ -452,9 +452,12 @@ function hpPlan(before, after, opts) {
 // fastcc convention (arguments in ECX and EDX), so a function compiled
 // here would pass and take its arguments elsewhere. null, or why not.
 function hpVerify(A, f, k, opts) {
-	const kb = opts.read ? opts.read(k.va, k.size) : null;
-	if (!kb)
+	// A copy: the page's read is a view of guest RAM, and blanking the
+	// places below in that view wrote zeros into the running kernel (A3).
+	const ram = opts.read ? opts.read(k.va, k.size) : null;
+	if (!ram)
 		return null;
+	const kb = ram.slice();
 	const lo = f.value, hi = f.value + f.size;
 	const ob = f.sec.data.slice(lo, hi);
 	const blank = (a, n) => { for (let i = Math.max(a, 0); i < Math.min(a + n, ob.length); i++) ob[i] = kb[i] = 0; };

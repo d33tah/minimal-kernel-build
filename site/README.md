@@ -48,6 +48,9 @@ Three kinds of markup:
   `build.mjs` renders to HTML at build time (`markup/html.js`) into
   `index.html` (from `index.src.html`); the page does not load these files.
   The views fill those elements by id.
+- The Machine tab's components are rendered at build time as well
+  (`prerender.jsx`, react-dom/server in node) and hydrated at load: React
+  takes over the elements index.html has (below, "React shell").
 - Canvases: the VGA screen (v86), the Memory grid and live map, the Calls
   timeline, minimap and top graph, drawn by their modules.
 
@@ -292,7 +295,7 @@ is `*.jsx` and keeps its module's name (`tabs.jsx`, `settings.jsx`).
 `app.js` mounts it in `init()`, synchronously (`flushSync`), so the
 controls exist before the modules that are not components yet look them
 up. Mounted at once: the tab bar (`TabBar`, tabs.jsx), the Machine tab
-(`MachinePanel`, machinepanel.jsx: the tab shown at load; below) and the
+(the parts of machinepanel.jsx, hydrated: the tab shown at load; below) and the
 Source panel (`SourceAside`, sourceaside.jsx, in the `#src_panel` aside
 beside every tab; below). Mounted when the store's `tab` first names them
 (`mountOnTab`): the Settings tab (`SettingsPanel`, settings.jsx), the
@@ -419,12 +422,26 @@ the same way (the Snapshots tab first):
   measurements" below.
 - The Machine tab (A1) is shown at load and holds the VGA screen, which
   v86 needs before the page's init: the screen (`#screen_container` with
-  its text rows and canvas) is index.html's own, and `MachinePanel` is
-  mounted at once into the `.run` box beside it (`#machine_run`), with
-  portals into the box above the screen (`#machine_top`: status line,
-  the header check's problems, the offline notes), the screen's box
-  (`#screen_wrap`: the "VM paused" overlay) and the kernel and boot
-  section (`#machine_ctl`). What it shows is machtab.js's: `MSET` (the
+  its text rows and canvas) is index.html's own. The tab's components are
+  four parts (`MACHINE_PARTS`), each the root of the element of index.html
+  it takes over: the box above the screen (`#machine_top`: status line,
+  the header check's problems, the offline notes), the box over the
+  screen (`#machine_overlay`: the "VM paused" overlay), the `.run` box
+  beside it (`#machine_run`) and the kernel and boot section
+  (`#machine_ctl`). build.mjs renders the parts at build time
+  (prerender.jsx: react-dom/server's renderToString in node, the modules
+  the parts take their handlers from replaced by stubs, since a render
+  calls none of them) and writes their HTML into those elements, so the
+  browser lays the tab out while the bundle downloads; shell.jsx then
+  hydrates them (`hydrate`, ui.jsx: React's hydrateRoot, in the background
+  while init goes on). Hydrating, a part renders what its controller held
+  at load (`useField`'s server snapshot: the fields as `controller()` got
+  them), which is what the build-time render saw, so the markup matches;
+  then it renders what the modules have set since. A mismatch would be a
+  page error (React's #418), which suite boot fails on; it also checks
+  that the served index.html has the parts. Until the command line's
+  input is hydrated, `setCmdline` keeps the value for it. What it shows is
+  machtab.js's: `MSET` (the
   kernel, RAM, speed and clock menus and the count box, controlled; the
   command line and the symbol offset are uncontrolled inputs read through
   their refs, a test sets the offset directly), `MHEAD` (status, problems,
@@ -438,11 +455,11 @@ the same way (the Snapshots tab first):
   frame renders only what changed. Modules choose through functions
   (`setSettings`, `chooseSpeed`, `chooseKernel`, `setStatus`), and the
   Settings tab's speed, clock and count call the same ones. Measured on
-  d-claude (hello and the minified Linux at full speed, the page's own
-  clock): the mount takes 6.5-6.9 ms and the tab's renders until Hello
-  is on the screen 8.8-9.9 ms in 36-38 renders (before the parts had
-  their own fields, 12.5-14.1 ms in 47-50). What the mount costs the
-  boot is in "A1's measurements" below.
+  d-claude (hello at full speed, the page's own clock): hydrating the
+  four parts takes 6.4 ms (1.7, 0.6, 2.5, 1.7 ms; mounting them anew took
+  6.5-6.9 ms, and their layout came after the bundle) and the tab's
+  renders until Hello is on the screen about 6 ms in 30 renders. What
+  they cost the boot is in "A1's measurements" below.
   The menu toggle stays markup (markup/runbadge.jsx): its menu holds the
   bookmarks and Back and Forward, which bookmarks.js and nav.js fill by
   id; debugui.js draws its face and state from `MV`.
@@ -465,21 +482,31 @@ browser context per load), the medians of 88 runs per site pooled from
 | minified Linux | 925 ms | 946 ms (+2.2%) | 970 ms (+4.9%) |
 | hello | 622 ms | 637 ms (+2.5%) | 657 ms (+5.7%) |
 
-The difference is the Machine tab's mount: a build without it
+The difference was the Machine tab's first render: a build without it
 (experiment, the tab left empty) boots in 907-929 / 585-618 ms, as
-43308392f does; without its run box 930-950 / 605-624 ms, without its
-kernel and boot section 947 / 637 ms. Its updates while the boot runs
-cost nothing measurable (a build that never draws them: hello 641 ms
-against 645). Loads with a warm cache (the same context, the third
-load) take as long as 5d0bd7521's (minified 711 / 713 ms, hello 417 /
-422 ms, this / 5d0bd7521), and with V8 single-threaded the cold
-difference stays (hello 809 against 767 ms): it is a cost of the first
-load, on the main thread. Which part of the mount's first run it is
-(React's code run for the first time, the layout of the tab done after
-the bundle instead of while it downloads) is not pinned down. Not
-reduced: deferring the mount (createRoot without flushSync) and V8's
-compile hints (`allFunctionsCalledOnLoad`) gained nothing; rendering the
-tab's markup at build time and hydrating it is the next thing to try.
+43308392f does. Its markup is now rendered at build time and hydrated
+(above, "React shell"; 22a0b61f5 and 1f1dcaf1b). Measured after that
+(d-claude idle, boottime.py interleaved, 144 runs per site pooled from
+3 runs of 48 reps; the host's times were lower that day, so the table
+gives that day's base):
+
+| kernel | 43308392f | 0d88212ed (mounted) | hydrated |
+| --- | --- | --- | --- |
+| minified Linux | 616 ms | 644 ms (+5.3% against 611 ms in its run of 48) | 631 ms (+2.4%) |
+| hello | 617 ms | 651 ms (+5.9% against 614 ms in its run of 48) | 639 ms (+3.5%) |
+
+What is left is React's work while the boot runs: hydrating the parts
+(6.4 ms) and their renders until Hello (about 30, 6 ms), with the
+layout and paint of what they change. A build that hydrates 2 s after
+the load (the tab shows its build-time state, "Loading kernel list...",
+until then) boots as fast as 43308392f (hello 613 against 612 ms, 40
+runs): every millisecond left is the tab being live during the boot.
+Tried and not kept, each within the noise or slower: hydrating in one
+go with flushSync (hello +4.8% against +3.7% in the same run), at the
+first idle moment (requestIdleCallback: it comes while the kernel list
+is fetched, before the boot, and gains nothing), `contain: layout
+paint` on the run box and the kernel section, and a Memory map without
+its Hilbert table at load (2.8 ms less script, no wall time).
 Step rate
 (rate.py, 8 reps, the Debugger shown): Debian 6.409 / 6.257 M/s (-2.4%),
 minified 4.005 / 3.816 M/s (-4.7%), 43308392f / this; the minified
@@ -506,7 +533,7 @@ toggle and About stay as they are (outside A1):
 | listing.js, symview.js | the Source panel's aside (`src_panel`: where it covers the listing on a phone) |
 | memmap.js, memmapdraw.js, memmaplist.js, memview.js, mevview.js | Memory (`mm_map`, the grid: canvases, and the tab's lines), About's legend; memmap.js watches the Memory and Quests panels' `hidden` (the live map is in one of them) |
 | nav.js | the menu toggle's Back and Forward (`nav_*`) |
-| shell.jsx | the elements it mounts components into (`tabrow`, `src_panel`, the Machine tab's `machine_run`, `machine_top`, `screen_wrap`, `machine_ctl`) |
+| shell.jsx | the elements it mounts or hydrates components in (`tabrow`, `src_panel`, the Machine tab's `machine_top`, `machine_overlay`, `machine_run`, `machine_ctl`) |
 | tabs.jsx | every tab's panel (`panel_<tab>`: index.html's element a tab's component is mounted in, or its build-time markup; `showTab` shows one and hides the others before the views that follow the tab draw) |
 
 No module looks up an element of the Machine, Snapshots, Page, Debugger,

@@ -8,23 +8,23 @@ asmnames.js	75	f99e340d	sometimes: an operand that ASM_MEM does not parse as mem
 asmnames.js	174	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
 asmnames.js	212	091bc534	sometimes: a memory operand naming a 16-bit (or other non-32-bit) base or index register: the suites list 32-bit kernel code almost always; ran in run 43952378680 (its report: a listed line that ran), not in 43872002921, 43925425362 nor 43943538560
 bminit.js	81-83	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
-bookmarks.js	217	42325197	a code bookmark past the end of its function in another build where the function changed size and its C line has no breakpoint inside it: the rebuildmap suite's changed function keeps the bookmarked line
-bookmarks.js	246	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
-bookmarks.js	274	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
-bookmarks.js	291	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
-bookmarks.js	299	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
-bookmarks.js	351	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
-bookmarks.js	448	3bff6978	bmRenderPages without #pages_box: the element is in index.html
-bookmarks.js	456	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
-bookmarks.js	494	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
-bookmarks.js	504-506	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
-bookmarks.js	586-588	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
-bookmarks.js	590	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
-bookmarks.js	593	51849c8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
-bookmarks.js	691	33ddae1b	bmNote without #bm_status: the element is in index.html
-bookmarks.js	699	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
-bookmarks.js	731	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
-bookmarks.js	839	6b17f7cd	bmRender without #bm_list: the element is in index.html
+bookmarks.js	216	42325197	a code bookmark past the end of its function in another build where the function changed size and its C line has no breakpoint inside it: the rebuildmap suite's changed function keeps the bookmarked line
+bookmarks.js	245	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
+bookmarks.js	273	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
+bookmarks.js	290	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
+bookmarks.js	298	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
+bookmarks.js	350	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
+bookmarks.js	447	3bff6978	bmRenderPages without #pages_box: the element is in index.html
+bookmarks.js	455	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
+bookmarks.js	493	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
+bookmarks.js	503-505	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
+bookmarks.js	585-587	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
+bookmarks.js	589	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
+bookmarks.js	592	51849c8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
+bookmarks.js	690	33ddae1b	bmNote without #bm_status: the element is in index.html
+bookmarks.js	698	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
+bookmarks.js	730	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
+bookmarks.js	838	6b17f7cd	bmRender without #bm_list: the element is in index.html
 boot.js	135-138	6156dc01	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
 boot.js	142	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
 boot.js	211	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -307,9 +307,9 @@ quests.jsx	215	2ece24a2	sometimes: the E820 quest answered right: ran in every r
 quests.jsx	241	b4091e2d	the first-paint quest on a v86 build without memory events (MEV.missing): the site ships only the gen-v86.sh build, which reports them
 quests.jsx	460	f86b4bd8	localStorage.setItem throwing (storage blocked or full) when the Quests panel is opened or closed: the quests suite's no-storage case does not open or close it; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 quests.jsx	480-481	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
-rebuild.jsx	304-306	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
-rebuild.jsx	412-413	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
-rebuild.jsx	521	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
+rebuild.jsx	303-305	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
+rebuild.jsx	411-412	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
+rebuild.jsx	520	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	134	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	210-212	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	223	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
@@ -376,15 +376,15 @@ snapdiff.js	151-153	554449e5	reading a page after the diff succeeded: the worker
 snapdiff.js	198-202	cdd115a7	same as snapdiff.js:151-153 for the Page tab buttons
 snapdiff.js	204	f8bff038	same race as snapdiff.js:149 for the Page tab buttons
 snaprecord.js	132	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
-snapshots.js	190-192	11a71088	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
-snapshots.js	209-212	f442ec7f	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause
-snapshots.js	224	4bf395d6	Save snapshot with no machine, before it is ready or during a reverse operation: the button is disabled in these states, only a click racing the change reaches it
-snapshots.js	240	56e9e0b3	sometimes: a save while compiled JIT blocks are queued: blocks compile synchronously (fastforward.js jitDetInstall), so the queue is usually empty between the slices where a click lands; under coverage the jitsnap suite's save once found blocks pending (run 43718121755)
-snapshots.js	242	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
-snapshots.js	294-296	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
-snapshots.js	304	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
-snapshots.js	431	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
-snapshots.js	564	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+snapshots.js	189-191	11a71088	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
+snapshots.js	208-211	f442ec7f	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause
+snapshots.js	223	4bf395d6	Save snapshot with no machine, before it is ready or during a reverse operation: the button is disabled in these states, only a click racing the change reaches it
+snapshots.js	239	56e9e0b3	sometimes: a save while compiled JIT blocks are queued: blocks compile synchronously (fastforward.js jitDetInstall), so the queue is usually empty between the slices where a click lands; under coverage the jitsnap suite's save once found blocks pending (run 43718121755)
+snapshots.js	241	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
+snapshots.js	293-295	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
+snapshots.js	303	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
+snapshots.js	430	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
+snapshots.js	563	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 snapshotspanel.jsx	39	d4419ba9	a name edit ending twice: Enter and Esc remove the field at once (flushSync) and Chromium fires no blur for a removed element; the guard keeps a blur after Esc from saving the name
 snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
@@ -444,7 +444,7 @@ stepper.js	749	b61b9bc1	as 927-929, in rerun() after mkb_run
 sw.js	165	d154bd52	sometimes: keepPage skips storing when the storage estimate is above 80% of the quota: a test cannot shrink the origin's quota for a service worker, and the quota follows the runner's free disk (ran in run 43628096699)
 symimport.js	52	1ab3716f	parseElf reads only the ranges elfSlices fetched (header, program and section headers, .shstrtab, .symtab and its string table); an invariant check
 symimport.js	387,389	99da46f4	localStorage throwing while an import is forgotten: storage that throws there is tested elsewhere (the page keeps no data), this catch only logs nothing
-symimport.js	440,442	3b5787d7	localStorage throwing while the command line is remembered: same as above, the catch only drops the write
+symimport.js	441,443	b84d4bf6	localStorage throwing while the command line is remembered: same as above, the catch only drops the write
 symview.js	92	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
 symview.js	126	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
 symview.js	152	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open

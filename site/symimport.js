@@ -11,8 +11,8 @@ import { image, setSymbols, symbols, setDisasm, disasm, kernels, initrd, setInit
 import { dbgFresh, dbgHas, DBG } from "./dbginfo.js";
 import { dbgImport, dbgRestore, dbgForget } from "./dbgimport.js";
 import { srcFresh } from "./srctext.js";
-import { showHeader, ram, setStatus } from "./header.js";
-import { MSET, MIMP, setImp, setSettings, ramSizes, cmdline, setCmdline, symOffset, DEFAULT_CMDLINE } from "./machtab.js";
+import { showHeader, ram } from "./header.js";
+import { MSET, MIMP, setImp, setStatus, setSettings, ramSizes, cmdline, setCmdline, symOffset, DEFAULT_CMDLINE } from "./machtab.js";
 
 const PAGE_OFFSET_I386 = 0xC0000000;
 const MAP_KEY = "mkb-map-";

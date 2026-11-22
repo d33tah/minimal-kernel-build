@@ -30,7 +30,7 @@ import { initReverse } from "./reverse.js";
 import { initBookmarks } from "./bminit.js";
 import { initRebuild } from "./rebuild.jsx";
 import { initHotPatch } from "./hotpatch.jsx";
-import { setStatus } from "./header.js";
+import { setStatus } from "./machtab.js";
 import { setAutoscan, scan } from "./scan.js";
 import { initLegend, drawMaps, pageAt, showHover } from "./memview.js";
 import { selectPage } from "./listing.js";

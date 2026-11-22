@@ -45,13 +45,12 @@ import { kernelSymLookup } from "./livedis.js";
 import { snapKernelName, snapshots } from "./snaprecord.js";
 import { snapKernelKey, saveSnapshot, restoreSnapshot } from "./snapshots.js";
 import { runNow, replayRun, runStatus } from "./replay.js";
-import { setStatus } from "./header.js";
 import { hideTip } from "./tips.js";
 import { DBG, dbgFrames, dbgLineCode } from "./dbginfo.js";
 import { srcFile } from "./srctext.js";
 import { textKeep, buildFamily, recFamily, imageLabel, mapLine } from "./buildmap.js";
 import { srcOpen } from "./srcview.js";
-import { setSettings } from "./machtab.js";
+import { setSettings, setStatus } from "./machtab.js";
 
 const BM_KEY = "mkb-bookmarks";
 const BM_LONG_MS = 600;   // a long press (touch) opens the add dialog

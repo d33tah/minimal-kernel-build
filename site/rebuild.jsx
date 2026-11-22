@@ -37,9 +37,8 @@ import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
 import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
 import { Tip, DomNodes } from "./ui.jsx";
-import { setStatus } from "./header.js";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
-import { MSET } from "./machtab.js";
+import { MSET, setStatus } from "./machtab.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded

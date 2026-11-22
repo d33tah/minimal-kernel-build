@@ -5,7 +5,7 @@
 
 import { V86_KERNEL_ADDR, hex, kib, V86_INITRD_ADDR } from "./util.js";
 import { initrd, image } from "./page.js";
-import { MSET, MHEAD, setStatus } from "./machtab.js";
+import { MSET, MHEAD } from "./machtab.js";
 
 // Where v86 0.5.471 puts a bzImage (src/kernel.js, load_kernel): the
 // real-mode part at 0x80000, the command line at 0x8e000, the 32-bit part
@@ -124,5 +124,5 @@ function ram() {
 	return Number(MSET.ram);
 }
 
-export { ram, V86_SETUP_ADDR, V86_CMDLINE_ADDR, kernelEnd, checkImage, setStatus, parseHeader, DEFAULT_RAM,
+export { ram, V86_SETUP_ADDR, V86_CMDLINE_ADDR, kernelEnd, checkImage, parseHeader, DEFAULT_RAM,
 	showHeader };

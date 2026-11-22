@@ -91,9 +91,19 @@ const MIMP = controller({
 	build: null, // { local } or { sha, url, when, runUrl, run }
 });
 
+// Set import statuses and draw them. A field set to what it holds already
+// (symimport.js sets them all again at each kernel load) keeps its object,
+// so its part does not render again.
 function setImp(fields) {
-	Object.assign(MIMP, fields);
-	MIMP.changed();
+	let changed = false;
+	for (const [k, v] of Object.entries(fields)) {
+		if (JSON.stringify(MIMP[k]) === JSON.stringify(v))
+			continue;
+		MIMP[k] = v;
+		changed = true;
+	}
+	if (changed)
+		MIMP.changed();
 }
 
 const MV = controller({

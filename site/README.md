@@ -639,6 +639,25 @@ alternating runs; `--redraw` 12 runs):
 The chunks' own runs on a loaded host (Source panel open next frame
 +9.1%, typing +5.8%, Events chip +6.0%) did not repeat on the idle one.
 
+Measured again after A1 (2026-11-22, idle host, 24 alternating runs, a
+run kept only while no other load ran on the host): the Source panel open
+was +9.7% work on 72f7dc95b (14.72 / 16.15 ms; per run medians 14.50 /
+15.92 ms, quartiles 14.24-14.79 / 15.67-16.38): the close-out's +2.2%
+did not repeat. A CPU profile of the opens showed the
+outline reading the file's lines again at every open (its cache was on
+the panel's view, a new object per open): 2-3 ms of each open, in
+27c798f20 too. fileLines (source.js) keeps the last file's lines per
+DWARF version since e5a070703:
+
+| action | work 27c798f20 | work e5a070703 | next frame 27c798f20 | next frame e5a070703 |
+| --- | --- | --- | --- | --- |
+| tab switch (8 tabs) | 49.96 ms | 50.06 ms (+0.2%) | 30.4 ms | 30.4 ms (+0.1%) |
+| Events filter chip | 11.13 ms | 11.08 ms (-0.4%) | 9.8 ms | 10.1 ms (+2.8%) |
+| Calls zoom (window) | 4.65 ms | 3.96 ms (-15.0%) | | |
+| Calls zoom + redraw (`--redraw`, 24 runs) | 1.776 ms | 1.644 ms (-7.4%) | | |
+| Source panel open | 14.55 ms | 12.68 ms (-12.9%) | 17.4 ms | 17.3 ms (-0.9%) |
+| typing, per key | 3.16 ms | 3.18 ms (+0.6%) | 11.7 ms | 12.0 ms (+2.6%) |
+
 An earlier run of the same 12 pairs gave tab -3.8% / +2.8%, chip -21.2% /
 -18.3%, Source panel -1.4% / -0.3%, typing -0.8% / -0.8% and the windowed
 zoom +5.3%: that number moves more between runs than between the builds

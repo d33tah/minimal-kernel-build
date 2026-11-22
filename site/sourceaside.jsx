@@ -57,24 +57,14 @@ function SrcTitleParts({ fn, path, whole, range }) {
 // The functions of the panel's file (from its line rows, each at its first
 // line in the file, and every function files.json puts in it) and the
 // files of code inlined into its lines (headers), each one pick away.
-function srcFileFacts(sp, path) {
-	const c = sp.facts;
-	if (c && c.path === path && c.ver === DBG.version)
-		return c.r;
-	const r = fileLines(path);
-	if (r.state === "ok")
-		sp.facts = { path, ver: DBG.version, r };
-	return r;
-}
-
-// Kept per file, its facts' state and the DWARF version (the panel is drawn
+// Kept per file, its lines' state and the DWARF version (the panel is drawn
 // every second while stepping, and again for each file opened; the
 // functions are looked up in every one of the kernel's).
 let outlineLast = null;
 
 function srcOutlineView(sp) {
 	const { path } = sp;
-	const fl = dbgFiles(), r = srcFileFacts(sp, path);
+	const fl = dbgFiles(), r = fileLines(path);
 	const key = [path, r.state, fl.state, DBG.version].join("\0");
 	if (outlineLast && outlineLast.key === key)
 		return outlineLast;

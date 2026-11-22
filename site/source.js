@@ -170,8 +170,21 @@ function openSourceLine(path, line) {
 
 // A whole file's lines with code: the line rows of every shard that has
 // code of it (files.json), each frame naming the file, like the Coverage
-// tab counts them.
+// tab counts them. The last file's are kept per DWARF version (a table
+// read or a hot patch changes it): the outline asks at every open of the
+// panel, and reading them walks every line row of the file (2-3 ms).
+let fileLinesLast = null;
+
 function fileLines(path) {
+	if (fileLinesLast && fileLinesLast.path === path && fileLinesLast.ver === DBG.version)
+		return fileLinesLast.r;
+	const r = fileLinesRead(path);
+	if (r.state === "ok")
+		fileLinesLast = { path, ver: DBG.version, r };
+	return r;
+}
+
+function fileLinesRead(path) {
 	const fl = dbgFiles();
 	if (fl.state !== "ok")
 		return fl;

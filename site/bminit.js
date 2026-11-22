@@ -8,9 +8,9 @@ import { $ } from "./util.js";
 import { vmHasKeys, state } from "./page.js";
 import { srcPanel } from "./source.js";
 import { dbgOnChange } from "./dbginfo.js";
-import { bmLoad, bmExport, bmDialogSave, bmDialogClose, bmMenuFit, bmPendingTick, bmRender, bmAsk, bmDraftHere,
-	bmDraftPos, bmListOpen, BM, bmImport, bmDraftAt, bmPressTarget, BM_LONG_MS, BM_KEY,
+import { bmExport, bmDialogSave, bmDialogClose, bmMenuFit, bmPendingTick, bmRender, bmAsk, bmListOpen, bmImport,
 	bmChanged } from "./bookmarks.js";
+import { bmLoad, bmDraftHere, bmDraftPos, BM, bmDraftAt, bmPressTarget, BM_LONG_MS, BM_KEY } from "./bmdata.js";
 import { srcOpen } from "./srcview.js";
 
 // ---- init -------------------------------------------------------------------------

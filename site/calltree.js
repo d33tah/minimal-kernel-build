@@ -6,7 +6,7 @@ import { $, hex } from "./util.js";
 import { api } from "./page.js";
 import { frStartAt, frEndAt, frSmallAt, FramePath } from "./frames.js";
 import { STEP_CONST } from "./stepper.js";
-import { dbgTitle } from "./dbginfo.js";
+import { dbgTitle } from "./dbgfacts.js";
 import { G, buildTree, runStart, recTo, PALETTE, subsystem } from "./graphdata.js";
 import { canvasSize, fitLabel } from "./graphlayout.js";
 import { controller } from "./ui.jsx";

@@ -8,23 +8,23 @@ asmnames.js	75	f99e340d	sometimes: an operand that ASM_MEM does not parse as mem
 asmnames.js	174	18ec3779	asmLocal for a chain without DWARF local frames: not reached by the operands suite's instructions
 asmnames.js	212	091bc534	sometimes: a memory operand naming a 16-bit (or other non-32-bit) base or index register: the suites list 32-bit kernel code almost always; ran in run 43952378680 (its report: a listed line that ran), not in 43872002921, 43925425362 nor 43943538560
 bminit.js	81-83	be37d080	the contextmenu event a touch long press ends with (Android): Playwright's touch emulation sends none after a long press
-bookmarks.js	216	42325197	a code bookmark past the end of its function in another build where the function changed size and its C line has no breakpoint inside it: the rebuildmap suite's changed function keeps the bookmarked line
-bookmarks.js	245	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
-bookmarks.js	273	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
-bookmarks.js	290	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
-bookmarks.js	298	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
-bookmarks.js	350	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
-bookmarks.js	447	3bff6978	bmRenderPages without #pages_box: the element is in index.html
-bookmarks.js	455	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
-bookmarks.js	493	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
-bookmarks.js	503-505	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
-bookmarks.js	585-587	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
-bookmarks.js	589	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
-bookmarks.js	592	51849c8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
-bookmarks.js	690	33ddae1b	bmNote without #bm_status: the element is in index.html
-bookmarks.js	698	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
-bookmarks.js	730	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
-bookmarks.js	838	6b17f7cd	bmRender without #bm_list: the element is in index.html
+bmdata.js	185	42325197	a code bookmark past the end of its function in another build where the function changed size and its C line has no breakpoint inside it: the rebuildmap suite's changed function keeps the bookmarked line
+bmdata.js	214	ac861e5a	bmTargetText of an unknown kind: bmValid refuses other kinds on load, import and links
+bmdata.js	242	46ffb4ff	This position with no machine or before it runs: only between a kernel load's start and its boot
+bmdata.js	259	9e9b1280	a call stack frame without a function start: frames carry data-fnpa only when a symbol was found
+bmdata.js	267	5905952c	bmDraftAt of a non-element target (a text node): contextmenu and pointer events target elements
+bmdata.js	319	13eac78c	the Page tab's ☆ with no page selected: the page follows EIP from the first pause or step, so selectedPage is -1 only while the first JIT run of a page loaded at full speed has not stopped
+bookmarks.js	135	3bff6978	bmRenderPages without #pages_box: the element is in index.html
+bookmarks.js	143	c9b0b481	a page bookmark beyond the grid (made with more RAM than now): the bookmarks tests keep one RAM size per kernel
+bookmarks.js	181	ab9d9b16	Save in the dialog with no draft: the dialog is open only with a draft
+bookmarks.js	191-193	0928e595	a bookmark saved before the kernel's SHA-256 is known: hashing finishes within milliseconds of the load, before a dialog can be confirmed
+bookmarks.js	273-275	d9896f10	a pending jump older than two minutes: a kernel that does not run for 120 s (a failed fetch now drops the jump at once)
+bookmarks.js	277	bcdef68a	sometimes: a pending jump while the machine is not ready: it ticks every 300 ms and the switch's boot in the tests is usually ready sooner; on a slow runner a tick comes first (ran in run 43619245589, not in 43588908776, 43600287802, 43602952211, 43605289270, 43611610762)
+bookmarks.js	280	51849c8a	sometimes: a pending bookmark jump for another kernel while the switched machine is not ready yet: bmPendingTick returns and retries; the tests' jumps usually land after the switch is ready (ran in run 43628096699, with 444)
+bookmarks.js	378	33ddae1b	bmNote without #bm_status: the element is in index.html
+bookmarks.js	386	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
+bookmarks.js	418	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
+bookmarks.js	526	6b17f7cd	bmRender without #bm_list: the element is in index.html
 boot.js	135-138	6156dc01	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
 boot.js	142	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
 boot.js	211	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -33,14 +33,14 @@ buildmap.js	52	e158c7c3	more than 400 file texts kept in one page: the suites se
 buildmap.js	112	b8d99835	more than 64 line maps in one page: the suites map a few texts
 calltree.js	27-30	e5880000	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
 calltree.js	150-152	621631a0	drawTop without a stepper: as line 326
-coverage.js	78	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
-coverage.js	144	9c0c91df	a kernel whose file list is not read (yet), or has none (an imported vmlinux has no Rebuild and boot): the suites rebuild shipped kernels after their Source tab read files.json
-coverage.js	150	442705c3	a rebuild of a kernel that recorded nothing: every rebuild in the suites follows a boot that ran (stepped, or with the JIT, which still records the entry)
-coverage.js	166	4dfa9305	more than 8 builds recorded in one page: rebuildmap makes 5
-coverage.js	191-193	484a715e	sometimes: the comparison drawn while an edited file's text is still loading; in rebuildmap the build's text was read before the comparison was picked (run 44749449524)
-coverage.js	196	a13a92b3	an edited file without a text to diff (its text did not load, or the earlier build's text was dropped from the 400 kept): the suites compare builds whose texts are kept
-coverage.js	239	4c0dd8e2	the compared build belongs to another kernel only after switching kernels with a comparison picked: rebuildmap stays on hello
-coverage.js	462	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
+coverage.js	79	f3de9a2d	sometimes: the tint note before any kernel ran: only when the Source tab draws before the boot started; ran up to run 43925425362, not in 43965158938, where the page fetches kernels.json and v86.wasm while it sets itself up (R3) and the boot comes earlier
+coverage.js	145	9c0c91df	a kernel whose file list is not read (yet), or has none (an imported vmlinux has no Rebuild and boot): the suites rebuild shipped kernels after their Source tab read files.json
+coverage.js	151	442705c3	a rebuild of a kernel that recorded nothing: every rebuild in the suites follows a boot that ran (stepped, or with the JIT, which still records the entry)
+coverage.js	167	4dfa9305	more than 8 builds recorded in one page: rebuildmap makes 5
+coverage.js	192-194	484a715e	sometimes: the comparison drawn while an edited file's text is still loading; in rebuildmap the build's text was read before the comparison was picked (run 44749449524)
+coverage.js	197	a13a92b3	an edited file without a text to diff (its text did not load, or the earlier build's text was dropped from the 400 kept): the suites compare builds whose texts are kept
+coverage.js	240	4c0dd8e2	the compared build belongs to another kernel only after switching kernels with a comparison picked: rebuildmap stays on hello
+coverage.js	463	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
 cpustate.js	403-405	90462cdb	a machine-state section whose reader throws: each reads fixed fields of v86's CPU object (pinned v86 0.5.471); a throw would need a v86 build without one of them
 cpustate.js	429-431	a95db99c	the restored views' set trap: after a restore neither v86's JS (cpu.js writes fpu_status_word[0] only in its constructor, before the page replaces the view) nor the page writes last_result, fpu_status_word or mxcsr; the get trap is what runs (snapdiff checks the views)
 cpustate.js	440	7902552f	a restored state without one of last_result, fpu_status_word, mxcsr: every state v86 0.5.471 saves has state[86..88], so set_state replaces all three; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -59,15 +59,15 @@ dbginfo.js	166	0104effd	types Worker error after an IndexedDB write of a replace
 dbginfo.js	184-185	3d58cc52	the locals request of one unit fails after the types pass read the same unit without error: decodeData with locals runs in both, so a unit that fails fails the types first
 dbginfo.js	230-238	090dd4f6	a unit's locals bring types the types pass did not have: both passes read the same DIEs; the merge is a guard for a table from IndexedDB of an older page version
 dbginfo.js	275	f753a4ac	E6: code compiled in the page whose data files have no types.json: kgen.js kgenDwarf always writes types.json with the line shards
-dbginfo.js	351	2c0239a6	a types table without function facts: written by an older version of this page into IndexedDB; the current page always adds funcs
-dbginfo.js	681	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
-dbginfo.js	685	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
-dbginfo.js	723	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
+dbgfacts.js	47	2c0239a6	a types table without function facts: written by an older version of this page into IndexedDB; the current page always adds funcs
+dbginfo.js	579	432789e1	dbgFunction over a function that spans two shards with the second not loaded: needs a function crossing a 64 KiB shard boundary in a shipped kernel at the time it is asked
+dbginfo.js	583	bb8568f5	dbgFunction with a row of no length: the line tables have no empty rows inside a function
+dbginfo.js	621	4a804b2c	files.json naming a shard the index does not list: both written together by gen-dwarf.js; only inconsistent data
 dbgmerge.js	202	1acb157f	E6: a line shard of format 1 (no is_stmt data) under a rebuild: CI and the page write format 2 since the is_stmt step; only an old shard
 dbgmerge.js	337	70207f09	E6: the page's and CI's shards of different sizes: both come from kgen.js's SHARD_BITS; only inconsistent data
 dbgmerge.js	437	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask for (its dbgGet asks only index, line, cfi, locals, ownLocals, funcs, types, files)
 dbgmerge.js	514	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
-debug.js	106	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
+debug.js	108	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 debugui.js	94-99	8c5b8c33	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
 debugui.js	437	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
 debugui.js	525	70b8ba71	sometimes: behindRate when stepping reaches less than half the set speed: depends on the runner's speed during a slow-motion run (ran in run 44036696793, not in 44053124707, where nothing else in debugui.js changed but the removed typeof checks)
@@ -152,8 +152,8 @@ fastforward.js	369	cdfb4b72	a boot during that stepping: a race
 fastforward.js	371-374	bcf5d2e0	as 351
 fastforward.js	403	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
 fastforward.js	432	cdfb4b72	a boot during the breakpoint run: a race
-fnfacts.js	51	c19d25fb	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-fnfacts.js	142	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
+fnfacts.js	52	c19d25fb	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+fnfacts.js	143	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it
 frames.js	85-87	99fec2fd	Frames.push of a frame deeper than 65,534 calls (the depth column's overflow): the shipped kernels' call depth stays in the tens; site/test_frames.mjs runs it with a 70,000-deep chain
 frames.js	91-93	28aff1cd	Frames.push in task 65,535 or later: the shipped kernels run tens of tasks; site/test_frames.mjs runs it
@@ -173,35 +173,35 @@ genworker.js	86	53d4ff50	E1 track: a WASI tool (llvm-nm, llvm-objdump) exiting n
 genworker.js	113	0e45f5e7	E1 track: a vmlinux without DWARF given to the generators: the tests import -g files
 genworker.js	121-123	5fb84bcb	E1 track: llvm-objdump failing in the Worker; the shipped tools do not fail on the test files
 genworker.js	154	6045323c	E1 track: the C source index asking for a shard the generated DWARF lacks: an internal invariant
-graph.js	61	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
-graph.js	101	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	196	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
-graph.js	330	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
-graph.js	492	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
+graph.js	62	01ef5f12	drawTimeline without a stepper: graphTick returns before drawGraph without one, and G.stepper is null only when the stepper failed to install (a v86.wasm without the step exports, which the site never ships)
+graph.js	102	caa54162	sometimes: minimap skip of a frame that ends at or before the window start: only in the tasks suite's Debian views, whose recorded stretch differs from run to run (wall-clock bound); ran in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	197	b20a6622	focus mode: a frame not under the focused one inside its time range at a deeper row: only a sibling starting exactly at the focused frame's end could be there; not reached by CI's focus on start_kernel and not forceable
+graph.js	331	f7806434	sometimes: task switch label skipped when closer than 8 px to the previous label: the minified Linux has one switch; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and placed two labels that close in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
+graph.js	493	a832b5f9	graphRestore of a view captured with another stepper: needs Back to a Calls history entry after the kernel was booted again; a defensive guard no suite reaches (navhist keeps one boot across its entries)
 graphdata.js	87	acdf76c6	sometimes: the fs colour class by name prefix, for a function without a source file: the tasks suite's Debian run goes on for a wall-clock time and records a different stretch each run; in run 43605289270 that stretch had such a function, in 43588908776, 43600287802 and 43602952211 not
 graphdata.js	131	8cefeadf	buildTree's skip of frames that start before the kernel entry: frames are pushed only for symbols, and no shipped kernel has a symbol below its entry, so no frame starts before sinceEntry (checked: 0 such frames in a whole minified run)
 graphdata.js	215-217	ddc808ed	taskInfo's walk up through a retpoline thunk frame to kthread: needs a recorded kthread frame whose child hangs below a thunk-named frame; the minified Linux has no retpolines and CI's Debian tasks run records none either
 graphdata.js	224	9c01859a	sometimes: taskInfo's fallback name (kthread's last other call, without retpolines): a kthread whose thread function is reached neither from ret_from_fork nor through a thunk; the tasks suite's Debian run records a different stretch each run (wall-clock bound) and recorded one in run 43605289270 only (of 43588908776, 43600287802, 43602952211, 43605289270)
 graphnav.js	94	b109a5bb	timelineSummary without a stepper: a test-only helper (graph_check) always called after a run
 graphnav.js	100	21e02933	timelineSummary's skip of frames that end before the entry: as line 135, there are none
-hotpatch.jsx	222	ca517fca	a patched file with no built text: a patch needs the kit's object of the file, so its text is in the kit
-hotpatch.jsx	238	fca23807	sometimes: ran in run 44723254418 (kit job: the rebuild suites pause a rebuilt kernel with edits, and the background check reads its text); otherwise: the running text of a kernel rebuilt in the page with edits (image.edits): no suite hot patches a rebuilt kernel (suite hotpatch patches the shipped hello, minified Linux and editable Debian)
-hotpatch.jsx	251	11d965ea	sometimes: hpSync while a patch is being written (HP.busy): only when the store or the editor changes in the few milliseconds between the press and the write; not forced by any suite
-hotpatch.jsx	257	dec148e2	sometimes: the patch box before kits/index.json arrived or on a site without kits: the browser-test jobs have no kits, the kit job has them; which job's coverage records it depends on whether srcedit's first edChanged comes before the index fetch
-hotpatch.jsx	259	f99d7387	sometimes: a kernel without a build kit (the shipped GCC Debian, an import) while the kits list is loaded: hpSync runs on every edit and pause, so it runs in the jobs whose suites pause such a kernel with kits present; the hotpatch suite never does
-hotpatch.jsx	282	4220a41f	the object cache's eviction after 8 different texts: the hotpatch suite checks at most 5 texts of one file per page
-hotpatch.jsx	298-299	7d87f429	sometimes: ran in run 44723254418 (kit job: rebuild_debian's header edit with init/main.c while the build pauses the machine); otherwise: two files differing from the running code at once: the suite edits one file at a time (the refusal text is plain; a two-file case would need two editors' saves before one check)
-hotpatch.jsx	309	6d6ccd47	sometimes: a check overtaken by a newer one while kitHash/kit fetches ran (gen changed): timing-dependent, the suite waits for each check to end before the next edit
-hotpatch.jsx	315	6d6ccd47	sometimes: the same, after the two compiles: a newer edit or pause arrived while clang ran
-hotpatch.jsx	329-331	6a3ba1af	hpLines throwing on a line table it cannot read (a DW_FORM outside the list): clang 22's DWARF 5 tables of the three kernels use only the forms handled
-hotpatch.jsx	338	ae6ac23f	sometimes: the result of a check that a newer check replaced (gen changed after hpMake returned): timing-dependent, as above
-hotpatch.jsx	357	0e4a4a41	the CPU stopped inside the first 5 bytes of a function to replace: the suite pauses at a function's first byte (Run to) or at the prompt, never mid-prologue; needs a Step into a prologue
-hotpatch.jsx	362	8502e045	reserved memory not mapped by the kernel's page tables: every shipped Linux maps the first megabyte at PAGE_OFFSET once paging is on, and hello runs without paging
-hotpatch.jsx	372	34ba3fc6	function facts not loaded or absent (dbgFnFacts state none): the three kernels ship funcs-*.json.gz shards
-hotpatch.jsx	375-378	9d4e3448	a replaced function with inlined copies in the running kernel: hello and the minified Linux are -O0 (nothing inlined), Debian's version_proc_show is not inlined anywhere
-hotpatch.jsx	390-393	4028c213	the press with no current background plan (the check result was overtaken): the button is enabled only when the check made a plan, so this needs a state change between the check and the press
-hotpatch.jsx	396	79d1a66e	a machine check refusing at the press (hpMachineWhy): its three refusals are listed above as not reachable by the suite
-hotpatch.jsx	415-420	f8b3eda9	the press failing: only after the refusals above or a write error, which the suite cannot produce
+hotpatch.jsx	223	ca517fca	a patched file with no built text: a patch needs the kit's object of the file, so its text is in the kit
+hotpatch.jsx	239	fca23807	sometimes: ran in run 44723254418 (kit job: the rebuild suites pause a rebuilt kernel with edits, and the background check reads its text); otherwise: the running text of a kernel rebuilt in the page with edits (image.edits): no suite hot patches a rebuilt kernel (suite hotpatch patches the shipped hello, minified Linux and editable Debian)
+hotpatch.jsx	252	11d965ea	sometimes: hpSync while a patch is being written (HP.busy): only when the store or the editor changes in the few milliseconds between the press and the write; not forced by any suite
+hotpatch.jsx	258	dec148e2	sometimes: the patch box before kits/index.json arrived or on a site without kits: the browser-test jobs have no kits, the kit job has them; which job's coverage records it depends on whether srcedit's first edChanged comes before the index fetch
+hotpatch.jsx	260	f99d7387	sometimes: a kernel without a build kit (the shipped GCC Debian, an import) while the kits list is loaded: hpSync runs on every edit and pause, so it runs in the jobs whose suites pause such a kernel with kits present; the hotpatch suite never does
+hotpatch.jsx	283	4220a41f	the object cache's eviction after 8 different texts: the hotpatch suite checks at most 5 texts of one file per page
+hotpatch.jsx	299-300	7d87f429	sometimes: ran in run 44723254418 (kit job: rebuild_debian's header edit with init/main.c while the build pauses the machine); otherwise: two files differing from the running code at once: the suite edits one file at a time (the refusal text is plain; a two-file case would need two editors' saves before one check)
+hotpatch.jsx	310	6d6ccd47	sometimes: a check overtaken by a newer one while kitHash/kit fetches ran (gen changed): timing-dependent, the suite waits for each check to end before the next edit
+hotpatch.jsx	316	6d6ccd47	sometimes: the same, after the two compiles: a newer edit or pause arrived while clang ran
+hotpatch.jsx	330-332	6a3ba1af	hpLines throwing on a line table it cannot read (a DW_FORM outside the list): clang 22's DWARF 5 tables of the three kernels use only the forms handled
+hotpatch.jsx	339	ae6ac23f	sometimes: the result of a check that a newer check replaced (gen changed after hpMake returned): timing-dependent, as above
+hotpatch.jsx	358	0e4a4a41	the CPU stopped inside the first 5 bytes of a function to replace: the suite pauses at a function's first byte (Run to) or at the prompt, never mid-prologue; needs a Step into a prologue
+hotpatch.jsx	363	8502e045	reserved memory not mapped by the kernel's page tables: every shipped Linux maps the first megabyte at PAGE_OFFSET once paging is on, and hello runs without paging
+hotpatch.jsx	373	34ba3fc6	function facts not loaded or absent (dbgFnFacts state none): the three kernels ship funcs-*.json.gz shards
+hotpatch.jsx	376-379	9d4e3448	a replaced function with inlined copies in the running kernel: hello and the minified Linux are -O0 (nothing inlined), Debian's version_proc_show is not inlined anywhere
+hotpatch.jsx	391-394	4028c213	the press with no current background plan (the check result was overtaken): the button is enabled only when the check made a plan, so this needs a state change between the check and the press
+hotpatch.jsx	397	79d1a66e	a machine check refusing at the press (hpMachineWhy): its three refusals are listed above as not reachable by the suite
+hotpatch.jsx	416-421	f8b3eda9	the press failing: only after the refusals above or a write error, which the suite cannot produce
 hpelf.js	60	26274640	an LLVM bitcode or non-ELF object: hpArgv removes -flto, so the page always compiles machine code (test_hotpatch.mjs and the minified Linux's LTO kit show it)
 hpelf.js	64	b023159b	an ELF that is not a 32-bit x86 relocatable object: the kits compile -m32 objects only
 hpelf.js	96	dd17bb51	RELA relocations: i386 objects use REL; a defensive refusal
@@ -394,8 +394,8 @@ source.js	130	7dc2a1f4	openSource for a frame without file or line: its callers 
 source.js	133	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
 source.js	245	32a00a3c	sometimes: ran in run 43755059760's runstate job (random actions); panelLines while the function's DWARF is not ok: the panel is drawn after dbgFunction answered for the same address; the guard covers a DWARF reload in between
 source.js	284	109204dd	renderSourcePanel without an open panel: every caller checks srcPanel first; a defensive guard
-sourceaside.jsx	183	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
-sourceaside.jsx	93	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
+sourceaside.jsx	184	51e86bb0	"... and N more: type to narrow" in the switcher: needs more than 300 matching files, which only Debian has (3,183), and no suite opens Debian's switcher (srcfiles runs hello and the minified Linux, 207 files)
+sourceaside.jsx	94	616da6f3	an outline option without a line ("@address", opens its code): needs a function that files.json puts in the file with no line in its facts; every outline value in the srcfiles runs (hello.c, init/main.c) is a line number
 srcedit.js	136	c3d17f80	a file's shipped text that does not arrive within ED_WAIT_MS (60 s): every shipped file is served in well under that
 srcedit.js	278	4f0af11e	sometimes: ran in run 44099591689 (kit job: rebuild_debian opens files while the rebuilt Debian's data files arrive): edEnterFile finding the panel moved or the editor already filled while it waited for the shipped text: a race between two quick file changes
 srcedit.js	319	d00bbce5	Edit pressed on a file that cannot be edited: the Edit button is disabled then (edSync)
@@ -445,11 +445,11 @@ sw.js	165	d154bd52	sometimes: keepPage skips storing when the storage estimate i
 symimport.js	52	1ab3716f	parseElf reads only the ranges elfSlices fetched (header, program and section headers, .shstrtab, .symtab and its string table); an invariant check
 symimport.js	387,389	99da46f4	localStorage throwing while an import is forgotten: storage that throws there is tested elsewhere (the page keeps no data), this catch only logs nothing
 symimport.js	441,443	b84d4bf6	localStorage throwing while the command line is remembered: same as above, the catch only drops the write
-symview.js	92	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
-symview.js	126	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
-symview.js	152	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
-symview.js	178	c23db8e8	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
-symview.js	332-339	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
+symview.js	94	e6498a00	followEip while the JIT runs: callers only call it when paused or stepping
+symview.js	128	44d956f2	jumpTo an address outside RAM: every link points into RAM (EIP, ESP, symbols of the loaded kernel)
+symview.js	154	b194ed90	openFnSource when no DWARF frame names the function opened (a symbol name the DWARF does not know): the shipped DWARF names every symbol the Calls chart and the bookmarks open
+symview.js	180	c23db8e8	on a phone, the function header still under the Source sheet after scrolling to its first instruction: the header is one row above that instruction, which the scroll already places in the strip
+symview.js	334-341	b3c2950c	unwindHere's 4-byte read across a page boundary: stack slots are 4-byte aligned in every shipped kernel, so a read never crosses a page
 tips.js	54	e626d78f	showTip on an element without data-tip: every listener is on [data-tip] or tip marks, which always have it
 tips.js	88-90	9e52f7a0	sometimes: tipReanchor when the redrawn listing no longer has the open popover's mark (the line scrolled out of the drawn page): a listing redrawn at another page while a popover is pinned, a race with stepping; ran in run 43602952211 only (of 43600287802, 43602952211, 43605289270)
 tips.js	207	ad825671	a touch long press cancelled by moving more than 10 px: CDP touch emulation in the suites taps without moving

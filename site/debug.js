@@ -28,6 +28,7 @@ import * as unwind from "./unwind.js";
 import * as dwexpr from "./dwexpr.js";
 import * as asmnames from "./asmnames.js";
 import * as dbginfo from "./dbginfo.js";
+import * as dbgfacts from "./dbgfacts.js";
 import * as dbgmerge from "./dbgmerge.js";
 import * as dbgimport from "./dbgimport.js";
 import * as source from "./source.js";
@@ -61,6 +62,7 @@ import * as snaprecord from "./snaprecord.js";
 import * as snapdiff from "./snapdiff.js";
 import * as replay from "./replay.js";
 import * as reverse from "./reverse.js";
+import * as bmdata from "./bmdata.js";
 import * as bookmarks from "./bookmarks.js";
 import * as bminit from "./bminit.js";
 import * as clang from "./clang.js";
@@ -91,10 +93,10 @@ import * as page from "./page.js";
 // page.js (the state store and the page API: MKB.state, MKB.api) last.
 const MODULES = [util, clock, jumps, jumpview, stepper, v86patch, frames, stepbase, graph, graphdata, graphlayout,
 	calltree, graphnav, graphinit, dwarf, dwarfread, dwarftables, dwarffuncs, dwarflocals, dwarftypes, unwind, dwexpr,
-	asmnames, dbginfo, dbgmerge, dbgimport, source, srctext, srclinks, srcswitch, srcedit, edpatch, coverage, symimport,
+	asmnames, dbginfo, dbgfacts, dbgmerge, dbgimport, source, srctext, srclinks, srcswitch, srcedit, edpatch, coverage, symimport,
 	livedis, fastforward, cpustate, memevents, mevregions, mevview, memmap, memmaplayout, memmapdraw, memmaplist,
 	quests, vars, varseval, vartasks, varlocals, varops, fnfacts, settings, snapshots, snaprecord, snapdiff, replay,
-	reverse, bookmarks, bminit, clang, kit, genimport, rebuild, hotpatch, hpelf, buildmap, pwa, header, scan, memview, listing, debugui, dbgtab, machtab, tabs,
+	reverse, bmdata, bookmarks, bminit, clang, kit, genimport, rebuild, hotpatch, hpelf, buildmap, pwa, header, scan, memview, listing, debugui, dbgtab, machtab, tabs,
 	nav, symview, run, runto, boot, tips, kernel, page ];
 
 function exposeMKB(app) {

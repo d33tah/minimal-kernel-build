@@ -155,6 +155,15 @@ edpatch and srcedit; jumps.js into jumps and jumpview; bookmarks.js
 into bookmarks and bminit. Each module's head comment says what it has
 and where the rest went.
 
+A2 split the files that had grown past 800 lines again: bookmarks.js
+into bmdata (the list and its storage, the kernel a bookmark is for,
+placing it in another build, the drafts) and bookmarks (the marks, the
+dialog, jumps, links, the menu's list); dbginfo.js's function facts and
+the code's tooltip into dbgfacts. The lint job runs `check-length.py`:
+it fails when a site script (.js, .jsx, .mjs, .cjs) or a Python test file
+(`test_*.py`, `tests/`) is over 800 lines (`--self-test` checks that it
+does).
+
 - `util.js`: small helpers and constants (`$`, `hex`, `withV`, `PAGE`...).
 - `store.js` and `page.js`: the page's state store and API, below.
 - What was app.js (4,200 lines until R2), by concern: `header.js` (the

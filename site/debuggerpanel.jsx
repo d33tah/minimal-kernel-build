@@ -22,7 +22,8 @@ import { CPU_SECTIONS, cpuRows, gdtText, idtText, translateText, pageDirText } f
 import { REV, REVV, revView, revStepBack, revBackToField } from "./reverse.js";
 import { doStep, doRunTo } from "./runto.js";
 import { WATCHV, watchAdd, watchSuggest, renderWatches } from "./vars.js";
-import { bmAsk, bmDraftHere } from "./bookmarks.js";
+import { bmAsk } from "./bookmarks.js";
+import { bmDraftHere } from "./bmdata.js";
 import { openLegend } from "./memview.js";
 import { srcLineClick } from "./source.js";
 import { jumpArcsObserve } from "./jumpview.js";

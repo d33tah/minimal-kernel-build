@@ -14,7 +14,8 @@ import { GSTAT, GINFO, focusFrame } from "./graph.js";
 import { GTREE, treeToggle, treeNameTitle } from "./calltree.js";
 import { wireGraphCanvas, graphView, graphFit, graphToggle, graphChains, graphDepth, graphFollow, graphSearch, graphFold, graphJson,
 	graphDotFile } from "./graphinit.js";
-import { bmAsk, bmDraftHere } from "./bookmarks.js";
+import { bmAsk } from "./bookmarks.js";
+import { bmDraftHere } from "./bmdata.js";
 
 const CALLS_TIP = "Calls reconstructed from the symbol transitions the stepper records (stepping, slow motion, Run to, and the " +
 	"background count with ?speed=full; not at full JIT speed): a jump to the first byte of a symbol is a call, a jump into the middle of " +

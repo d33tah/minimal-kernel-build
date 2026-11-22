@@ -20,7 +20,8 @@ import { DBG, dbgTableAt, dbgFuncAt, dbgFiles, dbgOnChange } from "./dbginfo.js"
 import { openSourceFile, srcPanel, renderSourcePanel } from "./source.js";
 import { srcOpen } from "./srcview.js";
 import { fnDetailEl } from "./fnfacts.js";
-import { BM, bmMarks, bmDraftFn, bmDraftLine } from "./bookmarks.js";
+import { bmMarks } from "./bookmarks.js";
+import { BM, bmDraftFn, bmDraftLine } from "./bmdata.js";
 import { srcFile, SRC, SRC_OVER } from "./srctext.js";
 import { textHash, textKeep, textOf, lineMap, imageLabel, buildFamily } from "./buildmap.js";
 

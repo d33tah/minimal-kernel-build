@@ -7,7 +7,8 @@ import { hex, escHtml } from "./util.js";
 import { stepper, symbols, api } from "./page.js";
 import { dwarfScopesAt } from "./dwarflocals.js";
 import { asmOperandNames, asmBranchTarget } from "./asmnames.js";
-import { dbgTypes, dbgHas, dbgCfiRow, dbgLocalGroups, dbgTitle } from "./dbginfo.js";
+import { dbgTypes, dbgHas, dbgCfiRow, dbgLocalGroups } from "./dbginfo.js";
+import { dbgTitle } from "./dbgfacts.js";
 import { kernelSymLookup } from "./livedis.js";
 import { varsOffset } from "./varseval.js";
 

@@ -20,7 +20,8 @@ import { srcSw, srcSwOpen, srcSwClose, srcSwFilter, srcSwMove, srcFileCounts, SR
 import { SRC } from "./srctext.js";
 import { DBG, dbgFiles, dbgFrames, dbgLineCode, dbgChainText } from "./dbginfo.js";
 import { ED, ED_TA, edMap, edCan, edToggle, edDiffToggle, edRevertPanel } from "./srcedit.js";
-import { bmAsk, bmDraftHere } from "./bookmarks.js";
+import { bmAsk } from "./bookmarks.js";
+import { bmDraftHere } from "./bmdata.js";
 import { RebuildPanelButton } from "./rebuild.jsx";
 import { HotPatchButton } from "./hotpatch.jsx";
 

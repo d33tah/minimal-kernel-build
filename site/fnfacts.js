@@ -12,7 +12,8 @@ import { hex } from "./util.js";
 import { stepper, symbols, api, provide } from "./page.js";
 import { dwFuncProto } from "./dwarflocals.js";
 import { cfiFrameText } from "./unwind.js";
-import { dbgCfiFrame, dbgFrames, dbgFnFactsAt, dbgFnFactsFor, dbgHas, dbgFnHolds } from "./dbginfo.js";
+import { dbgCfiFrame, dbgFrames, dbgHas } from "./dbginfo.js";
+import { dbgFnFactsAt, dbgFnFactsFor, dbgFnHolds } from "./dbgfacts.js";
 import { srcLinkEl } from "./srclinks.js";
 
 // Inlined copies listed before "and N more".

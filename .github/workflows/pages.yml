@@ -780,6 +780,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    # A2: no site script or Python test file over 800 lines (R4's split).
+    - name: File length (check-length.py)
+      run: |
+        site/check-length.py --self-test
+        site/check-length.py
     - name: ESLint (no-undef, no-implicit-globals, import/no-cycle)
       working-directory: site
       run: |

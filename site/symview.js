@@ -9,14 +9,16 @@ import { stepper, runState, emuRam, flashes, setFlashes, selectedPage, tab, setS
 	openFnWant, setOpenFnWant, disasm, provide } from "./page.js";
 import { setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { cfiRowText } from "./unwind.js";
-import { dbgOnChange, dbgFrames, dbgHas, dbgTitle, dbgUnwind, dbgCfiInfo } from "./dbginfo.js";
+import { dbgOnChange, dbgFrames, dbgHas, dbgUnwind, dbgCfiInfo } from "./dbginfo.js";
+import { dbgTitle } from "./dbgfacts.js";
 import { srcLinkEl } from "./srclinks.js";
 import { openSource, renderSourceRows } from "./source.js";
 import { pageWalk, phys32 } from "./cpustate.js";
 import { renderTaskRow } from "./vars.js";
 import { DBGCODE } from "./dbgtab.js";
 import { renderFnRows } from "./fnfacts.js";
-import { bmFnNames, bmStarEl, bmAddButton, bmDraftFn } from "./bookmarks.js";
+import { bmFnNames, bmStarEl, bmAddButton } from "./bookmarks.js";
+import { bmDraftFn } from "./bmdata.js";
 import { scan } from "./scan.js";
 import { drawGrid, symDesc } from "./memview.js";
 import { inspect, listingFollow, setNavScrollWant, listingLineAt, scrollListingTo, sheetBand,

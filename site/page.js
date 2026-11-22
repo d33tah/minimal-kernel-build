@@ -137,7 +137,7 @@ const API_ENTRIES = {
 		"dbgHas", "dbgFrames", "fnFactsText"],
 	// C source: links, the Source panel, the editor, coverage, rebuild.
 	source: ["srcLinkHtml", "srcLinkEl", "coverageFor", "syncSrcToggle", "kfetch", "genSrcPicked", "genImport",
-		"genRestore", "edPanelShown", "covRun", "covRender", "covWas", "rbSync", "hpSync"],
+		"genRestore", "edPanelShown", "covRun", "covRender", "covWas", "rbSync", "hpSync", "srcKernelSwitch"],
 	// Memory events (the Events tab).
 	events: ["MEV"],
 	// Run, pause, step, Run to, and reverse execution (rewind).

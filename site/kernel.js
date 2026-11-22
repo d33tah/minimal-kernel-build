@@ -3,7 +3,7 @@
 // Loading a kernel: its bzImage, symbols.json and disasm.json.
 
 import { kib, withV, httpWhy } from "./util.js";
-import { image, setImage, setSymbols, setDisasm, initrd, setInitrd, kernels, provide } from "./page.js";
+import { image, setImage, setSymbols, setDisasm, initrd, setInitrd, kernels, api, provide } from "./page.js";
 import { dbgUseShards, dbgFresh } from "./dbginfo.js";
 import { srcUseShipped, srcFresh } from "./srctext.js";
 import { setSettings, ramHas, ramSizes, setStatus } from "./machtab.js";
@@ -77,6 +77,7 @@ async function loadDisasm(entry) {
 }
 
 async function loadKernel(entry, memFromUrl) {
+	api.source.srcKernelSwitch(entry.name);
 	setStatus("Fetching " + entry.path + "...");
 	// The bzImage, its disassembly and its symbols are fetched at once (each
 	// one alone was a round trip on the way to the boot); they are used in
@@ -138,6 +139,7 @@ function chooseRam(v) {
 // From disk: a bzImage file, booted (without disasm.json, C source or
 // DWARF, until its vmlinux is imported).
 async function bootFromDisk(f) {
+	api.source.srcKernelSwitch(f.name);
 	setDisasm(null);
 	srcFresh(null, "no C source for a bzImage from disk");
 	dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");

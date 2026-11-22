@@ -51,6 +51,11 @@ function SnapNameEdit({ s }) {
 		onKeyUp={(ev) => ev.stopPropagation()} onBlur={() => finish(true)} />;
 }
 
+// The table's columns (the actions' column has no name). In a narrow box
+// (beside the Source panel, a phone) each row is a card and every cell
+// carries its column's name (style.css .snapwrap, A1b).
+const SNAP_HEAD = ["name", "taken", "at", "kernel, RAM", "size", "raw bytes", "ratio", "compression"];
+
 function SnapRow({ s }) {
 	const r = snapRow(s), m = r.match;
 	const run = s.meta && s.meta.run;
@@ -58,11 +63,11 @@ function SnapRow({ s }) {
 		<tr className={m === "other" || m === "build" ? "snapother" : undefined} data-id={r.data.id} data-raw={r.data.raw}
 			data-full={r.data.full} data-stored={r.data.stored} data-kernel={r.data.kernel} data-where={r.data.where}
 			data-codec={r.data.codec} data-base={r.data.base} data-depth={r.data.depth} data-pages={r.data.pages}>
-			<td className="snapcell-name">
+			<td className="snapcell-name" data-label={SNAP_HEAD[0]}>
 				{SNAP.editing === s.id ? <SnapNameEdit s={s} /> :
 					<SnapButton text={s.name} cls="snapname" title="Rename (Enter saves, Esc cancels)" onClick={() => snapEditName(s)} />}
 			</td>
-			{r.cells.map((v, i) => <td key={i} className={i === 5 ? "ratio" : undefined}>{v}</td>)}
+			{r.cells.map((v, i) => <td key={i} className={i === 5 ? "ratio" : undefined} data-label={SNAP_HEAD[i + 1]}>{v}</td>)}
 			<td className="snapacts">
 				{m === "other" && <><SnapButton text={"Switch to " + s.kernel} cls="snapswitch" title={"Load " + s.kernel + " with " +
 					kib(s.ram) + " of RAM; then this snapshot can be restored"} onClick={() => snapSwitch(s)} />{" "}</>}
@@ -291,20 +296,10 @@ function SnapshotsPanel() {
 			{" "}
 			<RunBox />
 			{" "}
-			<div className="table-wrap">
+			<div className="table-wrap snapwrap">
 				<table id="snapshots" hidden={!n} data-kernel-key={snapKernelKey() || ""}>
 					<thead>
-						<tr>
-							<th>name</th>
-							<th>taken</th>
-							<th>at</th>
-							<th>kernel, RAM</th>
-							<th>size</th>
-							<th>raw bytes</th>
-							<th>ratio</th>
-							<th>compression</th>
-							<th />
-						</tr>
+						<tr>{SNAP_HEAD.map((t, i) => <th key={i}>{t}</th>)}<th /></tr>
 					</thead>
 					<tbody>
 						{snapshots.map((s) => <SnapRow key={s.id} s={s} />)}

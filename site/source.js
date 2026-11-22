@@ -17,7 +17,7 @@
 // srctext.js's, the links srclinks.js's, the switcher's lists srcswitch.js's.
 
 import { escHtml } from "./util.js";
-import { stepper, runState, api, provide } from "./page.js";
+import { stepper, runState, image, api, provide } from "./page.js";
 import { dwarfEachLine } from "./dwarftables.js";
 import { dbgFrames, dbgFiles, dbgWhere, dbgChainText, dbgTableAt, DBG, dbgFunction, dbgOnChange } from "./dbginfo.js";
 import { srcFile, srcText, srcStatementView, SRC, srcStatus } from "./srctext.js";
@@ -421,6 +421,15 @@ function closeSource() {
 	srcOpener = null;
 }
 
+// Another kernel is loaded (kernel.js: the Kernel menu, a snapshot's or a
+// bookmark's kernel, a bzImage from disk): the panel shows a file of the
+// kernel shown until now, which the next one may not have, so it closes
+// (A1b). A rebuild of the same kernel and Back to the shipped one keep it.
+function srcKernelSwitch(name) {
+	if (srcPanel && srcOpen() && image && (image.from || image.name) !== name)
+		closeSource();
+}
+
 // The switcher's row i: a file opens, a directory lists its files.
 function srcSwPick(i) {
 	const x = srcSw.rows[i];
@@ -499,7 +508,7 @@ function initSource() {
 	}, 1000);
 }
 
-provide({ srcLinkHtml, srcLinkEl });
+provide({ srcLinkHtml, srcLinkEl, srcKernelSwitch });
 
 export { srcPanel, setSrcPanel, srcChainNodes, srcBodyClick, srcSwPick, srcLineHtml, openSource, openSourceFile, srcShowFile,
 	openSourceLine, fileLines, renderSourcePanel, renderSourceRows, closeSource, initSource, srcLineClick };

@@ -1021,6 +1021,7 @@ jobs:
         - memevents
         - memmap,scanpages
         - quests,memtabs
+        - srcfind,panelfit
     name: browser-test (${{ matrix.suites }})${{ matrix.coverage && ' coverage' || '' }}
     steps:
     - uses: actions/checkout@v4

@@ -144,7 +144,9 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 .problems .error { background: var(--err-bg); color: var(--err-fg); }
 
 .machine { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; margin-top: 0.4rem; align-items: flex-start; }
-.run { flex: 1 1 300px; min-width: 0; }
+/* At least as wide as the counter table (A1b): where less is left beside
+   the screen (the Source panel open) the run box goes under the screen. */
+.run { flex: 1 1 300px; min-width: min(100%, 25rem); }
 .runbar { display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; align-items: end; }
 #screen_container {
 	background: #000;
@@ -170,7 +172,10 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 #vm_continue { pointer-events: auto; min-height: 32px; padding: 0.2rem 0.8rem; }
 #screen_text { white-space: pre; font: 6px/7px ui-monospace, monospace; color: #aaa; }
 #counters { font-size: 0.75rem; margin-top: 0.3rem; }
-#counters td, #counters th { padding: 0.05rem 0.6rem 0.05rem 0; text-align: right; white-space: nowrap; }
+#counters td, #counters th { padding: 0.05rem 0.6rem 0.05rem 0; text-align: right; }
+/* The counts stay whole; the headings wrap (A1b: the table fits at 390 px). */
+#counters td { white-space: nowrap; }
+#counters th { vertical-align: bottom; }
 #counters td:first-child, #counters th:first-child { text-align: left; font-family: system-ui, sans-serif; }
 #counters th { font-weight: 600; }
 #count_info { margin: 0.15rem 0 0.3rem; }
@@ -213,6 +218,19 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #snapshots .snapother td { color: var(--muted); }
 #snapshots .snapacts { white-space: nowrap; }
 #snap_delall { margin: 0.4rem 0; }
+/* A1b: in a box narrower than the table (beside the Source panel, a phone)
+   each snapshot is a card, every cell with its column's name, so the name
+   keeps its width and no column is cut. */
+.snapwrap { container-type: inline-size; }
+@container (max-width: 60rem) {
+	#snapshots thead { display: none; }
+	#snapshots, #snapshots tbody, #snapshots tr { display: block; }
+	#snapshots tr { border: 1px solid var(--line); border-radius: 6px; margin: 0.45rem 0; padding: 0.3rem 0.5rem; }
+	#snapshots td { display: flex; gap: 0.6rem; align-items: baseline; border: 0; padding: 0.1rem 0; min-width: 0; overflow-wrap: anywhere; }
+	#snapshots td::before { content: attr(data-label); flex: 0 0 6.5rem; color: var(--muted); font-family: system-ui, sans-serif; }
+	#snapshots td.snapacts { flex-wrap: wrap; white-space: normal; }
+	#snapshots td.snapacts::before { content: none; }
+}
 #run_box h3 { margin: 1rem 0 0.2rem; }
 #run_box .runfile { min-width: 0; max-width: 100%; }
 #snap_diffbox h3 { margin: 1rem 0 0.2rem; }
@@ -574,7 +592,9 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 /* Live status lines change many times a second: keep their size fixed so the
    layout under them does not jump (long symbol names are cut with an ellipsis,
    the full text is in the title). */
-#dbg_state { display: flex; flex: 1 1 0; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; }
+/* 14rem: with less room left on the run bar's line it takes a line of its
+   own, so its file:line is not cut (A1b). */
+#dbg_state { display: flex; flex: 1 1 14rem; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; }
 #dbg_state .sttext { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #dbg_state .stloc { flex: none; }
 #count_info { min-height: 3.9em; }
@@ -815,6 +835,9 @@ body { padding-bottom: 60px; }
 .covbar { display: block; height: 5px; background: var(--page-free); border-radius: 2px; overflow: hidden; }
 .covbar span { display: block; height: 100%; background: var(--cov-run); }
 .covwas { font-size: 0.92em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A click anywhere on a row opens or closes it (E9b); a file without code says so in its counts' place. */
+.covrow[data-kind]:not(.thead) { cursor: pointer; }
+.covnone { font-style: italic; }
 #cov_cmp_box label, #cov_cmp { max-width: 100%; min-width: 0; }
 #cov_cmp_box[hidden] { display: none; }
 #cov_filter { width: 11rem; }

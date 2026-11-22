@@ -2956,6 +2956,8 @@ browser-test matrix job named by its suites):
 | P2 a real install | `test_pwa_install.py` in the `pwa-install` job (headful Chromium under Xvfb: beforeinstallprompt, no installability errors or manifest warnings, PWA.install, chrome://web-app-internals, PWA.launch standalone, hello boots in the app window; four broken copies (no manifest link, icons 404, no service worker, start_url outside the scope) must each fail for their own reason), then against the live site | pwa-install |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
+| E9b init.nasm found from the Source tab | suite srcfind (from the default page, no URL parameters and no page API: the Kernel menu's minified Linux, the Source tab, `init.nasm` typed in the filter, the `elo/init.nasm` row marked "no code" with no counts, a click on its name at 1280 px light and a tap on the row's middle at 390 px dark opens the Source panel on it with its text; at 390 px a tap on the middle of `init/`'s row, on its counts, opens and closes it; screenshots light and dark at both widths). On 6dd704043 it fails: no `elo/init.nasm` row, the tap on the row's middle does nothing | srcfind,panelfit |
+| A1b tabs beside the Source panel | suite panelfit (1280 px light: hello's `boot/hello.c` opened from the tree, then the Kernel menu's minified Linux closes the panel (it stayed on "boot/hello.c: not shipped"); with the panel open every element of the Machine tab (hello halted, the minified Linux counted at full speed) and of the Snapshots tab with a snapshot ends left of the panel and none runs past a box that clips or scrolls it, a snapshot's name at least 8 characters wide; 390 px dark, touch: the same for the Machine tab with the sheet closed and open and the Snapshots tab). On 6dd704043 it fails: 24 to 28 elements of the Machine tab under the panel (the counter table scrolled in its box, the run state's file:line cut), at 390 px the table's last column cut, the Snapshots table 958 px wide with the name 5 characters wide. The fix: the run box goes under the screen when less than 25rem is left, the counter headings wrap, the run state takes a line of its own when less than 14rem is left, and the Snapshots table becomes cards in a box under 60rem (container query) | srcfind,panelfit |
 
 ## In-browser toolchain
 
@@ -3221,8 +3223,16 @@ is compiled again and the link steps follow. An assembly error stops the
 build with nasm's `elo/init.nasm:LINE: error: ...` in the messages box and
 the log, like a compile error. `gen-src.js --extra elo/init.nasm` lists
 the file in the minified kernels' `src/` (no DWARF names it; a note says
-what it is), so the Source panel's Files finds it; a rebuilt kernel's
-`src/` made in the page lists it too. The page shows no symbols or
+what it is); a rebuilt kernel's `src/` made in the page lists it too.
+How to find it (E9b): pick minified Linux in the Machine tab's Kernel
+menu, open the Source tab, type `init.nasm` in its filter (or open
+`elo/`) and tap the `init.nasm` row: the Source panel opens on it, then
+Edit. The tree lists such files (coverage.js `covTree`, from
+`SRC.extra`) under their directory, marked "no code" in place of the
+counts; with the panel open, its Files lists them too. A tap anywhere on
+a row outside its buttons does what its arrow does (a file without
+functions opens), so on a phone the row's middle works as well as its
+name. The page shows no symbols or
 disassembly of userspace programs, /init included: the symbols, the
 listings and the DWARF are vmlinux's (the shipped /init has none either).
 Neither kernel compresses its image (hello has no decompressor, the

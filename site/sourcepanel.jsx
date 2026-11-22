@@ -127,13 +127,22 @@ function CovCell({ run, total, what, cmp, cmpLabel }) {
 	);
 }
 
-// A row of the tree: its arrow, its name, its lines and instructions, and
-// for a file or function its ★ and ☆ (K1).
+// A row of the tree: its arrow, its name, its lines and instructions (a
+// file or directory without code: "no code"), and for a file or function
+// its ★ and ☆ (K1). A click or tap on the row outside its buttons does
+// what its arrow does (E9b: on a phone the name is a small part of the
+// row); a file without functions opens.
 function CovRow({ r, cmpLabel }) {
 	const { s, bm } = r;
 	const toggle = () => covToggle(r.path);
+	const rowClick = (ev) => {
+		if (!ev.target.closest("button, a, [role=button]"))
+			(r.kids ? toggle : r.onName || toggle)();
+	};
 	const data = { "data-kind": r.kind, "data-path": r.path, "data-depth": r.depth, "data-lines": s.lines, "data-lines-run": s.linesRun ?? "",
 		"data-ins": s.ins, "data-ins-run": s.insRun ?? "" };
+	if (r.nocode)
+		data["data-code"] = "none";
 	if (s.cmp)
 		Object.assign(data, { "data-was": s.cmp.was, "data-plus": s.cmp.plus, "data-minus": s.cmp.minus });
 	if (bm && bm.kind === "fn")
@@ -141,13 +150,14 @@ function CovRow({ r, cmpLabel }) {
 	const label = "Bookmark " + (bm ? bm.kind === "fn" ? bm.t.name + "()" : bm.t.path : "");
 	return (
 		<>
-			<div className="trow covrow" {...data}>
+			<div className="trow covrow" {...data} onClick={rowClick}>
 				<button type="button" className="ttog" disabled={!r.kids} aria-label={(r.open ? "collapse " : "expand ") + (r.path || "all files")}
 					onClick={toggle}>{r.kids ? (r.open ? "▾" : "▸") : "·"}</button>
 				<button type="button" className="tname mono covname" style={{ paddingLeft: Math.min(r.depth, 20) * 0.6 + "em" }} title={r.title}
 					onClick={r.onName || toggle}>{r.label}</button>
-				<CovCell run={s.linesRun} total={s.lines} what="lines with code" cmp={s.cmp} cmpLabel={cmpLabel} />
-				<CovCell run={s.insRun} total={s.ins} what="instructions" />
+				{r.nocode ? <span className="covcell covnone">no code</span> :
+					<CovCell run={s.linesRun} total={s.lines} what="lines with code" cmp={s.cmp} cmpLabel={cmpLabel} />}
+				{r.nocode ? <span className="covcell" /> : <CovCell run={s.insRun} total={s.ins} what="instructions" />}
 				<span className="covbm">
 					{r.stars ? <span className="bmstar tipmark" tabIndex={0} role="button" aria-label={bmTip(r.stars)} data-tip={bmTip(r.stars)}>★</span> : null}
 					{bm ? <button type="button" className="bmadd" title={label} aria-label={label}

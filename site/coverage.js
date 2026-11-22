@@ -21,7 +21,7 @@ import { openSourceFile, srcPanel, renderSourcePanel } from "./source.js";
 import { srcOpen } from "./srcview.js";
 import { fnDetailEl } from "./fnfacts.js";
 import { BM, bmMarks, bmDraftFn, bmDraftLine } from "./bookmarks.js";
-import { srcFile, SRC_OVER } from "./srctext.js";
+import { srcFile, SRC, SRC_OVER } from "./srctext.js";
 import { textHash, textKeep, textOf, lineMap, imageLabel, buildFamily } from "./buildmap.js";
 
 // prev: what ran in earlier builds of the kernels shown (E8, covKeep), the
@@ -35,26 +35,34 @@ const COV_PREV_MAX = 8;
 const COV_MAX_ROWS = 1500;
 
 // The directory tree of files.json, built once per kernel: nodes { name,
-// path, dirs (Map), files (indices) }, fileFns: the functions of each file.
-function covTree(F) {
-	if (COV.tree && COV.tree.F === F)
+// path, dirs (Map), files (indices), extra (paths) }, fileFns: the
+// functions of each file. extra: the files no DWARF names that the
+// kernel's source lists (srctext.js SRC.extra: the minified Linux's
+// elo/init.nasm), in the tree without code (E9b).
+const NO_EXTRA = [];
+function covTree(F, extra = SRC.extra || NO_EXTRA) {
+	if (COV.tree && COV.tree.F === F && COV.tree.extra === extra)
 		return COV.tree;
-	const root = { name: "", path: "", dirs: new Map(), files: [] };
-	F.files.forEach(([p], k) => {
+	const root = { name: "", path: "", dirs: new Map(), files: [], extra: [] };
+	const dirOf = (p) => {
 		const parts = p.replace(/^\/+/, "").split("/");
 		let n = root;
 		for (let i = 0; i < parts.length - 1; i++) {
 			if (!n.dirs.has(parts[i]))
-				n.dirs.set(parts[i], { name: parts[i], path: parts.slice(0, i + 1).join("/"), dirs: new Map(), files: [] });
+				n.dirs.set(parts[i], { name: parts[i], path: parts.slice(0, i + 1).join("/"), dirs: new Map(), files: [], extra: [] });
 			n = n.dirs.get(parts[i]);
 		}
-		n.files.push(k);
-	});
+		return n;
+	};
+	F.files.forEach(([p], k) => dirOf(p).files.push(k));
+	for (const p of extra)
+		if (!F.fileIx.has(p))
+			dirOf(p).extra.push(p);
 	const fileFns = F.files.map(() => []);
 	F.funcs.forEach((fn, i) => { if (fn[1] >= 0) fileFns[fn[1]].push(i); });
 	for (const l of fileFns)
 		l.sort((x, y) => F.funcs[x][4] - F.funcs[y][4]);
-	COV.tree = { F, root, fileFns };
+	COV.tree = { F, extra, root, fileFns };
 	if (!COV.open.size)
 		COV.open.add("");
 	return COV.tree;
@@ -302,6 +310,9 @@ function covClearSums(node) {
 		covClearSums(d);
 }
 
+// A file without code: nothing to count.
+const NO_CODE = Object.freeze({ lines: 0, linesRun: null, ins: 0, insRun: null, files: 0 });
+
 const covPct = (run, total) => run === null || !total ? null : run / total;
 
 // Sort keys: children of a directory (directories first, then files) and
@@ -333,7 +344,8 @@ function covRender() {
 	const q = COV.q.toLowerCase();
 	const fnMatch = (i) => q && F.funcs[i][0].toLowerCase().includes(q);
 	const fileMatch = (k) => !q || F.files[k][0].toLowerCase().includes(q) || T.fileFns[k].some(fnMatch);
-	const dirMatch = (d) => !q || d.files.some(fileMatch) || [...d.dirs.values()].some(dirMatch);
+	const extraMatch = (p) => !q || p.toLowerCase().includes(q);
+	const dirMatch = (d) => !q || d.files.some(fileMatch) || d.extra.some(extraMatch) || [...d.dirs.values()].some(dirMatch);
 	const key = COV_SORTS[COV.sort];
 	const order = (items, sum, name) => key ? items.sort((x, y) => key(sum(x)) - key(sum(y)) || name(x).localeCompare(name(y))) :
 		items.sort((x, y) => name(x).localeCompare(name(y)));
@@ -380,7 +392,9 @@ function covRender() {
 		for (const x of dirs) {
 			const open = !!q || COV.open.has(x.d.path);
 			const s = sum(x);
-			row("dir", x.d.path, depth, x.d.name + "/", s, open, true, null, x.d.path + "/: " + s.files + " files with code");
+			const r = row("dir", x.d.path, depth, x.d.name + "/", s, open, true, null, x.d.path + "/: " + s.files + " files with code");
+			if (r)
+				r.nocode = !s.files;
 			if (open)
 				dirRows(x.d, depth + 1);
 		}
@@ -394,9 +408,17 @@ function covRender() {
 			if (open)
 				fnRows(x.k, depth + 1);
 		}
+		// Files without code (no DWARF names them), after those with code.
+		for (const p of d.extra.filter(extraMatch).sort()) {
+			const r = row("nocode", p, depth, p.replace(/^.*\//, ""), NO_CODE, false, false, () => openSourceFile(p),
+				p + ": no code of the kernel (no line of it is in the DWARF)" + (SRC.notes && SRC.notes[p] ? ": " + SRC.notes[p] : "") +
+				". Tap to open it in the Source panel.", bmDraftLine(p, 0));
+			if (r)
+				r.nocode = true;
+		}
 	};
 	const all = covSum(T, run, T.root);
-	row("root", "", 0, "all " + all.files.toLocaleString("en") + " files", all, COV.open.has("") || !!q, true, null, "every source file the DWARF line table names");
+	row("root", "", 0, "all " + all.files.toLocaleString("en") + " files", all, COV.open.has("") || !!q, true, null, "every source file the DWARF line table names, and under their directories the files of the source with no code in it (marked no code)");
 	if (COV.open.has("") || q)
 		dirRows(T.root, 1);
 

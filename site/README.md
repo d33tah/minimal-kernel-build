@@ -3650,6 +3650,17 @@ keeps a checkpoint every 8 usual spacings, so Debian's Step back works at
 its prompt with the default settings. Suite `hprun` (job `kit`) drives
 these through the page.
 
+A restored snapshot goes on as its run did. A stepped run and a run under
+the JIT get their timer interrupts at different instructions, so a run that
+was being counted (or was stepped back into a counted stretch) is stepped
+again up to its next stop: Debian reaches its prompt at the same count with
+the same RAM, registers, clock and IRQ0 count (`stop.stepped` in the
+snapshot). The stepper's record of executed addresses is not in a snapshot
+and holds what later runs added, so after a restore, a step back or another
+way the unique EIP cells say "not known" for stages reached from there. Keys
+typed while the machine is stopped wait for Continue, and the overlay says
+so. Suite `restored` (job `kit`) drives these through the page.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

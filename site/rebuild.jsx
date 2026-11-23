@@ -35,10 +35,10 @@ import { parseSymbolFile, applySymbols } from "./symimport.js";
 import { ClangWorker } from "./clang.js";
 import { kitFetch, kitNow, kitSource, kitBuild } from "./kit.js";
 import { genImport, GEN } from "./genimport.js";
-import { loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
+import { LOAD_GONE, loadStep, loadDisasm, loadSymbols, shippedDebugFor } from "./kernel.js";
 import { Tip, DomNodes } from "./ui.jsx";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
-import { MSET, setStatus } from "./machtab.js";
+import { MSET, setSettings, setStatus } from "./machtab.js";
 
 const RB = {
 	kits: null,      // kits/index.json's kits (name -> sizes), when it loaded
@@ -408,7 +408,7 @@ async function rbRun() {
 		return;
 	}
 	await rbBoot(from, kit, edits, r, kitNow() - t0).catch((e) => {
-		rbShow("Built, but not booted: " + e.message + ".", "failed");
+		rbShow(e === LOAD_GONE ? "Built, not booted: another kernel was chosen meanwhile." : "Built, but not booted: " + e.message + ".", "failed");
 		rbSync();
 	});
 }
@@ -431,6 +431,9 @@ function rbFailed(from, e) {
 // (symbols at once, the files made in a Worker), the edited tree as its
 // source.
 async function rbBoot(from, kit, edits, r, ms) {
+	// The newest kernel asked for (A3c): a load still running ends at its
+	// next step, and a kernel picked from here on ends this boot.
+	const step = loadStep();
 	const files = new Map(r.files);
 	const imgPath = kit.shipped.path;
 	const elfPath = kit.products.map((p) => p[0]).find((p) => p !== imgPath);
@@ -454,11 +457,12 @@ async function rbBoot(from, kit, edits, r, ms) {
 	const moveAddr = rbRunToAddr();
 	const texts = new Map();
 	for (const [p, t] of Object.entries(r.shipped)) {
-		const was = await rbShown(p);
+		const was = await step(rbShown(p));
 		if (was !== null)
 			texts.set(p, [was, edits[p] !== undefined ? edits[p] : t]);
 	}
-	const [disasm, syms] = entry ? await Promise.all([loadDisasm(entry), loadSymbols(entry)]) : [null, undefined];
+	const [disasm, syms] = entry ? await step(Promise.all([loadDisasm(entry), loadSymbols(entry)])) : [null, undefined];
+	setSettings({ kernel: from }); // the menu may show the load this boot overtook
 	setDisasm(disasm);
 	dbgFresh(null, "reading the rebuilt kernel's DWARF…");
 	api.machine.useImage(from + RB_SUFFIX, bytes.slice().buffer, mem, syms);

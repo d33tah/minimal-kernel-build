@@ -183,4 +183,4 @@ async function bootFromDiskSteps(f, step) {
 // The page API's entries of this module (page.js).
 provide({ loadKernel, useImage });
 
-export { loadKernel, useImage, loadSymbols, loadDisasm, shippedDebugFor, chooseKernel, chooseRam, bootFromDisk };
+export { LOAD_GONE, loadStep, loadKernel, useImage, loadSymbols, loadDisasm, shippedDebugFor, chooseKernel, chooseRam, bootFromDisk };

@@ -70,8 +70,8 @@ dbgmerge.js	437	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask f
 dbgmerge.js	514	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
 debug.js	108	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 debugui.js	94-99	8c5b8c33	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
-debugui.js	437	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
-debugui.js	525	70b8ba71	sometimes: behindRate when stepping reaches less than half the set speed: depends on the runner's speed during a slow-motion run (ran in run 44036696793, not in 44053124707, where nothing else in debugui.js changed but the removed typeof checks)
+debugui.js	439	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+debugui.js	527	70b8ba71	sometimes: behindRate when stepping reaches less than half the set speed: depends on the runner's speed during a slow-motion run (ran in run 44036696793, not in 44053124707, where nothing else in debugui.js changed but the removed typeof checks)
 dwarf.js	128	ec3bf762	ownExpr with an operation dwOpEnd does not know next to a DW_OP_addrx: no compiler writes such an expression
 dwarf.js	133	bdca5b3b	DW_OP_addrx without .debug_addr in a local's location: as line 261, defensive for a stripped file
 dwarf.js	184-185	325bc5bb	abstract origin chain of more than one step for a local (an origin that itself has an origin): GCC and clang point every concrete DIE at the abstract one directly
@@ -229,21 +229,21 @@ hpelf.js	429	48814ea8	a replaced function shorter than the 5-byte jump: no such 
 hpelf.js	459	4d8f33fa	hpVerify without the running kernel's bytes (opts.read null): the page's read always returns them; test_hotpatch.mjs (Node) passes none for its refusals
 hpelf.js	474	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
 hpelf.js	477	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
-hpelf.js	485	d88cff80	sometimes: the running code differing from the compile on a kernel without LTO: ran in 45097379132; A3 traced this refusal to the background check while a Debian replay is paused before its kernel is in memory (past the check's 300 ms delay)
-hpelf.js	499	aa216095	an object without .debug_line: the kits compile with -g
-hpelf.js	514	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
-hpelf.js	516	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
-hpelf.js	518-521	0fa890b5	DW_FORM_data1/data2/data4/data8 in a line table header: clang 22 writes udata indices and data16 MD5s
-hpelf.js	523-524	0df6d192	DW_FORM_block or an unknown form in a line table header: not in clang's tables
-hpelf.js	565-575	94b181a0	a DWARF 4 line table header: clang 22 writes DWARF 5 for the three kernels
-hpelf.js	579	0e3dd80d	a line row naming a file index outside the table: malformed DWARF only
-hpelf.js	624-625	a5916579	DW_LNS_const_add_pc after an address: clang's line programs for these small functions do not use it
-hpelf.js	661-664	29d5e71e	a variable missing from symbols.json, looked up in types.json (Debian's trimmed symbols): the suite's new code references no variable
-hpelf.js	666	a49e977d	several kernel symbols of one name, told apart by size: no name the suite's patches reference is duplicated
-hpelf.js	668	200faad4	the same, told apart by binding
-hpelf.js	670	b0ccabb7	the same, told apart by the unit's file (types.json)
-hpelf.js	672	2ec36e6c	a name still ambiguous after those: no suite case
-hpelf.js	685	e52b096c	a kit compile command without -o: every kit object's command has one
+hpelf.js	484	5bcad55c	sometimes: the running code differing from the compile on a kernel without LTO: ran in 45097379132; A3 traced this refusal to the background check while a Debian replay is paused before its kernel is in memory (past the check's 300 ms delay)
+hpelf.js	498	aa216095	an object without .debug_line: the kits compile with -g
+hpelf.js	513	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
+hpelf.js	515	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
+hpelf.js	517-520	0fa890b5	DW_FORM_data1/data2/data4/data8 in a line table header: clang 22 writes udata indices and data16 MD5s
+hpelf.js	522-523	0df6d192	DW_FORM_block or an unknown form in a line table header: not in clang's tables
+hpelf.js	564-574	94b181a0	a DWARF 4 line table header: clang 22 writes DWARF 5 for the three kernels
+hpelf.js	578	0e3dd80d	a line row naming a file index outside the table: malformed DWARF only
+hpelf.js	623-624	a5916579	DW_LNS_const_add_pc after an address: clang's line programs for these small functions do not use it
+hpelf.js	660-663	29d5e71e	a variable missing from symbols.json, looked up in types.json (Debian's trimmed symbols): the suite's new code references no variable
+hpelf.js	665	a49e977d	several kernel symbols of one name, told apart by size: no name the suite's patches reference is duplicated
+hpelf.js	667	200faad4	the same, told apart by binding
+hpelf.js	669	b0ccabb7	the same, told apart by the unit's file (types.json)
+hpelf.js	671	2ec36e6c	a name still ambiguous after those: no suite case
+hpelf.js	684	e52b096c	a kit compile command without -o: every kit object's command has one
 jumps.js	151	bcf50add	a stub array symbol without a size: the shipped symbols.json give early_idt_handler_array, irq_entries_start and spurious_entries_start their sizes (checked)
 jumps.js	318	925c71a0	jumpsJitNote before a stepper exists: its callers draw a listing with instructions (the Page tab's jump line, Code at EIP, the path lists), and since the Page tab is mounted when first shown (A1) no suite shows one before boot makes the stepper; before A1 the hidden Page listing was drawn too
 jumpview.js	215	86f60b84	removing the arcs' svg when a listing box is drawn again without arcs or stubs: not reached by the jumps walks (each listing that had arcs is next drawn with arcs)
@@ -308,19 +308,19 @@ quests.jsx	241	b4091e2d	the first-paint quest on a v86 build without memory even
 quests.jsx	460	f86b4bd8	localStorage.setItem throwing (storage blocked or full) when the Quests panel is opened or closed: the quests suite's no-storage case does not open or close it; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 quests.jsx	480-481	8d0b32b4	sometimes: save() with no storage: only the quests suite's no-storage case solves a quest with localStorage blocked; under coverage on a slow runner its rom quest did not open within 120 s (run 43687111640, quests coverage job: suite 182 s, 54 s in 43682889014), so the case ended before the save; ran in 43682889014 and the runs before it
 rebuild.jsx	303-305	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
-rebuild.jsx	411-412	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
-rebuild.jsx	520	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
+rebuild.jsx	411-412	0f132132	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws, no kit makes such an ELF; or another kernel is picked during rbBoot's own short awaits, which no test holds open (A3c)
+rebuild.jsx	524	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
 replay.js	156	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
 replay.js	232-234	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
 replay.js	245	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
 replay.js	247	867c6556	a snapshot save or a JIT checkpoint during a replay: JIT checkpoints are off during replays (revJitTick) and no test saves mid-replay; the replayStop path itself is checked for Step and Step back
 replay.js	261	366a13b0	Restore during a replay: reachable (Restore while a replay runs) but not in a test yet; replayStop itself is checked for Step and Step back
 replay.js	304	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
-replay.js	342-346	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
-replay.js	469	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
-replay.js	496	2e745bf3	replayStop with no replay running: its callers check replayActive() first
-replay.js	574	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
-replay.js	594	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
+replay.js	344-348	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
+replay.js	471	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
+replay.js	498	2e745bf3	replayStop with no replay running: its callers check replayActive() first
+replay.js	576	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
+replay.js	596	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
 reverse.js	165	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
 reverse.js	186-189	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
 reverse.js	211-213	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
@@ -374,7 +374,7 @@ snapdiff.js	149	f8bff038	a newer diff started while the hexdump's page was read:
 snapdiff.js	151-153	554449e5	reading a page after the diff succeeded: the worker keeps both sides of the pages the diff lists; it fails only if the worker died in between
 snapdiff.js	198-202	cdd115a7	same as snapdiff.js:151-153 for the Page tab buttons
 snapdiff.js	204	f8bff038	same race as snapdiff.js:149 for the Page tab buttons
-snaprecord.js	132	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
+snaprecord.js	136	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
 snapshots.js	189-191	11a71088	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
 snapshots.js	208-211	f442ec7f	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause
 snapshots.js	223	4bf395d6	Save snapshot with no machine, before it is ready or during a reverse operation: the button is disabled in these states, only a click racing the change reaches it
@@ -382,8 +382,8 @@ snapshots.js	239	56e9e0b3	sometimes: a save while compiled JIT blocks are queued
 snapshots.js	241	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
 snapshots.js	293-295	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
 snapshots.js	303	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
-snapshots.js	430	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
-snapshots.js	563	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+snapshots.js	436	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
+snapshots.js	569	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 snapshotspanel.jsx	39	d4419ba9	a name edit ending twice: Enter and Esc remove the field at once (flushSync) and Chromium fires no blur for a removed element; the guard keeps a blur after Esc from saving the name
 snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
@@ -417,10 +417,9 @@ srctext.js	99	d0d02f63	the picked C source still being read when a line is asked
 srctext.js	178	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
 srctext.js	215	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
 srctext.js	280	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
-stepbase.js	255-259	ae1d0681	unrewind: a snapshot restored while stepped back with recordings ahead; the snapdiff, deltasnap and reverse suites restore snapshots only when not behind
-stepbase.js	275	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
-stepbase.js	306	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
-stepbase.js	318	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
+stepbase.js	279	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
+stepbase.js	313	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
+stepbase.js	326	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
 stepper.js	92	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
 stepper.js	147-148	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
 stepper.js	213	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)

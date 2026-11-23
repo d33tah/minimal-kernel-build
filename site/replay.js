@@ -308,6 +308,8 @@ function inputBoot(em) {
 			return;
 		}
 		INPUT.pending.push(c & 0xff);
+		if (runState === "paused")
+			api.show.updateDebugUi(); // the overlay says they wait for Continue
 	};
 	INPUT.log = [];
 	INPUT.pending = [];

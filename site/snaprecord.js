@@ -5,9 +5,9 @@
 
 import { CLOCK, GUEST } from "./clock.js";
 import { kib, hex, $, withV } from "./util.js";
-import { image, initrd, stepper, provide } from "./page.js";
+import { image, initrd, stepper, counting, provide } from "./page.js";
 import { pageWalk } from "./cpustate.js";
-import { runNow } from "./replay.js";
+import { INPUT, runNow } from "./replay.js";
 
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
@@ -71,7 +71,11 @@ function snapMeta(em, withRun = false) {
 	}
 	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(),
 		clockExact: { base: CLOCK.base, baseSteps: CLOCK.baseSteps, mips: CLOCK.mips }, eip: regs.EIP, phys, sym, regs,
-		...(stepper ? { stop: { text: stepper.text.slice(), textSeen: stepper.textSeen, idleMs: stepper.idleMs, ...stepper.stagesNow() } } : {}),
+		// stepped: the run goes on stepped from here, as the count makes it
+		// (or made it, when stepped back): the JIT would be another timeline,
+		// with its timer interrupts at other instructions (A3c).
+		...(stepper ? { stop: { text: stepper.text.slice(), textSeen: stepper.textSeen, idleMs: stepper.idleMs, ...stepper.stagesNow(),
+			stepped: INPUT.mode === "stepped" && (counting || stepper.behind()) } } : {}),
 		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}), ...(withRun ? { run: runNow() } : {}) };
 }
 

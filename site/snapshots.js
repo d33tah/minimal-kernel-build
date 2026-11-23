@@ -368,7 +368,13 @@ async function restoreSnapshot(s) {
 		api.step.speedReset();
 		if (stepper)
 			stepper.jumpForget();
-		if (counting || (stepper && stepper.steps)) {
+		// A run that was being stepped goes on stepped up to its next stop:
+		// under the JIT its timer interrupts would land elsewhere and it
+		// would be another run (A3c: Debian's prompt 6 M instructions early).
+		if (stepper && CLOCK.virtual && s.meta && s.meta.stop && s.meta.stop.stepped && !stepper.prompt && !stepper.end) {
+			setCounting(true);
+			setCountNote("A snapshot was restored: the count goes on from it, stepped as this run was.");
+		} else if (counting || (stepper && stepper.steps)) {
 			setCounting(false);
 			setCountNote("A snapshot was restored: the counters stopped there.");
 		}

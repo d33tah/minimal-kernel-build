@@ -166,7 +166,9 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 	pointer-events: none; text-align: center; padding: 0.4rem; font-size: 0.85rem;
 }
 #vm_overlay[hidden] { display: none; }
-#vm_reason { font-size: 0.75rem; max-width: 95%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+/* No line limit: the usual reasons fit a phone's small screen (A3c). Clicks
+   still go through to the screen; a longer one is whole in the status line. */
+#vm_reason { font-size: 0.75rem; line-height: 1.2; max-width: 95%; min-height: 0; flex: 0 1 auto; overflow: hidden; }
 /* The overlay lets clicks through to the screen; its file:line links take them. */
 #vm_reason button.srclink { pointer-events: auto; color: inherit; }
 #vm_continue { pointer-events: auto; min-height: 32px; padding: 0.2rem 0.8rem; }
@@ -817,6 +819,8 @@ body { padding-bottom: 60px; }
 	/* The Rebuild and boot box too: with the Source sheet open its row sits
 	   right above the sheet, where the toggle is. */
 	.rbbox { padding-right: 3.4rem; }
+	/* The Kernel menu keeps the toggle's column free too (A3c). */
+	#kernel { max-width: calc(100vw - 16px - 3.4rem); }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

@@ -19,7 +19,7 @@ import { liveDecode, iced, icedError, loadIced, bitnessAt, decodeLive, virtOffse
 import { ffActive, ffInfo } from "./fastforward.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { renderWatches, renderLocals } from "./vars.js";
-import { replayActive, replayAfterStop } from "./replay.js";
+import { INPUT, replayActive, replayAfterStop } from "./replay.js";
 import { REV, REVV, revBackPart } from "./reverse.js";
 import { DBGSTATUS, DBGCODE, dbgStatus, dbgStatusText } from "./dbgtab.js";
 import { bmCodeStar, bmMenuFit } from "./bookmarks.js";
@@ -262,10 +262,12 @@ function countersPart() {
 	rows.push(["now", stepper.snapshot(), "now"]);
 	const trs = rows.map(([label, c, key]) => {
 		const cells = c && c.jit ? [label, "run by the JIT", "", ""] :
-			c ? [label, num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
+			c ? [label, num(c.sinceEntry), c.uniqueOff ? "not known" : num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
 			[label, counting ? "counting..." : "not reached", "", ""];
-		return !c || c.jit ? { key, cells } : { key, cells, steps: c.steps, entry: c.sinceEntry === null ? "" : c.sinceEntry, unique: c.unique,
-			kernel: c.uniqueKernel, title: "Reached by the instruction at physical " + hex(c.phys) };
+		return !c || c.jit ? { key, cells } : { key, cells, steps: c.steps, entry: c.sinceEntry === null ? "" : c.sinceEntry,
+			unique: c.uniqueOff ? "" : c.unique, kernel: c.uniqueOff ? "" : c.uniqueKernel,
+			title: "Reached by the instruction at physical " + hex(c.phys) +
+				(c.uniqueOff ? ". Unique EIPs not known: the addresses recorded include another run's (a restored snapshot, a step back, a run that went another way)" : "") };
 	});
 	const alive = stepper.milestones.find((m) => m.text === "Still alive");
 	// Once per measurement: after a Reset in the Settings tab the next redraw
@@ -401,7 +403,7 @@ function finishEntry() {
 	entryInfo("Entered the kernel at " + hex(at) + (ff ? " (" + ffInfo.name + ")" : "") + " after " +
 		num(n) + " instructions from reset" +
 		(ff ? " (fast-forwarded with the JIT in " + (ffInfo.ms / 1000).toFixed(1) + " s: BIOS, setup, decompressor; counted from here)" : "") +
-		"; now " + speedText() + ".", { ffMs: ff ? Math.round(ffInfo.ms) : "", ffTarget: ff ? ffInfo.target : "", steps: n });
+		".", { ffMs: ff ? Math.round(ffInfo.ms) : "", ffTarget: ff ? ffInfo.target : "", steps: n });
 	updateDebugUi();
 }
 
@@ -709,7 +711,9 @@ function runPart() {
 	const o = end && !note.startsWith("Run to ") || !note || !Array.isArray(said) ? { paused, reason: end && !note.startsWith("Run to ") || !note ? end : note } :
 		{ paused, said: DBGSTATUS.said, nodes: said.map((n) => (typeof n === "string" ? document.createTextNode(n) : n.cloneNode(true))) };
 	o.ended = !!stepper.end;
-	return mvPut("overlay", o, JSON.stringify([true, o.reason, o.said, o.ended])) || changed;
+	// Keys typed at a stop are held for the next Continue: say so (A3c).
+	o.keys = INPUT.pending.length > 0;
+	return mvPut("overlay", o, JSON.stringify([true, o.reason, o.said, o.ended, o.keys])) || changed;
 }
 
 // Code at EIP is drawn again each time the Debugger tab is shown (showTab).

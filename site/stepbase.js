@@ -27,6 +27,10 @@ class StepperBase {
 		this.sinceEntry = -1;    // steps when EIP first reached kernelLo, -1 before
 		this.unique = 0;         // distinct physical addresses executed
 		this.uniqueKernel = 0;   // ... of which in [kernelLo, kernelHi)
+		// A3c: seen holds addresses of another timeline (a restored snapshot,
+		// a run that went another way), so a count taken from here is not
+		// this point's: snapshot() marks it and the table says "not known".
+		this.uniqueOff = false;
 		this.lastPhys = -1;
 		this.seen = new Uint8Array((cpu.mem8.length + 7) >> 3);
 		this.seenHigh = new Set();
@@ -199,7 +203,7 @@ class StepperBase {
 	// A3b: the stages reached so far, kept in a snapshot (restoreStops).
 	stagesNow() {
 		return { endAhead: this.endAhead(), found: this.milestones.map((m) => m.found), sinceEntry: this.sinceEntry,
-			exit: this.exit, panicEntered: this.panicEntered };
+			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0 };
 	}
 
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
@@ -292,6 +296,9 @@ class StepperBase {
 			this.text.set(stop.text);
 		this.textSeen = stop.textSeen;
 		this.idleMs = stop.idleMs;
+		if (typeof stop.irq0 === "number")
+			this.irq0 = stop.irq0;
+		this.uniqueOff = true;
 		this.vgaDirty = false;
 	}
 
@@ -305,6 +312,7 @@ class StepperBase {
 		if (!this.behind() && !this.future.length)
 			return;
 		const t = this.steps;
+		this.uniqueOff = true;
 		this.stepToEnd = this.stepToEnd || this.future.some((f) => f.key === "end");
 		this.future = [];
 		this.ahead = 0;
@@ -365,6 +373,8 @@ class StepperBase {
 			unique: this.unique,
 			uniqueKernel: this.uniqueKernel,
 			phys,
+			// Stepped back, the counts are the furthest point's (A3c).
+			...(this.uniqueOff || this.behind() ? { uniqueOff: true } : {}),
 		};
 	}
 

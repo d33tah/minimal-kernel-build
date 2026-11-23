@@ -171,6 +171,7 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 #vm_reason { font-size: 0.75rem; line-height: 1.2; max-width: 95%; min-height: 0; flex: 0 1 auto; overflow: hidden; }
 /* The overlay lets clicks through to the screen; its file:line links take them. */
 #vm_reason button.srclink { pointer-events: auto; color: inherit; }
+#vm_reason .vmkeys { display: block; }
 #vm_continue { pointer-events: auto; min-height: 32px; padding: 0.2rem 0.8rem; }
 #screen_text { white-space: pre; font: 6px/7px ui-monospace, monospace; color: #aaa; }
 #counters { font-size: 0.75rem; margin-top: 0.3rem; }
@@ -819,6 +820,8 @@ body { padding-bottom: 60px; }
 	/* The Rebuild and boot box too: with the Source sheet open its row sits
 	   right above the sheet, where the toggle is. */
 	.rbbox { padding-right: 3.4rem; }
+	/* The Source tab's help, which scrolls past the toggle (A3d). */
+	#covtree_info { padding-right: 3.4rem; }
 	/* The Kernel menu keeps the toggle's column free too (A3c). */
 	#kernel { max-width: calc(100vw - 16px - 3.4rem); }
 }

@@ -100,7 +100,7 @@ const Overlay = memo(function Overlay() {
 	return (
 		<div id="vm_overlay" hidden={!o.paused}>
 			<b>VM paused</b>
-			<span id="vm_reason">{o.nodes ? <DomNodes nodes={o.nodes} /> : o.reason}{o.keys ? " Typed keys are waiting: they reach the machine on Continue." : ""}</span>
+			<span id="vm_reason">{o.nodes ? <DomNodes nodes={o.nodes} /> : o.reason}{o.keys ? <span className="vmkeys">Typed keys are waiting: they reach the machine on Continue.</span> : null}</span>
 			<button id="vm_continue" type="button" hidden={!!o.ended} onClick={() => { if (!cont) machContinue(); }}>{"▶ Continue"}</button>
 		</div>
 	);
@@ -122,6 +122,7 @@ const RunButtons = memo(function RunButtons() {
 			<button id="dbg_back" type="button" disabled={!rv.back}
 				title={"Undo the last instruction: restore the checkpoint before it and step forward to it" + rv.tip}
 				onClick={() => revStepBack(1)}>Step back</button>
+			{rv.why ? <span id="dbg_back_why" className="note">{rv.why}</span> : null}
 		</>
 	);
 });

@@ -295,6 +295,9 @@ function countersPart() {
 		(!MSET.count && !stepper.steps ? "Counting is off: the boot ran at full speed. " : "") +
 		(runState === "jit" && !countDone() && stepper.steps ? (CLOCK.virtual ? "Running at full speed on the virtual clock: counted, the same run every time. " :
 			"Running at full speed on real time now: not counting. ") : "") +
+		// The state line is one line: why full speed is stepping is said here (A3d).
+		(runState === "stepped" && counting && speed() === "full" && !entryPhase ?
+			"Full speed with the count on steps each instruction, slower than the JIT; the JIT takes over after the stop at the prompt or the end. " : "") +
 		countNote);
 }
 
@@ -693,7 +696,7 @@ function runPart() {
 	}
 	const text = ffActive && ffInfo ? (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
 		" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions" : { off: "", jit: "running (full speed, JIT)",
-		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
+		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "counting by stepping" : "stepping") :
 			"slow motion " + speedText() + behindText()) + where,
 		paused: "paused" + where }[runState];
 	const at = loc && !ffActive && (runState === "stepped" || runState === "paused") ? { file: loc.file, line: loc.line, phys } : null;

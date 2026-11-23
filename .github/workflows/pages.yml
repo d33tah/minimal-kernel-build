@@ -1384,6 +1384,15 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites restored --shots rebuild-screenshots'
 
+    # A pause before the kernel entry (plan A3d): Continue is the same run,
+    # Save refuses a point it cannot replay; what a restored run shows, the
+    # Switch to button, Step back after a patch, the toggle at 390 px.
+    - name: A pause before the entry (test_browser.py preentry)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites preentry --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

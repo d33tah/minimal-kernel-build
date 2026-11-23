@@ -185,7 +185,8 @@ def rs_numbers(browser, base, problems, r):
 
 def rs_behind(browser, base, problems, r):
     """A snapshot restored while stepped back before a recorded stage: the
-    stage keeps its numbers and the run ends at the first run's count."""
+    stage is not reached yet there (A3d item 4), and the run ends at the
+    first run's count with that stage's numbers or "not known"."""
     tag = "restored while stepped back"
     ctx = browser.new_context(viewport={"width": 1280, "height": 900})
     page = ctx.new_page()
@@ -204,11 +205,15 @@ def rs_behind(browser, base, problems, r):
         r["at, end"] = [at, end]
         if steps(page) != at:
             problems.append(f"{tag}: restored at {steps(page)}, saved at {at}")
-        hello = known(stages(page)["rows"]["Hello, World!"])
-        if hello != known(first["rows"]["Hello, World!"]):
-            problems.append(f"{tag}: Hello's unique EIPs show {hello}, the stage had {known(first['rows']['Hello, World!'])}")
-        if run_to_end(page, problems, tag) and steps(page) != end:
-            problems.append(f"{tag}: the run ended at {steps(page)}, the first run at {end}")
+        cells = stages(page)["rows"]["Hello, World!"]
+        if cells[0] not in ("not reached", "counting..."):
+            problems.append(f"{tag}: restored at {at}, before Hello's line, its row shows {cells}")
+        if run_to_end(page, problems, tag):
+            if steps(page) != end:
+                problems.append(f"{tag}: the run ended at {steps(page)}, the first run at {end}")
+            hello = known(stages(page)["rows"]["Hello, World!"])
+            if hello not in (known(first["rows"]["Hello, World!"]), "not known"):
+                problems.append(f"{tag}: Hello's unique EIPs show {hello}, the stage had {known(first['rows']['Hello, World!'])}")
     finally:
         ctx.close()
 

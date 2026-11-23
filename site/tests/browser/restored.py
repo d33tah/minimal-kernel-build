@@ -183,6 +183,56 @@ def rs_numbers(browser, base, problems, r):
         ctx.close()
 
 
+def rs_behind(browser, base, problems, r):
+    """A snapshot restored while stepped back before a recorded stage: the
+    stage keeps its numbers and the run ends at the first run's count."""
+    tag = "restored while stepped back"
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    try:
+        first = boot_end(page, base, problems, tag)
+        if not first:
+            return
+        end = steps(page)
+        if not back_to(page, "con_write", problems, tag) or not back_to(page, "con_write", problems, tag):
+            return
+        at = steps(page)
+        if not page.evaluate("MKB.stepper.future.some((f) => f.key === 'milestone')"):
+            problems.append(f"{tag}: no stage is ahead of {at} (test setup)")
+            return
+        restore(page, snap_save(page, 1, False)["rows"][0]["id"])
+        r["at, end"] = [at, end]
+        if steps(page) != at:
+            problems.append(f"{tag}: restored at {steps(page)}, saved at {at}")
+        hello = known(stages(page)["rows"]["Hello, World!"])
+        if hello != known(first["rows"]["Hello, World!"]):
+            problems.append(f"{tag}: Hello's unique EIPs show {hello}, the stage had {known(first['rows']['Hello, World!'])}")
+        if run_to_end(page, problems, tag) and steps(page) != end:
+            problems.append(f"{tag}: the run ended at {steps(page)}, the first run at {end}")
+    finally:
+        ctx.close()
+
+
+def rs_count_off(browser, base, problems, r):
+    """The count box switched off at a pause: the line under the table says so."""
+    tag = "count switched off"
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    try:
+        page.goto(f"{base}/index.html?kernel=minified-linux")
+        page.wait_for_function("() => window.MKB && MKB.stepper && document.getElementById('entry_info').dataset.steps", timeout=120000)
+        show_tab(page, "machine")
+        page.click("#dbg_pause")
+        still(page)
+        page.uncheck("#count")
+        wait_for(lambda: "Counting switched off" in page.inner_text("#count_info"), 10, 0.1)
+        r["line"] = page.inner_text("#count_info")
+        if "Counting switched off" not in r["line"]:
+            problems.append(f"{tag}: the line says {r['line']!r}")
+    finally:
+        ctx.close()
+
+
 def rs_speed_line(browser, base, problems, r):
     """The entry line does not name a speed the machine no longer runs at (item 4)."""
     tag = "entry line"
@@ -290,6 +340,8 @@ def suite_restored(ctx):
              ("rs_phone", lambda p, r: rs_phone(ctx.browser, ctx.base, ctx.shots, p, r)),
              ("rs_rebuild_race", lambda p, r: rs_rebuild_race(ctx.browser, ctx.base, p, r)),
              ("rs_numbers", lambda p, r: rs_numbers(ctx.browser, ctx.base, p, r)),
+             ("rs_behind", lambda p, r: rs_behind(ctx.browser, ctx.base, p, r)),
+             ("rs_count_off", lambda p, r: rs_count_off(ctx.browser, ctx.base, p, r)),
              ("rs_debian", lambda p, r: rs_debian(ctx.browser, ctx.base, p, r)))
     for name, fn in cases:
         if only and name not in only:

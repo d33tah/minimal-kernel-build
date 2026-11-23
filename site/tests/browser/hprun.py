@@ -218,6 +218,38 @@ def hr_snapshot(browser, base, problems, r):
         ctx.close()
 
 
+def hr_snapshot_end(browser, base, problems, r):
+    """A snapshot taken after exit() and panic(), restored after a reload,
+    shows those stages and ends as the first run did."""
+    tag = "snapshot at the end, after a reload"
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    try:
+        first = boot_end(page, base, problems, tag)
+        if not first:
+            return
+        snap_save(page, 1, False)
+        row = snap_rows(page)["rows"][0]["id"]
+        page.goto(f"{base}/index.html?kernel={MINI}&speed=full&paused=1")
+        page.wait_for_function("() => window.MKB && MKB.stepper && MKB.runState === 'paused'", timeout=120000)
+        show_tab(page, "snapshots")
+        wait_for(lambda: len(snap_rows(page)["rows"]) == 1, 30)
+        snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", False)
+        wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row, 60)
+        still(page)
+        now = run_to_end(page, problems, tag)
+        r["restored end"] = now
+        if not now:
+            return
+        for label in ("exit(0)", "panic() entered"):
+            if now["rows"].get(label) != first["rows"].get(label):
+                problems.append(f"{tag}: {label}: {now['rows'].get(label)}, the first run: {first['rows'].get(label)}")
+        if now["kind"] != first["kind"]:
+            problems.append(f"{tag}: ends as {now['kind']!r} {now['text']!r}, the first run as {first['kind']!r}")
+    finally:
+        ctx.close()
+
+
 def hr_debian(browser, base, problems, r):
     """Debian with the default count: Step back works and undoes a patch (item 3)."""
     tag = "Debian Step back, default settings"
@@ -319,7 +351,7 @@ def hr_pick_race(browser, base, problems, r):
 def suite_hprun(ctx):
     failed = False
     only = [x for x in os.environ.get("MKB_HPRUN_ONLY", "").split(",") if x]
-    for fn in (hr_pick_race, hr_lost, hr_snapshot, hr_refusal, hr_debian):
+    for fn in (hr_pick_race, hr_lost, hr_snapshot, hr_snapshot_end, hr_refusal, hr_debian):
         if only and fn.__name__ not in only:
             continue
         problems, r = [], {}

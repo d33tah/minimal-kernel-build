@@ -40,10 +40,10 @@ import { kib, hex } from "./util.js";
 import { controller } from "./ui.jsx";
 import { image, initrd, stepper, emulator, emuReady, emuRam, counting, runState, selectedPage, setCounting,
 	setCountNote, tab, kernels, api, provide } from "./page.js";
-import { jitPending, jitFlush } from "./fastforward.js";
+import { jitPending, jitFlush, ffStop, ffUnsaved } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
 import { inputReset, INPUT, inputRestore } from "./replay.js";
-import { REV, revReset } from "./reverse.js";
+import { REV, RESTORED_WHY, revReset } from "./reverse.js";
 import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snapKernelName, snapCount, snapById,
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
 	SNAP_EXT, snapCodec, setSnapshots, snapHow } from "./snaprecord.js";
@@ -221,6 +221,11 @@ function snapDefaultName(meta, time) {
 async function saveSnapshot() {
 	if (!emulator || !emuReady || REV.busy)
 		return;
+	if (ffUnsaved(stepper)) {
+		snapSay("Not saved: this point is on the fast-forward to the kernel entry. The JIT runs that part in slices a restored " +
+			"machine cannot repeat, so the run from here would differ. Press Continue and save after the kernel entry.");
+		return;
+	}
 	const em = emulator;
 	SNAP.saving = true;
 	snapSay("Saving...");
@@ -308,6 +313,9 @@ async function restoreSnapshot(s) {
 	SNAP.restored = "";
 	snapSay("Restoring “" + s.name + "”...");
 	try {
+		// A fast-forward still running (a boot just started) would go on
+		// over the restored machine; one paused does not resume (A3d).
+		await ffStop();
 		// Another timeline: the reverse history (R2) starts anew from the
 		// snapshot, with the recordings as they were.
 		// The calls open now end where this timeline stops (the furthest
@@ -318,7 +326,7 @@ async function restoreSnapshot(s) {
 			stepper.unrewind();
 		}
 		INPUT.redo = [];
-		revReset("a snapshot was restored");
+		revReset(RESTORED_WHY);
 		// A delta comes back as a full state, rebuilt in the Worker, with
 		// the page hashes the next save is compared with.
 		const r = await snapWorker({ op: "unpack", s: snapBlob(s), hashes: true });
@@ -504,7 +512,8 @@ function snapDeleteAll() {
 }
 
 function snapSwitch(s) {
-	const k = kernels.find((x) => x.name === s.kernel);
+	// s.kernel is "name + initrd" for a kernel booted with one (snapKernelName).
+	const k = kernels.find((x) => x.name === s.kernel.split(" + ")[0]);
 	if (!k) {
 		snapSay("“" + s.kernel + "” is not one of the listed kernels: load that bzImage from disk " +
 			"(Machine tab) with " + kib(s.ram) + " of RAM to restore “" + s.name + "”.");

@@ -534,7 +534,7 @@ class Stepper extends StepperBase {
 		const mem = cpu.wasm_memory;
 		let i32 = new Int32Array(mem.buffer), u8 = new Uint8Array(mem.buffer);
 		const res = this.res >> 2;
-		const seen = this.seen, lo = this.kernelLo, hi = this.kernelHi;
+		const seen = this.seen, lo = this.kernelLo, hi = this.kernelHi, entry = this.entryAt;
 		const t0 = realNow();
 		const stopSet = stopPhys instanceof Set ? stopPhys : null;
 		for (let i = i0; i < n; i++) {
@@ -647,7 +647,7 @@ class Stepper extends StepperBase {
 				this.end = { kind: "panic-budget", ...this.snapshot(phys) };
 				return "end";
 			}
-			if (phys === lo && this.sinceEntry < 0)
+			if (phys === entry && this.sinceEntry < 0)
 				this.sinceEntry = this.steps - 1;
 			if (phys < seen.length * 8) {
 				const bit = 1 << (phys & 7);
@@ -696,7 +696,7 @@ class Stepper extends StepperBase {
 		const cpu = this.cpu, read = this.ex.mkb_read_imm8, exec = this.ex.mkb_run;
 		const mem = cpu.wasm_memory;
 		let i32 = new Int32Array(mem.buffer), u8 = new Uint8Array(mem.buffer);
-		const res = this.res >> 2, lo = this.kernelLo;
+		const res = this.res >> 2, entry = this.entryAt;
 		const t0 = realNow();
 		const stopSet = stopPhys instanceof Set ? stopPhys : null;
 		const fresh = () => {
@@ -749,7 +749,7 @@ class Stepper extends StepperBase {
 				fresh();
 			i32[COUNTER] = i32[COUNTER] + 1;
 			this.steps++;
-			if (phys === lo && this.sinceEntry < 0)
+			if (phys === entry && this.sinceEntry < 0)
 				this.sinceEntry = this.steps - 1;
 			this.vgaDirty = false;
 			if (this.future.length && this.future[0].steps <= this.steps) {

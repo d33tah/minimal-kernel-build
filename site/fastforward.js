@@ -192,20 +192,63 @@ async function jitStep(st, beforeEntry = false) {
 
 const ffYield = () => new Promise((r) => setTimeout(r, 0));
 
-async function fastForward(target, name) {
+// A3d: Pause inside the fast-forward keeps where it was (its slice's start
+// and how far the slice ran). Continue goes on with the same slices, so the
+// run is the one that was not paused: stepping from the pause instead moved
+// the timer's ticks (Debian's IRQ0 count at the prompt 25,649, not 25,664).
+let ffHold = null;
+
+// The machine is on the way to the kernel entry that the JIT runs, or held
+// there: a snapshot here could not repeat the run.
+const ffUnsaved = (st) => !!st && st.sinceEntry < 0 && (ffActive || (!!ffHold && ffHold.st === st) || st.jitBeforeEntry);
+
+// Run the fast-forward, then after(ok); inputs(): how many inputs the run has
+// logged or holds (replay.js, which imports this module); hold: go on from a
+// Pause.
+function ffRun(target, name, after, inputs, hold = null) {
+	return fastForward(target, name, { after, inputs }, hold).then(after);
+}
+
+// Continue: the held fast-forward goes on, if the machine is still where it
+// was held. Anything done there since (a step, keys, a patch, another clock)
+// makes it another run, which goes on from here as usual.
+function ffResume(st) {
+	const h = ffHold;
+	ffHold = null;
+	if (!h || h.st !== st || st !== stepper || h.steps !== st.steps || h.inputs !== h.go.inputs() || h.mips !== CLOCK.mips)
+		return false;
+	ffRun(h.target, h.name, h.go.after, h.go.inputs, h);
+	return true;
+}
+
+// No fast-forward running or held from here on.
+async function ffStop() {
+	if (ffActive)
+		ffAbort = true;
+	while (ffActive)
+		await ffYield();
+	ffHold = null;
+}
+
+async function fastForward(target, name, go = null, hold = null) {
 	// Boot replaces the machine while this runs (each await lets it in):
 	// the loop then stops at its next check; it uses only st and em.
 	const st = stepper, em = emulator;
 	const gone = () => st !== stepper;
 	const [lo, hi] = codeRange(target);
 	const inside = () => { const p = st.nextPhys(); return p >= lo && p < hi; };
-	const t0 = realNow();
+	const t0 = realNow() - (hold ? hold.info.ms : 0);
 	ffActive = true;
 	ffAbort = false;
-	ffInfo = { target, name, steps: 0, ms: 0, slices: 0, restores: 0, start: st.steps };
+	ffHold = null;
+	ffInfo = hold ? hold.info : { target, name, steps: 0, ms: 0, slices: 0, restores: 0, start: st.steps };
+	st.entryAt = target;
 	api.step.speedReset();
 	api.show.updateDebugUi();
-	let reached = inside();
+	let reached = !hold && inside();
+	// The slice running: the state at its start, where that was, how much
+	// it ran; exact: it reached the target and is stepped there from its start.
+	let snap = hold ? hold.snap : null, at = hold ? hold.at : null, ran = hold ? hold.ran : 0, exact = !!hold && hold.exact;
 	try {
 		// The BIOS is stepped (about 1.4 M instructions, a fraction of a
 		// second): v86 0.5.471 cannot restore a snapshot taken while SeaBIOS
@@ -222,26 +265,28 @@ async function fastForward(target, name) {
 			api.show.updateDebugUi(); // the count of the stepped BIOS part, live
 			await ffYield();
 		}
-		ffInfo.stepped = st.steps - ffInfo.start;
-		while (!reached && !ffAbort && !gone() && !st.dead()) {
-			// save_state() fails before the BIOS has set up PCI (a device
-			// without its BARs yet): run on until it works.
-			let snap = null;
-			for (let tries = 0; !snap && tries < 200 && !inside(); tries++) {
-				try {
-					snap = await em.save_state();
-				} catch (e) {
-					await jitStep(st, true);
+		if (!snap && !exact)
+			ffInfo.stepped = st.steps - ffInfo.start;
+		while ((exact || !reached) && !ffAbort && !gone() && !st.dead()) {
+			if (!snap) {
+				// save_state() fails before the BIOS has set up PCI (a device
+				// without its BARs yet): run on until it works.
+				for (let tries = 0; !snap && tries < 200 && !inside(); tries++) {
+					try {
+						snap = await em.save_state();
+					} catch (e) {
+						await jitStep(st, true);
+					}
+					if (gone())
+						break;
 				}
-				if (gone())
+				if (!snap || gone())
 					break;
+				at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
+				ffInfo.slices++;
+				ran = 0;
 			}
-			if (!snap || gone())
-				break;
-			const at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
-			ffInfo.slices++;
-			let ran = 0;
-			while (ran < FF_SLICE && !ffAbort && !st.dead()) {
+			while (!exact && ran < FF_SLICE && !ffAbort && !st.dead()) {
 				if (jitPending(st)) {
 					await jitFlush(st);
 					if (ffAbort || gone())
@@ -253,7 +298,7 @@ async function fastForward(target, name) {
 					break;
 				}
 			}
-			if (reached) {
+			if (reached && !exact) {
 				// Back to the slice start and step exactly to the target. The
 				// count and the clock first: restore_state sets the TSC offset
 				// from the clock it reads, which had run on through the slice
@@ -277,6 +322,9 @@ async function fastForward(target, name) {
 				st.jumpForget();
 				ffInfo.restores++;
 				ffInfo.jitSteps = st.steps - ffInfo.start;
+				exact = true;
+			}
+			if (exact) {
 				let r = "count";
 				while (r !== "addr" && !ffAbort && !gone()) {
 					r = st.run(5e6, target, 200);
@@ -286,7 +334,11 @@ async function fastForward(target, name) {
 						break;
 					await ffYield();
 				}
+				if (r === "addr")
+					exact = false;
 			}
+			if (!ffAbort)
+				snap = null;
 			ffInfo.steps = st.steps - ffInfo.start;
 			ffInfo.ms = realNow() - t0;
 			api.show.updateDebugUi();
@@ -302,6 +354,9 @@ async function fastForward(target, name) {
 	ffInfo.ms = realNow() - t0;
 	ffInfo.stopPhys = st.nextPhys();
 	const ok = st.nextPhys() === target;
+	// Only the boot's way to the entry goes on (a Run to has its own stop).
+	if (go && ffAbort && !ok && !st.dead())
+		ffHold = { st, steps: st.steps, inputs: go.inputs(), mips: CLOCK.mips, target, name, go, snap, at, ran, exact, info: ffInfo };
 	// The kernel entry is where we stopped: "from entry" counts start here.
 	if (ok && !ffInfo.runTo)
 		st.sinceEntry = st.steps;
@@ -436,4 +491,4 @@ async function fastRunTo(targets, label) {
 
 export { ffActive, ffAbort, ffInfo, setFfActive, setFfAbort, setFfInfo, ffBreaks, ffEnabled, ffTarget,
 	codeRange, ffCounter, JIT, jitDetInstall, jitPending, jitFlush, jitChunk, setJitChunk, jitStep, ffYield,
-	fastForward, fastRunTo };
+	fastForward, ffRun, ffResume, ffStop, ffUnsaved, fastRunTo };

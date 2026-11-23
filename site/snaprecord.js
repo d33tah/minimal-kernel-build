@@ -73,9 +73,11 @@ function snapMeta(em, withRun = false) {
 		clockExact: { base: CLOCK.base, baseSteps: CLOCK.baseSteps, mips: CLOCK.mips }, eip: regs.EIP, phys, sym, regs,
 		// stepped: the run goes on stepped from here, as the count makes it
 		// (or made it, when stepped back): the JIT would be another timeline,
-		// with its timer interrupts at other instructions (A3c).
+		// with its timer interrupts at other instructions (A3c). The count
+		// decides also where the log has no mode yet (A3d: a run stopped
+		// before its first resume was restored under the JIT).
 		...(stepper ? { stop: { text: stepper.text.slice(), textSeen: stepper.textSeen, idleMs: stepper.idleMs, ...stepper.stagesNow(),
-			stepped: INPUT.mode === "stepped" && (counting || stepper.behind()) } } : {}),
+			stepped: counting || (INPUT.mode === "stepped" && stepper.behind()) } } : {}),
 		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}), ...(withRun ? { run: runNow() } : {}) };
 }
 

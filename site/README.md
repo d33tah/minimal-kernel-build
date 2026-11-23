@@ -3661,6 +3661,16 @@ way the unique EIP cells say "not known" for stages reached from there. Keys
 typed while the machine is stopped wait for Continue, and the overlay says
 so. Suite `restored` (job `kit`) drives these through the page.
 
+Before the kernel entry the JIT runs the boot in slices. Pause there keeps
+the slice, and Continue goes on with it, so the run is the one that was not
+paused (stepping from the pause gave Debian's prompt another IRQ0 count).
+Save refuses that stretch and says why: a restored machine has no JIT state
+and cannot repeat the slices. A step, keys or a patch made at such a pause
+start another run, stepped from there. "From 1 MiB" counts from the entry
+the fast-forward runs to (Debian's 16 MiB), and a stage after a restored
+point shows as not reached until the run gets there. Suite `preentry` (job
+`kit`) drives these through the page.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

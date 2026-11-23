@@ -24,7 +24,10 @@ class StepperBase {
 		this.kernelLo = kernelLo;
 		this.kernelHi = kernelHi;
 		this.steps = 0;          // instructions executed by this stepper
-		this.sinceEntry = -1;    // steps when EIP first reached kernelLo, -1 before
+		this.sinceEntry = -1;    // steps when EIP first reached entryAt, -1 before
+		// The kernel's entry: 1 MiB, or the link entry the fast-forward runs
+		// to (Debian's 16 MiB: its bzImage's decompressor runs at 1 MiB, A3d).
+		this.entryAt = kernelLo;
 		this.unique = 0;         // distinct physical addresses executed
 		this.uniqueKernel = 0;   // ... of which in [kernelLo, kernelHi)
 		// A3c: seen holds addresses of another timeline (a restored snapshot,
@@ -282,12 +285,17 @@ class StepperBase {
 		// have none of these.
 		if (stop.endAhead)
 			this.stepToEnd = true;
+		// A3d: a stage reached after t is not reached yet on this machine.
+		for (const m of this.milestones)
+			if (m.found && m.found.steps > t)
+				m.found = null;
 		if (stop.found)
 			stop.found.forEach((f, i) => {
-				if (f && this.milestones[i] && !this.milestones[i].found)
+				if (f && f.steps <= t && this.milestones[i] && !this.milestones[i].found)
 					this.milestones[i].found = f;
 			});
-		if (this.sinceEntry < 0 && stop.sinceEntry >= 0)
+		// The snapshot's: this machine's may be another boot's (A3d).
+		if (typeof stop.sinceEntry === "number")
 			this.sinceEntry = stop.sinceEntry;
 		for (const key of ["exit", "panicEntered"])
 			if (!this[key] && stop[key])

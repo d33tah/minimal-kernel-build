@@ -13,12 +13,12 @@ import { patchV86Wasm } from "./v86patch.js";
 import { Stepper } from "./stepper.js";
 import { graphReset } from "./graph.js";
 import { initrdNote } from "./symimport.js";
-import { setFfActive, ffEnabled, ffTarget, jitDetInstall, fastForward, ffAbort, ffInfo } from "./fastforward.js";
+import { setFfActive, ffEnabled, ffTarget, jitDetInstall, ffRun, ffAbort, ffInfo } from "./fastforward.js";
 import { MEV } from "./memevents.js";
 import { varsTaskNow } from "./vartasks.js";
 import { setPageSnapView, setSnapDiff, renderSnapDiff } from "./snapdiff.js";
 import { snapReady } from "./snapshots.js";
-import { inputBoot, replayActive } from "./replay.js";
+import { INPUT, inputBoot, replayActive } from "./replay.js";
 import { ram, checkImage, kernelEnd } from "./header.js";
 import { setScanCopy, setAutoscan } from "./scan.js";
 import { computePageClasses, drawGrid } from "./memview.js";
@@ -214,7 +214,7 @@ async function boot() {
 			// the kernel's link entry; from there as before.
 			const t = ffTarget();
 			setRunState("paused");
-			fastForward(t.phys, t.name).then((ok) => {
+			ffRun(t.phys, t.name, (ok) => {
 				if (em !== emulator)
 					return;
 				if (ffAbort) {
@@ -227,7 +227,7 @@ async function boot() {
 				else
 					finishEntry();
 				resume();
-			});
+			}, () => INPUT.log.length + INPUT.pending.length);
 		} else {
 			resume();
 		}

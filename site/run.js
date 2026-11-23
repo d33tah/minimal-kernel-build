@@ -8,7 +8,7 @@ import { $, V86_KERNEL_ADDR } from "./util.js";
 import { setCounting, countMs, setCountMs, countSteps, setCountSteps, setCountNote, runTo, setRunTo, setPrevRegs,
 	setFlashes, stepper, counting, entryPhase, emulator, emuReady, setRunState, runState, jitLoopId, setJitLoopId,
 	runToMoved, runToFrom, setRunToMoved, api, runToLabel, provide } from "./page.js";
-import { jitPending, jitFlush, JIT, jitChunk, ffActive, setFfAbort } from "./fastforward.js";
+import { jitPending, jitFlush, JIT, jitChunk, ffActive, setFfAbort, ffResume } from "./fastforward.js";
 import { replayMode, inputFlush, replayFinish, inputMark, inputTaint, inputRoom, replayAfterStop, replayActive, inputPatchHere } from "./replay.js";
 import { REV, revNeedsJit, revStepTo, revJitTick, revTick, revRoom, revStepRoom, revRate } from "./reverse.js";
 import { STEP_CONST } from "./stepper.js";
@@ -66,6 +66,9 @@ function stopDriver() {
 // kernel entry, where the counts from the entry start).
 async function resume(now = false) {
 	if (!emulator || !emuReady || REV.busy)
+		return;
+	// Paused on the fast-forward to the entry: it goes on, the same run (A3d).
+	if (stepper && runTo === null && !replayActive() && ffResume(stepper))
 		return;
 	// Stepped back where the JIT ran ahead (R5): forward to where the run
 	// had got to first (exactly, from a checkpoint), as stepping would run

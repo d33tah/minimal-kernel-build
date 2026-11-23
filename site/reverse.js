@@ -126,6 +126,8 @@ function revEveryText() {
 	return " (" + parts.join("; ") + ")";
 }
 
+const RESTORED_WHY = "a snapshot was restored";
+
 // A new machine, a snapshot restored, the clock changed: no history.
 function revReset(why) {
 	REV.cps = [];
@@ -669,7 +671,11 @@ function revView() {
 // The Machine tab's Step back (MV.back): true when it changed.
 function revBackPart() {
 	const v = revView();
-	return mvPut("back", { back: v.back, tip: v.tip });
+	// Right after a Restore there is nothing to step back to, also with a
+	// patch made there: the page says so beside the disabled button (A3d).
+	const why = !v.back && runState === "paused" && REV.why === RESTORED_WHY ?
+		"Step back starts after the next instruction: the history begins at the restored snapshot. To undo a patch made here, restore the snapshot again." : "";
+	return mvPut("back", { back: v.back, tip: v.tip, why });
 }
 
 // Step back (Machine tab) and the Debugger's reverse controls, drawn again.
@@ -697,5 +703,5 @@ function initReverse() {
 }
 
 provide({ revMark, revJit, REV, REV_JIT_MS_PER_INSN, REV_JIT_MS_PER_CALL, revBranch });
-export { REV, REVV, revView, revBackToField, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
+export { REV, REVV, RESTORED_WHY, revView, revBackToField, revReset, revRate, revTick, revRoom, revStepRoom, revJitTick, revFind, revBlob, revStepBack,
 	revStepTo, revNeedsJit, revBranch, revRender, revBackPart, initReverse };

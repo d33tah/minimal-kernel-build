@@ -260,7 +260,6 @@ kgen.js	628	d8dc7dd7	a vmlinux without .debug_info given to kgenDwarf: the calle
 kgen.js	637	c8b20a61	a type or partial unit (see 552)
 kgen.js	751-753	54f5bbfd	a source path outside the kernel tree (a compiler header) in the line table: the imported test kernels' paths are all in the tree
 kgen.js	773	92006db4	an inlined call whose file text was not shipped or has no function name: not in the imported test kernels
-listing.js	91	2d431e36	needs a listing with instructions of a page below the kernel, or before the kernel entry, after a fast-forward; disasm.json has no instructions below the kernel and the fast-forward always runs to the entry before code is listed
 listing.js	399	32eddd6f	stubShift without disasm.json or with an empty one: it is only called for yellow lines, which only exist when disasm.json has instructions
 listing.js	434	3cb18174	diffTip's sameAt for an address past RAM: the shifted address is at most a page above a listed instruction, inside RAM for every shipped kernel and RAM size
 listing.js	448	a9e430e6	sometimes: ran in run 43749791653 in the genimport job (jscov-raw-gen-worker) only: a yellow line over all-zero memory: needs a kernel whose code is listed before it is loaded there (Debian decompressed above 16 MiB, listed at the reset vector); no suite opens such a listing and none of the kernels built here has that layout

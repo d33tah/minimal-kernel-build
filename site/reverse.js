@@ -53,7 +53,7 @@ import { MV, mvPut } from "./machtab.js";
 import { stepper, emulator, emuReady, runState, api, provide } from "./page.js";
 import { ffActive, jitPending, jitFlush, jitChunk } from "./fastforward.js";
 import { v86ResetHidden, v86Restore } from "./cpustate.js";
-import { INPUT, inputReset, replayActive, inputRewind, inputRedo, inputRoom, replayStop } from "./replay.js";
+import { INPUT, inputReset, replayActive, inputRewind, inputRedo, inputRoom, replayStop, inputPatchHere } from "./replay.js";
 import { controller } from "./ui.jsx";
 import { dbgStatus, runToText } from "./dbgtab.js";
 
@@ -62,6 +62,7 @@ const REV_GROUP = 8;       // a full one, then deltas; the oldest group goes fir
 const REV_TARGET_MS = 500; // stepping between two checkpoints
 const REV_BYTES = 256 << 20; // packed checkpoints in memory at most (the oldest group goes)
 const REV_K_MIN = 50000, REV_K_MAX = 20e6;
+const REV_COUNT_SPARSE = 8; // the count at full speed: one checkpoint per 8 usual ones
 // Between two JIT checkpoints: about REV_JIT_MS of JIT running, estimated
 // from what the JIT did (instructions, calls of compiled code: v86-det.patch's
 // jit_stats), so that a run puts its checkpoints, and the resets that come
@@ -87,6 +88,7 @@ const REV = {
 	seq: 0,
 	rate: 4000,     // instructions per ms of stepping (measured), for k
 	k: 2e6,         // instructions between checkpoints
+	kUsed: 0,       // the spacing of the last stepped checkpoint (revEvery)
 	kFixed: 0,      // ?revk=
 	busy: false,    // a step back or Back to is running
 	why: "",        // why the history starts where it does
@@ -108,7 +110,10 @@ const REV = {
 		REV.kJit = Math.floor(kj);
 }
 
-const revKText = () => (REV.kFixed ? REV.kFixed : REV.k).toLocaleString("en");
+// Instructions between two stepped checkpoints. sparse: the count stepping a
+// kernel at full speed, where each one costs the boot time (A3b).
+const revEvery = (sparse) => REV.kFixed || (sparse ? REV.k * REV_COUNT_SPARSE : REV.k);
+const revKText = () => (REV.kFixed || REV.kUsed || REV.k).toLocaleString("en");
 
 // " every k stepped, n at JIT speed (every ...)" for the history line.
 function revEveryText() {
@@ -148,26 +153,27 @@ function revRate(n, ms) {
 // Before a stepped slice: a checkpoint when there is none or k
 // instructions ran since the last one. Not while re-running (those
 // counts have theirs already).
-function revTick(st) {
+function revTick(st, sparse = false) {
 	if (REV.st !== st)
 		revReset("");
 	if (!revCan(st) || st.behind())
 		return;
 	const last = REV.cps[REV.cps.length - 1];
-	if (last && st.steps - last.steps < (REV.kFixed || REV.k))
+	if (last && st.steps - last.steps < revEvery(sparse))
 		return;
 	if (last && last.steps === st.steps)
 		return;
+	REV.kUsed = revEvery(sparse);
 	revCapture(st);
 }
 
 // Instructions until the next checkpoint is due (the driver's slices end
 // there), Infinity when none is kept.
-function revRoom(st) {
+function revRoom(st, sparse = false) {
 	const last = REV.cps[REV.cps.length - 1];
 	if (!last || REV.st !== st || !revCan(st) || st.behind())
 		return Infinity;
-	return Math.max(1, (REV.kFixed || REV.k) - (st.steps - last.steps));
+	return Math.max(1, revEvery(sparse) - (st.steps - last.steps));
 }
 
 // jit: a JIT checkpoint (R5): v86's hidden state is reset after the save,
@@ -497,6 +503,7 @@ async function revRun(what, fn) {
 	api.show.updateDebugUi();
 	try {
 		const text = await fn(st);
+		inputPatchHere(st);
 		const ms = realNow() - t0;
 		REV.last = { what, ms: Math.round(ms), steps: st.steps };
 		api.step.speedReset();

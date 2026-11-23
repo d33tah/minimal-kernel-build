@@ -9,7 +9,7 @@ import { setCounting, countMs, setCountMs, countSteps, setCountSteps, setCountNo
 	setFlashes, stepper, counting, entryPhase, emulator, emuReady, setRunState, runState, jitLoopId, setJitLoopId,
 	runToMoved, runToFrom, setRunToMoved, api, runToLabel, provide } from "./page.js";
 import { jitPending, jitFlush, JIT, jitChunk, ffActive, setFfAbort } from "./fastforward.js";
-import { replayMode, inputFlush, replayFinish, inputMark, inputTaint, inputRoom, replayAfterStop, replayActive } from "./replay.js";
+import { replayMode, inputFlush, replayFinish, inputMark, inputTaint, inputRoom, replayAfterStop, replayActive, inputPatchHere } from "./replay.js";
 import { REV, revNeedsJit, revStepTo, revJitTick, revTick, revRoom, revStepRoom, revRate } from "./reverse.js";
 import { STEP_CONST } from "./stepper.js";
 import { speed, speedReset, updateDebugUi, clockMips, flushScreen, watchJitEnd, endText, finishEntry,
@@ -44,7 +44,9 @@ function wantStepped() {
 	const rm = replayMode();
 	if (rm && stepper)
 		return rm === "stepped";
-	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase);
+	// endAhead: the JIT cannot see the stages (the lines, panic()) up to an
+	// end this run has recorded or lost by going another way (A3b).
+	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase || stepper.endAhead());
 }
 
 function stopDriver() {
@@ -293,6 +295,8 @@ async function pause(note) {
 	// note: text, or nodes (runToStopped's file:line link).
 	if (note !== undefined)
 		dbgStatus(note);
+	if (stepper)
+		inputPatchHere(stepper);
 	afterStop();
 }
 
@@ -341,12 +345,13 @@ function driverTick() {
 		resume(true);
 		return;
 	}
-	// A checkpoint for stepping back (R2); not for the count at full speed,
-	// which the JIT takes over from (no stepping back across that).
-	const keep = !(speed() === "full" && runTo === null);
+	// A checkpoint for stepping back (R2), also while the count steps a
+	// kernel at full speed: Debian reaches its prompt that way (A3b).
+	const full = speed() === "full" && runTo === null;
+	const keep = !full || (counting && !entryPhase) || stepper.endAhead();
 	if (keep)
-		revTick(stepper);
-	const room = Math.min(inputRoom(stepper), keep ? revRoom(stepper) : Infinity, revStepRoom(stepper));
+		revTick(stepper, full);
+	const room = Math.min(inputRoom(stepper), keep ? revRoom(stepper, full) : Infinity, revStepRoom(stepper));
 	const now = realNow();
 	let reason;
 	const t0 = now, s0 = stepper.steps;

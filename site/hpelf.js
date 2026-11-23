@@ -475,9 +475,15 @@ function hpVerify(A, f, k, opts) {
 			}
 	if (opts.jumped && opts.jumped.has(k.va))
 		blank(0, 5);
-	if (k.size !== f.size || ob.some((b, i) => b !== kb[i]))
-		return "the running kernel's code of " + f.name + " is not what its source compiles to here (" + (k.size !== f.size ? k.size + " bytes, here " + f.size :
-			"bytes differ") + (opts.lto ? ": the kernel was linked with LTO, which can change how its functions pass arguments" : "") + "); rebuild and boot";
+	if (k.size !== f.size || ob.some((b, i) => b !== kb[i])) {
+		const what = k.size !== f.size ? k.size + " bytes, here " + f.size : "bytes differ";
+		// Measured on the minified Linux's con_write (A3b): the linked code
+		// passes cr()'s argument in ECX, this compile in EAX.
+		return opts.lto ? "the running " + f.name + " is not the code this page compiles from its source (" + what + "). " +
+			"This kernel was built with link-time optimization (LTO), which rewrites functions at the final link, for example how they pass " +
+			"arguments to each other, so a copy compiled here might not work with the rest of the kernel. Use Rebuild and boot instead" :
+			"the running kernel's code of " + f.name + " is not what its source compiles to here (" + what + "); rebuild and boot";
+	}
 	return null;
 }
 

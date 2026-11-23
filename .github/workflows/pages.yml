@@ -1365,6 +1365,16 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites hotpatch --shots rebuild-screenshots'
 
+    # A patch inside a run that was stepped back (plan A3b): it stays in
+    # RAM on Continue, a snapshot at its count keeps it, Debian's Step back
+    # with the default count, the stages after Back and Continue, a kernel
+    # picked during another's load.
+    - name: Hot patch in a stepped-back run (test_browser.py hprun)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites hprun --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

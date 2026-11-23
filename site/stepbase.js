@@ -49,6 +49,7 @@ class StepperBase {
 		this.milestones = [];    // { text, found: null | {...} }
 		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
 		this.end = null;         // { kind: "panic" | "halt", ...snapshot }
+		this.stepToEnd = false;  // A3b: endAhead() after the run went another way
 		this.panicEntered = null; // snapshot when EIP first entered panic()
 		this.panicBudget = 50e6;  // instructions after that without an end
 		this.lastTimers = 0;
@@ -191,6 +192,10 @@ class StepperBase {
 	// R2: the stepper is back at a count it has recorded past.
 	behind() { return this.steps < this.ahead; }
 
+	// A3b: this run has an end ahead of it, recorded or dropped when the run
+	// went another way (a patch, a restored snapshot).
+	endAhead() { return !this.end && (!!this.stepToEnd || this.future.some((f) => f.key === "end")); }
+
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
 	// count from. What was recorded after t (the end, the prompt, the exit,
 	// panic() entered, milestones) waits in this.future; the kernel entry
@@ -255,6 +260,8 @@ class StepperBase {
 	// machine's yet, and the text mirror and the lines seen are the
 	// snapshot's ({ text, textSeen, idleMs } from snapshots.js).
 	restoreStops(t, stop) {
+		if (this.end && this.end.steps > t)
+			this.stepToEnd = true;
 		for (const key of ["end", "prompt", "exit", "panicEntered"])
 			if (this[key] && this[key].steps > t)
 				this[key] = null;
@@ -277,6 +284,7 @@ class StepperBase {
 		if (!this.behind() && !this.future.length)
 			return;
 		const t = this.steps;
+		this.stepToEnd = this.stepToEnd || this.future.some((f) => f.key === "end");
 		this.future = [];
 		this.ahead = 0;
 		const fr = this.fr;

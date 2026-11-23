@@ -11,7 +11,7 @@ import { dbgFrames, dbgLineCodeWait } from "./dbginfo.js";
 import { srcLinkEl } from "./srclinks.js";
 import { ffActive, ffYield, ffEnabled, ffTarget, codeRange, setFfInfo, fastForward, ffAbort, fastRunTo } from "./fastforward.js";
 import { fnSymAt } from "./fnfacts.js";
-import { replayActive, replayStop, inputFlush, inputMark, inputRoom, inputTaint } from "./replay.js";
+import { replayActive, replayStop, inputFlush, inputMark, inputRoom, inputTaint, inputPatchHere } from "./replay.js";
 import { REV, revNeedsJit, revStepTo, revTick, revRate, revBranch, revReset } from "./reverse.js";
 import { scan } from "./scan.js";
 import { insnIndex } from "./listing.js";
@@ -78,6 +78,7 @@ async function doStep(n) {
 	dbgStatus("Stepped " + num(stepper.steps - before) + " instruction" +
 		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
 			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "prompt" ? " (at the (initramfs) prompt)" : reason === "time" ? " (5 s limit)" : "") + ".");
+	inputPatchHere(stepper);
 	scan(false);
 	afterStop();
 }

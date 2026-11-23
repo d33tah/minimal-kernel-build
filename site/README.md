@@ -3637,6 +3637,17 @@ minified Linux and Debian rebuilt from source: the patch in the run's log
 at its count, Step back and Step over it, the two snapshots restored, and
 a replay of the patched run from boot that matches.
 
+A patch made after stepping back starts another timeline: the checkpoints
+and recordings ahead of it are dropped (`revBranch`), because they hold
+memory without the patch. A machine stopped at exactly a logged patch's
+count has the patch (`inputPatchHere`), so a snapshot taken there keeps it.
+The JIT cannot see the lines on the screen or `panic()`, so a run with an
+end ahead of it, recorded or dropped by going another way, is stepped up to
+that end (`endAhead`) and reports the same stages. The count at full speed
+keeps a checkpoint every 8 usual spacings, so Debian's Step back works at
+its prompt with the default settings. Suite `hprun` (job `kit`) drives
+these through the page.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

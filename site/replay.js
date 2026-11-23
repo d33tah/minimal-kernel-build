@@ -118,8 +118,38 @@ function inputPatchWrite(p) {
 		emulator.write_memory(Uint8Array.from(hex.match(/../g), (x) => parseInt(x, 16)), pa);
 }
 
-// A patch made now: written and logged at this count.
+// The machine stopped at the count of a logged patch (stepped back and
+// forward again): the patch was made at this very count before the next
+// instruction, so it is in RAM and in the log here, and a snapshot taken
+// here keeps it (A3b). The entries before it go in with it.
+function inputPatchHere(st) {
+	const redo = INPUT.redo;
+	let last = -1;
+	for (let i = 0; i < redo.length && redo[i].at <= st.steps; i++)
+		if (redo[i].patch)
+			last = i;
+	if (last < 0 || !INPUT.send)
+		return;
+	for (const e of redo.splice(0, last + 1)) {
+		if (e.keys)
+			for (const c of e.keys)
+				INPUT.send(c);
+		if (e.reset)
+			v86ResetHidden(emulator, "save");
+		if (e.patch)
+			inputPatchWrite(e.patch);
+		INPUT.log.push(e);
+	}
+	renderRunInfo();
+	api.source.hpSync();
+}
+
+// A patch made now: written and logged at this count. Made after stepping
+// back, it starts another timeline: the checkpoints ahead hold RAM without
+// it, and restoring one on Continue lost the patch while the log kept it (A3b).
 function inputPatch(st, patch) {
+	if (st.behind() || INPUT.redo.length)
+		api.step.revBranch(st, "a patch was made at instruction " + st.steps.toLocaleString("en") + " after stepping back");
 	inputPatchWrite(patch);
 	// Also on the real-time clock: the patches the machine has are the log's.
 	INPUT.log.push({ at: st.steps, t: CLOCK.now(), patch });
@@ -587,5 +617,5 @@ function initReplay() {
 }
 
 export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
-	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, runScreenHash, runNow, replayRun, replayFinish, replayStop,
+	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, inputPatchHere, runScreenHash, runNow, replayRun, replayFinish, replayStop,
 	replayAfterStop, runStatus, initReplay, RUN, downloadRun, replayNow, replayFile };

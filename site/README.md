@@ -3643,7 +3643,9 @@ memory without the patch. A machine stopped at exactly a logged patch's
 count has the patch (`inputPatchHere`), so a snapshot taken there keeps it.
 The JIT cannot see the lines on the screen or `panic()`, so a run with an
 end ahead of it, recorded or dropped by going another way, is stepped up to
-that end (`endAhead`) and reports the same stages. The count at full speed
+that end (`endAhead`) and reports the same stages; a snapshot keeps the
+stages its run had reached and whether an end was ahead (`stagesNow`), also
+for a restore after the page was reloaded. The count at full speed
 keeps a checkpoint every 8 usual spacings, so Debian's Step back works at
 its prompt with the default settings. Suite `hprun` (job `kit`) drives
 these through the page.

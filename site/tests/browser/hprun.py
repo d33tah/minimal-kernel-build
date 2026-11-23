@@ -200,6 +200,20 @@ def hr_snapshot(browser, base, problems, r):
         patched_end(page, pa, first, problems, tag)
         if steps(page) != end:
             problems.append(f"{tag}: the restored run ended at {steps(page)}, the uninterrupted one at {end}")
+        # The snapshot is kept in the browser: restored after a reload, on a
+        # machine that has recorded no end, it reports the same stages.
+        page.goto(f"{base}/index.html?kernel={MINI}&speed=full&paused=1")
+        page.wait_for_function("() => window.MKB && MKB.stepper && MKB.runState === 'paused'", timeout=120000)
+        show_tab(page, "snapshots")
+        wait_for(lambda: len(snap_rows(page)["rows"]) == 1, 30)
+        snap_click(page, f"#snapshots tr[data-id='{rows[0]['id']}'] button.restore", False)
+        wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == rows[0]["id"], 60)
+        still(page)
+        if run_to_end(page, problems, tag + " after a reload"):
+            patched_end(page, pa, first, problems, tag + " after a reload")
+            r["end after a reload"] = steps(page)
+            if steps(page) != end:
+                problems.append(f"{tag}: restored after a reload, the run ended at {steps(page)}, the uninterrupted one at {end}")
     finally:
         ctx.close()
 

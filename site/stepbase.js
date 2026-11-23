@@ -196,6 +196,12 @@ class StepperBase {
 	// went another way (a patch, a restored snapshot).
 	endAhead() { return !this.end && (!!this.stepToEnd || this.future.some((f) => f.key === "end")); }
 
+	// A3b: the stages reached so far, kept in a snapshot (restoreStops).
+	stagesNow() {
+		return { endAhead: this.endAhead(), found: this.milestones.map((m) => m.found), sinceEntry: this.sinceEntry,
+			exit: this.exit, panicEntered: this.panicEntered };
+	}
+
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
 	// count from. What was recorded after t (the end, the prompt, the exit,
 	// panic() entered, milestones) waits in this.future; the kernel entry
@@ -267,6 +273,21 @@ class StepperBase {
 				this[key] = null;
 		if (this.panicTextFrom !== undefined && this.panicTextFrom > t)
 			this.panicTextFrom = undefined;
+		// A3b: what the snapshot's run had reached, for a machine that has
+		// not recorded it (the page was reloaded); snapshots from before A3b
+		// have none of these.
+		if (stop.endAhead)
+			this.stepToEnd = true;
+		if (stop.found)
+			stop.found.forEach((f, i) => {
+				if (f && this.milestones[i] && !this.milestones[i].found)
+					this.milestones[i].found = f;
+			});
+		if (this.sinceEntry < 0 && stop.sinceEntry >= 0)
+			this.sinceEntry = stop.sinceEntry;
+		for (const key of ["exit", "panicEntered"])
+			if (!this[key] && stop[key])
+				this[key] = stop[key];
 		if (stop.text && stop.text.length === this.text.length)
 			this.text.set(stop.text);
 		this.textSeen = stop.textSeen;

@@ -79,29 +79,39 @@ async function loadDisasm(entry) {
 // The latest kernel asked for: a load overtaken by another pick stops at
 // its next step (A3b: hello's late files replaced the picked kernel's).
 let loadGen = 0;
-
-async function loadKernel(entry, memFromUrl) {
+const LOAD_GONE = Symbol("overtaken by another kernel");
+// A new load's step: awaits p, and ends the load if another one started.
+function loadStep() {
 	const gen = ++loadGen;
-	const gone = () => gen !== loadGen;
+	return async (p) => {
+		const v = await p;
+		if (gen !== loadGen)
+			throw LOAD_GONE;
+		return v;
+	};
+}
+const loadEnded = (e) => {
+	if (e !== LOAD_GONE)
+		throw e;
+};
+
+function loadKernel(entry, memFromUrl) {
+	return loadKernelSteps(entry, memFromUrl, loadStep()).catch(loadEnded);
+}
+
+async function loadKernelSteps(entry, memFromUrl, step) {
 	api.source.srcKernelSwitch(entry.name);
 	setStatus("Fetching " + entry.path + "...");
 	// The bzImage, its disassembly and its symbols are fetched at once (each
 	// one alone was a round trip on the way to the boot); they are used in
 	// the same order as before.
 	const respP = fetch(withV(entry.path)), disasmP = loadDisasm(entry), symbolsP = loadSymbols(entry);
-	const resp = await respP;
-	if (gone())
-		return;
+	const resp = await step(respP);
 	if (!resp.ok)
 		throw new Error(entry.path + ": " + httpWhy(resp));
 	const bytesP = resp.arrayBuffer();
-	const dis = await disasmP;
-	if (gone())
-		return;
-	setDisasm(dis);
-	await srcUseShipped(entry);
-	if (gone())
-		return;
+	setDisasm(await step(disasmP));
+	await step(srcUseShipped(entry));
 	dbgUseShards(entry);
 	syncSrcToggle();
 	// kernels.json may give a kernel its own RAM size (meta.json "ram").
@@ -110,32 +120,20 @@ async function loadKernel(entry, memFromUrl) {
 	// user loaded stays; one from another entry goes.
 	if (entry.initrd && (!initrd || initrd.entry)) {
 		setStatus("Fetching " + entry.initrd + "...");
-		const r = await fetch(withV(entry.initrd));
-		if (gone())
-			return;
+		const r = await step(fetch(withV(entry.initrd)));
 		if (!r.ok)
 			throw new Error(entry.initrd + ": " + httpWhy(r));
 		const name = entry.initrd.split("/").pop();
-		const bytes = new Uint8Array(await r.arrayBuffer());
-		if (gone())
-			return;
-		const info = await analyzeInitrd(bytes, name);
-		if (gone())
-			return;
+		const bytes = new Uint8Array(await step(r.arrayBuffer()));
+		const info = await step(analyzeInitrd(bytes, name));
 		setInitrd({ name, bytes, entry: entry.name, info });
 	} else if (!entry.initrd && initrd && initrd.entry)
 		setInitrd(null);
-	const kernelBytes = await bytesP, syms = await symbolsP;
-	if (gone())
-		return;
+	const kernelBytes = await step(bytesP), syms = await step(symbolsP);
 	useImage(entry.name, kernelBytes, memFromUrl || ramDefault, syms);
 	showImported();
-	await restoreImported();
-	if (gone())
-		return;
-	await restoreCmdline();
-	if (gone())
-		return;
+	await step(restoreImported());
+	await step(restoreCmdline());
 	await boot();
 }
 
@@ -165,24 +163,20 @@ function chooseRam(v) {
 
 // From disk: a bzImage file, booted (without disasm.json, C source or
 // DWARF, until its vmlinux is imported).
-async function bootFromDisk(f) {
-	const gen = ++loadGen;
+function bootFromDisk(f) {
+	return bootFromDiskSteps(f, loadStep()).catch(loadEnded);
+}
+
+async function bootFromDiskSteps(f, step) {
 	api.source.srcKernelSwitch(f.name);
 	setDisasm(null);
 	srcFresh(null, "no C source for a bzImage from disk");
 	dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
 	syncSrcToggle();
-	const bytes = await f.arrayBuffer();
-	if (gen !== loadGen)
-		return;
-	useImage(f.name, bytes);
+	useImage(f.name, await step(f.arrayBuffer()));
 	showImported();
-	await restoreImported();
-	if (gen !== loadGen)
-		return;
-	await restoreCmdline();
-	if (gen !== loadGen)
-		return;
+	await step(restoreImported());
+	await step(restoreCmdline());
 	await boot();
 }
 

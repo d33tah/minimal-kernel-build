@@ -79,8 +79,16 @@ function inputRedo(st) {
 	if (!INPUT.send || !redo.length)
 		return;
 	let n = 0;
-	while (n < redo.length && inputDue(redo[n], st)) {
-		const e = redo[n++];
+	while (n < redo.length && inputDue(redo[n], st))
+		n++;
+	if (n)
+		inputRedoFirst(n);
+}
+
+// The first n entries of INPUT.redo go in and back into the log.
+function inputRedoFirst(n) {
+	const done = INPUT.redo.splice(0, n);
+	for (const e of done) {
 		if (e.keys)
 			for (const c of e.keys)
 				INPUT.send(c);
@@ -90,13 +98,9 @@ function inputRedo(st) {
 			inputPatchWrite(e.patch);
 		INPUT.log.push(e);
 	}
-	if (n) {
-		const patched = redo.slice(0, n).some((e) => e.patch);
-		redo.splice(0, n);
-		renderRunInfo();
-		if (patched)
-			api.source.hpSync();
-	}
+	renderRunInfo();
+	if (done.some((e) => e.patch))
+		api.source.hpSync();
 }
 
 // R2: back to the checkpoint whose log had n entries: the rest wait in
@@ -128,20 +132,8 @@ function inputPatchHere(st) {
 	for (let i = 0; i < redo.length && redo[i].at <= st.steps; i++)
 		if (redo[i].patch)
 			last = i;
-	if (last < 0 || !INPUT.send)
-		return;
-	for (const e of redo.splice(0, last + 1)) {
-		if (e.keys)
-			for (const c of e.keys)
-				INPUT.send(c);
-		if (e.reset)
-			v86ResetHidden(emulator, "save");
-		if (e.patch)
-			inputPatchWrite(e.patch);
-		INPUT.log.push(e);
-	}
-	renderRunInfo();
-	api.source.hpSync();
+	if (last >= 0)
+		inputRedoFirst(last + 1);
 }
 
 // A patch made now: written and logged at this count. Made after stepping

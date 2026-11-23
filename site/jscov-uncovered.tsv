@@ -41,6 +41,7 @@ coverage.js	192-194	484a715e	sometimes: the comparison drawn while an edited fil
 coverage.js	197	a13a92b3	an edited file without a text to diff (its text did not load, or the earlier build's text was dropped from the 400 kept): the suites compare builds whose texts are kept
 coverage.js	240	4c0dd8e2	the compared build belongs to another kernel only after switching kernels with a comparison picked: rebuildmap stays on hello
 coverage.js	463	86281f25	covExport without files.json: the lcov button is disabled while dbgFiles() is not ok, and the re-run after more shards arrive (COV.exporting) starts only from an export that had files.json
+cpustate.js	183	33a7c309	sometimes: the TSC row before any state save: since A3b the count at full speed keeps checkpoints, so the MSR section is drawn after a save unless it is opened before the first one (not run in 45097379132)
 cpustate.js	403-405	90462cdb	a machine-state section whose reader throws: each reads fixed fields of v86's CPU object (pinned v86 0.5.471); a throw would need a v86 build without one of them
 cpustate.js	429-431	a95db99c	the restored views' set trap: after a restore neither v86's JS (cpu.js writes fpu_status_word[0] only in its constructor, before the page replaces the view) nor the page writes last_result, fpu_status_word or mxcsr; the get trap is what runs (snapdiff checks the views)
 cpustate.js	440	7902552f	a restored state without one of last_result, fpu_status_word, mxcsr: every state v86 0.5.471 saves has state[86..88], so set_state replaces all three; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -228,7 +229,7 @@ hpelf.js	429	48814ea8	a replaced function shorter than the 5-byte jump: no such 
 hpelf.js	459	4d8f33fa	hpVerify without the running kernel's bytes (opts.read null): the page's read always returns them; test_hotpatch.mjs (Node) passes none for its refusals
 hpelf.js	474	69a564e1	blanking a site the kernel patched at boot inside a replaced function: put_line, do_exit and version_proc_show have no alternatives, jump labels or lock prefixes (Debian's mcount call is blanked by the relocation rule)
 hpelf.js	477	8fbf507a	a function patched a second time (its entry already holds a jump): the suite makes one patch per kernel
-hpelf.js	485	d88cff80	the running code differing from the compile on a kernel without LTO: hello and Debian compile to their running code
+hpelf.js	485	d88cff80	sometimes: the running code differing from the compile on a kernel without LTO: ran in 45097379132; A3 traced this refusal to the background check while a Debian replay is paused before its kernel is in memory (past the check's 300 ms delay)
 hpelf.js	499	aa216095	an object without .debug_line: the kits compile with -g
 hpelf.js	514	6e5c75f1	DW_FORM_string in a line table header: clang 22 writes DW_FORM_line_strp for paths
 hpelf.js	516	f87fbfad	DW_FORM_strp in a line table header: clang 22 writes DW_FORM_line_strp
@@ -309,23 +310,23 @@ quests.jsx	480-481	8d0b32b4	sometimes: save() with no storage: only the quests s
 rebuild.jsx	303-305	fef891fe	sometimes: the text of a file the kernel shown was not read yet when a build boots; the suites open the edited file in the editor before building, which reads it
 rebuild.jsx	411-412	dec78cb6	the rebuilt kernel cannot be loaded: parseSymbolFile of the kit's own ELF (made by CI's link step, checked by SHA-256) or v86 throws; no kit makes such an ELF
 rebuild.jsx	520	db4f8280	a kernel chosen while the rebuilt one's data files are made (a race of under a second for hello; the tests wait for the files)
-replay.js	164	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
-replay.js	240-242	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
-replay.js	253	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
-replay.js	255	867c6556	a snapshot save or a JIT checkpoint during a replay: JIT checkpoints are off during replays (revJitTick) and no test saves mid-replay; the replayStop path itself is checked for Step and Step back
-replay.js	269	366a13b0	Restore during a replay: reachable (Restore while a replay runs) but not in a test yet; replayStop itself is checked for Step and Step back
-replay.js	312	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
-replay.js	350-354	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
-replay.js	477	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
-replay.js	504	2e745bf3	replayStop with no replay running: its callers check replayActive() first
-replay.js	582	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
-replay.js	602	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
+replay.js	156	8b8d40d8	inputFlush for a stepper that is not the machine's, or before inputBoot: every caller passes the current stepper after the boot set INPUT.send
+replay.js	232-234	1af88ed7	inputTaint during a replay: its callers stop the replay first (replayStop in doStep, revRun, restore) or cannot run while one is active
+replay.js	245	86e61d47	inputReset for another stepper: the save and checkpoint paths pass the current one
+replay.js	247	867c6556	a snapshot save or a JIT checkpoint during a replay: JIT checkpoints are off during replays (revJitTick) and no test saves mid-replay; the replayStop path itself is checked for Step and Step back
+replay.js	261	366a13b0	Restore during a replay: reachable (Restore while a replay runs) but not in a test yet; replayStop itself is checked for Step and Step back
+replay.js	304	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
+replay.js	342-346	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
+replay.js	469	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
+replay.js	496	2e745bf3	replayStop with no replay running: its callers check replayActive() first
+replay.js	574	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
+replay.js	594	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
 reverse.js	165	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
 reverse.js	186-189	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
 reverse.js	211-213	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
 reverse.js	250	6c521c2c	stepping at a slow-motion speed (Continue at a stepping speed) while stepped back into a JIT stretch: Step uses revStepTo there; the tests go on from a step back with Step (jitrev) or the JIT (reverse jit)
 reverse.js	258-263	34884b8b	a JIT stretch and a stepped one starting at the same count: needs a mode switch with no instruction between
-reverse.js	293-296	7549b6f3	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
+reverse.js	294-295	20535a87	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
 reverse.js	334	1887fa36	revJitTick's branch: revJit, earlier in the same slice, already branched, so behind() is false here
 reverse.js	346	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
 reverse.js	350	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group

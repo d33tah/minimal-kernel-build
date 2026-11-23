@@ -164,6 +164,25 @@ def hr_snapshot(browser, base, problems, r):
         r["at the patch's count"] = here
         if here != [0xE9, 1]:
             problems.append(f"{tag}: stepped to {at}, the patch's count: do_exit starts {here[0]:#x}, patches {here[1]}")
+        # One Step across the patch's count makes it on the way, then back to the count.
+        page.fill("#dbg_n", "1")
+        page.click("#dbg_backn")
+        wait_for(lambda: steps(page) < at, 120, 0.1)
+        still(page)
+        if hp_mem(page, pa, 1)[0] == 0xE9:
+            problems.append(f"{tag}: the patch is still in RAM at {steps(page)}, before its count {at}")
+        page.fill("#dbg_n", str(at + 1 - steps(page)))
+        page.click("#dbg_stepn")
+        wait_for(lambda: steps(page) == at + 1, 120, 0.1)
+        still(page)
+        crossed = [hp_mem(page, pa, 1)[0], len(hp_state(page)["patches"])]
+        r["stepped across the count"] = crossed
+        if crossed != [0xE9, 1]:
+            problems.append(f"{tag}: stepped across {at}: do_exit starts {crossed[0]:#x}, patches {crossed[1]}")
+        page.fill("#dbg_n", "1")
+        page.click("#dbg_backn")
+        wait_for(lambda: steps(page) == at, 120, 0.1)
+        still(page)
         snap_save(page, 1, False)
         if not run_to_end(page, problems, tag):
             return

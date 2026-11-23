@@ -308,9 +308,13 @@ def hr_refusal(browser, base, problems, r):
         hp_edit(page, text.replace("unsigned char c = buf[n];", "unsigned char c = buf[n] == 'S' ? 'Z' : buf[n];", 1))
         st = hp_wait(page, ("ready", "refused"), 600)
         r["refusal"] = st["status"]
-        for word in ("con_write", "link-time optimization", "Rebuild and boot"):
+        for word in ("con_write", "optimized together when it is linked", "Rebuild and boot"):
             if word not in st["status"]:
                 problems.append(f"{tag}: no {word!r} in {st['status']!r}")
+        # Plain words beside the kernel's -O0 label (A3c).
+        for word in ("LTO", "bytes differ"):
+            if word in st["status"]:
+                problems.append(f"{tag}: {word!r} in {st['status']!r}")
     finally:
         ctx.close()
 

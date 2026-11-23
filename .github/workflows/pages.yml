@@ -1375,6 +1375,15 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites hprun --shots rebuild-screenshots'
 
+    # A restored run (plan A3c): Debian reaches its prompt instruction for
+    # instruction, its numbers are the restored point's, keys typed at the
+    # stop are kept; the phone layout and a load overtaken by a Rebuild.
+    - name: A restored run (test_browser.py restored)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites restored --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

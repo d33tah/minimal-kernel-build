@@ -62,6 +62,7 @@ class StepperBase {
 		this.lastTimers = 0;
 		this.idleMs = 0;         // virtual time skipped while halted
 		this.irq0 = 0;           // timer interrupts (IRQ0) raised by the PIT
+		this.irq0Known = true;   // A3g: false after restoring a record whose count may be wrong
 		// Reverse execution (R2, reverse.js): after stepping back, the
 		// instructions up to `ahead` (the furthest count reached) run again
 		// without being recorded again (rerun); what was recorded after the
@@ -206,7 +207,7 @@ class StepperBase {
 	// A3b: the stages reached so far, kept in a snapshot (restoreStops).
 	stagesNow() {
 		return { endAhead: this.endAhead(), found: this.milestones.map((m) => m.found), sinceEntry: this.sinceEntry,
-			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0, jitBeforeEntry: this.jitBeforeEntry };
+			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0, irq0Exact: this.irq0Known, jitBeforeEntry: this.jitBeforeEntry };
 	}
 
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
@@ -273,18 +274,21 @@ class StepperBase {
 	// machine's yet, and the text mirror and the lines seen are the
 	// snapshot's ({ text, textSeen, idleMs } from snapshots.js).
 	restoreStops(t, stop) {
-		if (this.end && this.end.steps > t)
+		// A3g: whether an end lies ahead is the snapshot's run's, which its
+		// record keeps (since A3b; also after a reload, when this machine has
+		// recorded nothing): this machine's own end, recorded by a run on from
+		// there, made a run that went on under the JIT step after a Restore
+		// (the minified Linux's end at 2,129,674 for 2,129,295). Older
+		// records have only this machine's.
+		if (typeof stop.endAhead === "boolean")
+			this.stepToEnd = stop.endAhead;
+		else if (this.end && this.end.steps > t)
 			this.stepToEnd = true;
 		for (const key of ["end", "prompt", "exit", "panicEntered"])
 			if (this[key] && this[key].steps > t)
 				this[key] = null;
 		if (this.panicTextFrom !== undefined && this.panicTextFrom > t)
 			this.panicTextFrom = undefined;
-		// A3b: what the snapshot's run had reached, for a machine that has
-		// not recorded it (the page was reloaded); snapshots from before A3b
-		// have none of these.
-		if (stop.endAhead)
-			this.stepToEnd = true;
 		// A3d: a stage reached after t is not reached yet on this machine.
 		for (const m of this.milestones)
 			if (m.found && m.found.steps > t)

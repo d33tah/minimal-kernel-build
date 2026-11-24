@@ -266,6 +266,15 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 	#snap_diffbox label { display: block; }
 	#snap_diffbox select { width: 100%; }
 }
+/* The picked name whole under its picker, where a long one runs past the
+   select's one line: a phone, the narrow column beside the Source panel (A3g). */
+.pickfull { display: none; }
+@media (max-width: 640px) {
+	#snap_diffbox .pickfull { display: block; overflow-wrap: anywhere; }
+}
+body:has(> .srcpanel:not([hidden])) #snap_diffbox label { display: block; }
+body:has(> .srcpanel:not([hidden])) #snap_diffbox select { max-width: 100%; }
+body:has(> .srcpanel:not([hidden])) #snap_diffbox .pickfull { display: block; overflow-wrap: anywhere; }
 
 .bar {
 	display: flex;
@@ -781,6 +790,10 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
    version" notice and Back and Forward through the jump history. */
 .runbadge { position: fixed; z-index: 6; right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); }
 .srcpanel:not([hidden]) ~ .runbadge { right: calc(min(46rem, 50vw) + 8px); }
+/* Beside the panel the column is narrow (422 px of a phone turned sideways):
+   the run controls wrap to its right edge, where the toggle is, so they keep
+   its column free (A3g: the toggle sat over the speed picker at 844x390). */
+body:has(> .srcpanel:not([hidden])) .runbar { padding-right: 3.4rem; }
 .rbtog { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 48px; min-height: 44px; padding: 4px 2px;
 	border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
 .rbtog[aria-expanded="true"] { border-color: var(--accent); }

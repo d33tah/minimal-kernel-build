@@ -377,11 +377,13 @@ function clockPart() {
 	const behind = behindRate();
 	const text = (realSpeed === null ? "speed: measuring" : behind !== null ? "speed " + behind + " (set " +
 		speedText() + ": too fast for this device)" : "speed " + fmtRate(realSpeed)) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
-		" s \u00b7 IRQ0 \u00d7" + num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
+		// A3g: a count restored from an older page's record may be wrong.
+		" s \u00b7 IRQ0 " + (stepper.irq0Known ? "\u00d7" + num(stepper.irq0) : "count not known (restored from an older page's snapshot)") +
+		(stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
 	const title = "Instructions per second actually executed (v86's instruction counter: JIT and stepping), over the last " +
 		(speedWindowMs() / 1000) + " s since the last Boot, Pause, Continue or speed change (\"measuring\" for the first half of that); " +
 		"the speed menu sets the target, which JavaScript stepping may not reach.";
-	const a = mvPut("clock", { text, title, speed: realSpeed === null ? "" : Math.round(realSpeed), irq0: stepper.irq0, ms: t,
+	const a = mvPut("clock", { text, title, speed: realSpeed === null ? "" : Math.round(realSpeed), irq0: stepper.irq0Known ? stepper.irq0 : "", ms: t,
 		virtual: String(CLOCK.virtual) });
 	return renderGuestInputs() || a;
 }

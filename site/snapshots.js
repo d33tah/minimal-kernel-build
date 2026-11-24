@@ -46,7 +46,7 @@ import { inputReset, INPUT, inputRestore } from "./replay.js";
 import { REV, RESTORED_WHY, revReset } from "./reverse.js";
 import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snapKernelName, snapCount, snapById,
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
-	SNAP_EXT, snapCodec, setSnapshots, snapHow, snapRefused } from "./snaprecord.js";
+	SNAP_EXT, snapCodec, setSnapshots, snapHow, snapRefused, snapIrq0Known } from "./snaprecord.js";
 import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 import { dbgStatus } from "./dbgtab.js";
@@ -377,6 +377,9 @@ async function restoreSnapshot(s) {
 		// (initramfs) prompt), as a replay from boot does.
 		if (stepper && s.meta && s.meta.stop && typeof s.meta.steps === "number")
 			stepper.restoreStops(s.meta.steps, s.meta.stop);
+		// A3g: a count an older page may have got wrong is shown as not known.
+		if (stepper)
+			stepper.irq0Known = snapIrq0Known(s);
 		// The run goes on from the snapshot's input log (J4).
 		inputRestore(s.meta);
 		api.step.speedReset();

@@ -94,20 +94,32 @@ function showTab(name) {
 // (style.css); with it open the Machine tab's overlay and Step back's reason
 // were under it after a patch. Showing the Machine tab, or a patch made
 // with it shown (hotpatch.jsx), scrolls them into the part above the sheet
-// (the page has the sheet's height of room at its end).
+// (the page has the sheet's height of room at its end). A3g: also when the
+// window becomes that narrow with the sheet open (a desktop window resized
+// to 390 px, a phone turned back upright: PHONE_MQ below), and the run
+// buttons under the screen (Continue, Step back) with them.
+const PHONE_MQ = "(max-width: 640px)";
 function machineAboveSheet() {
 	const sheet = document.querySelector("body > .srcpanel:not([hidden])"), scr = $("screen_container");
-	if (tab !== "machine" || !sheet || !scr || !scr.getClientRects().length || !window.matchMedia("(max-width: 640px)").matches)
+	if (tab !== "machine" || !sheet || !scr || !scr.getClientRects().length || !window.matchMedia(PHONE_MQ).matches)
 		return;
 	const shown = (e) => !!e && e.getClientRects().length > 0 && !!e.textContent.trim();
-	const reason = $("vm_reason"), back = $("dbg_back_why");
+	const reason = $("vm_reason"), back = $("dbg_back_why"), btn = $("dbg_back");
 	const top = (shown(reason) ? reason : scr).getBoundingClientRect().top;
-	const bottom = (shown(back) ? back : scr).getBoundingClientRect().bottom, room = sheet.getBoundingClientRect().top;
+	const bottom = Math.max((shown(back) ? back : scr).getBoundingClientRect().bottom, shown(btn) ? btn.getBoundingClientRect().bottom : 0);
+	const room = sheet.getBoundingClientRect().top;
 	if (top >= 0 && bottom <= room)
 		return;
 	// Both above the sheet, else the overlay's reason first.
 	const by = bottom - room + 4;
 	window.scrollBy(0, top - by >= 0 ? by : top - 4);
+}
+// The layout turns into the phone's after the styles apply: the next frame.
+function initPhoneLayout() {
+	window.matchMedia(PHONE_MQ).addEventListener("change", (ev) => {
+		if (ev.matches)
+			requestAnimationFrame(machineAboveSheet);
+	});
 }
 
 // The VM's screen is in the Machine tab and is hidden (it keeps changing)
@@ -186,5 +198,5 @@ const setHashOwn = (v) => { hashOwn = v; };
 // The page API's entries of this module (page.js).
 provide({ showTab, writeHash });
 
-export { TAB_LOOK, navHashNow, hashOwn, showTab, machineAboveSheet, writeHash, vmKeys, initCompactTabs, readHash, compactDefault,
+export { TAB_LOOK, navHashNow, hashOwn, showTab, machineAboveSheet, initPhoneLayout, writeHash, vmKeys, initCompactTabs, readHash, compactDefault,
 	chooseCompactTabs, setHashOwn, TabBar };

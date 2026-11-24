@@ -269,12 +269,23 @@ function snapPickName(s) {
 	return k.length > 2 && s.name.startsWith(k) ? s.name.slice(k.length - 1) : s.name;
 }
 
+const NOW_PICK = "now (the running machine)";
+const snapPickText = (s) => "#" + s.seq + " " + snapPickName(s);
+
+// A3g: a select shows one line, which a long name (a Debian symbol, a name
+// typed in) runs past at 390 px ("...+0x21 1..."): on a phone and beside the
+// Source panel the picked name is also written out under it, wrapped
+// (style.css .pickfull).
 function SnapPick({ id, mine, value, onPick }) {
+	const picked = mine.find((s) => s.id === value);
 	return (
-		<select id={id} value={value} onChange={(ev) => onPick(ev.target.value)}>
-			{mine.map((s) => <option key={s.id} value={s.id}>{"#" + s.seq + " " + snapPickName(s)}</option>)}
-			<option value="now">now (the running machine)</option>
-		</select>
+		<>
+			<select id={id} value={value} onChange={(ev) => onPick(ev.target.value)}>
+				{mine.map((s) => <option key={s.id} value={s.id}>{snapPickText(s)}</option>)}
+				<option value="now">{NOW_PICK}</option>
+			</select>
+			<span id={id + "_full"} className="note pickfull">{picked ? snapPickText(picked) : NOW_PICK}</span>
+		</>
 	);
 }
 

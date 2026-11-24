@@ -177,6 +177,24 @@ function snapRefused(s) {
 	return before && differs ? SNAP_REFUSED : "";
 }
 
+// A3g: whether s's IRQ0 count is the true one for its run. Pages before A3g
+// counted twice the raises of the fast-forward's last slice, which it runs
+// again stepped from the slice's start up to the kernel entry (Debian: 15,
+// its prompt at 25,664 for 25,649). A record says so since A3g (irq0Exact);
+// before, the count is right only for a boot that had no fast-forward to the
+// entry (one started paused, ?fastforward=0, or one whose JIT did not run
+// that way); records from before A3c have no count at all.
+function snapIrq0Known(s) {
+	const m = s.meta, stop = m && m.stop, run = m && m.run;
+	if (!stop || typeof stop.irq0 !== "number")
+		return false;
+	if (typeof stop.irq0Exact === "boolean")
+		return stop.irq0Exact;
+	if (stop.jitBeforeEntry === false)
+		return true;
+	return !!run && (run.paused === true || run.fastforward === false);
+}
+
 // A stored snapshot as the Worker takes it (snapworker.js); a delta with
 // its chain of bases, the full one first.
 const snapOne = (s) => ({ key: s.id, blob: s.data, codec: snapCodec(s), size: s.raw });
@@ -245,4 +263,4 @@ const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
 export { MAX_SNAPSHOTS, SNAP_DB, SNAP_STORE, SNAP_LZ4_LEVEL, snapshots, setSnapshots, SNAP_DELTA_MAX, snapCodec,
 	SNAP_EXT, snapHow, snapFmtSize, sha256Hex, snapKernelName, snapRecord, snapMeta, snapCount, snapBlob, snapDepth,
-	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById, snapRefused, snapEntrySeen };
+	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById, snapRefused, snapEntrySeen, snapIrq0Known };

@@ -36,7 +36,7 @@ import { initLegend, drawMaps, pageAt, showHover } from "./memview.js";
 import { selectPage } from "./listing.js";
 import { watchPanicText, watchJitEnd, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, updateDebugUi, initRunBadge,
 	SPEED_KEY, MIPS_KEY, renderContext, COUNT_KEY, syncSrcToggle } from "./debugui.js";
-import { initCompactTabs, readHash } from "./tabs.jsx";
+import { initCompactTabs, initPhoneLayout, readHash } from "./tabs.jsx";
 import { initNav } from "./nav.js";
 import { listingStale } from "./symview.js";
 import { onVisibility } from "./run.js";
@@ -120,6 +120,7 @@ async function init() {
 	});
 	updateDebugUi();
 	initCompactTabs();
+	initPhoneLayout();
 	initBookmarks(); // before the menu: its keys in the dialog first
 	initRunBadge();
 	window.addEventListener("hashchange", readHash);

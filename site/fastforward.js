@@ -286,7 +286,7 @@ async function fastForward(target, name, go = null, hold = null) {
 				}
 				if (!snap || gone())
 					break;
-				at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
+				at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng, irq0: st.irq0 };
 				ffInfo.slices++;
 				ran = 0;
 			}
@@ -309,17 +309,23 @@ async function fastForward(target, name, go = null, hold = null) {
 				// (by a JIT-dependent number of chunks: Firefox and WebKit then
 				// reached the entry with another TSC, D0/D1).
 				// RDRAND's generator too: the slice's RDRANDs run again.
-				const ranTo = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
+				// A3g: and the IRQ0 count, else the timer interrupts the PIT
+				// raised in the slice's stretch before the entry were counted
+				// twice (Debian's prompt said 25,664; every way of running it
+				// raises 25,649, measured with a hook on each raise).
+				const ranTo = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng, irq0: st.irq0 };
 				st.steps = at.steps;
 				CLOCK.base = at.base;
 				CLOCK.baseSteps = at.baseSteps;
 				GUEST.rng = at.rng;
+				st.irq0 = at.irq0;
 				try {
 					await api.machine.v86Restore(em, snap);
 				} catch (e) {
 					Object.assign(CLOCK, { base: ranTo.base, baseSteps: ranTo.baseSteps });
 					st.steps = ranTo.steps;
 					GUEST.rng = ranTo.rng;
+					st.irq0 = ranTo.irq0;
 					ffInfo.error = "restore_state failed (" + e + "): stopped past the target";
 					break;
 				}

@@ -3663,7 +3663,7 @@ so. Suite `restored` (job `kit`) drives these through the page.
 
 Before the kernel entry the JIT runs the boot in slices. Pause there keeps
 the slice, and Continue goes on with it, so the run is the one that was not
-paused (stepping from the pause gave Debian's prompt another IRQ0 count).
+paused.
 Save refuses that stretch and says why: a restored machine has no JIT state
 and cannot repeat the slices. A step, keys or a patch made at such a pause
 start another run, stepped from there. "From 1 MiB" counts from the entry
@@ -3702,6 +3702,32 @@ Continue goes on as that boot (Debian's prompt at 1,446,429,767). Suite
 `preentry_old` (job `kit`) makes the older records with 658155e08's own
 buttons, served on the same origin (CI builds that page from git), and
 drives the rest through the page.
+
+Whether a restored run is stepped or runs under the JIT is decided as for
+the run it was saved from (plan A3g). `stop.endAhead` in the record says
+whether that run had an end ahead to step to; the machine's own end,
+recorded by a run on from the snapshot, no longer counts. Before, a Run to
+start_kernel with the count off on the minified Linux, Save, Continue ended
+under the JIT at 2,129,295, and Restore + Continue stepped to 2,129,674 with
+other RAM. Records from before A3b have no `endAhead` and keep the old rule.
+
+The IRQ0 count is the PIT's raises of IRQ0 in this run (a hook on
+`device_raise_irq`). The fast-forward reaches the kernel entry inside a JIT
+slice, restores the slice's start and steps to the entry: the raises of that
+stretch were counted twice (Debian: 15, its prompt said 25,664; a log of
+every raise shows 25,649 in a fast-forward boot and in a `?fastforward=0`
+boot alike). The count now goes back with the slice. A record says whether
+its count is right (`stop.irq0Exact`); for an older one the count is right
+only for a boot without the fast-forward, and otherwise the clock line says
+"IRQ0 count not known" after its Restore.
+
+At 390 px, and beside the Source panel, the Diff writes the picked names out
+under its pickers, where a select cuts a long one. A window resized or turned
+to the phone layout with the Source sheet open brings the overlay's reason,
+the run buttons and Step back's reason above the sheet, as showing the
+Machine tab does, and beside the panel the run controls keep the menu
+toggle's column free (it covered the speed picker at 844x390). Suite
+`restoreway` (job `kit`) drives these through the page.
 
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's

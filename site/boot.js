@@ -152,6 +152,13 @@ async function boot() {
 			setStepper(new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr)));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
 			stepper.setSymbols(codeSymbols());
+			// A3h: the kernel's entry is its link entry from the symbols with or
+			// without the fast-forward (Debian's startup_32 at 16 MiB, after its
+			// bzImage's decompressor at 1 MiB), so the entry and the counts from
+			// it are the same thing both ways.
+			const entry = ffTarget();
+			if (entry)
+				stepper.entryAt = entry.phys;
 			stepper.onTaskLeave = varsTaskNow;
 			// ?unwind=0: the old reconstruction from symbol transitions only.
 			stepper.espUnwind = new URLSearchParams(location.search).get("unwind") !== "0";

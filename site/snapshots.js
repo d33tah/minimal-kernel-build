@@ -377,6 +377,10 @@ async function restoreSnapshot(s) {
 		// (initramfs) prompt), as a replay from boot does.
 		if (stepper && s.meta && s.meta.stop && typeof s.meta.steps === "number")
 			stepper.restoreStops(s.meta.steps, s.meta.stop);
+		// A3h: past the entry, the entry line says where (after a reload it
+		// stayed empty until the end).
+		if (stepper && stepper.sinceEntry >= 0 && typeof s.meta.steps === "number" && stepper.sinceEntry <= s.meta.steps)
+			api.show.entryRestored();
 		// A3g: a count an older page may have got wrong is shown as not known.
 		if (stepper)
 			stepper.irq0Known = snapIrq0Known(s);

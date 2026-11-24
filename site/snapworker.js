@@ -3,10 +3,11 @@
 // and delta snapshots (R1). Snapshots are v86 save_state() output as an
 // LZ4 frame (lz4frame.js: `lz4 -d` reads a download), or gzip for those
 // stored before C1, or raw. Answers:
-//   { op: "pack", id, raw, base }  { data, ms, hashes, rawLen, full, delta }:
+//   { op: "pack", id, raw, base, back } { data, ms, hashes, rawLen, full, delta, raw }:
 //                                raw (an ArrayBuffer, transferred) as an LZ4
 //                                frame; with base ({ key, hashes }) a delta
-//                                of it when that is smaller (below)
+//                                of it when that is smaller (below); with
+//                                back, raw itself transferred back
 //   { op: "unpack", id, s, hashes } { raw, ms, hashes }: snapshot s as a
 //                                full v86 state (a delta: rebuilt from its
 //                                chain), with its page hashes if asked
@@ -373,8 +374,10 @@ self.onmessage = async (ev) => {
 			const d = deltaOf(P, hashes, m.base);
 			const raw = d ? d.raw : m.raw;
 			const data = await pack(raw);
-			done({ data, hashes, rawLen: raw.byteLength, full: m.raw.byteLength, delta: d ? { pages: d.pages } : null },
-				[data, hashes.buffer]);
+			// back: the state itself goes back too, unchanged (A3h: the
+			// newest reverse checkpoint, which Step back restores first).
+			done({ data, hashes, rawLen: raw.byteLength, full: m.raw.byteLength, delta: d ? { pages: d.pages } : null,
+				...(m.back ? { raw: m.raw } : {}) }, m.back ? [data, hashes.buffer, m.raw] : [data, hashes.buffer]);
 			return;
 		}
 		if (m.op === "unpack") {

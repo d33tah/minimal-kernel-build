@@ -4,7 +4,7 @@
 // driver, pause and resume.
 
 import { CLOCK, realNow } from "./clock.js";
-import { $, V86_KERNEL_ADDR } from "./util.js";
+import { $, num } from "./util.js";
 import { setCounting, countMs, setCountMs, countSteps, setCountSteps, setCountNote, runTo, setRunTo, setPrevRegs,
 	setFlashes, stepper, counting, entryPhase, emulator, emuReady, setRunState, runState, jitLoopId, setJitLoopId,
 	runToMoved, runToFrom, setRunToMoved, api, runToLabel, provide } from "./page.js";
@@ -46,7 +46,16 @@ function wantStepped() {
 		return rm === "stepped";
 	// endAhead: the JIT cannot see the stages (the lines, panic()) up to an
 	// end this run has recorded or lost by going another way (A3b).
-	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase || stepper.endAhead());
+	// stepAtFull: the run steps on as it did, a stop does not change it (A3h).
+	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase || stepper.endAhead() || stepper.stepAtFull);
+}
+
+// A3h: a Step or a Run to is about to stop or step a run that goes on with
+// the JIT at full speed: noted, Continue with the JIT says it is another run.
+function stepsOffJit() {
+	if (stepper && stepper.steppedOff < 0 && !replayActive() && speed() === "full" && !counting && !entryPhase &&
+		!stepper.stepAtFull && !stepper.endAhead() && !stepper.end)
+		stepper.steppedOff = stepper.steps;
 }
 
 function stopDriver() {
@@ -96,6 +105,14 @@ async function resume(now = false) {
 		CLOCK.set(!!clockMips());
 		scheduleDriver();
 	} else {
+		if (stepper && stepper.steppedOff >= 0) {
+			const note = "A Step or Run to stopped this run at instruction " + num(stepper.steppedOff) +
+				" where it ran the JIT: the JIT from here is another run than one not stopped there (stepping and the JIT " +
+				"deliver the timer's interrupts at other instructions). ";
+			stepper.steppedOff = -1;
+			setCountNote(note);
+			dbgStatus(note);
+		}
 		if (stepper && runState !== "off")
 			stepper.markGap();
 		if (stepper)
@@ -193,6 +210,7 @@ async function jitLoop() {
 				revJitTick(st);
 				const room = inputRoom(st);
 				jitChunk(st, false, room === Infinity ? Infinity : st.steps + room);
+				st.jitMilestones();
 				if (st.dead()) {
 					watchJitEnd();
 					return;
@@ -359,8 +377,9 @@ function driverTick() {
 	let reason;
 	const t0 = now, s0 = stepper.steps;
 	if (entryPhase && runTo === null) {
-		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === V86_KERNEL_ADDR;
-		reason = at ? "addr" : stepper.run(room, V86_KERNEL_ADDR, SLICE_MS);
+		// The kernel's entry (A3h: its link entry, Debian's at 16 MiB).
+		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === stepper.entryAt;
+		reason = at ? "addr" : stepper.run(room, stepper.entryAt, SLICE_MS);
 		if (reason === "addr") {
 			finishEntry();
 			scheduleDriver();
@@ -397,6 +416,9 @@ function driverTick() {
 		pause(api.step.runToStopped(runToLabel, runTo.size, "stepped"));
 		return;
 	}
+	// The run's stop: the way on from it is decided anew, as the count's (A3h).
+	if (reason === "prompt" || reason === "end" || (reason === "hlt" && stepper.dead()))
+		stepper.stepAtFull = false;
 	if (reason === "prompt") {
 		setCounting(false);
 		flushScreen(); // v86 draws the screen only while it runs
@@ -413,6 +435,7 @@ function driverTick() {
 	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
 		setCounting(false);
 		setCountNote("Gave up after " + Math.round(countMs / 1000) + " s of stepping.");
+		stepper.stepAtFull = false; // the JIT from here (A3h)
 		if (speed() === "full" && runTo === null) {
 			updateDebugUi();
 			resume();
@@ -442,4 +465,4 @@ function driverTick() {
 // The page API's entries of this module (page.js).
 provide({ pause, resume });
 
-export { stopDriver, resetCounters, resume, pause, onVisibility };
+export { stopDriver, resetCounters, resume, pause, onVisibility, stepsOffJit };

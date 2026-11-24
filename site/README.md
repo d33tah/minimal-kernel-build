@@ -3729,6 +3729,38 @@ Machine tab does, and beside the panel the run controls keep the menu
 toggle's column free (it covered the speed picker at 844x390). Suite
 `restoreway` (job `kit`) drives these through the page.
 
+A stop does not change the way a run goes on (plan A3h). A boot that steps to
+the kernel entry (the entry phase: any speed but full at boot, speed full
+picked while paused) goes on stepping from there with the count off too, and
+a Run to, Step or Pause and Continue keep that: Continue decided anew and ran
+the JIT, another run (the minified Linux halted at 2,129,295 for its panic at
+2,129,674, every stage "not reached"; Debian's prompt at 1,508,693,176 with
+IRQ0 9,164 for 1,446,429,767 and 25,649). The record keeps it
+(`stop.stepAtFull`), so Restore after a reload goes the same way. A speed,
+count or clock picked decides again. A run that goes on with the JIT (speed
+full at boot) is another run after a Step or a stepped Run to, as stepping and
+the JIT deliver the timer's interrupts at other instructions; Continue says
+so on the count line. Under the JIT the stages whose line the screen shows
+say "run by the JIT", and exit() and panic() "not known (JIT)".
+
+The kernel entry is the link entry from the symbols with or without the
+fast-forward (Debian's `startup_32` at 16 MiB, after its bzImage's
+decompressor at 1 MiB): `?fastforward=0` said 0x100000 after 1,475,578 and
+the fast-forward 0x1000000 after 390,976,943, and the table's "from 1 MiB"
+counted from either; the column is now "from entry". Restore of a snapshot
+past the entry writes the entry line (it stayed empty until the end after a
+reload).
+
+Step back from where the JIT stopped restores the newest checkpoint, whose
+state comes back from the Worker with its packing: rebuilding it there from
+its chain of deltas took 7.9 s of the 11 s that Debian+initrd's Step back 1
+at the prompt took (d-claude). At 390 px and beside the Source panel the
+lines under the run controls keep the menu toggle's column free (the panic
+badge sat over the end banner), and beside the panel the counters table too,
+compact, its k/o counts wrapping after the slash. Showing the Machine tab
+with the Source sheet open brings the speed picker above the sheet too where
+it fits. Suite `sameway` (job `kit`) drives these through the page.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

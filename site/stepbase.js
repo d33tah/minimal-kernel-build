@@ -57,6 +57,20 @@ class StepperBase {
 		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
 		this.end = null;         // { kind: "panic" | "halt", ...snapshot }
 		this.stepToEnd = false;  // A3b: endAhead() after the run went another way
+		// A3h: the run steps on at full speed with the count off, as it did
+		// past the kernel entry: the boot stepped there (the entry phase) and
+		// the stepping went on. A stop and Continue keep it; the JIT from
+		// there was another run (the minified Linux halted at 2,129,295 for
+		// its panic at 2,129,674; Debian's prompt 62 M instructions late).
+		// A speed, count or clock picked decides again (runto.js).
+		this.stepAtFull = false;
+		// A3h: where a Step or a Run to stopped a run that goes on with the
+		// JIT (-1: none since): stepping and the JIT deliver the timer's
+		// interrupts at other instructions, so from there it is another run
+		// than one not stopped (the minified Linux: Run to start_kernel, then
+		// the JIT, halted at 2,129,295; the JIT from the reset vector at
+		// 2,129,385). Continue says so (run.js).
+		this.steppedOff = -1;
 		this.panicEntered = null; // snapshot when EIP first entered panic()
 		this.panicBudget = 50e6;  // instructions after that without an end
 		this.lastTimers = 0;
@@ -207,7 +221,29 @@ class StepperBase {
 	// A3b: the stages reached so far, kept in a snapshot (restoreStops).
 	stagesNow() {
 		return { endAhead: this.endAhead(), found: this.milestones.map((m) => m.found), sinceEntry: this.sinceEntry,
-			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0, irq0Exact: this.irq0Known, jitBeforeEntry: this.jitBeforeEntry };
+			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0, irq0Exact: this.irq0Known, jitBeforeEntry: this.jitBeforeEntry,
+			stepAtFull: this.stepAtFull };
+	}
+
+	// A3h: the JIT ran a slice (the stepper saw none of its instructions):
+	// the lines it wrote that the stages look for are reached, at a count
+	// the page does not know ("run by the JIT"), so a row does not say "not
+	// reached" under a line the screen shows.
+	jitMilestones() {
+		if (!this.vgaDirty)
+			return false;
+		this.vgaDirty = false;
+		let hit = false, screen = null;
+		for (const m of this.milestones) {
+			if (m.found)
+				continue;
+			screen = screen || this.screenText();
+			if (screen.includes(m.text)) {
+				m.found = { jit: true, ...this.snapshot() };
+				hit = true;
+			}
+		}
+		return hit;
 	}
 
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
@@ -305,6 +341,10 @@ class StepperBase {
 		// machine's own boot may have done otherwise.
 		if (typeof stop.jitBeforeEntry === "boolean")
 			this.jitBeforeEntry = stop.jitBeforeEntry;
+		// A3h: the way the snapshot's run went on at full speed (older
+		// records: decided by the settings, as before).
+		this.stepAtFull = stop.stepAtFull === true;
+		this.steppedOff = -1;
 		for (const key of ["exit", "panicEntered"])
 			if (!this[key] && stop[key])
 				this[key] = stop[key];

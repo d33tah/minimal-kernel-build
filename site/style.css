@@ -594,7 +594,7 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 	#counters { font-size: 0.7rem; display: block; max-width: 100%; overflow-x: auto; }
 	/* A3e: Debian's ten-digit counts whole at 390 px: the stage names wrap. */
 	#counters td, #counters th { padding-right: 0.3rem; }
-	#counters th, #counters td:first-child { white-space: normal; }
+	#counters th, #counters td:first-child, #counters td:nth-child(3) { white-space: normal; }
 	#listing { height: 70vh; }
 }
 .syminfo { font-size: 0.8rem; margin: 0.3rem 0; }
@@ -794,6 +794,21 @@ button.rbgo:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
    the run controls wrap to its right edge, where the toggle is, so they keep
    its column free (A3g: the toggle sat over the speed picker at 844x390). */
 body:has(> .srcpanel:not([hidden])) .runbar { padding-right: 3.4rem; }
+/* A3h: the Machine tab's lines under the run controls keep that column free
+   too, beside the panel and on a phone (the toggle sat over the counters'
+   "from reset" values, the clock and RTC lines, the entry line and the end
+   banner at some scroll offsets). The banner's box ends before it. */
+body:has(> .srcpanel:not([hidden])) :is(#vclock, #guest_in, #entry_info, #count_info) { padding-right: 3.4rem; }
+body:has(> .srcpanel:not([hidden])) #end_banner { margin-right: 3.4rem; }
+body:has(> .srcpanel:not([hidden])) #vclock { white-space: normal; }
+/* Beside the panel the table keeps it free as well, as compact as on a
+   phone; the k/o counts wrap after their slash (Debian's ten-digit counts
+   whole in the 422 px of a phone turned sideways). */
+body:has(> .srcpanel:not([hidden])) .table-wrap { margin-right: 3.4rem; }
+body:has(> .srcpanel:not([hidden])) #counters { font-size: 0.7rem; }
+body:has(> .srcpanel:not([hidden])) #counters td, body:has(> .srcpanel:not([hidden])) #counters th { padding-right: 0.3rem; }
+body:has(> .srcpanel:not([hidden])) #counters th, body:has(> .srcpanel:not([hidden])) #counters td:first-child,
+body:has(> .srcpanel:not([hidden])) #counters td:nth-child(3) { white-space: normal; }
 .rbtog { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 48px; min-height: 44px; padding: 4px 2px;
 	border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
 .rbtog[aria-expanded="true"] { border-color: var(--accent); }
@@ -848,6 +863,10 @@ body { padding-bottom: 60px; }
 	#dbg_back_why { display: block; padding-right: 3.4rem; }
 	/* The Kernel menu keeps the toggle's column free too (A3c). */
 	#kernel { max-width: calc(100vw - 16px - 3.4rem); }
+	/* A3h: the run controls and the lines under the table (the panic badge
+	   sat over the end of the red end banner). */
+	.runbar, #vclock, #guest_in, #entry_info, #count_info { padding-right: 3.4rem; }
+	#end_banner { margin-right: 3.4rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

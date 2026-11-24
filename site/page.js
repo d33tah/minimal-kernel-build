@@ -146,7 +146,7 @@ const API_ENTRIES = {
 	// What the page shows: tabs, the page listing, jumps, the status line,
 	// bookmarks, popovers.
 	show: ["showTab", "selectPage", "inspect", "renderPage", "renderContext", "renderSymbols",
-		"updateDebugUi", "navJump", "jumpTo", "openFunction", "writeHash", "listingHold", "listingKeep",
+		"updateDebugUi", "entryRestored", "navJump", "jumpTo", "openFunction", "writeHash", "listingHold", "listingKeep",
 		"navListingAnchor", "setLive", "runBadgeOpen",
 		"renderRunBadgePwa", "bmLineStar", "bmFnNames", "bmTip"],
 };

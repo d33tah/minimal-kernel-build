@@ -20,7 +20,7 @@ import { endText, updateDebugUi, finishEntry, SPEED_KEY, renderClock, MIPS_KEY, 
 import { showTab } from "./tabs.jsx";
 import { navJump } from "./nav.js";
 import { afterStop } from "./symview.js";
-import { pause, resume } from "./run.js";
+import { pause, resume, stepsOffJit } from "./run.js";
 import { dbgStatus, runToText, setRunToText } from "./dbgtab.js";
 import { setSettings, clockText } from "./machtab.js";
 
@@ -45,6 +45,7 @@ async function doStep(n) {
 		dbgStatus("The CPU executed hlt with interrupts off: nothing to step.");
 		return;
 	}
+	stepsOffJit();
 	// The keys typed while paused go in first; the run steps from here (J4).
 	if (replayActive())
 		replayStop("stopped by Step");
@@ -192,6 +193,7 @@ async function doRunTo() {
 		return;
 	if (replayActive())
 		replayStop("stopped by Run to");
+	stepsOffJit();
 	// Run to from a target goes on to its next hit, stepped or with the JIT.
 	setRunToFrom(stepper.nextPhys());
 	setRunToMoved(false);
@@ -247,6 +249,10 @@ function machContinue() {
 function chooseSpeed(v) {
 	setSettings({ speed: v });
 	setPrefSpeed(v);
+	// A3h: a speed picked decides the way from here again (full speed with
+	// the count off: the JIT), here or on Continue.
+	if (stepper)
+		stepper.stepAtFull = false;
 	try {
 		localStorage.setItem(SPEED_KEY, prefSpeed);
 	} catch (e) {
@@ -265,6 +271,7 @@ function chooseClock(v) {
 		// no storage: until reload
 	}
 	if (stepper && runState !== "off") {
+		stepper.stepAtFull = false; // the way is decided again (A3h)
 		inputTaint(stepper, "the clock was changed to " + clockText());
 		revBranch(stepper, "the clock was changed");
 		revReset("the clock was changed at instruction " + num(stepper.steps));
@@ -290,6 +297,8 @@ function chooseCount(on) {
 	if (!on && counting) {
 		setCounting(false);
 		setCountNote("Counting switched off.");
+		if (stepper)
+			stepper.stepAtFull = false; // the JIT at full speed from here (A3h)
 		if (runState === "stepped")
 			resume();
 	}

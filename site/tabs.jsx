@@ -106,8 +106,16 @@ function machineAboveSheet() {
 	const shown = (e) => !!e && e.getClientRects().length > 0 && !!e.textContent.trim();
 	const reason = $("vm_reason"), back = $("dbg_back_why"), btn = $("dbg_back");
 	const top = (shown(reason) ? reason : scr).getBoundingClientRect().top;
-	const bottom = Math.max((shown(back) ? back : scr).getBoundingClientRect().bottom, shown(btn) ? btn.getBoundingClientRect().bottom : 0);
+	let bottom = Math.max((shown(back) ? back : scr).getBoundingClientRect().bottom, shown(btn) ? btn.getBoundingClientRect().bottom : 0);
 	const room = sheet.getBoundingClientRect().top;
+	// A3h: the speed picker under them too, where it fits (it was under the
+	// sheet after a Restore and a patch).
+	const spd = $("dbg_speed");
+	if (spd && spd.getClientRects().length) {
+		const b = Math.max(bottom, spd.getBoundingClientRect().bottom);
+		if (b - top + 8 <= room)
+			bottom = b;
+	}
 	if (top >= 0 && bottom <= room)
 		return;
 	// Both above the sheet, else the overlay's reason first.

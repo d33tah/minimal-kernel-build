@@ -214,7 +214,13 @@ function revCapture(st, jit = false) {
 				base = null;
 			}
 		}
-		const r = await api.machine.snapWorker({ op: "pack", raw, base }, [raw]);
+		const r = await api.machine.snapWorker({ op: "pack", raw, base, back: true }, [raw]);
+		// A3h: the newest checkpoint's state stays at hand, as one restored
+		// is (REV.cache): Step back from where the run stopped restores it
+		// first. Rebuilt from its chain of deltas in the Worker it took 7.9 s
+		// of the 11 s that Debian+initrd's Step back 1 at the prompt took.
+		if (r.raw && REV.cps[REV.cps.length - 1] === cp)
+			REV.cache = { key: cp.key, raw: r.raw };
 		cp.data = new Blob([r.data]);
 		cp.size = r.rawLen;
 		cp.stored = r.data.byteLength;
@@ -383,6 +389,12 @@ async function revBlob(cp) {
 
 // Put the machine back to checkpoint cp, coming from count from.
 async function revRestore(st, cp, from) {
+	// The newest checkpoint's state comes back with its packing (A3h).
+	try {
+		await cp.ready;
+	} catch (e) {
+		// revBlob below says what failed
+	}
 	if (!REV.cache || REV.cache.key !== cp.key)
 		REV.cache = { key: cp.key, raw: (await api.machine.snapWorker({ op: "unpack", s: await revBlob(cp) })).raw };
 	const raw = REV.cache.raw.slice(0); // v86 reads the copy

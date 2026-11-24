@@ -29,8 +29,8 @@ import { boot } from "./boot.js";
 const SPEED_TIP = "Instructions per second from the kernel entry on. By default BIOS and setup are stepped as fast as possible up to the kernel's 32-bit entry at 0x100000, then the kernel runs at 1k/s so you can watch it. Full speed is v86's JIT: on the virtual clock the page runs it one slice (about 100,000 instructions) at a time, counted, and a run repeats exactly; with the real-time clock v86 runs it on its own, not counted. 10M/s is more than JavaScript stepping reaches on most machines (about 5M/s on a fast desktop); the speed actually reached is shown next to the clock. The choice is remembered in this browser; ?speed=full (or 1000000, 100000, ..., 1) in the URL overrides it.";
 const CLOCK_TIP = "Guest time while the page steps the CPU. Virtual (default 10 instructions per microsecond, like a 10 MHz CPU; qemu -icount does the same): time advances with the instruction count, so the timer interrupt (IRQ0, 250 Hz in the minified Linux: one every 40,000 instructions at 10/us) arrives at the same instruction whatever the stepping speed, and the counts are the same every run. The minified Linux's count from its entry does not depend on this rate (132,006 instructions to Still alive); the from-reset count does, through SeaBIOS's waits. When the CPU halts the clock jumps to the next timer event. Real: v86's wall clock; at 1k/s the guest then sees a timer interrupt every few instructions. At full JIT speed the virtual clock follows v86's instruction counter, with compiled code going live only between two slices, so full-speed runs repeat exactly; real time there is v86's own loop, faster or slower with the machine and different every run. ?mips=10, 100, 1000 or real in the URL; the choice is remembered.";
 const COUNT_TIP = "At full speed: first step the whole boot from the reset vector in the background until both lines are on the screen, counting, then run the JIT. At the other speeds the boot is always counted live. Remembered in this browser (Settings tab); ?count=0 in the URL turns it off for one visit.";
-const UNTIL_TIP = "Instructions executed until each line first appears in VGA text memory at 0xb8000, until the first exit or exit_group system call (int 0x80, EAX 1 or 252; the code is EBX), and until the end: the CPU enters panic() (symbols.json) or halts with interrupts off. Counted from the kernel entry at 1 MiB and from the reset vector. Stepping and slow motion stop at the end.";
-const ENTRY_TIP = "Instructions executed from the first one at physical 0x100000, where v86 puts the 32-bit kernel.";
+const UNTIL_TIP = "Instructions executed until each line first appears in VGA text memory at 0xb8000, until the first exit or exit_group system call (int 0x80, EAX 1 or 252; the code is EBX), and until the end: the CPU enters panic() (symbols.json) or halts with interrupts off. Counted from the kernel entry and from the reset vector. Stepping and slow motion stop at the end.";
+const ENTRY_TIP = "Instructions executed from the kernel's entry: its link entry from the symbols (startup_32: 1 MiB for hello and the minified Linux, 16 MiB for Debian, whose bzImage first runs its decompressor at 1 MiB), the same with and without the fast-forward; for a kernel without symbols the first instruction at physical 0x100000, where v86 puts the 32-bit kernel.";
 const UNIQUE_TIP = "Distinct physical addresses executed from reset: in the kernel range (1 MiB to 1 MiB + init_size) / elsewhere (BIOS, option ROM, real-mode setup). \"not known\": the page's record of addresses also holds another run's (after a restored snapshot, a step back, or a run that went another way), so it cannot give this point's count.";
 const RESET_TIP = "Instructions executed from the reset vector (SeaBIOS, the kernel's real-mode setup, the kernel).";
 const GUEST_TIP = "What the guest reads from outside the CPU. On the virtual clock the RTC (CMOS clock: the date the kernel and SeaBIOS read) starts at a fixed date when the machine is powered on and runs with the virtual time, and RDRAND and the network card's MAC address come from a random number generator started from a seed, so every run is the same. ?rtc=2026-01-01T00:00:00Z (ISO 8601, the default) and ?seed=1 (the default) in the URL change them. A snapshot keeps the start date and the generator's state, and Restore puts them back. Keys typed on the virtual clock go into the guest only between two slices of the JIT or of stepping and are recorded with the instruction count; Replay (Snapshots tab) puts them in at the same counts. With the real-time clock the guest gets the browser's date and random numbers, and keys when they are typed.";
@@ -183,13 +183,20 @@ const RunState = memo(function RunState() {
 	);
 });
 
+// A3h: "kernel/other" may wrap after its slash where the table is narrow
+// (style.css), the same text otherwise.
+const slashBreak = (v) => {
+	const i = typeof v === "string" ? v.indexOf("/") : -1;
+	return i < 0 ? v : <>{v.slice(0, i + 1)}<wbr />{v.slice(i + 1)}</>;
+};
+
 const Counters = memo(function Counters() {
 	const c = useField(MV, "counters");
 	return (
 		<tbody>
 			{c.rows.map((r) => (
 				<tr key={r.key} data-milestone={r.key} data-steps={r.steps} data-entry={r.entry} data-unique={r.unique} data-kernel={r.kernel}>
-					{r.cells.map((v, i) => <td key={i} title={i === 0 ? r.title : undefined}>{v}</td>)}
+					{r.cells.map((v, i) => <td key={i} title={i === 0 ? r.title : undefined}>{i === 2 ? slashBreak(v) : v}</td>)}
 				</tr>
 			))}
 		</tbody>
@@ -238,7 +245,7 @@ const CountInfo = memo(function CountInfo() {
 	);
 });
 
-const COUNTER_HEAD = [["until", UNTIL_TIP], ["from 1 MiB", ENTRY_TIP], ["unique EIPs k/o", UNIQUE_TIP], ["from reset", RESET_TIP]];
+const COUNTER_HEAD = [["until", UNTIL_TIP], ["from entry", ENTRY_TIP], ["unique EIPs k/o", UNIQUE_TIP], ["from reset", RESET_TIP]];
 
 function RunBox() {
 	return (

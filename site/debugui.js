@@ -16,7 +16,7 @@ import { dbgHas, dbgFrames } from "./dbginfo.js";
 import { srcFocusKeep, srcName } from "./srclinks.js";
 import { srcLineHtml } from "./source.js";
 import { liveDecode, iced, icedError, loadIced, bitnessAt, decodeLive, virtOffset } from "./livedis.js";
-import { ffActive, ffInfo } from "./fastforward.js";
+import { ffActive, ffInfo, ffTarget } from "./fastforward.js";
 import { opEnv, insnHtml } from "./varops.js";
 import { renderWatches, renderLocals } from "./vars.js";
 import { INPUT, replayActive, replayAfterStop } from "./replay.js";
@@ -263,7 +263,9 @@ function countersPart() {
 	const trs = rows.map(([label, c, key]) => {
 		const cells = c && c.jit ? [label, "run by the JIT", "", ""] :
 			c ? [label, num(c.sinceEntry), c.uniqueOff ? "not known" : num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
-			[label, counting ? "counting..." : "not reached", "", ""];
+			// A3h: the JIT ran code the stepper did not watch: exit() and
+			// panic() may have been reached there.
+			[label, counting ? "counting..." : stepper.jitAfterEntry && (key === "exit" || key === "panic_entry") ? "not known (JIT)" : "not reached", "", ""];
 		return !c || c.jit ? { key, cells } : { key, cells, steps: c.steps, entry: c.sinceEntry === null ? "" : c.sinceEntry,
 			unique: c.uniqueOff ? "" : c.unique, kernel: c.uniqueOff ? "" : c.uniqueKernel,
 			title: "Reached by the instruction at physical " + hex(c.phys) +
@@ -272,7 +274,7 @@ function countersPart() {
 	const alive = stepper.milestones.find((m) => m.text === "Still alive");
 	// Once per measurement: after a Reset in the Settings tab the next redraw
 	// does not write it back.
-	if (alive && alive.found && alive.found.sinceEntry && image && refSaved !== alive.found)
+	if (alive && alive.found && alive.found.sinceEntry && !alive.found.jit && image && refSaved !== alive.found)
 		try {
 			setRefSaved(alive.found);
 			localStorage.setItem(REF_KEY + image.name + "-" + (clockMips() || "real"), alive.found.sinceEntry);
@@ -407,15 +409,36 @@ function entryInfo(text, fields = { steps: undefined }) {
 
 // At the kernel's 32-bit entry (or past it): from here on at the chosen speed.
 function finishEntry() {
+	// A3h: the boot stepped to the entry and steps on from it, at full
+	// speed too (the driver goes on): so does a run stopped and continued.
+	// With the count on, the count steps it (to the prompt or the end).
+	if (entryPhase && !counting)
+		stepper.stepAtFull = true;
 	setEntryPhase(false);
 	speedReset(); // the fast part before the entry is not this speed
 	const n = stepper.sinceEntry >= 0 ? stepper.sinceEntry : stepper.steps;
 	const ff = ffInfo && ffInfo.stopPhys !== undefined && !ffInfo.runTo;
-	const at = ff ? ffInfo.target : V86_KERNEL_ADDR;
-	entryInfo("Entered the kernel at " + hex(at) + (ff ? " (" + ffInfo.name + ")" : "") + " after " +
-		num(n) + " instructions from reset" +
+	entryInfo(entryText(n) +
 		(ff ? " (fast-forwarded with the JIT in " + (ffInfo.ms / 1000).toFixed(1) + " s: BIOS, setup, decompressor; counted from here)" : "") +
 		".", { ffMs: ff ? Math.round(ffInfo.ms) : "", ffTarget: ff ? ffInfo.target : "", steps: n });
+	updateDebugUi();
+}
+
+// A3h: where the kernel was entered, the same with and without the
+// fast-forward: the stepper's entry (the link entry from the symbols, else
+// 1 MiB) and its name. ?fastforward=0 said 0x100000 after 1,475,578 for
+// Debian (the bzImage's decompressor) and the fast-forward 0x1000000
+// (startup_32) after 390,976,943, and "from 1 MiB" counted from either.
+function entryText(n) {
+	const t = ffTarget(), at = stepper.entryAt;
+	return "Entered the kernel at " + hex(at) + (t && t.phys === at ? " (" + t.name + ")" : "") + " after " + num(n) + " instructions from reset";
+}
+
+// A3h: a snapshot past the entry restored (after a reload the line was
+// empty until the end): the line says where its run entered.
+function entryRestored() {
+	setEntryPhase(false);
+	entryInfo(entryText(stepper.sinceEntry) + " (the restored snapshot's run).", { ffMs: "", ffTarget: "", steps: stepper.sinceEntry });
 	updateDebugUi();
 }
 
@@ -492,6 +515,7 @@ function watchPanicText() {
 	if (!stepper || stepper.end || runState !== "jit" || jitLoopId || ffActive)
 		return;
 	const st = stepper;
+	st.jitMilestones(); // A3h: the lines the JIT wrote
 	if ((st.textSeen & TEXT_PROMPT) && !st.prompt) {
 		st.prompt = { exact: false, ...st.snapshot() };
 		setCounting(false);
@@ -739,8 +763,8 @@ state.subscribe(() => {
 
 // The page API's entries of this module (page.js).
 provide({ currentPhys, renderContext, speedReset, updateDebugUi, syncSrcToggle, clockMips, flushScreen, FLAG_BITS,
-	runBadgeOpen, renderRunBadgePwa });
+	runBadgeOpen, renderRunBadgePwa, entryRestored });
 
-export { REF_KEY, regsView, renderContext, updateDebugUi, clockMips, finishEntry, speed, speedReset, flushScreen, watchJitEnd,
+export { REF_KEY, regsView, renderContext, updateDebugUi, clockMips, finishEntry, entryRestored, speed, speedReset, flushScreen, watchJitEnd,
 	endText, fastStepping, highRate, COUNT_LIMIT_MS, SPEED_KEY, renderClock, MIPS_KEY, renderCounters, COUNT_KEY, entryInfo,
 	syncSrcToggle, watchPanicText, sampleSpeed, SPEED_SAMPLE_MS, loadVersion, initRunBadge };

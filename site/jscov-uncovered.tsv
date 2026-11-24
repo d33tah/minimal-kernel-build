@@ -27,9 +27,9 @@ bookmarks.js	418	96a5c082	a rename finished without a change (Escape or the same
 bookmarks.js	540	6b17f7cd	bmRender without #bm_list: the element is in index.html
 boot.js	136-139	6156dc01	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
 boot.js	143	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
-boot.js	212	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-boot.js	226-227	0ff248b9	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
-boot.js	236	7b6dca1e	sometimes: ran in runs 45328458253 and 45332459845, not in 45345939297 (kit job, preentry_old po_old_page: the boot of a refused replay stays at the entry; coverage of that page starts at jscov.release() after Debian's long counted run; the case passed in all three)
+boot.js	219	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+boot.js	233-234	0ff248b9	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
+boot.js	243	7b6dca1e	sometimes: ran in runs 45328458253 and 45332459845, not in 45345939297 (kit job, preentry_old po_old_page: the boot of a refused replay stays at the entry; coverage of that page starts at jscov.release() after Debian's long counted run; the case passed in all three)
 buildmap.js	52	e158c7c3	more than 400 file texts kept in one page: the suites see a few texts per file
 buildmap.js	112	b8d99835	more than 64 line maps in one page: the suites map a few texts
 calltree.js	27-30	e5880000	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
@@ -71,8 +71,8 @@ dbgmerge.js	437	f7461f1d	E6: a kind of debug info file dbginfo.js does not ask f
 dbgmerge.js	514	92eb4fdf	E6: CI's scope group of a function whose code did not move as a whole (a range in compiled code or without a pair): the shards' parts leave the compiled code out, so its groups do not come; needs a function of an uncompiled unit whose .cold part lost its pair
 debug.js	108	8fd956df	no name is exported by two modules (since R2 each name has one module; checked over every page module's export list)
 debugui.js	94-99	8c5b8c33	EIP in an unmapped page (paging on): the CPU would fault there, so the stepper never stops with such an EIP
-debugui.js	451	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
-debugui.js	539	70b8ba71	sometimes: behindRate when stepping reaches less than half the set speed: depends on the runner's speed during a slow-motion run (ran in run 44036696793, not in 44053124707, where nothing else in debugui.js changed but the removed typeof checks)
+debugui.js	474	73b1b88a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+debugui.js	563	70b8ba71	sometimes: behindRate when stepping reaches less than half the set speed: depends on the runner's speed during a slow-motion run (ran in run 44036696793, not in 44053124707, where nothing else in debugui.js changed but the removed typeof checks)
 dwarf.js	128	ec3bf762	ownExpr with an operation dwOpEnd does not know next to a DW_OP_addrx: no compiler writes such an expression
 dwarf.js	133	bdca5b3b	DW_OP_addrx without .debug_addr in a local's location: as line 261, defensive for a stripped file
 dwarf.js	184-185	325bc5bb	abstract origin chain of more than one step for a local (an origin that itself has an origin): GCC and clang point every concrete DIE at the abstract one directly
@@ -325,49 +325,49 @@ replay.js	634	98bdf0a1	the file input's change event with no file: Chromium fire
 reverse.js	167	5ba9ecfb	a checkpoint due at the count of the last one: revTick runs before each slice and a slice runs at least one instruction
 reverse.js	188-191	f6423b37	v86's save_state() throwing while stepping: no device of the shipped machines throws
 reverse.js	213-215	89958298	the previous checkpoint's pack failing: the worker packs every state v86 writes
-reverse.js	252	6c521c2c	stepping at a slow-motion speed (Continue at a stepping speed) while stepped back into a JIT stretch: Step uses revStepTo there; the tests go on from a step back with Step (jitrev) or the JIT (reverse jit)
-reverse.js	260-265	34884b8b	a JIT stretch and a stepped one starting at the same count: needs a mode switch with no instruction between
-reverse.js	296-297	20535a87	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
-reverse.js	336	1887fa36	revJitTick's branch: revJit, earlier in the same slice, already branched, so behind() is false here
-reverse.js	348	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
-reverse.js	352	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group
-reverse.js	376	8d29e6bc	a delta checkpoint whose base was trimmed: revTrim drops whole groups up to the next full one, so bases go with their deltas
-reverse.js	390	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
-reverse.js	455	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
-reverse.js	472-473	c8794090	as 434 for a stepped re-run
-reverse.js	479	97d6f6d3	a boot during a long reverse operation's yield: a race
-reverse.js	493	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
-reverse.js	497-500	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
-reverse.js	514-516	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
-reverse.js	536	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
-reverse.js	574	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
-reverse.js	691	1d380376	Back to without a machine or while busy: the button is disabled then
-run.js	69	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
-run.js	77-80	9354bbed	sometimes: Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead; ran in run 43703770298 only (not in 43697771460 nor the runs before), where a Continue came while the stepper was behind the JIT's run, a timing of the run state
-run.js	86-88	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue
-run.js	91	7d7e94f8	switching to stepped while v86's own loop runs (real-time clock at full speed, then a slower speed): the clock change and speed change paths pause first in every suite
-run.js	108	ca1afe12	resume on the virtual clock while v86's own loop is still running: the clock switch to virtual pauses v86 first
-run.js	110	809d7cec	the machine replaced (Boot) while resume awaited em.stop(): a race that cannot be forced
-run.js	120	11100745	pending JIT input slices when switching to v86's own loop: only after typed keys on the virtual clock just before the switch; a timing race
-run.js	122	809d7cec	the machine replaced while resume awaited jitFlush: a race
-run.js	179	6385ca18	jitLoop: the machine paused or replaced while it flushed pending inputs: a race
-run.js	188-190	1d975bb8	a replay whose next input is a mode change (the recorded run stepped from here) inside the JIT loop: replay files of the suites switch modes only while paused
-run.js	202	1de27799	jitLoop after jitExactStop reported "gone" (the run paused or replaced during the exact stop): a race
-run.js	244	52fbcd10	jitExactStop entered with an end already set by the slice that just ran: the slice stops at the end and the loop checks st.dead() before calling it
-run.js	279	890e28b8	the exact stop's stepper loop finding the run paused or replaced between its slices: a race
-run.js	286	7f4f045e	pause() without a ready machine: the Pause control is disabled then; a race with Boot
-run.js	339	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
-run.js	401-405	fed2b717	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
-run.js	437	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
+reverse.js	258	6c521c2c	stepping at a slow-motion speed (Continue at a stepping speed) while stepped back into a JIT stretch: Step uses revStepTo there; the tests go on from a step back with Step (jitrev) or the JIT (reverse jit)
+reverse.js	266-271	34884b8b	a JIT stretch and a stepped one starting at the same count: needs a mode switch with no instruction between
+reverse.js	302-303	20535a87	the stepping driver's room while stepped back with a JIT stretch ahead: as 234, Continue at a stepping speed after stepping back into a run the JIT went on with
+reverse.js	342	1887fa36	revJitTick's branch: revJit, earlier in the same slice, already branched, so behind() is false here
+reverse.js	354	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
+reverse.js	358	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group
+reverse.js	382	8d29e6bc	a delta checkpoint whose base was trimmed: revTrim drops whole groups up to the next full one, so bases go with their deltas
+reverse.js	402	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
+reverse.js	467	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
+reverse.js	484-485	c8794090	as 434 for a stepped re-run
+reverse.js	491	97d6f6d3	a boot during a long reverse operation's yield: a race
+reverse.js	505	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
+reverse.js	509-512	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
+reverse.js	526-528	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
+reverse.js	548	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
+reverse.js	586	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
+reverse.js	703	1d380376	Back to without a machine or while busy: the button is disabled then
+run.js	78	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
+run.js	86-89	9354bbed	sometimes: Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead; ran in run 43703770298 only (not in 43697771460 nor the runs before), where a Continue came while the stepper was behind the JIT's run, a timing of the run state
+run.js	95-97	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue
+run.js	100	7d7e94f8	switching to stepped while v86's own loop runs (real-time clock at full speed, then a slower speed): the clock change and speed change paths pause first in every suite
+run.js	125	ca1afe12	resume on the virtual clock while v86's own loop is still running: the clock switch to virtual pauses v86 first
+run.js	127	809d7cec	the machine replaced (Boot) while resume awaited em.stop(): a race that cannot be forced
+run.js	137	11100745	pending JIT input slices when switching to v86's own loop: only after typed keys on the virtual clock just before the switch; a timing race
+run.js	139	809d7cec	the machine replaced while resume awaited jitFlush: a race
+run.js	196	6385ca18	jitLoop: the machine paused or replaced while it flushed pending inputs: a race
+run.js	205-207	1d975bb8	a replay whose next input is a mode change (the recorded run stepped from here) inside the JIT loop: replay files of the suites switch modes only while paused
+run.js	220	1de27799	jitLoop after jitExactStop reported "gone" (the run paused or replaced during the exact stop): a race
+run.js	262	52fbcd10	jitExactStop entered with an end already set by the slice that just ran: the slice stops at the end and the loop checks st.dead() before calling it
+run.js	297	890e28b8	the exact stop's stepper loop finding the run paused or replaced between its slices: a race
+run.js	304	7f4f045e	pause() without a ready machine: the Pause control is disabled then; a race with Boot
+run.js	357	b861b10d	driverTick after the run left stepped mode: the driver timer is cleared when it does; a timer already queued is the only way in (race)
+run.js	423-427	fed2b717	sometimes: a Run to or a counted run that reaches the initramfs prompt while stepping (not under the JIT): the exactstop suite's stepped stretch reaches it; ran in runs 43600287802, 43602952211 and 43605289270 (exactstop coverage job), not in 43588908776 nor 43611610762
+run.js	460	c3b4c4eb	a hlt with interrupts on (waiting for the timer) while stepping: no shipped kernel idles with hlt in its stepped part (they end with hlt and interrupts off)
 runto.js	40	1d380376	doStep without a stepper or during a reverse step: the Step control is disabled then
 runto.js	43	0b4124ba	doStep when the machine went away while pausing: a race with Boot
-runto.js	74-76	eafb485c	Step's own 5 s check: stepper.run gets the time left as its own limit and returns "time" first; this only fires when a slice ends by count just after 5 s (the 5 s limit itself is tested: misc panic_text)
-runto.js	126	ac861e5a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
-runto.js	181	1d380376	doRunTo without a stepper or during a reverse step: Run to is disabled then
-runto.js	192	0b4124ba	doRunTo when the machine went away while pausing: a race with Boot
-runto.js	194	56c3d169	a Run to while a replay plays: the replay suite stops replays with Pause and Step only
-runto.js	223	1371130d	the status text of a Run to into another section than the kernel entry's (start_kernel in .init.text) that is at its target right after the JIT to the entry: no suite's target is there; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-runto.js	227-229	37a65175	a fast Run to aborted (Pause during the JIT to the kernel entry) that did not reach the target: a race between Pause and the fast-forward's last slice
+runto.js	75-77	eafb485c	Step's own 5 s check: stepper.run gets the time left as its own limit and returns "time" first; this only fires when a slice ends by count just after 5 s (the 5 s limit itself is tested: misc panic_text)
+runto.js	127	ac861e5a	endText without an end: every caller calls it once stepper.end is set (markHalt, the run's "end", the panic text) or checks it first; kept as a guard
+runto.js	182	1d380376	doRunTo without a stepper or during a reverse step: Run to is disabled then
+runto.js	193	0b4124ba	doRunTo when the machine went away while pausing: a race with Boot
+runto.js	195	56c3d169	a Run to while a replay plays: the replay suite stops replays with Pause and Step only
+runto.js	225	1371130d	the status text of a Run to into another section than the kernel entry's (start_kernel in .init.text) that is at its target right after the JIT to the entry: no suite's target is there; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+runto.js	229-231	37a65175	a fast Run to aborted (Pause during the JIT to the kernel entry) that did not reach the target: a race between Pause and the fast-forward's last slice
 scan.js	32	7f4f045e	scan without a running machine: the Scan button and the autoscan timer are disabled or stopped while there is none
 snapdiff.js	44	a46686b9	Diff with a picker empty or no machine: the Diff button is disabled then (SnapDiffBox, snapshotspanel.jsx)
 snapdiff.js	79	7ff245a8	a register missing on one side of a diff: the worker's cpuOf gives every register but EFLAGS and the meta always has EFLAGS (snapMeta); only a record from before both had them
@@ -388,12 +388,12 @@ snapshots.js	244	56e9e0b3	sometimes: a save while compiled JIT blocks are queued
 snapshots.js	246	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
 snapshots.js	298-300	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
 snapshots.js	308	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
-snapshots.js	453	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
-snapshots.js	592	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+snapshots.js	457	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
+snapshots.js	596	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 snapshotspanel.jsx	39	d4419ba9	a name edit ending twice: Enter and Esc remove the field at once (flushSync) and Chromium fires no blur for a removed element; the guard keeps a blur after Esc from saving the name
-snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
-snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
-snapworker.js	312	ddb69209	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
+snapworker.js	65	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
+snapworker.js	287	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
+snapworker.js	313	ddb69209	a page read of now that the last diff does not list: the page only asks for the pages a diff lists, which the Worker keeps
 source.js	73	f9555e97	a frame's line past the end of its source file: the shipped kernels' sources hold every line their DWARF names; only an imported vmlinux with other sources; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 source.js	130	7dc2a1f4	openSource for a frame without file or line: its callers open C lines only (lines without a line are drawn as nol, which the click handler skips); a defensive guard
 source.js	133	368a80d4	a call stack frame without a file:line opened from the Source panel: every frame the tests open has DWARF file:line
@@ -423,9 +423,9 @@ srctext.js	99	d0d02f63	the picked C source still being read when a line is asked
 srctext.js	178	5eacb3f2	race: another source picked while a .tar was being indexed (between two 1 MiB slices); not forceable
 srctext.js	215	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
 srctext.js	280	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
-stepbase.js	291	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
-stepbase.js	329	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
-stepbase.js	342	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
+stepbase.js	327	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
+stepbase.js	369	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
+stepbase.js	382	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
 stepper.js	92	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
 stepper.js	147-148	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
 stepper.js	213	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)

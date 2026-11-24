@@ -373,6 +373,10 @@ snapdiff.js	149	f8bff038	a newer diff started while the hexdump's page was read:
 snapdiff.js	151-153	554449e5	reading a page after the diff succeeded: the worker keeps both sides of the pages the diff lists; it fails only if the worker died in between
 snapdiff.js	198-202	cdd115a7	same as snapdiff.js:151-153 for the Page tab buttons
 snapdiff.js	204	f8bff038	same race as snapdiff.js:149 for the Page tab buttons
+snaprecord.js	137	fe877665	a record without a run (saved before J4) judged by paging with no known entry: the suites store only records that keep their run
+snaprecord.js	142	f4cc44e7	sometimes: an entry known from a newer snapshot of the same kernel and boot before this page's own fast-forward reached the entry: preentry_old's rows are drawn first with only the older page's records, then after the entry (entriesSeen answers first)
+snaprecord.js	149	17fd1935	an older record of another kernel than the one running, saved after the bzImage's 1 MiB entry, drawn: preentry_old's older records are all of the Debian running
+snaprecord.js	161	df2de00d	a record from before A3b (no stop.sinceEntry): the suites store none
 snaprecord.js	220	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
 snapshots.js	189-191	11a71088	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
 snapshots.js	208-211	f442ec7f	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause

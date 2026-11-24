@@ -32,6 +32,47 @@ UNDER_BADGE_JS = """async (sel) => { const el = document.querySelector(sel), t =
   sc.scrollTop = keep;
   return hits; }"""
 
+# A snapshot of this point as pages before A3e stored it: Save did not refuse
+# the fast-forward's stretch, its stop says stepped: false, and it has no
+# jitBeforeEntry.
+STORE_OLD_JS = """async () => { const em = MKB.emulator;
+  while (MKB.jitPending(MKB.stepper)) await MKB.jitFlush(MKB.stepper);
+  const meta = MKB.snapMeta(em, true);
+  delete meta.stop.jitBeforeEntry;
+  meta.stop.stepped = false;
+  const raw = em.v86.save_state(), time = Date.now(), id = 'sold' + time.toString(36);
+  const rec = { id, seq: 90, name: 'stored by an older page', time, kernel: MKB.snapKernelName(), kernelKey: await MKB.image.snapKeyP,
+    ram: MKB.emuRam, raw: raw.byteLength, full: raw.byteLength, delta: null, size: raw.byteLength, codec: 'raw', level: 0,
+    data: new Blob([raw]), saveMs: 0, packMs: 0, packWallMs: 0, meta };
+  const db = await new Promise((f, e) => { const q = indexedDB.open('mkb-snapshots', 1); q.onsuccess = () => f(q.result); q.onerror = () => e(q.error); });
+  await new Promise((f, e) => { const t = db.transaction('snaps', 'readwrite'); t.objectStore('snaps').put(rec); t.oncomplete = f; t.onerror = () => e(t.error); });
+  db.close();
+  return { id, steps: meta.steps }; }"""
+# The stored snapshot id as a page before A3e would have written it.
+AGE_JS = """async (id) => {
+  const db = await new Promise((f, e) => { const q = indexedDB.open('mkb-snapshots', 1); q.onsuccess = () => f(q.result); q.onerror = () => e(q.error); });
+  await new Promise((f, e) => { const t = db.transaction('snaps', 'readwrite'), st = t.objectStore('snaps'), g = st.get(id);
+    g.onsuccess = () => { const r = g.result; delete r.meta.stop.jitBeforeEntry; st.put(r); };
+    t.oncomplete = f; t.onerror = () => e(t.error); });
+  db.close(); }"""
+# Pause pressed as soon as the next boot's count passes n.
+BIOS_AT = 1e6
+PAUSE_EARLY_JS = """(n) => { const was = MKB.stepper, t = setInterval(() => { if (MKB.stepper && MKB.stepper !== was && MKB.stepper.steps > n) {
+  clearInterval(t); document.getElementById('dbg_pause').click(); } }, 0); }"""
+STOPPED_JS = "() => !!MKB.stepper && (!!MKB.stepper.prompt || !!MKB.stepper.end) && MKB.runState === 'paused' && !MKB.REV.busy"
+# What a row offers: each button's state, and the row's text.
+ROW_JS = """(id) => { const tr = document.querySelector(`#snapshots tr[data-id='${id}']`); if (!tr) return null;
+  const on = (c) => { const b = tr.querySelector('button.' + c); return !!b && !b.disabled; };
+  const why = tr.querySelector('.snapwhy');
+  return { restore: on('restore'), replay: on('snapreplay'), why: why && why.getClientRects().length ? why.textContent : '' }; }"""
+# 390 px: the cells of the counters and the clock line, cut or whole.
+NUMBERS_JS = """() => { const t = document.getElementById('counters'), w = t.closest('.table-wrap').getBoundingClientRect(), v = document.getElementById('vclock');
+  const edge = Math.min(innerWidth, w.right) + 0.5;
+  const inner = (c) => { const r = document.createRange(); r.selectNodeContents(c); return r.getBoundingClientRect(); };
+  return { cut: [...t.querySelectorAll('td')].filter((c) => c.textContent && inner(c).right > edge).map((c) => c.textContent.trim()),
+    clock: v.textContent, clockCut: v.scrollWidth > v.clientWidth + 1 || inner(v).right > innerWidth + 0.5,
+    sideways: document.documentElement.scrollWidth > innerWidth + 1 }; }"""
+
 
 def now_row(page):
     show_tab(page, "machine")
@@ -329,6 +370,185 @@ def pe_badge(browser, base, shots, problems, r):
             ctx.close()
 
 
+def pe_old_snapshots(browser, base, problems, r):
+    """Snapshots stored by an older page (plan A3e item 1): one from the
+    fast-forward to the entry is refused on its row, for Restore and Replay,
+    with the reason; one after the entry still restores to the same prompt."""
+    tag = "older snapshots"
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    try:
+        jscov.hold()
+        try:
+            page = ctx.new_page()
+            open_full(page, base, DEBIAN)
+            if not wait_for(lambda: page.evaluate(f"!!MKB.stepper && MKB.stepper.steps > {SAVE_AT} && MKB.runState === 'stepped'"), 1800, 0.1):
+                problems.append(f"{tag}: the run did not pass {SAVE_AT}")
+                return
+            show_tab(page, "machine")
+            page.click("#dbg_pause")
+            still(page)
+        finally:
+            jscov.release()
+        good = snap_save(page, 1, False)["rows"][0]["id"]
+        page.evaluate(AGE_JS, good)
+        jscov.hold()
+        try:
+            first = to_prompt(page, problems, tag)
+            if not first:
+                return
+            r["prompt"] = first["steps"]
+            show_tab(page, "machine")
+            page.click("#boot")
+            page.wait_for_function("(n) => !!MKB.stepper && MKB.stepper.steps < n", arg=first["steps"], timeout=120000)
+            paused = pause_in_ff(page, problems, tag)
+        finally:
+            jscov.release()
+        if not paused:
+            return
+        old = page.evaluate(STORE_OLD_JS)
+        r["stored before the entry at"] = old["steps"]
+        # The stepped BIOS part at the start of the fast-forward: the same
+        # (measured: a snapshot at 1.2 M reached Debian's prompt 102 M early).
+        show_tab(page, "machine")
+        page.evaluate(PAUSE_EARLY_JS, BIOS_AT)
+        page.click("#boot")
+        if not wait_for(lambda: page.evaluate(f"!!MKB.stepper && MKB.stepper.steps > {BIOS_AT} && MKB.stepper.steps < 2e6 && MKB.runState === 'paused'"), 120, 0.02) or not still(page):
+            problems.append(f"{tag}: no pause in the BIOS part: {page.evaluate('[MKB.runState, MKB.stepper.steps]')}")
+            return
+        bios = page.evaluate(STORE_OLD_JS)
+        r["stored in the BIOS part at"] = bios["steps"]
+        page.reload()
+        page.wait_for_function("() => document.querySelectorAll('#kernel option').length > 3", timeout=120000)
+        show_tab(page, "machine")
+        if page.input_value("#kernel") != DEBIAN:
+            page.select_option("#kernel", DEBIAN)
+        page.wait_for_function("(n) => window.MKB && MKB.image && MKB.image.name === n && MKB.stepper", arg=DEBIAN, timeout=300000)
+        show_tab(page, "snapshots")
+        if not wait_for(lambda: {old["id"], bios["id"], good} <= {x["id"] for x in snap_rows(page)["rows"] if x["kernel"] == "match"}, 120):
+            problems.append(f"{tag}: the stored rows are not listed: {snap_rows(page)['rows']}")
+            return
+        for name, one in (("before the entry", old), ("in the BIOS part", bios)):
+            row = page.evaluate(ROW_JS, one["id"])
+            r[f"row {name}"] = row
+            if row["restore"] or row["replay"] or "kernel entry" not in row["why"]:
+                problems.append(f"{tag}: the row of a snapshot {name}, which cannot replay, offers {row}")
+        kept = page.evaluate(ROW_JS, good)
+        r["row after the entry"] = kept
+        if not kept["restore"] or not kept["replay"] or kept["why"]:
+            problems.append(f"{tag}: the row of a snapshot that replays exactly offers {kept}")
+        # A bookmark's Restore calls the same function as the row's button.
+        # (The machine is booting here, so its count moves either way.)
+        page.evaluate("(id) => MKB.restoreSnapshot(MKB.snapById(id))", old["id"])
+        wait_for(lambda: "kernel entry" in page.inner_text("#snap_status"), 5, 0.1)
+        said = page.inner_text("#snap_status")
+        r["Restore refused"] = said
+        took = page.get_attribute("#snap_status", "data-restored") == old["id"]
+        if "kernel entry" not in said or took:
+            problems.append(f"{tag}: Restore of the older snapshot: restored {took}, status {said!r}")
+            if took:
+                still(page)
+                got = to_prompt(page, problems, tag + " restored from before the entry")
+                if got:
+                    same_run(got, first, problems, tag + " restored from before the entry")
+        restore(page, good)
+        jscov.hold()
+        try:
+            again = to_prompt(page, problems, tag + " after the entry")
+        finally:
+            jscov.release()
+        if again:
+            same_run(again, first, problems, tag + " after the entry")
+    finally:
+        ctx.close()
+
+
+def pe_old_reset(browser, base, problems, r):
+    """An older page's snapshot at the reset vector of a boot started paused.
+    Uncounted it repeats its run: it stays offered and reaches the same end.
+    Counted at full speed its record lacks that the run was stepped, Restore
+    ran it under the JIT and the end came 289 instructions early: refused."""
+    tag = "older snapshot at reset"
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    url = f"{base}/index.html?kernel={MINI}&paused=1&speed=full&count=0"
+    counted = f"{base}/index.html?kernel={MINI}&paused=1&speed=full&count=1"
+    at_reset = "() => window.MKB && MKB.stepper && MKB.runState === 'paused' && MKB.stepper.steps === 0 && !!MKB.image.snapKeyP"
+
+    def to_end(what):
+        hp_continue(page)
+        if not wait_for(lambda: page.evaluate(STOPPED_JS), 180, 0.2) or not still(page):
+            problems.append(f"{tag}: {what}: no end: {page.evaluate('[MKB.runState, MKB.stepper.steps]')}")
+            return None
+        return page.evaluate(STATE_JS)
+
+    try:
+        page.goto(counted)
+        page.wait_for_function(at_reset, timeout=120000)
+        bad = page.evaluate(STORE_OLD_JS)
+        page.goto(counted)
+        page.wait_for_function(at_reset, timeout=120000)
+        show_tab(page, "snapshots")
+        wait_for(lambda: any(x["id"] == bad["id"] and x["kernel"] == "match" for x in snap_rows(page)["rows"]), 60)
+        row = page.evaluate(ROW_JS, bad["id"])
+        r["row, counted"] = row
+        if row["restore"] or row["replay"] or "kernel entry" not in row["why"]:
+            problems.append(f"{tag}: counted at full speed, the row offers {row}")
+        page.goto(url)
+        page.wait_for_function(at_reset, timeout=120000)
+        first = to_end("first run")
+        if not first:
+            return
+        r["end"] = first["steps"]
+        page.goto(url)
+        page.wait_for_function(at_reset, timeout=120000)
+        old = page.evaluate(STORE_OLD_JS)
+        page.goto(url)
+        page.wait_for_function(at_reset, timeout=120000)
+        show_tab(page, "snapshots")
+        wait_for(lambda: any(x["id"] == old["id"] and x["kernel"] == "match" for x in snap_rows(page)["rows"]), 60)
+        row = page.evaluate(ROW_JS, old["id"])
+        r["row"] = row
+        if not row["restore"] or not row["replay"] or row["why"]:
+            problems.append(f"{tag}: the row offers {row}")
+            return
+        restore(page, old["id"])
+        again = to_end("restored")
+        if again:
+            same_run(again, first, problems, tag)
+    finally:
+        ctx.close()
+
+
+def pe_phone_numbers(browser, base, shots, problems, r):
+    """390 px, Debian at its prompt: every number of the counters and the
+    clock line is whole on the screen (plan A3e items 2 and 3)."""
+    tag = "numbers at 390 px"
+    ctx = browser.new_context(**PHONE)
+    try:
+        jscov.hold()
+        try:
+            page = ctx.new_page()
+            open_full(page, base, DEBIAN)
+            if not wait_for(lambda: page.evaluate(f"!!MKB.stepper && ({AT_PROMPT})()"), 1800, 0.3) or not still(page):
+                problems.append(f"{tag}: no stop at the prompt")
+                return
+        finally:
+            jscov.release()
+        show_tab(page, "machine")
+        got = page.evaluate(NUMBERS_JS)
+        r.update(got)
+        page.locator("#counters").scroll_into_view_if_needed()
+        page.screenshot(path=str(shots / "preentry-numbers-390.png"))
+        if got["cut"]:
+            problems.append(f"{tag}: cut cells: {got['cut']}")
+        if got["clockCut"]:
+            problems.append(f"{tag}: the clock line is cut: {got['clock']!r}")
+        if got["sideways"]:
+            problems.append(f"{tag}: the page scrolls sideways")
+    finally:
+        ctx.close()
+
+
 def suite_preentry(ctx):
     failed = False
     only = [x for x in os.environ.get("MKB_PREENTRY_ONLY", "").split(",") if x]
@@ -337,7 +557,10 @@ def suite_preentry(ctx):
              ("pe_badge", lambda p, r: pe_badge(ctx.browser, ctx.base, ctx.shots, p, r)),
              ("pe_ff_resume", lambda p, r: pe_ff_resume(ctx.browser, ctx.base, p, r)),
              ("pe_overlay", lambda p, r: pe_overlay(ctx.browser, ctx.base, p, r)),
-             ("pe_debian", lambda p, r: pe_debian(ctx.browser, ctx.base, p, r)))
+             ("pe_debian", lambda p, r: pe_debian(ctx.browser, ctx.base, p, r)),
+             ("pe_old_reset", lambda p, r: pe_old_reset(ctx.browser, ctx.base, p, r)),
+             ("pe_old_snapshots", lambda p, r: pe_old_snapshots(ctx.browser, ctx.base, p, r)),
+             ("pe_phone_numbers", lambda p, r: pe_phone_numbers(ctx.browser, ctx.base, ctx.shots, p, r)))
     for name, fn in cases:
         if only and name not in only:
             continue

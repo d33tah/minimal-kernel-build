@@ -3678,6 +3678,31 @@ repeat their run: a boot with the fast-forward, or a boot started paused and
 counted at full speed. Older snapshots after the entry, and those of a paused
 boot that was uncounted or slower, keep working.
 
+Which records are from before the entry is decided from facts a record
+cannot get wrong (plan A3f). Pages before A3e set `sinceEntry` at the first
+instruction at 1 MiB, the bzImage's 32-bit entry. That is the kernel's own
+entry only for a kernel linked there (hello, the minified Linux). Debian's
+entry is at 16 MiB, after the decompressor: a snapshot of 658155e08 at
+182,380,564 instructions says `sinceEntry` 1,475,578, and the entry is at
+390,976,943. For such a kernel the saved CR0 decides: paging still off means
+the kernel has not started, unless the count is at or past an entry this
+page has seen for the same kernel and boot settings (paging comes on 56,000
+instructions after Debian's entry, 16,000 after the minified Linux's; hello
+never turns it on). A bookmark that holds such a snapshot offers neither
+Restore nor Replay and says why on its row.
+
+A run that ends on the fast-forward cannot be replayed: the JIT runs that
+part in slices, and a replay cannot stop at the same instruction. Download
+run and Replay at a pause there refuse as Save does, and a run saved there
+(a bookmark's) carries `preEntry: true`, which `runCheck` (replay.js)
+refuses. A run file of an older page has no such mark: its replay is refused
+when its boot's fast-forward reaches the entry past the run's end, with the
+machine left as any boot with those settings is there, the count on, so
+Continue goes on as that boot (Debian's prompt at 1,446,429,767). Suite
+`preentry_old` (job `kit`) makes the older records with 658155e08's own
+buttons, served on the same origin (CI builds that page from git), and
+drives the rest through the page.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

@@ -256,13 +256,15 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .snapcol mark { background: var(--mark-bg); color: var(--mark-fg); }
 .snapview { border-left: 3px solid var(--mark-bg); padding-left: 0.5rem; }
 .snapview button { margin-left: 0.3rem; }
+/* A phone: the cards above, without the raw bytes and the ratio, clear of
+   the menu toggle's column (A3f: "display: block" here ran each cell's name
+   into its value, "taken#1", and the toggle sat over the cards). The Diff's
+   pickers take the whole width. */
 @media (max-width: 640px) {
-	#snapshots thead { display: none; }
-	#snapshots, #snapshots tbody, #snapshots tr { display: block; }
-	#snapshots tr { padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
-	#snapshots td { display: block; border: 0; padding: 0.05rem 0; }
 	#snapshots td:nth-child(6), #snapshots td.ratio { display: none; }
-	#snapshots td.snapacts { margin-top: 0.2rem; white-space: normal; }
+	#snapshots tr { margin-right: 3.4rem; }
+	#snap_diffbox label { display: block; }
+	#snap_diffbox select { width: 100%; }
 }
 
 .bar {
@@ -828,6 +830,9 @@ body { padding-bottom: 60px; }
 	.rbbox { padding-right: 3.4rem; }
 	/* The Source tab's help, which scrolls past the toggle (A3d). */
 	#covtree_info { padding-right: 3.4rem; }
+	/* Step back's reason, which sits right above the Source sheet when the
+	   page brings it into view there, where the toggle is (A3f). */
+	#dbg_back_why { display: block; padding-right: 3.4rem; }
 	/* The Kernel menu keeps the toggle's column free too (A3c). */
 	#kernel { max-width: calc(100vw - 16px - 3.4rem); }
 }
@@ -941,6 +946,7 @@ button.bmadd { font: inherit; white-space: nowrap; }
 .bmgo { text-align: left; border: none; background: none; padding: 0.2rem 0; min-height: 32px; color: var(--accent); font: inherit; font-weight: 600; overflow-wrap: anywhere; }
 .bmgo::before { content: "\2605  "; color: var(--bm); }
 .bmwhat { grid-column: 1 / -1; color: var(--muted); font-size: 0.75rem; overflow-wrap: anywhere; }
+.bmwhy { grid-column: 1 / -1; padding: 0.15rem 0.35rem; border-radius: 3px; font-size: 0.75rem; background: var(--warn-bg); color: var(--warn-fg); }
 .bmacts { grid-column: 2; grid-row: 1; display: flex; gap: 0.15rem; align-items: center; }
 .bmacts button, .bmacts a { min-width: 32px; min-height: 32px; padding: 0 0.3rem; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .bmacts .bmswitch, .bmacts .bmrestore, .bmacts .bmreplay { font-size: 0.75rem; }

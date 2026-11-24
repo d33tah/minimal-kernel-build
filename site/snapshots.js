@@ -527,8 +527,13 @@ function snapSwitch(s) {
 	}
 	setSettings({ kernel: k.name });
 	addRam(s.ram);
-	snapSay("Switching to " + k.name + " with " + kib(s.ram) + "...");
-	api.machine.loadKernel(k, String(s.ram)).catch((e) => {
+	const going = "Switching to " + k.name + " with " + kib(s.ram) + "...";
+	snapSay(going);
+	// A3f: the line said "Switching to..." after the switch was done.
+	api.machine.loadKernel(k, String(s.ram)).then(() => {
+		if (SNAP.status === going && image && image.name === k.name && emuRam === s.ram)
+			snapSay("Switched to " + k.name + " with " + kib(s.ram) + ": “" + s.name + "” can be restored on its row.");
+	}).catch((e) => {
 		setStatus(String(e));
 		snapSay("Switching to " + k.name + " failed: " + ((e && e.message) || e) + ".");
 	});

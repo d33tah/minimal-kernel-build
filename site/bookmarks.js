@@ -43,7 +43,7 @@ import { download, graphTick } from "./graph.js";
 import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./source.js";
 import { snapKernelName, snapshots, snapRefused } from "./snaprecord.js";
 import { saveSnapshot, restoreSnapshot } from "./snapshots.js";
-import { replayRun, runStatus } from "./replay.js";
+import { replayRun, runStatus, runCheck } from "./replay.js";
 import { hideTip } from "./tips.js";
 import { DBG } from "./dbginfo.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
@@ -467,6 +467,9 @@ function bmRowEl(b, group) {
 	// A3e: a position whose snapshot cannot replay offers neither.
 	const held = b.kind === "pos" && b.t.snap ? snapshots.find((x) => x.id === b.t.snap) : null;
 	const refused = held ? snapRefused(held) : "";
+	// A3f: and a run no replay can repeat (one that ends on the fast-forward
+	// to the kernel entry) offers no Replay; the row says why.
+	const runWhy = b.kind === "pos" && b.t.run ? refused || runCheck(b.t.run) : "";
 	if (b.kind === "pos" && b.t.snap && group === "this") {
 		const s = held;
 		if (s) {
@@ -485,8 +488,8 @@ function bmRowEl(b, group) {
 		p.type = "button";
 		p.className = "bmreplay";
 		p.textContent = "Replay";
-		p.disabled = !!refused;
-		p.title = refused || "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
+		p.disabled = !!runWhy;
+		p.title = (runWhy && runWhy !== refused ? "Cannot replay: " + runWhy + "." : runWhy) || "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
 			b.t.run.end.at.toLocaleString("en") + " instructions";
 		p.addEventListener("click", () => {
 			api.show.runBadgeOpen(false);
@@ -522,6 +525,12 @@ function bmRowEl(b, group) {
 	del.addEventListener("click", () => bmDelete(b));
 	acts.append(link, ren, del);
 	li.append(go, what, acts);
+	if (runWhy || refused) {
+		const why = document.createElement("span");
+		why.className = "bmwhy";
+		why.textContent = refused || "Replay is off: " + runWhy + ".";
+		li.append(why);
+	}
 	return li;
 }
 

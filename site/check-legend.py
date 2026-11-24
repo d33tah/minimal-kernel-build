@@ -78,6 +78,7 @@ CHROME = {
     "legendlink": "the Legend links themselves",
     "snapother": "rows of snapshots for another kernel (muted text, the row also says so)",
     "snapwhy": "why a snapshot's Restore and Replay are off (the warning colours; the text says it)",
+    "bmwhy": "why a bookmark's Restore or Replay is off (the warning colours; the text says it)",
     "bmacts": "the actions of a bookmark in the menu's list (link, rename, delete)",
     "bmadd": "the ☆ buttons that add a bookmark (muted where they sit in a row)",
     "cframe": "a call stack frame (its ☆ button is muted)",

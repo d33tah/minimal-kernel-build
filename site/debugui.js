@@ -284,6 +284,13 @@ function countersPart() {
 	// M/s") nor the BIOS that the fast-forward steps.
 	const rate = countMs > 0 ? countSteps / countMs / 1000 : 0;
 	const put = (text) => mvPut("counters", { rows: trs, text, ms: Math.round(countMs), eta: etaSec });
+	// A3f: while the fast-forward runs, runState is "paused" under it: the
+	// line said "Counting (paused): 2,000,000 instructions stepped" while
+	// the JIT ran. What runs, and the count the state line shows.
+	if (ffActive && ffInfo && ffInfo.runTo === undefined)
+		return put("Fast-forwarding to the kernel entry (" + ffInfo.name + "): " + num(stepper.steps) +
+			" instructions from reset so far: the BIOS stepped, then the JIT. " +
+			(counting ? "Counting by stepping goes on from the kernel entry. " : "") + countNote);
 	if (runState === "stepped" && !fastStepping() && !countDone()) {
 		const text = "Counting from the kernel entry: " + num(stepper.steps - Math.max(0, stepper.sinceEntry)) +
 			" instructions so far. " + eta() + countNote;
@@ -694,8 +701,11 @@ function runPart() {
 		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
 			loc = r.frames[0];
 	}
-	const text = ffActive && ffInfo ? (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
-		" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions" : { off: "", jit: "running (full speed, JIT)",
+	// The boot's fast-forward says the count from reset, as the line under
+	// the counters does (A3f).
+	const text = ffActive && ffInfo ? (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo + " with the JIT: " +
+		num(stepper.steps - (ffInfo.start || 0)) + " instructions" : "fast-forwarding to " + ffInfo.name + " with the JIT: at instruction " +
+		num(stepper.steps)) : { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "counting by stepping" : "stepping") :
 			"slow motion " + speedText() + behindText()) + where,
 		paused: "paused" + where }[runState];

@@ -128,9 +128,15 @@ async function pwaInit() {
 		console.warn("service worker:", e);
 		return;
 	}
-	pwaWatch(PWA.reg.waiting);
-	pwaWatch(PWA.reg.installing);
-	PWA.reg.addEventListener("updatefound", () => pwaWatch(PWA.reg.installing));
+	// A3f: a browser that blocks service workers (Playwright's
+	// serviceWorkers: "block", some privacy settings) answers undefined;
+	// the check of version.json for a newer deploy still runs.
+	if (PWA.reg) {
+		pwaWatch(PWA.reg.waiting);
+		pwaWatch(PWA.reg.installing);
+		PWA.reg.addEventListener("updatefound", () => pwaWatch(PWA.reg.installing));
+	} else
+		PWA.reg = null;
 	window.addEventListener("online", pwaCheck);
 	document.addEventListener("visibilitychange", () => { if (!document.hidden) pwaCheck(); });
 	setInterval(pwaCheck, PWA_CHECK_MS);

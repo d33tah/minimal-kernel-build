@@ -37,7 +37,7 @@ import { controller } from "./ui.jsx";
 import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPaused, kernels, setPrefSpeed,
 	setStartPaused, setCounting, api } from "./page.js";
 import { setCmdlineFromUrl } from "./symimport.js";
-import { ffEnabled } from "./fastforward.js";
+import { ffEnabled, ffUnsaved } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
 import { showHeader } from "./header.js";
 import { imageLabel, RB_SUFFIX } from "./buildmap.js";
@@ -376,9 +376,18 @@ function runNow() {
 		kernelKey: api.machine.snapKernelKey(),
 		// A kernel rebuilt in the page (E8): which build of it.
 		...(image && image.build ? { kernelBuild: imageLabel() } : {}),
+		// A3f: it ends on the fast-forward to the kernel entry, which no
+		// replay can stop inside (runCheck refuses it).
+		...(ffUnsaved(stepper) ? { preEntry: true } : {}),
 		log: INPUT.log.map((e) => ({ ...e })), taint: INPUT.taint, end: runEnd(stepper),
 	};
 }
+
+// A3f: why a run that ends on the fast-forward to the kernel entry cannot
+// be replayed (entry: where that boot entered, when known).
+const runPreEntryWhy = (at, entry) => "the run ends at instruction " + at.toLocaleString("en") +
+	", on the fast-forward to the kernel entry" + (entry ? " (at " + entry.toLocaleString("en") + ")" : "") +
+	". The JIT runs that part in slices, so a replay cannot stop at the same instruction. Record a run that goes past the kernel entry";
 
 const runKeys = (run) => run.log.filter((e) => e.keys).reduce((n, e) => n + e.keys.length, 0);
 const runLabel = (run) => run.kernel + " to instruction " + run.end.at.toLocaleString("en");
@@ -393,6 +402,8 @@ function runCheck(run) {
 		return "the run has no log or no end";
 	if (run.clock === "real")
 		return "the run was on the real-time clock: its inputs were not recorded";
+	if (run.preEntry === true)
+		return runPreEntryWhy(run.end.at, 0);
 	for (let i = 0; i < run.log.length; i++) {
 		const e = run.log[i], p = run.log[i - 1];
 		if (typeof e.at !== "number" || typeof e.t !== "number" || !(Array.isArray(e.keys) || e.mode === "jit" || e.mode === "stepped" || e.reset === true ||
@@ -490,6 +501,27 @@ function replayFinish() {
 	api.step.pause(rp.ok ? "Replay finished: the same state as recorded." : "Replay finished: differs from the recording (" + rp.why + ").");
 }
 
+// A3f: the fast-forward of a replay's boot reached the kernel entry past
+// the run's end (a run of an older page, which did not mark it; newer ones
+// are refused before booting). The replay is refused here, at the entry.
+// The machine stays as any boot with these settings is there: the count
+// stays on and Continue goes on as that boot (a replay's finish turns the
+// count off, which ran Debian to its prompt at 1,508,693,176 instead of
+// 1,446,429,767).
+function replayEndsBeforeEntry() {
+	const rp = INPUT.replay, st = stepper;
+	if (!rp || rp.done || !st || st.sinceEntry < 0 || rp.run.end.at >= st.sinceEntry)
+		return false;
+	rp.done = true;
+	rp.ok = false;
+	rp.why = "it ends before the kernel entry";
+	const why = runPreEntryWhy(rp.run.end.at, st.sinceEntry);
+	runStatus("Cannot replay " + runLabel(rp.run) + ": " + why + ". The machine is at the kernel entry of a new boot " +
+		"with the run's settings; Continue runs that boot.", "error");
+	api.step.pause("Replay refused: " + why + ". Continue runs this boot, not the recorded run.");
+	return true;
+}
+
 // The replay stops following its run (a Step, Run to, Restore, a clock
 // change meanwhile); the machine goes on as a new recording from here.
 function replayStop(why) {
@@ -571,6 +603,12 @@ function runFileName(run) {
 }
 
 function downloadRun() {
+	// A3f: as Save (snapshots.js), nothing of a point it could not repeat.
+	if (ffUnsaved(stepper)) {
+		runStatus("Not downloaded: this point is on the fast-forward to the kernel entry. The JIT runs that part in slices a replay " +
+			"cannot stop inside, so a replay of this run would differ. Press Continue and download after the kernel entry.", "error");
+		return;
+	}
 	const run = runNow();
 	if (!run)
 		return;
@@ -611,5 +649,6 @@ function initReplay() {
 }
 
 export { INPUT, replayActive, replayMode, inputRedo, inputRewind, inputFlush, inputRoom, inputMark,
-	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, inputPatchHere, runScreenHash, runNow, replayRun, replayFinish, replayStop,
+	inputTaint, inputReset, inputRestore, inputBoot, inputPatch, inputPatchHere, runScreenHash, runNow, runCheck, replayRun, replayFinish,
+	replayEndsBeforeEntry, replayStop,
 	replayAfterStop, runStatus, initReplay, RUN, downloadRun, replayNow, replayFile };

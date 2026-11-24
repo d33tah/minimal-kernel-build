@@ -17,8 +17,9 @@ import { setFfActive, ffEnabled, ffTarget, jitDetInstall, ffRun, ffAbort, ffInfo
 import { MEV } from "./memevents.js";
 import { varsTaskNow } from "./vartasks.js";
 import { setPageSnapView, setSnapDiff, renderSnapDiff } from "./snapdiff.js";
-import { snapReady } from "./snapshots.js";
-import { INPUT, inputBoot, replayActive } from "./replay.js";
+import { snapReady, renderSnapshots } from "./snapshots.js";
+import { snapEntrySeen } from "./snaprecord.js";
+import { INPUT, inputBoot, replayActive, replayEndsBeforeEntry } from "./replay.js";
 import { ram, checkImage, kernelEnd } from "./header.js";
 import { setScanCopy, setAutoscan } from "./scan.js";
 import { computePageClasses, drawGrid } from "./memview.js";
@@ -224,8 +225,15 @@ async function boot() {
 				if (!ok)
 					dbgStatus("Fast-forward did not reach " + t.name + "; stepping from here." +
 						(ffInfo && ffInfo.error ? " " + ffInfo.error : ""));
-				else
+				else {
 					finishEntry();
+					// Where this kernel and boot enter: older snapshots are
+					// judged by it (A3f, snaprecord.js).
+					snapEntrySeen(stepper.sinceEntry);
+					renderSnapshots();
+				}
+				if (replayEndsBeforeEntry())
+					return;
 				resume();
 			}, () => INPUT.log.length + INPUT.pending.length);
 		} else {

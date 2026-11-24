@@ -9,7 +9,7 @@ import { useLayoutEffect, useRef } from "react";
 import { h8, PAGE, kib } from "./util.js";
 import { emulator } from "./page.js";
 import { useStore, useController, Tip } from "./ui.jsx";
-import { snapshots, SNAP_LZ4_LEVEL, snapRefused } from "./snaprecord.js";
+import { snapshots, SNAP_LZ4_LEVEL, snapRefused, snapKernelName } from "./snaprecord.js";
 import { SNAP, snapKernelKey, saveSnapshot, restoreSnapshot, snapRow, snapStoreView, snapPicker, snapEditName, snapEditEnd, snapDeleteAll,
 	snapDelete, snapSwitch, downloadSnapshot } from "./snapshots.js";
 import { DIFF, snapDiff, snapRunDiff, snapDiffView, snapPageGroups, snapSideTag, snapShowHex, snapHexAll, snapHexView,
@@ -262,10 +262,17 @@ function SnapDiffBox() {
 	);
 }
 
+// The Diff lists this kernel's snapshots only: a default name without the
+// kernel's name, which cut every name at 390 px (A3f).
+function snapPickName(s) {
+	const k = snapKernelName() + " @";
+	return k.length > 2 && s.name.startsWith(k) ? s.name.slice(k.length - 1) : s.name;
+}
+
 function SnapPick({ id, mine, value, onPick }) {
 	return (
 		<select id={id} value={value} onChange={(ev) => onPick(ev.target.value)}>
-			{mine.map((s) => <option key={s.id} value={s.id}>{"#" + s.seq + " " + s.name}</option>)}
+			{mine.map((s) => <option key={s.id} value={s.id}>{"#" + s.seq + " " + snapPickName(s)}</option>)}
 			<option value="now">now (the running machine)</option>
 		</select>
 	);

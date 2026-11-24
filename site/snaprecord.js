@@ -4,10 +4,11 @@
 // snapshot Worker, a record's metadata, parts, chain and names.
 
 import { CLOCK, GUEST } from "./clock.js";
-import { kib, hex, $, withV } from "./util.js";
+import { kib, hex, $, withV, V86_KERNEL_ADDR } from "./util.js";
 import { image, initrd, stepper, counting, provide } from "./page.js";
 import { pageWalk } from "./cpustate.js";
 import { INPUT, runNow } from "./replay.js";
+import { ffTarget } from "./fastforward.js";
 
 const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
@@ -106,13 +107,70 @@ function snapCount(meta) {
 // under the JIT (the minified Linux's end 289 instructions early; measured
 // equal uncounted and at 1M/s). A record from before A3b has no sinceEntry:
 // paging still off means the kernel has not started.
+//
+// A3f: what says "before the entry" must not lie. Pages before A3e set
+// sinceEntry at the first instruction at 1 MiB, the bzImage's 32-bit entry:
+// the kernel's own entry only where the kernel is linked there (hello and
+// the minified Linux). Debian's is at 16 MiB, after the decompressor (a
+// snapshot of 658155e08 at 182,380,564 has sinceEntry 1,475,578; the entry
+// is at 390,976,943). There paging still off (CR0.PG, the saved register)
+// says the kernel has not started, unless the count is at or past an entry
+// this page has seen for the same kernel and boot settings (paging comes on
+// 56,000 instructions after Debian's entry, 16,000 after the minified
+// Linux's; hello never turns it on).
 const SNAP_REFUSED = "Restore and Replay are off: an older version of this page saved this snapshot before the kernel entry and did not " +
 	"keep what a restored machine needs to repeat that part, so the run from here would differ. Boot and save after the kernel entry.";
+// The boot settings that decide where the kernel entry is.
+const BOOT_KEYS = ["kernel", "initrd", "ram", "cmdline", "clock", "rtc", "seed"];
+const sameBoot = (a, b) => !!a && !!b && BOOT_KEYS.every((k) => String(a[k]) === String(b[k]));
+// Kernel entries this page's fast-forward reached: { key, boot, at }.
+const entriesSeen = [];
+function snapEntrySeen(at) {
+	const boot = INPUT.settings, p = image && image.snapKeyP;
+	if (boot && p)
+		p.then((key) => { if (key) entriesSeen.push({ key, boot, at }); });
+}
+// The count at the kernel entry of s's kernel and boot, where known for sure.
+function snapEntryKnown(s) {
+	const run = s.meta && s.meta.run;
+	if (!run)
+		return null;
+	const e = entriesSeen.find((x) => x.key === s.kernelKey && sameBoot(x.boot, run));
+	if (e)
+		return e.at;
+	const x = snapshots.find((o) => o.kernelKey === s.kernelKey && o.meta && o.meta.stop && o.meta.stop.jitBeforeEntry === true &&
+		o.meta.stop.sinceEntry >= 0 && sameBoot(o.meta.run, run));
+	return x ? x.meta.stop.sinceEntry : null;
+}
+// Whether the kernel s is of is linked at 1 MiB: true, false, or null (not
+// known: not the kernel running, or no symbols).
+function snapEntryAt1M(s) {
+	if (!image || s.kernelKey !== image.snapKey)
+		return null;
+	const t = ffTarget();
+	return t ? t.phys === V86_KERNEL_ADDR : null;
+}
+function snapBeforeEntry(s) {
+	const m = s.meta, stop = m.stop;
+	const pgOff = !!m.regs && !(m.regs.CR0 & 0x80000000);
+	const paging = () => {
+		const at = snapEntryKnown(s);
+		return pgOff && !(at !== null && snapCount(m) >= at);
+	};
+	if (!stop || typeof stop.sinceEntry !== "number")
+		return paging(); // before A3b
+	if (stop.sinceEntry < 0)
+		return true;
+	// Set at 1 MiB: true there only for a kernel linked at 1 MiB. Not
+	// known (another kernel's row: no Restore; its Replay is checked
+	// when the replay reaches the entry, replay.js) keeps the old word.
+	return snapEntryAt1M(s) === false ? paging() : false;
+}
 function snapRefused(s) {
 	const m = s.meta, stop = m && m.stop;
 	if (!m || (stop && typeof stop.jitBeforeEntry === "boolean"))
 		return "";
-	const before = stop && typeof stop.sinceEntry === "number" ? stop.sinceEntry < 0 : !!m.regs && !(m.regs.CR0 & 0x80000000);
+	const before = snapBeforeEntry(s);
 	const run = m.run;
 	// No run kept (before J4): nothing says how it went on, except at the reset vector.
 	const differs = !run ? snapCount(m) > 0 : (!run.paused && run.fastforward !== false) || (run.speed === "full" && run.count && !(stop && stop.stepped));
@@ -187,4 +245,4 @@ const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
 export { MAX_SNAPSHOTS, SNAP_DB, SNAP_STORE, SNAP_LZ4_LEVEL, snapshots, setSnapshots, SNAP_DELTA_MAX, snapCodec,
 	SNAP_EXT, snapHow, snapFmtSize, sha256Hex, snapKernelName, snapRecord, snapMeta, snapCount, snapBlob, snapDepth,
-	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById, snapRefused };
+	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById, snapRefused, snapEntrySeen };

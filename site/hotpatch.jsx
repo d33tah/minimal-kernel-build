@@ -46,6 +46,7 @@ import { pageWalk } from "./cpustate.js";
 import { INPUT, inputPatch } from "./replay.js";
 import { Tip } from "./ui.jsx";
 import { dbgStatus } from "./dbgtab.js";
+import { machineAboveSheet } from "./tabs.jsx";
 
 const HP_PA = 0x60000, HP_SIZE = 0x20000;
 
@@ -413,6 +414,7 @@ async function hpRun() {
 			stepper.steps.toLocaleString("en") + " in " + ((kitNow() - t0) / 1000).toFixed(2) + " s. Continue runs it.";
 		// The machine runs the edit now: nothing to patch until the next one.
 		hpShow({ ok: false, why: "The machine runs your edit: Continue runs it; edit again to patch again." }, text, "done");
+		requestAnimationFrame(machineAboveSheet);
 	} catch (e) {
 		HP.busy = false;
 		HP.gen++;

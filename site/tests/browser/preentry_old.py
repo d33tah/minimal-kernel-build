@@ -211,6 +211,14 @@ def po_old_page(browser, base, tmp, problems, r):
         again = page.evaluate(STATE_JS)
         r["after the refused replay"] = again["steps"]
         same_run(again, first, problems, tag + ": Continue after the refused replay")
+        # A3g item 2: that page's count of IRQ0 cannot be trusted (its
+        # fast-forward counted some twice): the clock line says not known.
+        restore(page, post)
+        show_tab(page, "machine")
+        line = page.inner_text("#vclock")
+        r["IRQ0 after restoring the old snapshot after the entry"] = line
+        if "IRQ0 count not known" not in line or re.search(r"IRQ0 ×", line):
+            problems.append(f"{tag}: restored {OLD_SHA}'s snapshot after the entry, the clock line says {line!r}")
     finally:
         ctx.close()
 

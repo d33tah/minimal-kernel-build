@@ -1418,6 +1418,16 @@ jobs:
         MKB_OLD_PAGE: ${{ runner.temp }}/page658/site
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites preentry_old --shots rebuild-screenshots'
 
+    # A restored run goes the way its run went (plan A3g): Run to with the
+    # count off, Save, Restore + Continue on the minified Linux and Debian;
+    # the IRQ0 count of a fast-forward boot; the Diff's pickers at 390 px; a
+    # window resized with the Source panel open.
+    - name: A restored run's way and the phone layout (test_browser.py restoreway)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites restoreway --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

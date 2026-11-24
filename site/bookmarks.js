@@ -41,7 +41,7 @@ import { setJumpHit, setJumpHitScroll } from "./jumps.js";
 import { G } from "./graphdata.js";
 import { download, graphTick } from "./graph.js";
 import { srcPanel, openSourceLine, openSourceFile, renderSourcePanel } from "./source.js";
-import { snapKernelName, snapshots } from "./snaprecord.js";
+import { snapKernelName, snapshots, snapRefused } from "./snaprecord.js";
 import { saveSnapshot, restoreSnapshot } from "./snapshots.js";
 import { replayRun, runStatus } from "./replay.js";
 import { hideTip } from "./tips.js";
@@ -464,14 +464,18 @@ function bmRowEl(b, group) {
 		sw.addEventListener("click", () => bmSwitch(b));
 		acts.append(sw);
 	}
+	// A3e: a position whose snapshot cannot replay offers neither.
+	const held = b.kind === "pos" && b.t.snap ? snapshots.find((x) => x.id === b.t.snap) : null;
+	const refused = held ? snapRefused(held) : "";
 	if (b.kind === "pos" && b.t.snap && group === "this") {
-		const s = snapshots.find((x) => x.id === b.t.snap);
+		const s = held;
 		if (s) {
 			const r = document.createElement("button");
 			r.type = "button";
 			r.className = "bmrestore";
 			r.textContent = "Restore";
-			r.title = "Restore the snapshot “" + s.name + "” (Snapshots tab): the machine goes back to this position";
+			r.disabled = !!refused;
+			r.title = refused || "Restore the snapshot “" + s.name + "” (Snapshots tab): the machine goes back to this position";
 			r.addEventListener("click", () => restoreSnapshot(s));
 			acts.append(r);
 		}
@@ -481,7 +485,8 @@ function bmRowEl(b, group) {
 		p.type = "button";
 		p.className = "bmreplay";
 		p.textContent = "Replay";
-		p.title = "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
+		p.disabled = !!refused;
+		p.title = refused || "Boot " + b.t.run.kernel + " again and replay the run that got here (the same keys at the same instruction counts), to " +
 			b.t.run.end.at.toLocaleString("en") + " instructions";
 		p.addEventListener("click", () => {
 			api.show.runBadgeOpen(false);

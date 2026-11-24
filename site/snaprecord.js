@@ -95,6 +95,30 @@ function snapCount(meta) {
 	return typeof meta.steps === "number" ? meta.steps : meta.icount;
 }
 
+// A3e: why s can be neither restored nor replayed, or "". Pages before A3e
+// saved points on the JIT's fast-forward to the kernel entry; a restored
+// machine has no JIT state to repeat those slices, so its run differs
+// (Debian's prompt 30 to 100 M instructions early or 67 M late, also from
+// the stepped BIOS part at the start of that way, measured at 1.2 M). Their
+// records have no stop.jitBeforeEntry. A boot started paused or with
+// ?fastforward=0 has no fast-forward; there only a counted run at full speed
+// differs, since its record does not say it was stepped and Restore ran it
+// under the JIT (the minified Linux's end 289 instructions early; measured
+// equal uncounted and at 1M/s). A record from before A3b has no sinceEntry:
+// paging still off means the kernel has not started.
+const SNAP_REFUSED = "Restore and Replay are off: an older version of this page saved this snapshot before the kernel entry and did not " +
+	"keep what a restored machine needs to repeat that part, so the run from here would differ. Boot and save after the kernel entry.";
+function snapRefused(s) {
+	const m = s.meta, stop = m && m.stop;
+	if (!m || (stop && typeof stop.jitBeforeEntry === "boolean"))
+		return "";
+	const before = stop && typeof stop.sinceEntry === "number" ? stop.sinceEntry < 0 : !!m.regs && !(m.regs.CR0 & 0x80000000);
+	const run = m.run;
+	// No run kept (before J4): nothing says how it went on, except at the reset vector.
+	const differs = !run ? snapCount(m) > 0 : (!run.paused && run.fastforward !== false) || (run.speed === "full" && run.count && !(stop && stop.stepped));
+	return before && differs ? SNAP_REFUSED : "";
+}
+
 // A stored snapshot as the Worker takes it (snapworker.js); a delta with
 // its chain of bases, the full one first.
 const snapOne = (s) => ({ key: s.id, blob: s.data, codec: snapCodec(s), size: s.raw });
@@ -163,4 +187,4 @@ const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 
 export { MAX_SNAPSHOTS, SNAP_DB, SNAP_STORE, SNAP_LZ4_LEVEL, snapshots, setSnapshots, SNAP_DELTA_MAX, snapCodec,
 	SNAP_EXT, snapHow, snapFmtSize, sha256Hex, snapKernelName, snapRecord, snapMeta, snapCount, snapBlob, snapDepth,
-	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById };
+	snapPagesText, snapUnpack, snapWorker, setSnapWorker, snapById, snapRefused };

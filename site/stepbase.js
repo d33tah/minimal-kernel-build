@@ -206,7 +206,7 @@ class StepperBase {
 	// A3b: the stages reached so far, kept in a snapshot (restoreStops).
 	stagesNow() {
 		return { endAhead: this.endAhead(), found: this.milestones.map((m) => m.found), sinceEntry: this.sinceEntry,
-			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0 };
+			exit: this.exit, panicEntered: this.panicEntered, irq0: this.irq0, jitBeforeEntry: this.jitBeforeEntry };
 	}
 
 	// R2: a checkpoint at count t was restored (reverse.js), coming from
@@ -297,6 +297,10 @@ class StepperBase {
 		// The snapshot's: this machine's may be another boot's (A3d).
 		if (typeof stop.sinceEntry === "number")
 			this.sinceEntry = stop.sinceEntry;
+		// A3e: whether the JIT ran the snapshot's way to the entry; this
+		// machine's own boot may have done otherwise.
+		if (typeof stop.jitBeforeEntry === "boolean")
+			this.jitBeforeEntry = stop.jitBeforeEntry;
 		for (const key of ["exit", "panicEntered"])
 			if (!this[key] && stop[key])
 				this[key] = stop[key];

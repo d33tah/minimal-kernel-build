@@ -3671,6 +3671,13 @@ the fast-forward runs to (Debian's 16 MiB), and a stage after a restored
 point shows as not reached until the run gets there. Suite `preentry` (job
 `kit`) drives these through the page.
 
+Snapshots stored by older versions of the page can come from that stretch.
+Their records have no `stop.jitBeforeEntry`, and `snapRefused` (snaprecord.js)
+turns off Restore and Replay on their rows, with the reason, when they cannot
+repeat their run: a boot with the fast-forward, or a boot started paused and
+counted at full speed. Older snapshots after the entry, and those of a paused
+boot that was uncounted or slower, keep working.
+
 Tests: `test_hotpatch.mjs` (job `kernels`, Node and clang.wasm): hello's
 `put_line` and `hello_main` (a new string, the call to the kernel's
 `put_line`), the minified Linux's `console_on_rootfs` (a `kernel_write`

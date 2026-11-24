@@ -46,7 +46,7 @@ import { inputReset, INPUT, inputRestore } from "./replay.js";
 import { REV, RESTORED_WHY, revReset } from "./reverse.js";
 import { snapWorker, sha256Hex, SNAP_STORE, SNAP_DB, snapRecord, snapshots, snapKernelName, snapCount, snapById,
 	snapDepth, SNAP_DELTA_MAX, snapMeta, SNAP_LZ4_LEVEL, MAX_SNAPSHOTS, snapPagesText, snapFmtSize, snapBlob,
-	SNAP_EXT, snapCodec, setSnapshots, snapHow } from "./snaprecord.js";
+	SNAP_EXT, snapCodec, setSnapshots, snapHow, snapRefused } from "./snaprecord.js";
 import { snapDiff, pageSnapView, renderSnapDiff, setSnapDiff } from "./snapdiff.js";
 import { buildFamily, recFamily, imageLabel } from "./buildmap.js";
 import { dbgStatus } from "./dbgtab.js";
@@ -306,6 +306,12 @@ async function saveSnapshot() {
 async function restoreSnapshot(s) {
 	if (REV.busy)
 		return;
+	// A3e: also from a bookmark's Restore.
+	const refused = snapRefused(s);
+	if (refused) {
+		snapSay("“" + s.name + "”: " + refused);
+		return;
+	}
 	if (!emulator || emuRam !== s.ram) {
 		snapSay("“" + s.name + "” was taken with " + kib(s.ram) + " of RAM; boot with that size to restore it.");
 		return;

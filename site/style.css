@@ -220,6 +220,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #snapshots .snapedit { font: inherit; width: 100%; min-width: 12rem; box-sizing: border-box; }
 #snapshots .snapother td { color: var(--muted); }
 #snapshots .snapacts { white-space: nowrap; }
+#snapshots .snapwhy { display: block; max-width: 26rem; margin-top: 0.2rem; padding: 0.15rem 0.35rem; border-radius: 3px; white-space: normal; font-size: 0.75rem; background: var(--warn-bg); color: var(--warn-fg); }
 #snap_delall { margin: 0.4rem 0; }
 /* A1b: in a box narrower than the table (beside the Source panel, a phone)
    each snapshot is a card, every cell with its column's name, so the name
@@ -580,6 +581,9 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 	#screen_text { font: 5px/6px ui-monospace, monospace; }
 	/* Long counts (a distro boot's 9-digit instruction numbers) scroll inside the table, not the page. */
 	#counters { font-size: 0.7rem; display: block; max-width: 100%; overflow-x: auto; }
+	/* A3e: Debian's ten-digit counts whole at 390 px: the stage names wrap. */
+	#counters td, #counters th { padding-right: 0.3rem; }
+	#counters th, #counters td:first-child { white-space: normal; }
 	#listing { height: 70vh; }
 }
 .syminfo { font-size: 0.8rem; margin: 0.3rem 0; }
@@ -630,6 +634,8 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 }
 #graph_info button { margin: 0.1rem 0; }
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
+/* A3e: at 390 px the line takes two rows, so the IRQ0 count stays whole. */
+@media (max-width: 640px) { #vclock { white-space: normal; min-height: 2.4em; } }
 #guest_in { min-height: 1.2em; margin: 0.1rem 0; overflow-wrap: anywhere; }
 .asm .src { color: var(--muted); font-style: italic; cursor: pointer; }
 .asm .src.nol { cursor: default; opacity: 0.8; }

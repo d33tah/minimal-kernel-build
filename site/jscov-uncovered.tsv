@@ -24,7 +24,7 @@ bookmarks.js	280	51849c8a	sometimes: a pending bookmark jump for another kernel 
 bookmarks.js	378	33ddae1b	bmNote without #bm_status: the element is in index.html
 bookmarks.js	386	3337b23d	Delete of a bookmark not in the list: each row's ✕ is for a listed bookmark and the list is redrawn on every change
 bookmarks.js	418	96a5c082	a rename finished without a change (Escape or the same name): the tests rename with a new name and Enter
-bookmarks.js	526	6b17f7cd	bmRender without #bm_list: the element is in index.html
+bookmarks.js	531	6b17f7cd	bmRender without #bm_list: the element is in index.html
 boot.js	135-138	6156dc01	the V86 constructor throwing synchronously: with any listed RAM size and the header check's no-fit guard (Boot starts nothing then) it does not throw
 boot.js	142	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
 boot.js	211	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
@@ -373,7 +373,7 @@ snapdiff.js	149	f8bff038	a newer diff started while the hexdump's page was read:
 snapdiff.js	151-153	554449e5	reading a page after the diff succeeded: the worker keeps both sides of the pages the diff lists; it fails only if the worker died in between
 snapdiff.js	198-202	cdd115a7	same as snapdiff.js:151-153 for the Page tab buttons
 snapdiff.js	204	f8bff038	same race as snapdiff.js:149 for the Page tab buttons
-snaprecord.js	138	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
+snaprecord.js	162	18df6ba7	a worker answer for an id nobody waits for: only after onerror cleared the waiters and a late message of that worker still arrives
 snapshots.js	189-191	11a71088	navigator.storage.estimate() rejecting: it resolves in every secure context; Chromium offers no way to make it reject
 snapshots.js	208-211	f442ec7f	getAll() of the snapshot store failing after open() succeeded: a browser-internal IndexedDB error (corrupt LevelDB files) that a page cannot cause
 snapshots.js	223	4bf395d6	Save snapshot with no machine, before it is ready or during a reverse operation: the button is disabled in these states, only a click racing the change reaches it
@@ -381,8 +381,8 @@ snapshots.js	244	56e9e0b3	sometimes: a save while compiled JIT blocks are queued
 snapshots.js	246	0fceb698	a new boot replacing the machine during that jitFlush await: needs the queue above plus a boot in the same moment
 snapshots.js	298-300	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
 snapshots.js	308	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
-snapshots.js	444	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
-snapshots.js	578	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+snapshots.js	450	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
+snapshots.js	584	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 snapshotspanel.jsx	39	d4419ba9	a name edit ending twice: Enter and Esc remove the field at once (flushSync) and Chromium fires no blur for a removed element; the guard keeps a blur after Esc from saving the name
 snapworker.js	64	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	286	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does
@@ -417,8 +417,8 @@ srctext.js	178	5eacb3f2	race: another source picked while a .tar was being index
 srctext.js	215	5eacb3f2	a source pick replaced by another pick while it was read: a race the tests cannot force
 srctext.js	280	063fc52b	skipTo stopping at a newline inside an unterminated string or char literal: the statement scanner meets none in the shipped sources the suites open
 stepbase.js	282	d1cd5d87	sometimes: restoreStops for a snapshot taken before panic()'s text began: the jitsnap suite restores at a count that depends on where the JIT's slice ended; ran in run 43600287802 only (of 43600287802, 43602952211, 43605289270, 43611610762)
-stepbase.js	321	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
-stepbase.js	334	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
+stepbase.js	325	320b0d21	branch() when not behind and with no future: its caller (reverse.js) calls it after stepping back; a defensive early return
+stepbase.js	338	16d2bb25	sometimes: branch() dropping task switches recorded after the branch point: framegold's Debian case branches over switches every time (its B has fewer switches than A) and the line ran in run 43729203909, but the coverage of that page was not in run 43749791653's reverse,framegold job
 stepper.js	92	7a84d881	resumeTask creating a lane for a stack region it has no lane for: a suspended task's frames were pushed in a lane of that region; only a branch() that drops the lanes while a task is suspended would hit it, which no suite does
 stepper.js	147-148	17f83138	sometimes: a task that dies (exits) while the tasks or exactstop suites record task switches: ran in runs 43600287802, 43602952211, 43605289270 and 43611610762 (the exactstop coverage job) but not in 43588908776
 stepper.js	213	818ddac5	the 2-billion frame cap: out of reach (a whole minified boot records 43,546 frames)

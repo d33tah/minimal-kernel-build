@@ -9,7 +9,7 @@ import { useLayoutEffect, useRef } from "react";
 import { h8, PAGE, kib } from "./util.js";
 import { emulator } from "./page.js";
 import { useStore, useController, Tip } from "./ui.jsx";
-import { snapshots, SNAP_LZ4_LEVEL } from "./snaprecord.js";
+import { snapshots, SNAP_LZ4_LEVEL, snapRefused } from "./snaprecord.js";
 import { SNAP, snapKernelKey, saveSnapshot, restoreSnapshot, snapRow, snapStoreView, snapPicker, snapEditName, snapEditEnd, snapDeleteAll,
 	snapDelete, snapSwitch, downloadSnapshot } from "./snapshots.js";
 import { DIFF, snapDiff, snapRunDiff, snapDiffView, snapPageGroups, snapSideTag, snapShowHex, snapHexAll, snapHexView,
@@ -17,8 +17,8 @@ import { DIFF, snapDiff, snapRunDiff, snapDiffView, snapPageGroups, snapSideTag,
 import { RUN, replayRun, runStatus, downloadRun, replayNow, replayFile } from "./replay.js";
 
 // A button of the tab's tables (a title only when it has one).
-function SnapButton({ text, cls, title, onClick }) {
-	return <button type="button" className={cls || undefined} title={title || undefined} onClick={onClick}>{text}</button>;
+function SnapButton({ text, cls, title, onClick, off }) {
+	return <button type="button" className={cls || undefined} title={title || undefined} disabled={!!off} onClick={onClick}>{text}</button>;
 }
 
 const SAVE_TITLE = "save_state(), then page hashes and LZ4 level " + SNAP_LZ4_LEVEL + " (lz4-wasm 0.9.2) in a Worker: " +
@@ -59,6 +59,7 @@ const SNAP_HEAD = ["name", "taken", "at", "kernel, RAM", "size", "raw bytes", "r
 function SnapRow({ s }) {
 	const r = snapRow(s), m = r.match;
 	const run = s.meta && s.meta.run;
+	const refused = snapRefused(s);
 	return (
 		<tr className={m === "other" || m === "build" ? "snapother" : undefined} data-id={r.data.id} data-raw={r.data.raw}
 			data-full={r.data.full} data-stored={r.data.stored} data-kernel={r.data.kernel} data-where={r.data.where}
@@ -71,14 +72,15 @@ function SnapRow({ s }) {
 			<td className="snapacts">
 				{m === "other" && <><SnapButton text={"Switch to " + s.kernel} cls="snapswitch" title={"Load " + s.kernel + " with " +
 					kib(s.ram) + " of RAM; then this snapshot can be restored"} onClick={() => snapSwitch(s)} />{" "}</>}
-				{m === "match" && <><SnapButton text="Restore" cls="restore" onClick={() => restoreSnapshot(s)} />{" "}</>}
-				{run && <><SnapButton text="Replay" cls="snapreplay" title={"Boot " + run.kernel + " again and replay this snapshot's run " +
+				{m === "match" && <><SnapButton text="Restore" cls="restore" off={refused} title={refused} onClick={() => restoreSnapshot(s)} />{" "}</>}
+				{run && <><SnapButton text="Replay" cls="snapreplay" off={refused} title={refused || "Boot " + run.kernel + " again and replay this snapshot's run " +
 					"(the same keys at the same instruction counts) to " + run.end.at.toLocaleString("en") +
 					" instructions: the same state without restoring it"}
 				onClick={() => replayRun(run).catch((e) => runStatus("Replay failed: " + e, "error"))} />{" "}</>}
 				<SnapButton text="Download" cls="snapdl" onClick={() => downloadSnapshot(s)} />{" "}
 				<SnapButton text="Delete" cls="snapdel" title={"Delete this snapshot" + (s.where === "stored" ? " from this browser" : "")}
 					onClick={() => snapDelete([s])} />
+				{refused && <span className="snapwhy">{refused}</span>}
 			</td>
 		</tr>
 	);

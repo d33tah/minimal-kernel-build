@@ -29,6 +29,7 @@ boot.js	136-139	6156dc01	the V86 constructor throwing synchronously: with any li
 boot.js	143	809d7cec	sometimes: ran in run 44155072867 (kit job: rebuild_debian boots the rebuilt kernel right after Back to the shipped one): the emulator-loaded listener of a machine already replaced by another boot: a boot started while the previous one is still loading v86, a race the tests cannot force
 boot.js	212	78e4297b	sometimes: ran in run 44723254418 (kit job: suite hotpatch replays a run that starts paused at the reset vector and presses Continue); otherwise: a replay that starts paused at the reset vector and goes on (resume): replays in the suites start running; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 boot.js	226-227	0ff248b9	the fast-forward to the kernel entry failing (its breakpoint never hit within its budget): every shipped kernel reaches its entry
+boot.js	236	7b6dca1e	sometimes: ran in runs 45328458253 and 45332459845, not in 45345939297 (kit job, preentry_old po_old_page: the boot of a refused replay stays at the entry; coverage of that page starts at jscov.release() after Debian's long counted run; the case passed in all three)
 buildmap.js	52	e158c7c3	more than 400 file texts kept in one page: the suites see a few texts per file
 buildmap.js	112	b8d99835	more than 64 line maps in one page: the suites map a few texts
 calltree.js	27-30	e5880000	drawTree without a stepper: as line 326 (graphTick needs one, and a tree toggle exists only in a tree drawn from one)
@@ -317,6 +318,7 @@ replay.js	261	366a13b0	Restore during a replay: reachable (Restore while a repla
 replay.js	304	f0d1623c	a scancode on the real-time clock or for a replaced machine: no test types on real time
 replay.js	344-348	e0f8ed29	runRamHash on a mem8 whose offset in wasm memory is not a multiple of 4: v86 allocates guest RAM page-aligned in its wasm memory, so the word path always runs
 replay.js	482	cc309c5d	replayFinish with no replay or one already done: its callers check replayActive() first
+replay.js	515-522	b51d8d03	sometimes: ran in runs 45328458253 and 45332459845, not in 45345939297 (kit job, preentry_old po_old_page refuses an older page's run file at the entry, on a page whose coverage starts at jscov.release() after Debian's long counted run; the case passed, with this function's status text, in all three)
 replay.js	530	2e745bf3	replayStop with no replay running: its callers check replayActive() first
 replay.js	614	27bb20a4	Download run with no run: the button is disabled whenever runNow() would be null (runNowable)
 replay.js	634	98bdf0a1	the file input's change event with no file: Chromium fires change only when a file was picked
@@ -374,6 +376,7 @@ snapdiff.js	151-153	554449e5	reading a page after the diff succeeded: the worker
 snapdiff.js	198-202	cdd115a7	same as snapdiff.js:151-153 for the Page tab buttons
 snapdiff.js	204	f8bff038	same race as snapdiff.js:149 for the Page tab buttons
 snaprecord.js	137	fe877665	a record without a run (saved before J4) judged by paging with no known entry: the suites store only records that keep their run
+snaprecord.js	140	6ac92603	sometimes: ran in runs 45328458253 and 45332459845, not in 45345939297 (kit job, preentry_old po_old_page: the rows are drawn after this page's fast-forward reached the entry, on a page whose coverage starts at jscov.release() after Debian's long counted run; the case passed in all three)
 snaprecord.js	142	f4cc44e7	sometimes: an entry known from a newer snapshot of the same kernel and boot before this page's own fast-forward reached the entry: preentry_old's rows are drawn first with only the older page's records, then after the entry (entriesSeen answers first)
 snaprecord.js	149	17fd1935	an older record of another kernel than the one running, saved after the bzImage's 1 MiB entry, drawn: preentry_old's older records are all of the Debian running
 snaprecord.js	161	df2de00d	a record from before A3b (no stop.sinceEntry): the suites store none

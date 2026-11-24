@@ -37,7 +37,7 @@ import { controller } from "./ui.jsx";
 import { emulator, stepper, runState, image, initrd, emuRam, prefSpeed, startPaused, kernels, setPrefSpeed,
 	setStartPaused, setCounting, api } from "./page.js";
 import { setCmdlineFromUrl } from "./symimport.js";
-import { ffEnabled, ffUnsaved } from "./fastforward.js";
+import { ffEnabled, ffOnTheWay } from "./fastforward.js";
 import { v86ResetHidden } from "./cpustate.js";
 import { showHeader } from "./header.js";
 import { imageLabel, RB_SUFFIX } from "./buildmap.js";
@@ -378,7 +378,7 @@ function runNow() {
 		...(image && image.build ? { kernelBuild: imageLabel() } : {}),
 		// A3f: it ends on the fast-forward to the kernel entry, which no
 		// replay can stop inside (runCheck refuses it).
-		...(ffUnsaved(stepper) ? { preEntry: true } : {}),
+		...(ffOnTheWay(stepper) ? { preEntry: true } : {}),
 		log: INPUT.log.map((e) => ({ ...e })), taint: INPUT.taint, end: runEnd(stepper),
 	};
 }
@@ -604,7 +604,7 @@ function runFileName(run) {
 
 function downloadRun() {
 	// A3f: as Save (snapshots.js), nothing of a point it could not repeat.
-	if (ffUnsaved(stepper)) {
+	if (ffOnTheWay(stepper)) {
 		runStatus("Not downloaded: this point is on the fast-forward to the kernel entry. The JIT runs that part in slices a replay " +
 			"cannot stop inside, so a replay of this run would differ. Press Continue and download after the kernel entry.", "error");
 		return;

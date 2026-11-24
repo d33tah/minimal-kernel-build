@@ -139,20 +139,20 @@ fastforward.js	111	626deafb	a JIT request flushed by another caller while this o
 fastforward.js	114-116	61b53f45	a JIT block that fails to compile: v86 emits valid wasm
 fastforward.js	142	4d0a6c19	jitChunk with its budget already reached: callers pass an until past the current count
 fastforward.js	172	6160cc7f	both panic lines written within one JIT slice before the exact stop: the J3 budget stops at the instruction writing the last line, so the exact end is found first
-fastforward.js	264	76acdf38	the stepped BIOS part reaching the target's code range without its address: the target is the kernel entry, first reached at its own address
-fastforward.js	277-279	0410869d	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
-fastforward.js	281	0a19a3c6	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
-fastforward.js	284	fc861f78	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
-fastforward.js	293	61a171fa	Pause or a new boot during a fast-forward's jitFlush: blocks compile synchronously (83), so the flush does not yield
-fastforward.js	315-321	2f843ddb	restore_state of the slice's own save failing: v86 restores every state it wrote after PCI setup
-fastforward.js	334	7be9f7a4	the CPU dead before the kernel entry: every shipped kernel reaches its entry
-fastforward.js	383	ba0be284	disasm.json with no instruction starting exactly at a Run to target: targets are function starts or breakpoint addresses of the same build
-fastforward.js	399	005c25f2	a fast Run to already at its target: Run to from a target goes on to its next hit (app.js steps off it first)
-fastforward.js	420	99bb1ff0	the target reached while stepping until its code matches the build: the code at a target runs only once it is in place
-fastforward.js	424	cdfb4b72	a boot during that stepping: a race
-fastforward.js	426-429	bcf5d2e0	as 351
-fastforward.js	458	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
-fastforward.js	487	cdfb4b72	a boot during the breakpoint run: a race
+fastforward.js	268	76acdf38	the stepped BIOS part reaching the target's code range without its address: the target is the kernel entry, first reached at its own address
+fastforward.js	281-283	0410869d	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
+fastforward.js	285	0a19a3c6	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
+fastforward.js	288	fc861f78	save_state() failing during the fast-forward (PCI not yet set up): the 2 M stepped instructions before it (FF_STEP_FIRST) get past SeaBIOS's PCI setup for every shipped kernel
+fastforward.js	297	61a171fa	Pause or a new boot during a fast-forward's jitFlush: blocks compile synchronously (83), so the flush does not yield
+fastforward.js	319-325	2f843ddb	restore_state of the slice's own save failing: v86 restores every state it wrote after PCI setup
+fastforward.js	338	7be9f7a4	the CPU dead before the kernel entry: every shipped kernel reaches its entry
+fastforward.js	387	ba0be284	disasm.json with no instruction starting exactly at a Run to target: targets are function starts or breakpoint addresses of the same build
+fastforward.js	403	005c25f2	a fast Run to already at its target: Run to from a target goes on to its next hit (app.js steps off it first)
+fastforward.js	424	99bb1ff0	the target reached while stepping until its code matches the build: the code at a target runs only once it is in place
+fastforward.js	428	cdfb4b72	a boot during that stepping: a race
+fastforward.js	430-433	bcf5d2e0	as 351
+fastforward.js	462	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
+fastforward.js	491	cdfb4b72	a boot during the breakpoint run: a race
 fnfacts.js	52	c19d25fb	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 fnfacts.js	143	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it

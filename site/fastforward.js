@@ -201,6 +201,10 @@ let ffHold = null;
 // The machine is on the way to the kernel entry that the JIT runs, or held
 // there: a snapshot here could not repeat the run.
 const ffUnsaved = (st) => !!st && st.sinceEntry < 0 && (ffActive || (!!ffHold && ffHold.st === st) || st.jitBeforeEntry);
+// A3f: the boot's fast-forward to the kernel entry runs or is held here
+// (not a fast Run to, whose JIT also sets jitBeforeEntry: a boot with
+// ?fastforward=0 run to 2.5e9 that way never has a sinceEntry).
+const ffOnTheWay = (st) => !!st && st.sinceEntry < 0 && ((ffActive && !!ffInfo && ffInfo.runTo === undefined) || (!!ffHold && ffHold.st === st));
 
 // Run the fast-forward, then after(ok); inputs(): how many inputs the run has
 // logged or holds (replay.js, which imports this module); hold: go on from a
@@ -491,4 +495,4 @@ async function fastRunTo(targets, label) {
 
 export { ffActive, ffAbort, ffInfo, setFfActive, setFfAbort, setFfInfo, ffBreaks, ffEnabled, ffTarget,
 	codeRange, ffCounter, JIT, jitDetInstall, jitPending, jitFlush, jitChunk, setJitChunk, jitStep, ffYield,
-	fastForward, ffRun, ffResume, ffStop, ffUnsaved, fastRunTo };
+	fastForward, ffRun, ffResume, ffStop, ffUnsaved, ffOnTheWay, fastRunTo };

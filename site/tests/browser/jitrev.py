@@ -33,6 +33,13 @@ JITREV_REGS_JS = """() => { const c = MKB.stepper.cpu; return { regs: Array.from
   eflags: c.get_eflags() >>> 0, cr: [c.cr[0] >>> 0, c.cr[2] >>> 0, c.cr[3] >>> 0, c.cr[4] >>> 0] }; }"""
 JITREV_LATENCY_MS = 10000
 JITREV_STI_NOTE = "the instruction after an sti runs with it"
+# Worker calls that unpack a stored checkpoint, counted from here (A3h item
+# 2): Step back from the pause restores the newest checkpoint, whose state
+# the page keeps; unpacking its chain of deltas took 7.9 s of the 11 s that
+# Debian+initrd's first Step back 1 at the prompt took (d-claude).
+JITREV_UNPACKS_JS = """() => { const m = MKB.api.machine; if (!('__unpacks' in window)) { const f = m.snapWorker;
+  m.snapWorker = function (msg, tr) { if (msg && msg.op === 'unpack') window.__unpacks++; return f.call(this, msg, tr); }; }
+  window.__unpacks = 0; return true; }"""
 
 
 def jitrev_back(page, phone, sel, n, tag, problems, r, key):
@@ -108,7 +115,11 @@ def jitrev_run(browser, base, shots, name, scheme, phone, past, k):
             problems.append(f"{tag}: Step back is disabled after the JIT ran: {r['history']['text'][:200]!r}")
             return problems, r
         show_tab(page, "machine")
+        page.evaluate(JITREV_UNPACKS_JS)
         s1 = jitrev_back(page, phone, "#dbg_back", None, tag, problems, r, "back 1")
+        r["back 1 unpacks"] = page.evaluate("window.__unpacks")
+        if r["back 1 unpacks"]:
+            problems.append(f"{tag}: Step back 1 from the pause unpacked {r['back 1 unpacks']} stored checkpoint(s) in the Worker")
         # R6: v86 runs the instruction after an sti in the sti's step, so
         # from the hlt of "sti; hlt" (the initramfs prompt's halt) Step back
         # 1 lands on the sti, 2 back, and says why (it said "Stepped back 0

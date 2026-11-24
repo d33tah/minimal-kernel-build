@@ -1428,6 +1428,18 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites restoreway --shots rebuild-screenshots'
 
+    # A stop does not change where a run goes (plan A3h): Run to start_kernel
+    # with the count off at full speed, Continue, and Restore after a reload,
+    # against the run not stopped (the minified Linux, Debian with and without
+    # the fast-forward); the stages under the JIT; the kernel entry the same
+    # with and without the fast-forward; the menu toggle off the Machine
+    # tab's text at 390 px and 844x390; the speed picker above the sheet.
+    - name: A stop keeps the run's way (test_browser.py sameway)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites sameway --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

@@ -1393,6 +1393,31 @@ jobs:
         MKB_JSCOV: ${{ github.workspace }}/jscov-raw
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites preentry --shots rebuild-screenshots'
 
+    # The page of 658155e08, built from git as its site job built it (plan
+    # A3f): its own Save, bookmark and Download run make the older records
+    # that suite preentry_old opens in this page.
+    - name: The page of 658155e08 (for test_browser.py preentry_old)
+      if: always()
+      run: |
+        git fetch --no-tags --depth=1 origin 658155e08cd4e0e6cdb66b0dccc69297568e60b5
+        mkdir -p "$RUNNER_TEMP/page658"
+        git archive FETCH_HEAD site | tar -x -C "$RUNNER_TEMP/page658"
+        npm ci --prefix "$RUNNER_TEMP/page658/site" --no-audit --no-fund
+        node "$RUNNER_TEMP/page658/site/build.mjs"
+
+    # Records of an older page from before the kernel entry (plan A3f):
+    # refused with the reason on their rows and bookmarks, a run file that
+    # ends there refused at the entry; Download run and Replay refused at a
+    # pause there; the count line on the fast-forward; no page error with
+    # service workers blocked; the Snapshots tab and a patch at 390 px;
+    # Switch to's status.
+    - name: An older page's records before the entry (test_browser.py preentry_old)
+      if: always()
+      env:
+        MKB_JSCOV: ${{ github.workspace }}/jscov-raw
+        MKB_OLD_PAGE: ${{ runner.temp }}/page658/site
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites preentry_old --shots rebuild-screenshots'
+
     # Places across builds (plan E8, buildmap.js): bookmarks, the Run to
     # target, the coverage comparison and snapshots across three rebuilds
     # of hello; the Source panel after a hot patch shows the patched text.

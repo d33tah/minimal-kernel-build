@@ -81,9 +81,9 @@ def run_to_end(page, problems, tag):
     return stages(page)
 
 
-def patch_do_exit(page, problems, tag):
+def patch_do_exit(page, problems, tag, phone=False):
     """kernel/exit.c edited in the Source panel and patched in; do_exit's address."""
-    if not rbl_open(page, "kernel/exit.c", False):
+    if not rbl_open(page, "kernel/exit.c", phone):
         problems.append(f"{tag}: Edit did not open kernel/exit.c")
         return None
     text = page.input_value("#ed_text")
@@ -92,7 +92,7 @@ def patch_do_exit(page, problems, tag):
     if st["state"] != "ready":
         problems.append(f"{tag}: the edit is not ready: {st['state']} {st['status']!r}")
         return None
-    page.click("#hp_go_panel")
+    page.tap("#hp_go_panel") if phone else page.click("#hp_go_panel")
     st = hp_wait(page, ("done", "failed"), 120)
     if st["state"] != "done":
         problems.append(f"{tag}: the patch: {st['status']!r}")

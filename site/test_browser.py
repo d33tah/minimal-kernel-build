@@ -101,6 +101,7 @@ from tests.browser.rebuild_debian import suite_rebuild_debian
 from tests.browser.hotpatch import suite_hotpatch
 from tests.browser.hprun import suite_hprun
 from tests.browser.preentry import suite_preentry
+from tests.browser.preentry_old import suite_preentry_old
 from tests.browser.restored import suite_restored
 from tests.browser.rebuildmap import suite_rebuildmap
 from tests.browser.srcfind import suite_srcfind
@@ -199,6 +200,7 @@ SUITES = {
     "hprun": (suite_hprun, False),
     "restored": (suite_restored, False),
     "preentry": (suite_preentry, False),
+    "preentry_old": (suite_preentry_old, False),
     "rebuildmap": (suite_rebuildmap, False),
     "srcfind": (suite_srcfind, True),
     "panelfit": (suite_panelfit, True),

@@ -67,7 +67,8 @@ def run_to(page, target):
     page.fill("#dbg_addr", target)
     page.click("#dbg_runto")
     time.sleep(0.5)
-    return wait_for(lambda: page.evaluate("MKB.runState === 'paused' && !MKB.REV.busy && MKB.stepper.steps > 1e6"), 900, 0.3) and still(page)
+    # Paused is also the state under the Run to's fast-forward (A3f).
+    return wait_for(lambda: page.evaluate("MKB.runState === 'paused' && !MKB.REV.busy && !MKB.ffActive && MKB.stepper.steps > 1e6"), 900, 0.3) and still(page)
 
 
 def same_view(got, want, problems, tag):
@@ -98,18 +99,25 @@ def sw_runto(browser, base, kernel, problems, r, ffs=(False,), reload=True, secs
     Continue; and after a reload Restore + Continue. All three are one run
     (item 1), the stages true in each."""
     tag = f"{kernel}: Run to with the count off at full speed"
+    # Debian's stepped boot under coverage (site/jscov.py) is about 20 times
+    # slower: its pages run without it (the minified Linux's cases cover the
+    # same lines); hold() applies to pages opened after it.
     held = kernel == DEBIAN
+    if held:
+        jscov.hold()
+    try:
+        sw_runto_pages(browser, base, kernel, problems, r, ffs, reload, secs, tag)
+    finally:
+        if held:
+            jscov.release()
+
+
+def sw_runto_pages(browser, base, kernel, problems, r, ffs, reload, secs, tag):
     ctx = browser.new_context(viewport={"width": 1280, "height": 900})
     try:
         page = ctx.new_page()
         boot_paused(page, base, kernel, ffs[0])
-        if held:
-            jscov.hold()
-        try:
-            first = to_stop(page, secs)
-        finally:
-            if held:
-                jscov.release()
+        first = to_stop(page, secs)
         if not first:
             problems.append(f"{tag}: the uninterrupted run did not stop")
             return
@@ -130,13 +138,7 @@ def sw_runto(browser, base, kernel, problems, r, ffs=(False,), reload=True, secs
             at = steps(page)
             r[f"{how}: stopped at"] = at
             row = snap_save(page, 1, False)["rows"][0]["id"]
-            if held:
-                jscov.hold()
-            try:
-                got = to_stop(page, secs)
-            finally:
-                if held:
-                    jscov.release()
+            got = to_stop(page, secs)
             if not got:
                 problems.append(f"{tag} {how}: Continue after the Run to did not stop")
                 continue
@@ -155,13 +157,7 @@ def sw_runto(browser, base, kernel, problems, r, ffs=(False,), reload=True, secs
             if steps(page) != at:
                 problems.append(f"{tag} {how}: restored at {steps(page)}, saved at {at}")
                 continue
-            if held:
-                jscov.hold()
-            try:
-                again = to_stop(page, secs)
-            finally:
-                if held:
-                    jscov.release()
+            again = to_stop(page, secs)
             if not again:
                 problems.append(f"{tag} {how}: Continue after a reload and Restore did not stop")
                 continue
@@ -216,15 +212,12 @@ def sw_entry(browser, base, problems, r):
     seen = {}
     for ff in (True, False):
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+        jscov.hold()  # the stepped way to the entry: this page without coverage
         try:
             page = ctx.new_page()
             page.goto(f"{base}/index.html?kernel={DEBIAN}&speed=100000" + ("" if ff else "&fastforward=0"))
-            jscov.hold()
-            try:
-                ok = wait_for(lambda: page.evaluate("!!window.MKB && !!MKB.stepper && MKB.stepper.sinceEntry >= 0 && MKB.stepper.steps > MKB.stepper.sinceEntry + 1000"),
-                              1200, 0.5)
-            finally:
-                jscov.release()
+            ok = wait_for(lambda: page.evaluate("!!window.MKB && !!MKB.stepper && MKB.stepper.sinceEntry >= 0 && MKB.stepper.steps > MKB.stepper.sinceEntry + 1000"),
+                          1200, 0.5)
             show_tab(page, "machine")
             v = page.evaluate(VIEW_JS)
             seen[ff] = {"entry": v["entry"], "steps": v["entrySteps"], "head": v["head"]}
@@ -234,6 +227,7 @@ def sw_entry(browser, base, problems, r):
                 return
         finally:
             ctx.close()
+            jscov.release()
     a, b = seen[True], seen[False]
     where = lambda e: e["entry"].split(" after ")[0]  # noqa: E731
     if where(a) != where(b) or a["steps"] != b["steps"]:

@@ -389,12 +389,9 @@ async function revBlob(cp) {
 
 // Put the machine back to checkpoint cp, coming from count from.
 async function revRestore(st, cp, from) {
-	// The newest checkpoint's state comes back with its packing (A3h).
-	try {
-		await cp.ready;
-	} catch (e) {
-		// revBlob below says what failed
-	}
+	// The newest checkpoint's state comes back with its packing (A3h); a
+	// packing that failed, revBlob below says.
+	await cp.ready.catch(() => null);
 	if (!REV.cache || REV.cache.key !== cp.key)
 		REV.cache = { key: cp.key, raw: (await api.machine.snapWorker({ op: "unpack", s: await revBlob(cp) })).raw };
 	const raw = REV.cache.raw.slice(0); // v86 reads the copy

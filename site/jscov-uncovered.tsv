@@ -332,16 +332,16 @@ reverse.js	342	1887fa36	revJitTick's branch: revJit, earlier in the same slice, 
 reverse.js	354	124e5962	revTrim with no full checkpoint after the first: the first of every group is full and trimming starts only with more than a group
 reverse.js	358	e0870e4f	the cached checkpoint trimmed away: the cache holds a recent checkpoint and trimming drops the oldest group
 reverse.js	382	8d29e6bc	a delta checkpoint whose base was trimmed: revTrim drops whole groups up to the next full one, so bases go with their deltas
-reverse.js	402	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
-reverse.js	467	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
-reverse.js	484-485	c8794090	as 434 for a stepped re-run
-reverse.js	491	97d6f6d3	a boot during a long reverse operation's yield: a race
-reverse.js	505	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
-reverse.js	509-512	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
-reverse.js	526-528	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
-reverse.js	548	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
-reverse.js	586	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
-reverse.js	703	1d380376	Back to without a machine or while busy: the button is disabled then
+reverse.js	399	97d6f6d3	a boot during the worker's unpack of a checkpoint: a race
+reverse.js	464	6250f926	the JIT running no instruction from a running CPU: v86's main_loop always runs at least one
+reverse.js	481-482	c8794090	as 434 for a stepped re-run
+reverse.js	488	97d6f6d3	a boot during a long reverse operation's yield: a race
+reverse.js	502	1d380376	a reverse button while one runs or without a machine: the buttons are disabled then (revRender)
+reverse.js	506-509	04553ff5	a reverse button without history: disabled then (revRender); only a click racing a revReset reaches it
+reverse.js	523-525	036f45b6	a reverse operation throwing: only the defensive errors listed here (lost base, replaced machine, JIT not getting on)
+reverse.js	545	7de4cda5	Step back at the history's start: the buttons are disabled when the count is not past the first checkpoint, and the count only grows between that render and a click
+reverse.js	583	eca7ac10	revStepTo with nothing ahead: doStep and Continue call it only when stepped back with the JIT ahead (revNeedsJit)
+reverse.js	700	1d380376	Back to without a machine or while busy: the button is disabled then
 run.js	78	4bf395d6	resume() while no machine is ready or a reverse step is busy: the controls are disabled then; a race between Continue and Boot
 run.js	86-89	9354bbed	sometimes: Continue after stepping back to before where the JIT had run ahead (R5): reachable only with Step back after a JIT run and then Continue (not Step); suites reverse and jitrev step forward instead; ran in run 43703770298 only (not in 43697771460 nor the runs before), where a Continue came while the stepper was behind the JIT's run, a timing of the run state
 run.js	95-97	cf8b4bc3	a replay whose inputs end exactly as Continue resumes it (the run's end due at that count): a timing that a replay file cannot pin to a Continue
@@ -389,7 +389,7 @@ snapshots.js	246	0fceb698	a new boot replacing the machine during that jitFlush 
 snapshots.js	298-300	61f1ddb4	v86's save_state() throwing or the kernel hash promise rejecting during a save: neither happens for the shipped kernels and devices
 snapshots.js	308	9b0d6be1	Restore while a reverse operation runs: REV.busy lasts the milliseconds of a Step back; a click in that window is a race
 snapshots.js	457	1dae382c	a rename while the Page tab is the shown tab: names are edited in the Snapshots tab, so tab is never "page" there
-snapshots.js	596	03bb6856	a snapshot saved on another day than today: the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
+snapshots.js	596	03bb6856	sometimes: a snapshot saved on another day than today (ran in run 45508258144, whose kit job saved across midnight UTC): the suites save and list snapshots in one run (one across midnight would); never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
 snapshotspanel.jsx	39	d4419ba9	a name edit ending twice: Enter and Esc remove the field at once (flushSync) and Chromium fires no blur for a removed element; the guard keeps a blur after Esc from saving the name
 snapworker.js	65	3842085f	gzip records (S1) in a browser without DecompressionStream: Chromium, Firefox and WebKit all have it
 snapworker.js	287	ae1739d3	a delta holding more pages than the full state: only when most of RAM changed to zero between two saves, which no kernel run does

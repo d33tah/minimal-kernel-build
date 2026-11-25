@@ -155,7 +155,7 @@ fastforward.js	436-439	bcf5d2e0	as 351
 fastforward.js	468	61a171fa	Pause or a boot during the breakpoint run's jitFlush: blocks compile synchronously (83)
 fastforward.js	497	cdfb4b72	a boot during the breakpoint run: a race
 fnfacts.js	52	c19d25fb	the function name of a fact without a stepper (from the symbols): facts are shown only for a booted kernel, which has a stepper; never ran in any CI run, bundled or not (raw V8 counts of its range are 0 in every record of runs 43872002921 and 43925425362); the report counted it as run before R3 because a line with an unrun range and anything else on it (a case label, a trailing comment) was "partly run"
-fnfacts.js	143	2767537f	"and N more out-of-line copies": needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
+fnfacts.js	143	2767537f	sometimes: "and N more out-of-line copies" (ran in run 45528152591, not in 45508258144 nor 45450290524): needs a function with more than FN_OOL_SHOWN (8) out-of-line copies among those the suites show
 frames.js	70-72	213847cb	sometimes: Frames.push with a start more than 2^32 instructions after its chunk's first frame: needs a JIT stretch of over 4.29 billion instructions between two stepped stretches while the chunk of 65,536 frames is not yet full (possible in the JIT suites' Debian runs; not run in any run seen so far); site/test_frames.mjs runs it
 frames.js	85-87	99fec2fd	Frames.push of a frame deeper than 65,534 calls (the depth column's overflow): the shipped kernels' call depth stays in the tens; site/test_frames.mjs runs it with a 70,000-deep chain
 frames.js	91-93	28aff1cd	Frames.push in task 65,535 or later: the shipped kernels run tens of tasks; site/test_frames.mjs runs it
